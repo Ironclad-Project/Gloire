@@ -1,0 +1,96 @@
+sources:
+  - name: ironclad
+    subdir: 'ports'
+    git: 'https://github.com/streaksu/Ironclad'
+    branch: 'main'
+    tools_required:
+      - host-autoconf-v2.69
+      - host-automake-v1.16
+    regenerate:
+      - args: ['./autogen.sh']
+        environ:
+          NOCONFIGURE: 'yes'
+
+tools:
+  - name: host-autoconf-v2.69
+    source:
+      name: autoconf-v2.69
+      subdir: 'ports'
+      url: 'https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz'
+      format: 'tar.gz'
+      extract_path: 'autoconf-2.69'
+      version: '2.69'
+    configure:
+      - args: ['@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@']
+    compile:
+      - args: ['make', '-j@PARALLELISM@']
+    install:
+      - args: ['make', 'install']
+
+  - name: host-automake-v1.16
+    source:
+      name: automake-v1.16
+      subdir: 'ports'
+      git: 'https://git.savannah.gnu.org/git/automake.git'
+      tag: 'v1.16.5'
+      version: '1.16.5'
+      tools_required:
+        - host-autoconf-v2.69
+      regenerate:
+        - args: ['./bootstrap']
+        - args: |
+            set -e
+            git clone https://github.com/autoconf-archive/autoconf-archive.git --branch=v2021.02.19 --depth=1
+    tools_required:
+      - host-autoconf-v2.69
+    configure:
+      - args:
+        - '@THIS_SOURCE_DIR@/configure'
+        - '--prefix=@PREFIX@'
+    compile:
+      - args: |
+          set -e
+          export PATH="`pwd`/bin:$PATH"
+          make bin/aclocal-1.16 bin/automake-1.16 -j@PARALLELISM@
+          make -j@PARALLELISM@
+    install:
+      - args: ['make', 'install-strip']
+      - args: ['ln', '-sf', '@PREFIX@/share/aclocal-1.16', '@PREFIX@/share/aclocal']
+      - args: ['cp', '-r', '@THIS_SOURCE_DIR@/autoconf-archive/m4/.', '@PREFIX@/share/aclocal-1.16/']
+
+  - name: host-limine
+    source:
+      name: limine
+      subdir: 'ports'
+      git: 'https://github.com/limine-bootloader/limine.git'
+      branch: 'v2.0-branch-binary'
+    install:
+      - args: ['make', '-C', '@THIS_SOURCE_DIR@', 'PREFIX=@PREFIX@', 'install-strip']
+
+tasks:
+  - name: make-hdd
+    tools_required:
+      - host-limine
+    pkgs_required:
+      - ironclad
+    artifact_files:
+      - name: gloire.hdd
+        path: '@BUILD_ROOT@'
+    args:
+      - '@SOURCE_ROOT@/makehdd.sh'
+      - '@BUILD_ROOT@'
+      - '@SOURCE_ROOT@'
+      - '@SYSROOT_DIR@'
+    workdir: '@BUILD_ROOT@'
+
+packages:
+  - name: ironclad
+    from_source: ironclad
+    configure:
+      - args: ['cp', '-r', '@THIS_SOURCE_DIR@/.', '@THIS_BUILD_DIR@']
+      - args:
+        - './configure'
+        - '--prefix=/boot'
+    build:
+      - args: ['make', '-j@PARALLELISM@']
+      - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install-strip']

@@ -15,9 +15,14 @@ sudo mkfs.ext2 `cat loopback_dev`p1
 sudo mount `cat loopback_dev`p1 loopback_dir
 sync
 
-# Copy the contents.
+# Make a tar with the sysroot.
+(cd ../build/system-root && tar cvf ../initramfs.tar .)
+
+# Copy the config files, tar, and the kernel.
+sudo mkdir -pv loopback_dir/boot
 sudo cp -r ../sysroot/* loopback_dir/
-sudo cp -r ../build/system-root/* loopback_dir/
+sudo cp -r ../build/initramfs.tar loopback_dir/boot/
+sudo cp -r ../build/system-root/boot/ironclad loopback_dir/boot/
 
 # Copy limine binaries.
 sudo mkdir -p loopback_dir/boot/EFI/BOOT

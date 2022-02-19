@@ -178,6 +178,7 @@ tasks:
       - host-limine
     pkgs_required:
       - ironclad
+      - init
     artifact_files:
       - name: gloire.hdd
         path: '@BUILD_ROOT@'
@@ -213,6 +214,23 @@ packages:
       - args:
         - './configure'
         - '--prefix=/boot'
+        - 'ADAFLAGS=-O0'
     build:
       - args: ['make', '-j@PARALLELISM@']
       - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install-strip']
+
+  - name: init
+    source:
+      subdir: ''
+      git: 'https://github.com/streaksu/gloire.git'
+      branch: 'main'
+      rolling_version: true
+      version: '0.0pl@ROLLING_ID@'
+    tools_required:
+      - host-gcc
+    build:
+      - args: |
+          set -e
+          cd "@THIS_SOURCE_DIR@"
+          make CC=x86_64-ironclad-gcc
+          make install DESTDIR="@THIS_COLLECT_DIR@"

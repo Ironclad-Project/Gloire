@@ -1,2 +1,5 @@
 build
 ports
+init/*.o
+init/*.xbstrap
+init/init

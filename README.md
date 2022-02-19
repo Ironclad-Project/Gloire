@@ -2,6 +2,8 @@
     <img height="300" alt="Logo of the distro" src="logo.png"/>
 </p>
 
+# Gloire
+
 Gloire is an OS built with the
 [Ironclad](https://github.com/streaksu/ironclad) kernel, and using GNU tools for
 the userland. This repository holds scripts and tools to build the OS from the

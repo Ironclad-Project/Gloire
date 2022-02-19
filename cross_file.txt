@@ -1,0 +1,12 @@
+[binaries]
+c = 'x86_64-ironclad-gcc'
+cpp = 'x86_64-ironclad-g++'
+ar = 'x86_64-ironclad-ar'
+strip = 'x86_64-ironclad-strip'
+pkgconfig = 'pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

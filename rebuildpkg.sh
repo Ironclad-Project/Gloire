@@ -31,7 +31,7 @@ fi
 
 if [ -d ports/$1 ]; then
     ( cd ports/$1
-    [ -f "$BASE_DIR"/patches/$1/0001-Lyre-specific-changes.patch ] && (
+    [ -f "$BASE_DIR"/patches/$1/0001-Ironclad-specific-changes.patch ] && (
         git reset HEAD~1
     )
     git checkout .
@@ -52,19 +52,19 @@ fi
 )
 
 cd ports/$1-workdir
-[ -f "$BASE_DIR"/patches/$1/0001-Lyre-specific-changes.patch ] && (
+[ -f "$BASE_DIR"/patches/$1/0001-Ironclad-specific-changes.patch ] && (
     git reset HEAD~1
     ( cd ../$1 && git reset HEAD~1 )
 )
 ( cd ../$1 && git checkout . && git clean -ffd && touch checkedout.xbstrap fetched.xbstrap )
 git add .
-git commit --allow-empty -m "Lyre specific changes"
+git commit --allow-empty -m "Ironclad specific changes"
 git format-patch -1
-if [ -s 0001-Lyre-specific-changes.patch ]; then
+if [ -s 0001-Ironclad-specific-changes.patch ]; then
     mkdir -p "$BASE_DIR"/patches/$1
-    mv 0001-Lyre-specific-changes.patch "$BASE_DIR"/patches/$1/
+    mv 0001-Ironclad-specific-changes.patch "$BASE_DIR"/patches/$1/
 else
-    rm 0001-Lyre-specific-changes.patch
+    rm 0001-Ironclad-specific-changes.patch
     git reset HEAD~1
 fi
 

@@ -1,0 +1,25 @@
+From 8edf46a80a82cf54a84e1ce6839cf61250218238 Mon Sep 17 00:00:00 2001
+From: streaksu <assemblyislaw@gmail.com>
+Date: Mon, 27 Dec 2021 11:30:31 +0100
+Subject: [PATCH] Ironclad specific changes
+
+---
+ lib/config.sub | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/config.sub b/lib/config.sub
+index d74fb6d..64292fe 100755
+--- a/lib/config.sub
++++ b/lib/config.sub
+@@ -1723,7 +1723,7 @@ case $os in
+ 	     | hpux* | unos* | osf* | luna* | dgux* | auroraux* | solaris* \
+ 	     | sym* |  plan9* | psp* | sim* | xray* | os68k* | v88r* \
+ 	     | hiux* | abug | nacl* | netware* | windows* \
+-	     | os9* | macos* | osx* | ios* \
++	     | os9* | macos* | osx* | ios* | ironclad* \
+ 	     | mpw* | magic* | mmixware* | mon960* | lnews* \
+ 	     | amigaos* | amigados* | msdos* | newsos* | unicos* | aof* \
+ 	     | aos* | aros* | cloudabi* | sortix* | twizzler* \
+-- 
+2.34.1
+

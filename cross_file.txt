@@ -6,7 +6,7 @@ strip = 'x86_64-ironclad-strip'
 pkgconfig = 'pkg-config'
 
 [host_machine]
-system = 'linux'
+system = 'ironclad'
 cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'

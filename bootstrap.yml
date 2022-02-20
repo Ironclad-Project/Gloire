@@ -58,8 +58,6 @@ sources:
     tools_required:
       - host-autoconf-v2.69
       - host-automake-v1.16
-      - host-binutils
-      - host-gcc
     regenerate:
       - args: ['./autogen.sh']
         environ:
@@ -150,7 +148,7 @@ tools:
         - '--prefix=@PREFIX@'
         - '--target=x86_64-ironclad'
         - '--with-sysroot=@SYSROOT_DIR@'
-        - '--enable-languages=c,c++,ada'
+        - '--enable-languages=c,c++'
         - '--disable-multilib'
         - '--enable-initfini-array'
         # -g blows up GCC's binary size.
@@ -163,7 +161,7 @@ tools:
         compile:
           - args: ['make', '-j@PARALLELISM@', 'all-gcc']
         install:
-          - args: ['make', 'install-gcc']
+          - args: ['make', 'install-strip-gcc']
           # GCC does *not* look for target-prefixed LD/AS.
           # Instead, it searches a list of prefix directories. Link AS/LD to make it happy.
           - args: ['mkdir', '-p', '@PREFIX@/x86_64-ironclad/bin']
@@ -171,6 +169,25 @@ tools:
                                '@PREFIX@/x86_64-ironclad/bin/as']
           - args: ['ln', '-sf', '../../../host-binutils/x86_64-ironclad/bin/ld',
                                '@PREFIX@/x86_64-ironclad/bin/ld']
+      - name: libgcc
+        tools_required:
+          - tool: host-gcc
+            stage_dependencies: [compiler]
+        pkgs_required:
+          - mlibc
+        compile:
+          - args: ['make', '-j@PARALLELISM@', 'all-target-libgcc']
+        install:
+          - args: ['make', 'install-strip-target-libgcc']
+
+      - name: libstdc++
+        tools_required:
+          - tool: host-gcc
+            stage_dependencies: [libgcc]
+        compile:
+          - args: ['make', '-j@PARALLELISM@', 'all-target-libstdc++-v3']
+        install:
+          - args: ['make', 'install-strip-target-libstdc++-v3']
 
 tasks:
   - name: make-hdd
@@ -207,6 +224,30 @@ packages:
         environ:
           DESTDIR: '@THIS_COLLECT_DIR@'
 
+  - name: mlibc
+    from_source: mlibc
+    tools_required:
+      - tool: host-gcc
+        stage_dependencies: [compiler]
+    implict_package: true
+    pkgs_required:
+      - mlibc-headers
+    configure:
+      - args:
+        - 'meson'
+        - '--cross-file'
+        - '@SOURCE_ROOT@/cross_file.txt'
+        - '--prefix=/usr'
+        - '--libdir=lib'
+        - '--buildtype=debugoptimized'
+        - '-Dmlibc_no_headers=true'
+        - '@THIS_SOURCE_DIR@'
+    build:
+      - args: ['ninja']
+      - args: ['ninja', 'install']
+        environ:
+          DESTDIR: '@THIS_COLLECT_DIR@'
+
   - name: ironclad
     from_source: ironclad
     configure:
@@ -214,7 +255,6 @@ packages:
       - args:
         - './configure'
         - '--prefix=/boot'
-        - 'ADAFLAGS=-O0'
     build:
       - args: ['make', '-j@PARALLELISM@']
       - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install-strip']
@@ -232,5 +272,5 @@ packages:
       - args: |
           set -e
           cd "@THIS_SOURCE_DIR@"
-          make CC=x86_64-ironclad-gcc
+          make AS=x86_64-ironclad-as LD=x86_64-ironclad-ld
           make install DESTDIR="@THIS_COLLECT_DIR@"

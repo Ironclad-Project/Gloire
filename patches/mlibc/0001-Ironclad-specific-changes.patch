@@ -1,0 +1,443 @@
+From b0bcf83b2771e6c0220a48c62c1b257ad4e82701 Mon Sep 17 00:00:00 2001
+From: streaksu <assemblyislaw@gmail.com>
+Date: Sun, 20 Feb 2022 20:48:02 +0100
+Subject: [PATCH] Ironclad specific changes
+
+---
+ meson.build                                   |  6 ++-
+ sysdeps/ironclad/crt-x86_64/crt0.S            |  7 +++
+ sysdeps/ironclad/generic/entry.cpp            | 34 ++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 32 ++++++++++++
+ sysdeps/ironclad/include/abi-bits/abi.h       |  1 +
+ sysdeps/ironclad/include/abi-bits/auxv.h      |  1 +
+ sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |  1 +
+ sysdeps/ironclad/include/abi-bits/blksize_t.h |  1 +
+ sysdeps/ironclad/include/abi-bits/dev_t.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/errno.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/fcntl.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/gid_t.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/in.h        |  1 +
+ sysdeps/ironclad/include/abi-bits/ino_t.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/limits.h    |  1 +
+ sysdeps/ironclad/include/abi-bits/mode_t.h    |  1 +
+ sysdeps/ironclad/include/abi-bits/nlink_t.h   |  1 +
+ sysdeps/ironclad/include/abi-bits/pid_t.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/reboot.h    |  1 +
+ sysdeps/ironclad/include/abi-bits/resource.h  |  1 +
+ .../ironclad/include/abi-bits/seek-whence.h   |  1 +
+ sysdeps/ironclad/include/abi-bits/signal.h    |  1 +
+ sysdeps/ironclad/include/abi-bits/socket.h    |  1 +
+ sysdeps/ironclad/include/abi-bits/stat.h      |  1 +
+ sysdeps/ironclad/include/abi-bits/termios.h   |  1 +
+ sysdeps/ironclad/include/abi-bits/time.h      |  1 +
+ sysdeps/ironclad/include/abi-bits/uid_t.h     |  1 +
+ sysdeps/ironclad/include/abi-bits/vm-flags.h  |  1 +
+ sysdeps/ironclad/include/abi-bits/wait.h      |  1 +
+ sysdeps/ironclad/meson.build                  | 52 +++++++++++++++++++
+ 30 files changed, 155 insertions(+), 1 deletion(-)
+ create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
+ create mode 100644 sysdeps/ironclad/generic/entry.cpp
+ create mode 100644 sysdeps/ironclad/generic/generic.cpp
+ create mode 120000 sysdeps/ironclad/include/abi-bits/abi.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/auxv.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/blkcnt_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/blksize_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/dev_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/errno.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/fcntl.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/gid_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/in.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/ino_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/limits.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/mode_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/nlink_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/pid_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/reboot.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/resource.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/seek-whence.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/signal.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/socket.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/stat.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/termios.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/time.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/uid_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/vm-flags.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
+ create mode 100644 sysdeps/ironclad/meson.build
+
+diff --git a/meson.build b/meson.build
+index 4027c99a..cf88ddb4 100644
+--- a/meson.build
++++ b/meson.build
+@@ -48,7 +48,7 @@ if not headers_only
+ 	c_compiler = meson.get_compiler('c')
+ 
+ 	add_project_arguments('-nostdinc', '-fno-builtin', language: ['c', 'cpp'])
+-	add_project_arguments('-std=c++20', language: 'cpp')
++	add_project_arguments('-std=gnu++20', language: 'cpp')
+ 	add_project_arguments('-fno-rtti', '-fno-exceptions', language: 'cpp')
+ 	add_project_arguments('-Wall', '-Wextra', language: ['c', 'cpp'])
+ 	add_project_link_arguments('-nostdlib', language: ['c', 'cpp'])
+@@ -110,6 +110,10 @@ elif host_machine.system() == 'qword'
+ 	rtdl_include_dirs += include_directories('sysdeps/qword/include')
+ 	libc_include_dirs += include_directories('sysdeps/qword/include')
+ 	subdir('sysdeps/qword')
++elif host_machine.system() == 'ironclad'
++	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
++	libc_include_dirs += include_directories('sysdeps/ironclad/include')
++	subdir('sysdeps/ironclad')
+ elif host_machine.system() == 'sigma'
+ 	#disable_linux_option = true
+ 	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
+diff --git a/sysdeps/ironclad/crt-x86_64/crt0.S b/sysdeps/ironclad/crt-x86_64/crt0.S
+new file mode 100644
+index 00000000..0a0a4a0c
+--- /dev/null
++++ b/sysdeps/ironclad/crt-x86_64/crt0.S
+@@ -0,0 +1,7 @@
++
++.section .text
++.global _start
++_start:
++    mov $main, %rdi
++    call __mlibc_entry
++
+diff --git a/sysdeps/ironclad/generic/entry.cpp b/sysdeps/ironclad/generic/entry.cpp
+new file mode 100644
+index 00000000..ee7a794b
+--- /dev/null
++++ b/sysdeps/ironclad/generic/entry.cpp
+@@ -0,0 +1,34 @@
++
++#include <stdint.h>
++#include <stdlib.h>
++#include <bits/ensure.h>
++#include <mlibc/elf/startup.h>
++
++// defined by the POSIX library
++void __mlibc_initLocale();
++
++extern "C" uintptr_t *__dlapi_entrystack();
++
++extern char **environ;
++static mlibc::exec_stack_data __mlibc_stack_data;
++
++struct LibraryGuard {
++	LibraryGuard();
++};
++
++static LibraryGuard guard;
++
++LibraryGuard::LibraryGuard() {
++	__mlibc_initLocale();
++
++	// Parse the exec() stack.
++	mlibc::parse_exec_stack(__dlapi_entrystack(), &__mlibc_stack_data);
++	mlibc::set_startup_data(__mlibc_stack_data.argc, __mlibc_stack_data.argv,
++			__mlibc_stack_data.envp);
++}
++
++extern "C" void __mlibc_entry(int (*main_fn)(int argc, char *argv[], char *env[])) {
++	auto result = main_fn(__mlibc_stack_data.argc, __mlibc_stack_data.argv, environ);
++	exit(result);
++}
++
+diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
+new file mode 100644
+index 00000000..b041c746
+--- /dev/null
++++ b/sysdeps/ironclad/generic/generic.cpp
+@@ -0,0 +1,32 @@
++#include <bits/ensure.h>
++#include <mlibc/debug.hpp>
++#include <mlibc/all-sysdeps.hpp>
++#include <errno.h>
++#include <dirent.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <asm/ioctls.h>
++#include <stdlib.h>
++
++#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
++
++namespace mlibc {
++
++void sys_libc_log(const char *message) STUB_ONLY
++void sys_libc_panic() STUB_ONLY
++void sys_exit(int status) STUB_ONLY
++int sys_tcb_set(void *pointer) STUB_ONLY
++int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
++int sys_futex_wake(int *pointer) STUB_ONLY
++int sys_open(const char *path, int flags, int *fd) STUB_ONLY
++int sys_close(int fd) STUB_ONLY
++int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) STUB_ONLY
++int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) STUB_ONLY
++int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) STUB_ONLY
++int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) STUB_ONLY
++int sys_vm_unmap(void *pointer, size_t size) STUB_ONLY
++int sys_anon_allocate(size_t size, void **pointer) STUB_ONLY
++int sys_anon_free(void *pointer, size_t size) STUB_ONLY
++int sys_clock_get(int clock, time_t *secs, long *nanos) STUB_ONLY
++
++} // namespace mlibc
+diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
+new file mode 120000
+index 00000000..c9458601
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/abi.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/abi.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/auxv.h b/sysdeps/ironclad/include/abi-bits/auxv.h
+new file mode 120000
+index 00000000..b7bb1093
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/auxv.h
+@@ -0,0 +1 @@
++../../../../abis/qword/auxv.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/blkcnt_t.h b/sysdeps/ironclad/include/abi-bits/blkcnt_t.h
+new file mode 120000
+index 00000000..e9d9f1b4
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/blkcnt_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/blkcnt_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/blksize_t.h b/sysdeps/ironclad/include/abi-bits/blksize_t.h
+new file mode 120000
+index 00000000..c6dfb6e0
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/blksize_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/blksize_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/dev_t.h b/sysdeps/ironclad/include/abi-bits/dev_t.h
+new file mode 120000
+index 00000000..0c1143b9
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/dev_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/dev_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/errno.h b/sysdeps/ironclad/include/abi-bits/errno.h
+new file mode 120000
+index 00000000..589859fb
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/errno.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/errno.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/fcntl.h b/sysdeps/ironclad/include/abi-bits/fcntl.h
+new file mode 120000
+index 00000000..ea5323ad
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/fcntl.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/fcntl.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/gid_t.h b/sysdeps/ironclad/include/abi-bits/gid_t.h
+new file mode 120000
+index 00000000..6a772180
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/gid_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/gid_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/in.h b/sysdeps/ironclad/include/abi-bits/in.h
+new file mode 120000
+index 00000000..b58c683f
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/in.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/in.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/ino_t.h b/sysdeps/ironclad/include/abi-bits/ino_t.h
+new file mode 120000
+index 00000000..10d644e7
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/ino_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/ino_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/limits.h b/sysdeps/ironclad/include/abi-bits/limits.h
+new file mode 120000
+index 00000000..1aa58942
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/limits.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/limits.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/mode_t.h b/sysdeps/ironclad/include/abi-bits/mode_t.h
+new file mode 120000
+index 00000000..29d77331
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/mode_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/mode_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/nlink_t.h b/sysdeps/ironclad/include/abi-bits/nlink_t.h
+new file mode 120000
+index 00000000..7618c27f
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/nlink_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/nlink_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/pid_t.h b/sysdeps/ironclad/include/abi-bits/pid_t.h
+new file mode 120000
+index 00000000..3fd26a7f
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/pid_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/pid_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/reboot.h b/sysdeps/ironclad/include/abi-bits/reboot.h
+new file mode 120000
+index 00000000..ecc3ddb9
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/reboot.h
+@@ -0,0 +1 @@
++../../../../abis/linux/x86_64/reboot.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/resource.h b/sysdeps/ironclad/include/abi-bits/resource.h
+new file mode 120000
+index 00000000..3e59c750
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/resource.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/resource.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/seek-whence.h b/sysdeps/ironclad/include/abi-bits/seek-whence.h
+new file mode 120000
+index 00000000..3bd41efd
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/seek-whence.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/seek-whence.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/signal.h b/sysdeps/ironclad/include/abi-bits/signal.h
+new file mode 120000
+index 00000000..b20e5119
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/signal.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/signal.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/socket.h b/sysdeps/ironclad/include/abi-bits/socket.h
+new file mode 120000
+index 00000000..0e1d6be9
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/socket.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/socket.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/stat.h b/sysdeps/ironclad/include/abi-bits/stat.h
+new file mode 120000
+index 00000000..82642c3c
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/stat.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/stat.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/termios.h b/sysdeps/ironclad/include/abi-bits/termios.h
+new file mode 120000
+index 00000000..cfcfe763
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/termios.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/termios.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/time.h b/sysdeps/ironclad/include/abi-bits/time.h
+new file mode 120000
+index 00000000..97f3d52d
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/time.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/time.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/uid_t.h b/sysdeps/ironclad/include/abi-bits/uid_t.h
+new file mode 120000
+index 00000000..1113eba6
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/uid_t.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/uid_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/vm-flags.h b/sysdeps/ironclad/include/abi-bits/vm-flags.h
+new file mode 120000
+index 00000000..f1a985e6
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/vm-flags.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/vm-flags.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/wait.h b/sysdeps/ironclad/include/abi-bits/wait.h
+new file mode 120000
+index 00000000..6d911c7f
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/wait.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/wait.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/meson.build b/sysdeps/ironclad/meson.build
+new file mode 100644
+index 00000000..b9e4372d
+--- /dev/null
++++ b/sysdeps/ironclad/meson.build
+@@ -0,0 +1,52 @@
++
++rtdl_sources += files(
++	'generic/generic.cpp'
++)
++
++libc_sources += files(
++	'generic/entry.cpp',
++	'generic/generic.cpp'
++)
++
++if not no_headers
++	install_headers(
++		'include/abi-bits/abi.h',
++		'include/abi-bits/auxv.h',
++		'include/abi-bits/seek-whence.h',
++		'include/abi-bits/vm-flags.h',
++		'include/abi-bits/errno.h',
++		'include/abi-bits/fcntl.h',
++		'include/abi-bits/in.h',
++		'include/abi-bits/reboot.h',
++		'include/abi-bits/resource.h',
++		'include/abi-bits/stat.h',
++		'include/abi-bits/signal.h',
++		'include/abi-bits/socket.h',
++		'include/abi-bits/termios.h',
++		'include/abi-bits/time.h',
++		'include/abi-bits/blkcnt_t.h',
++		'include/abi-bits/blksize_t.h',
++		'include/abi-bits/dev_t.h',
++		'include/abi-bits/gid_t.h',
++		'include/abi-bits/ino_t.h',
++		'include/abi-bits/mode_t.h',
++		'include/abi-bits/nlink_t.h',
++		'include/abi-bits/pid_t.h',
++		'include/abi-bits/uid_t.h',
++		'include/abi-bits/wait.h',
++		'include/abi-bits/limits.h',
++		subdir: 'abi-bits'
++	)
++endif
++
++if not headers_only
++	crt = custom_target('crt0',
++		build_by_default: true,
++		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
++		input: 'crt-x86_64/crt0.S',
++		output: 'crt0.o',
++		install: true,
++		install_dir: get_option('libdir')
++	)
++endif
++
+-- 
+2.35.1
+

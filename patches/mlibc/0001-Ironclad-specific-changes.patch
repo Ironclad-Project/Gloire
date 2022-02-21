@@ -1,13 +1,13 @@
-From b0bcf83b2771e6c0220a48c62c1b257ad4e82701 Mon Sep 17 00:00:00 2001
+From 789691f8605ea5683000309453c47f9b3fe7cf50 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Sun, 20 Feb 2022 20:48:02 +0100
+Date: Mon, 21 Feb 2022 15:46:31 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
  meson.build                                   |  6 ++-
  sysdeps/ironclad/crt-x86_64/crt0.S            |  7 +++
  sysdeps/ironclad/generic/entry.cpp            | 34 ++++++++++++
- sysdeps/ironclad/generic/generic.cpp          | 32 ++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 54 +++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |  1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |  1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |  1 +
@@ -33,8 +33,8 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/uid_t.h     |  1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |  1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |  1 +
- sysdeps/ironclad/meson.build                  | 52 +++++++++++++++++++
- 30 files changed, 155 insertions(+), 1 deletion(-)
+ sysdeps/ironclad/meson.build                  | 52 ++++++++++++++++++
+ 30 files changed, 177 insertions(+), 1 deletion(-)
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
@@ -144,10 +144,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..b041c746
+index 00000000..e061e1d1
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,54 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -160,11 +160,33 @@ index 00000000..b041c746
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
 +
++#define SYSCALL1(NUM, ARG0) ({             \
++    asm volatile ("int $0x80"              \
++                  : "=a"(ret), "=d"(errno) \
++                  : "a"(NUM), "D"(ARG0)    \
++                  : "rcx", "memory");      \
++})
++
++#define SYSCALL_LOG  0
++#define SYSCALL_EXIT 1
++
 +namespace mlibc {
 +
-+void sys_libc_log(const char *message) STUB_ONLY
-+void sys_libc_panic() STUB_ONLY
-+void sys_exit(int status) STUB_ONLY
++void sys_libc_log(const char *message) {
++    int ret, errno;
++    SYSCALL1(SYSCALL_LOG, message);
++}
++
++void sys_libc_panic() {
++    sys_libc_log("mlibc panicked unrecoverably");
++    sys_exit(1);
++}
++
++void sys_exit(int status) {
++    int ret, errno;
++    SYSCALL1(SYSCALL_EXIT, status);
++}
++
 +int sys_tcb_set(void *pointer) STUB_ONLY
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY

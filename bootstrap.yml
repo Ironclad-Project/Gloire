@@ -272,5 +272,5 @@ packages:
       - args: |
           set -e
           cd "@THIS_SOURCE_DIR@"
-          make AS=x86_64-ironclad-as LD=x86_64-ironclad-ld
+          make CC=x86_64-ironclad-gcc
           make install DESTDIR="@THIS_COLLECT_DIR@"

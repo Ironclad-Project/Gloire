@@ -1,18 +1,16 @@
 PREFIX = /
-AS = as
-LD = ld
+CC = cc
 
 .PHONY: all install clean
 
 all: init
 
 init:
-	$(AS) main.S -o init.o
-	$(LD) init.o -o init
+	$(CC) main.c -o init
 
 install:
 	install -d "$(DESTDIR)$(PREFIX)/sbin"
 	install init "$(DESTDIR)$(PREFIX)/sbin"
 
 clean:
-	rm -rf init.o init
+	rm -rf init

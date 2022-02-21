@@ -16,7 +16,7 @@ sudo mount `cat loopback_dev`p1 loopback_dir
 sync
 
 # Make a tar with the sysroot.
-(cd ../build/system-root && tar cvf ../initramfs.tar .)
+(cd ../build/system-root && tar cvf ../initramfs.tar *)
 
 # Copy the config files, tar, and the kernel.
 sudo mkdir -pv loopback_dir/boot

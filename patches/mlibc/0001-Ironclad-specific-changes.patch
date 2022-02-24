@@ -1,11 +1,11 @@
-From ceef2bfea2bdc94352135a5bf7388c1fa4f2ac51 Mon Sep 17 00:00:00 2001
+From 175a4ccda47e336ca88e4eeed3ab8ad901520e42 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Wed, 23 Feb 2022 21:48:23 +0100
+Date: Thu, 24 Feb 2022 01:18:31 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
  meson.build                                   |  6 +-
- options/rtdl/generic/main.cpp                 | 14 +----
+ options/rtdl/generic/main.cpp                 |  6 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |  7 +++
  sysdeps/ironclad/generic/entry.cpp            | 34 +++++++++++
  sysdeps/ironclad/generic/generic.cpp          | 59 +++++++++++++++++++
@@ -35,7 +35,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |  1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |  1 +
  sysdeps/ironclad/meson.build                  | 52 ++++++++++++++++
- 31 files changed, 185 insertions(+), 12 deletions(-)
+ 31 files changed, 185 insertions(+), 4 deletions(-)
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
@@ -91,28 +91,19 @@ index 4027c99a..cf88ddb4 100644
  	#disable_linux_option = true
  	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
-index bed8e11d..b656e068 100644
+index bed8e11d..8af76261 100644
 --- a/options/rtdl/generic/main.cpp
 +++ b/options/rtdl/generic/main.cpp
-@@ -174,16 +174,8 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
+@@ -173,7 +173,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
+ 	}
  	__ensure(strtab_offset);
  	__ensure(soname_str);
- 
--	// Find the auxiliary vector by skipping args and environment.
--	auto aux = entryStack;
--	aux += *aux + 1; // First, we skip argc and all args.
--	__ensure(!*aux);
--	aux++;
--	while(*aux) // Now, we skip the environment.
--		aux++;
--	aux++;
 -
- 	// Parse the actual vector.
-+	auto aux = entryStack;
- 	while(true) {
- 		auto value = aux + 1;
- 		if(!(*aux))
-@@ -191,10 +183,10 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
++	
+ 	// Find the auxiliary vector by skipping args and environment.
+ 	auto aux = entryStack;
+ 	aux += *aux + 1; // First, we skip argc and all args.
+@@ -191,10 +191,10 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
  
  		// TODO: Whitelist auxiliary vector entries here?
  		switch(*aux) {

@@ -1,11 +1,12 @@
-From 175a4ccda47e336ca88e4eeed3ab8ad901520e42 Mon Sep 17 00:00:00 2001
+From 84748320945bf8963ede0b4bcf6d8c92ef9b7bab Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Thu, 24 Feb 2022 01:18:31 +0100
+Date: Tue, 1 Mar 2022 09:56:40 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
+ abis/ironclad/auxv.h                          | 11 ++++
  meson.build                                   |  6 +-
- options/rtdl/generic/main.cpp                 |  6 +-
+ options/rtdl/generic/main.cpp                 |  2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |  7 +++
  sysdeps/ironclad/generic/entry.cpp            | 34 +++++++++++
  sysdeps/ironclad/generic/generic.cpp          | 59 +++++++++++++++++++
@@ -35,7 +36,8 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |  1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |  1 +
  sysdeps/ironclad/meson.build                  | 52 ++++++++++++++++
- 31 files changed, 185 insertions(+), 4 deletions(-)
+ 32 files changed, 194 insertions(+), 2 deletions(-)
+ create mode 100644 abis/ironclad/auxv.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
@@ -66,6 +68,23 @@ Subject: [PATCH] Ironclad specific changes
  create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
  create mode 100644 sysdeps/ironclad/meson.build
 
+diff --git a/abis/ironclad/auxv.h b/abis/ironclad/auxv.h
+new file mode 100644
+index 00000000..4dc3b4e7
+--- /dev/null
++++ b/abis/ironclad/auxv.h
+@@ -0,0 +1,11 @@
++#ifndef _ABIBITS_AUXV_H
++#define _ABIBITS_AUXV_H
++
++#define AT_PHDR 3
++#define AT_PHENT 4
++#define AT_PHNUM 5
++#define AT_ENTRY 9
++#define AT_RANDOM 25
++#define AT_EXECFN 31
++
++#endif
 diff --git a/meson.build b/meson.build
 index 4027c99a..cf88ddb4 100644
 --- a/meson.build
@@ -91,7 +110,7 @@ index 4027c99a..cf88ddb4 100644
  	#disable_linux_option = true
  	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
-index bed8e11d..8af76261 100644
+index bed8e11d..c3b6a2a8 100644
 --- a/options/rtdl/generic/main.cpp
 +++ b/options/rtdl/generic/main.cpp
 @@ -173,7 +173,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
@@ -103,19 +122,6 @@ index bed8e11d..8af76261 100644
  	// Find the auxiliary vector by skipping args and environment.
  	auto aux = entryStack;
  	aux += *aux + 1; // First, we skip argc and all args.
-@@ -191,10 +191,10 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
- 
- 		// TODO: Whitelist auxiliary vector entries here?
- 		switch(*aux) {
--			case AT_PHDR: phdr_pointer = reinterpret_cast<void *>(*value); break;
-+			case 3: phdr_pointer = reinterpret_cast<void *>(*value); break;
- 			case AT_PHENT: phdr_entry_size = *value; break;
- 			case AT_PHNUM: phdr_count = *value; break;
--			case AT_ENTRY: entry_pointer = reinterpret_cast<void *>(*value); break;
-+			case 9: entry_pointer = reinterpret_cast<void *>(*value); break;
- 			case AT_EXECFN: execfn = reinterpret_cast<const char *>(*value); break;
- 			case AT_RANDOM: stack_entropy = reinterpret_cast<void*>(*value); break;
- 		}
 diff --git a/sysdeps/ironclad/crt-x86_64/crt0.S b/sysdeps/ironclad/crt-x86_64/crt0.S
 new file mode 100644
 index 00000000..0a0a4a0c
@@ -244,11 +250,11 @@ index 00000000..c9458601
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/auxv.h b/sysdeps/ironclad/include/abi-bits/auxv.h
 new file mode 120000
-index 00000000..b7bb1093
+index 00000000..f9be8994
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/auxv.h
 @@ -0,0 +1 @@
-+../../../../abis/qword/auxv.h
++../../../../abis/ironclad/auxv.h
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/blkcnt_t.h b/sysdeps/ironclad/include/abi-bits/blkcnt_t.h
 new file mode 120000

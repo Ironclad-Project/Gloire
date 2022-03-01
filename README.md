@@ -1,5 +1,5 @@
 <p align="center">
-    <img height="300" alt="Logo of the distro" src="logo.png"/>
+    <img height="300" alt="Logo of the distro" src="artwork/logo.png"/>
 </p>
 
 # Gloire

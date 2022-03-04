@@ -1,43 +1,45 @@
-From 37ad24b9cd70ac4ad98ccf741a59a908bf34205e Mon Sep 17 00:00:00 2001
+From 804057b2e61ea5d9a5d7c64f1c25dbac3d480330 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Tue, 1 Mar 2022 10:04:24 +0100
+Date: Fri, 4 Mar 2022 01:52:33 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
- abis/ironclad/auxv.h                          | 11 ++++
- meson.build                                   |  6 +-
- options/rtdl/generic/main.cpp                 |  2 +-
- sysdeps/ironclad/crt-x86_64/crt0.S            |  7 +++
- sysdeps/ironclad/generic/entry.cpp            | 34 +++++++++++
- sysdeps/ironclad/generic/generic.cpp          | 59 +++++++++++++++++++
- sysdeps/ironclad/include/abi-bits/abi.h       |  1 +
- sysdeps/ironclad/include/abi-bits/auxv.h      |  1 +
- sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |  1 +
- sysdeps/ironclad/include/abi-bits/blksize_t.h |  1 +
- sysdeps/ironclad/include/abi-bits/dev_t.h     |  1 +
- sysdeps/ironclad/include/abi-bits/errno.h     |  1 +
- sysdeps/ironclad/include/abi-bits/fcntl.h     |  1 +
- sysdeps/ironclad/include/abi-bits/gid_t.h     |  1 +
- sysdeps/ironclad/include/abi-bits/in.h        |  1 +
- sysdeps/ironclad/include/abi-bits/ino_t.h     |  1 +
- sysdeps/ironclad/include/abi-bits/limits.h    |  1 +
- sysdeps/ironclad/include/abi-bits/mode_t.h    |  1 +
- sysdeps/ironclad/include/abi-bits/nlink_t.h   |  1 +
- sysdeps/ironclad/include/abi-bits/pid_t.h     |  1 +
- sysdeps/ironclad/include/abi-bits/reboot.h    |  1 +
- sysdeps/ironclad/include/abi-bits/resource.h  |  1 +
- .../ironclad/include/abi-bits/seek-whence.h   |  1 +
- sysdeps/ironclad/include/abi-bits/signal.h    |  1 +
- sysdeps/ironclad/include/abi-bits/socket.h    |  1 +
- sysdeps/ironclad/include/abi-bits/stat.h      |  1 +
- sysdeps/ironclad/include/abi-bits/termios.h   |  1 +
- sysdeps/ironclad/include/abi-bits/time.h      |  1 +
- sysdeps/ironclad/include/abi-bits/uid_t.h     |  1 +
- sysdeps/ironclad/include/abi-bits/vm-flags.h  |  1 +
- sysdeps/ironclad/include/abi-bits/wait.h      |  1 +
- sysdeps/ironclad/meson.build                  | 52 ++++++++++++++++
- 32 files changed, 194 insertions(+), 2 deletions(-)
+ abis/ironclad/auxv.h                          |  11 ++
+ abis/ironclad/seek-whence.h                   |   8 ++
+ meson.build                                   |   6 +-
+ options/rtdl/generic/main.cpp                 |   2 +-
+ sysdeps/ironclad/crt-x86_64/crt0.S            |   7 ++
+ sysdeps/ironclad/generic/entry.cpp            |  34 ++++++
+ sysdeps/ironclad/generic/generic.cpp          | 112 ++++++++++++++++++
+ sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
+ sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
+ sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
+ sysdeps/ironclad/include/abi-bits/blksize_t.h |   1 +
+ sysdeps/ironclad/include/abi-bits/dev_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/errno.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/fcntl.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/gid_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/in.h        |   1 +
+ sysdeps/ironclad/include/abi-bits/ino_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/limits.h    |   1 +
+ sysdeps/ironclad/include/abi-bits/mode_t.h    |   1 +
+ sysdeps/ironclad/include/abi-bits/nlink_t.h   |   1 +
+ sysdeps/ironclad/include/abi-bits/pid_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/reboot.h    |   1 +
+ sysdeps/ironclad/include/abi-bits/resource.h  |   1 +
+ .../ironclad/include/abi-bits/seek-whence.h   |   1 +
+ sysdeps/ironclad/include/abi-bits/signal.h    |   1 +
+ sysdeps/ironclad/include/abi-bits/socket.h    |   1 +
+ sysdeps/ironclad/include/abi-bits/stat.h      |   1 +
+ sysdeps/ironclad/include/abi-bits/termios.h   |   1 +
+ sysdeps/ironclad/include/abi-bits/time.h      |   1 +
+ sysdeps/ironclad/include/abi-bits/uid_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
+ sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
+ sysdeps/ironclad/meson.build                  |  52 ++++++++
+ 33 files changed, 255 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/auxv.h
+ create mode 100644 abis/ironclad/seek-whence.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
@@ -85,6 +87,20 @@ index 00000000..4dc3b4e7
 +#define AT_EXECFN 31
 +
 +#endif
+diff --git a/abis/ironclad/seek-whence.h b/abis/ironclad/seek-whence.h
+new file mode 100644
+index 00000000..617b6f41
+--- /dev/null
++++ b/abis/ironclad/seek-whence.h
+@@ -0,0 +1,8 @@
++#ifndef _ABIBITS_SEEK_WHENCE_H
++#define _ABIBITS_SEEK_WHENCE_H
++
++#define SEEK_SET 1
++#define SEEK_CUR 2
++#define SEEK_END 4
++
++#endif // _ABIBITS_SEEK_WHENCE_H
 diff --git a/meson.build b/meson.build
 index 4027c99a..cf88ddb4 100644
 --- a/meson.build
@@ -177,10 +193,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..f6f32d99
+index 00000000..9172f411
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,112 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -200,9 +216,28 @@ index 00000000..f6f32d99
 +                  : "rcx", "memory");      \
 +})
 +
++#define SYSCALL2(NUM, ARG0, ARG1) ({               \
++    asm volatile ("int $0x80"                      \
++                  : "=a"(ret), "=d"(errno)         \
++                  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
++                  : "rcx", "memory");              \
++})
++
++#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({                    \
++    asm volatile ("int $0x80"                                 \
++                  : "=a"(ret), "=d"(errno)                    \
++                  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
++                  : "rcx", "memory");                         \
++})
++
 +#define SYSCALL_LOG     0
 +#define SYSCALL_EXIT    1
 +#define SYSCALL_SET_TCB 2
++#define SYSCALL_OPEN    3
++#define SYSCALL_CLOSE   4
++#define SYSCALL_READ    5
++#define SYSCALL_WRITE   6
++#define SYSCALL_SEEK    7
 +
 +namespace mlibc {
 +
@@ -224,15 +259,49 @@ index 00000000..f6f32d99
 +int sys_tcb_set(void *pointer) {
 +    int ret, errno;
 +    SYSCALL1(SYSCALL_SET_TCB, pointer);
++    return errno;
++}
++
++int sys_open(const char *path, int flags, int *fd) {
++    int ret, errno;
++    SYSCALL2(SYSCALL_OPEN, path, flags);
++    *fd = ret;
++    return errno;
++}
++
++int sys_close(int fd) {
++    int ret, errno;
++    SYSCALL1(SYSCALL_CLOSE, fd);
++    return errno;
++}
++
++int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
++    ssize_t ret;
++    int errno;
++    SYSCALL3(SYSCALL_READ, fd, buf, count);
++    *bytes_read = ret;
++    return errno;
++}
++
++int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
++    ssize_t ret;
++    int errno;
++    SYSCALL3(SYSCALL_WRITE, fd, buf, count);
++    *bytes_written = ret;
++    return errno;
++}
++
++int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
++    ssize_t ret;
++    int errno;
++    SYSCALL3(SYSCALL_SEEK, fd, offset, whence);
++    *new_offset = ret;
++    return errno;
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
-+int sys_open(const char *path, int flags, int *fd) STUB_ONLY
-+int sys_close(int fd) STUB_ONLY
-+int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) STUB_ONLY
-+int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) STUB_ONLY
-+int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) STUB_ONLY
++
 +int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) STUB_ONLY
 +int sys_vm_unmap(void *pointer, size_t size) STUB_ONLY
 +int sys_anon_allocate(size_t size, void **pointer) STUB_ONLY
@@ -370,11 +439,11 @@ index 00000000..3e59c750
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/seek-whence.h b/sysdeps/ironclad/include/abi-bits/seek-whence.h
 new file mode 120000
-index 00000000..3bd41efd
+index 00000000..fbd0a8fa
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/seek-whence.h
 @@ -0,0 +1 @@
-+../../../../abis/mlibc/seek-whence.h
++../../../../abis/ironclad/seek-whence.h
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/signal.h b/sysdeps/ironclad/include/abi-bits/signal.h
 new file mode 120000

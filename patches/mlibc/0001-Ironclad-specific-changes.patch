@@ -1,6 +1,6 @@
-From 804057b2e61ea5d9a5d7c64f1c25dbac3d480330 Mon Sep 17 00:00:00 2001
+From 3a0f44476b4c486df9bafc1bf043be06c10931f5 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Fri, 4 Mar 2022 01:52:33 +0100
+Date: Mon, 7 Mar 2022 14:14:02 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -8,9 +8,9 @@ Subject: [PATCH] Ironclad specific changes
  abis/ironclad/seek-whence.h                   |   8 ++
  meson.build                                   |   6 +-
  options/rtdl/generic/main.cpp                 |   2 +-
- sysdeps/ironclad/crt-x86_64/crt0.S            |   7 ++
- sysdeps/ironclad/generic/entry.cpp            |  34 ++++++
- sysdeps/ironclad/generic/generic.cpp          | 112 ++++++++++++++++++
+ sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
+ sysdeps/ironclad/generic/entry.cpp            |  34 +++++
+ sysdeps/ironclad/generic/generic.cpp          | 128 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -36,8 +36,8 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/uid_t.h     |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
- sysdeps/ironclad/meson.build                  |  52 ++++++++
- 33 files changed, 255 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/meson.build                  |  52 +++++++
+ 33 files changed, 271 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
@@ -193,10 +193,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..9172f411
+index 00000000..6a7f24b8
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,128 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -238,6 +238,8 @@ index 00000000..9172f411
 +#define SYSCALL_READ    5
 +#define SYSCALL_WRITE   6
 +#define SYSCALL_SEEK    7
++#define SYSCALL_ALLOC   8
++#define SYSCALL_FREE    9
 +
 +namespace mlibc {
 +
@@ -299,13 +301,27 @@ index 00000000..9172f411
 +    return errno;
 +}
 +
++int sys_anon_allocate(size_t size, void **pointer) {
++    void *ret;
++    int errno;
++    SYSCALL1(SYSCALL_ALLOC, size);
++    *pointer = ret;
++    return errno;
++}
++
++int sys_anon_free(void *pointer, size_t size) {
++    (void)pointer;
++    void *ret;
++    int errno;
++    SYSCALL1(SYSCALL_FREE, size);
++    return 0;
++}
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
 +int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) STUB_ONLY
 +int sys_vm_unmap(void *pointer, size_t size) STUB_ONLY
-+int sys_anon_allocate(size_t size, void **pointer) STUB_ONLY
-+int sys_anon_free(void *pointer, size_t size) STUB_ONLY
 +int sys_clock_get(int clock, time_t *secs, long *nanos) STUB_ONLY
 +
 +} // namespace mlibc

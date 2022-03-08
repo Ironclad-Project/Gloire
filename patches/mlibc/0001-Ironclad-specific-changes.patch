@@ -1,9 +1,10 @@
-From 3a0f44476b4c486df9bafc1bf043be06c10931f5 Mon Sep 17 00:00:00 2001
+From 435edd8e8a5e8b3b342e95b50957883d940a2ea0 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Mon, 7 Mar 2022 14:14:02 +0100
+Date: Mon, 7 Mar 2022 15:19:19 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
+ abis/ironclad/abi.h                           |  29 ++++
  abis/ironclad/auxv.h                          |  11 ++
  abis/ironclad/seek-whence.h                   |   8 ++
  meson.build                                   |   6 +-
@@ -37,7 +38,8 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/meson.build                  |  52 +++++++
- 33 files changed, 271 insertions(+), 2 deletions(-)
+ 34 files changed, 300 insertions(+), 2 deletions(-)
+ create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
@@ -70,6 +72,41 @@ Subject: [PATCH] Ironclad specific changes
  create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
  create mode 100644 sysdeps/ironclad/meson.build
 
+diff --git a/abis/ironclad/abi.h b/abis/ironclad/abi.h
+new file mode 100644
+index 00000000..403f7ca3
+--- /dev/null
++++ b/abis/ironclad/abi.h
+@@ -0,0 +1,29 @@
++#ifndef _ABIBITS_ABI_H
++#define _ABIBITS_ABI_H
++
++// reserve 3 bits for the access mode
++#define __MLIBC_O_ACCMODE 0x0007
++#define __MLIBC_O_RDONLY 1
++#define __MLIBC_O_WRONLY 2
++#define __MLIBC_O_RDWR   3
++#define __MLIBC_O_SEARCH 4
++#define __MLIBC_O_EXEC   7
++
++// This flags are stubs.
++#define __MLIBC_O_APPEND 0x00008
++#define __MLIBC_O_CREAT 0x00010
++#define __MLIBC_O_DIRECTORY 0x00020
++#define __MLIBC_O_EXCL 0x00040
++#define __MLIBC_O_NOCTTY 0x00080
++#define __MLIBC_O_NOFOLLOW 0x00100
++#define __MLIBC_O_TRUNC 0x00200
++#define __MLIBC_O_NONBLOCK 0x00400
++#define __MLIBC_O_DSYNC 0x00800
++#define __MLIBC_O_RSYNC 0x01000
++#define __MLIBC_O_SYNC 0x02000
++#define __MLIBC_O_CLOEXEC 0x04000
++#define __MLIBC_O_PATH 0x08000
++#define __MLIBC_O_LARGEFILE 0x10000
++#define __MLIBC_O_NOATIME 0x20000
++
++#endif // _ABIBITS_ABI_H
 diff --git a/abis/ironclad/auxv.h b/abis/ironclad/auxv.h
 new file mode 100644
 index 00000000..4dc3b4e7
@@ -327,11 +364,11 @@ index 00000000..6a7f24b8
 +} // namespace mlibc
 diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
 new file mode 120000
-index 00000000..c9458601
+index 00000000..b466b4b2
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/abi.h
 @@ -0,0 +1 @@
-+../../../../abis/mlibc/abi.h
++../../../../abis/ironclad/abi.h
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/auxv.h b/sysdeps/ironclad/include/abi-bits/auxv.h
 new file mode 120000

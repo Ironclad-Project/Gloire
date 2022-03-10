@@ -1,17 +1,17 @@
-From 435edd8e8a5e8b3b342e95b50957883d940a2ea0 Mon Sep 17 00:00:00 2001
+From acd8a8bb9a86cb04da534a2a92d791d7ed276398 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Mon, 7 Mar 2022 15:19:19 +0100
+Date: Thu, 10 Mar 2022 19:23:28 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
  abis/ironclad/abi.h                           |  29 ++++
  abis/ironclad/auxv.h                          |  11 ++
- abis/ironclad/seek-whence.h                   |   8 ++
+ abis/ironclad/seek-whence.h                   |   8 +
  meson.build                                   |   6 +-
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
- sysdeps/ironclad/generic/entry.cpp            |  34 +++++
- sysdeps/ironclad/generic/generic.cpp          | 128 ++++++++++++++++++
+ sysdeps/ironclad/generic/entry.cpp            |  34 ++++
+ sysdeps/ironclad/generic/generic.cpp          | 146 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -38,7 +38,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/meson.build                  |  52 +++++++
- 34 files changed, 300 insertions(+), 2 deletions(-)
+ 34 files changed, 318 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -230,10 +230,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..6a7f24b8
+index 00000000..aab00425
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,146 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -250,21 +250,31 @@ index 00000000..6a7f24b8
 +    asm volatile ("int $0x80"              \
 +                  : "=a"(ret), "=d"(errno) \
 +                  : "a"(NUM), "D"(ARG0)    \
-+                  : "rcx", "memory");      \
++                  : "memory");             \
 +})
 +
 +#define SYSCALL2(NUM, ARG0, ARG1) ({               \
 +    asm volatile ("int $0x80"                      \
 +                  : "=a"(ret), "=d"(errno)         \
 +                  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
-+                  : "rcx", "memory");              \
++                  : "memory");                     \
 +})
 +
 +#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({                    \
 +    asm volatile ("int $0x80"                                 \
 +                  : "=a"(ret), "=d"(errno)                    \
 +                  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
-+                  : "rcx", "memory");                         \
++                  : "memory");                                \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({   \
++    register typeof(ARG4) arg_r8 asm("r8") = ARG4;             \
++    register typeof(ARG5) arg_r9 asm("r9") = ARG5;             \
++    asm volatile ("int $0x80"                                  \
++                  : "=a"(ret), "=d"(errno)                     \
++                  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++                    "c"(ARG3), "r"(arg_r8), "r"(arg_r9)        \
++                  : "memory");                                 \
 +})
 +
 +#define SYSCALL_LOG     0
@@ -275,8 +285,8 @@ index 00000000..6a7f24b8
 +#define SYSCALL_READ    5
 +#define SYSCALL_WRITE   6
 +#define SYSCALL_SEEK    7
-+#define SYSCALL_ALLOC   8
-+#define SYSCALL_FREE    9
++#define SYSCALL_MMAP    8
++#define SYSCALL_MUNMAP  9
 +
 +namespace mlibc {
 +
@@ -339,26 +349,34 @@ index 00000000..6a7f24b8
 +}
 +
 +int sys_anon_allocate(size_t size, void **pointer) {
-+    void *ret;
-+    int errno;
-+    SYSCALL1(SYSCALL_ALLOC, size);
-+    *pointer = ret;
-+    return errno;
++    return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
 +}
 +
 +int sys_anon_free(void *pointer, size_t size) {
-+    (void)pointer;
-+    void *ret;
-+    int errno;
-+    SYSCALL1(SYSCALL_FREE, size);
-+    return 0;
++    return sys_vm_unmap(pointer, size);
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
-+int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) STUB_ONLY
-+int sys_vm_unmap(void *pointer, size_t size) STUB_ONLY
++int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) {
++    void *ret;
++    int errno;
++    SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
++    *window = ret;
++    return errno;
++}
++
++int sys_vm_unmap(void *pointer, size_t size) {
++    int ret;
++    int errno;
++    SYSCALL2(SYSCALL_MUNMAP, pointer, size);
++    if (ret != 0) {
++        return errno;
++    } else {
++        return 0;
++    }
++}
 +int sys_clock_get(int clock, time_t *secs, long *nanos) STUB_ONLY
 +
 +} // namespace mlibc

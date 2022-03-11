@@ -1,17 +1,17 @@
-From df45bfa9540613828826efb02940533ff7fc4e92 Mon Sep 17 00:00:00 2001
+From dd183b6fc302fe0779b97c5a45a980b68054b9ab Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Fri, 11 Mar 2022 15:21:12 +0100
+Date: Fri, 11 Mar 2022 21:14:33 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
  abis/ironclad/abi.h                           |  29 +++
- abis/ironclad/auxv.h                          |  11 ++
+ abis/ironclad/auxv.h                          |  11 +
  abis/ironclad/seek-whence.h                   |   8 +
  meson.build                                   |   6 +-
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
- sysdeps/ironclad/generic/entry.cpp            |  34 ++++
- sysdeps/ironclad/generic/generic.cpp          | 186 ++++++++++++++++++
+ sysdeps/ironclad/generic/entry.cpp            |  34 +++
+ sysdeps/ironclad/generic/generic.cpp          | 199 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -38,7 +38,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/meson.build                  |  52 +++++
- 34 files changed, 358 insertions(+), 2 deletions(-)
+ 34 files changed, 371 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -230,10 +230,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..0ae4f754
+index 00000000..5bd2e689
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,199 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -245,6 +245,13 @@ index 00000000..0ae4f754
 +#include <stdlib.h>
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
++
++#define SYSCALL0(NUM) ({                   \
++    asm volatile ("int $0x80"              \
++                  : "=a"(ret), "=d"(errno) \
++                  : "a"(NUM)               \
++                  : "memory");             \
++})
 +
 +#define SYSCALL1(NUM, ARG0) ({             \
 +    asm volatile ("int $0x80"              \
@@ -287,6 +294,8 @@ index 00000000..0ae4f754
 +#define SYSCALL_SEEK    7
 +#define SYSCALL_MMAP    8
 +#define SYSCALL_MUNMAP  9
++#define SYSCALL_GETPID  10
++#define SYSCALL_GETPPID 11
 +
 +namespace mlibc {
 +
@@ -375,6 +384,20 @@ index 00000000..0ae4f754
 +    }
 +}
 +
++pid_t sys_getpid() {
++    pid_t ret;
++    int errno;
++    SYSCALL0(SYSCALL_GETPID);
++    return ret;
++}
++
++pid_t sys_getppid() {
++    pid_t ret;
++    int errno;
++    SYSCALL0(SYSCALL_GETPPID);
++    return ret;
++}
++
 +uid_t sys_getuid() {
 +    mlibc::infoLogger() << "getuid() is a stub" << frg::endlog;
 +    return 0;
@@ -398,16 +421,6 @@ index 00000000..0ae4f754
 +pid_t sys_getpgid(pid_t pid, pid_t *pgid) {
 +    mlibc::infoLogger() << "getpgid() is a stub" << frg::endlog;
 +    *pgid = 0;
-+    return 0;
-+}
-+
-+pid_t sys_getpid() {
-+    mlibc::infoLogger() << "getpid() is a stub" << frg::endlog;
-+    return 0;
-+}
-+
-+pid_t sys_getppid() {
-+    mlibc::infoLogger() << "getppid() is a stub" << frg::endlog;
 +    return 0;
 +}
 +

@@ -1,6 +1,6 @@
-From dd183b6fc302fe0779b97c5a45a980b68054b9ab Mon Sep 17 00:00:00 2001
+From fcd54e69ec8889a143dc0609452478571e587a4d Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Fri, 11 Mar 2022 21:14:33 +0100
+Date: Tue, 15 Mar 2022 21:26:15 +0100
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 +++
- sysdeps/ironclad/generic/generic.cpp          | 199 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 213 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -37,8 +37,9 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/uid_t.h     |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
- sysdeps/ironclad/meson.build                  |  52 +++++
- 34 files changed, 371 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/include/ironclad.h           |  14 ++
+ sysdeps/ironclad/meson.build                  |  56 +++++
+ 35 files changed, 403 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -70,6 +71,7 @@ Subject: [PATCH] Ironclad specific changes
  create mode 120000 sysdeps/ironclad/include/abi-bits/uid_t.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/vm-flags.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
+ create mode 100644 sysdeps/ironclad/include/ironclad.h
  create mode 100644 sysdeps/ironclad/meson.build
 
 diff --git a/abis/ironclad/abi.h b/abis/ironclad/abi.h
@@ -230,10 +232,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..5bd2e689
+index 00000000..85481286
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,213 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -243,6 +245,7 @@ index 00000000..5bd2e689
 +#include <limits.h>
 +#include <asm/ioctls.h>
 +#include <stdlib.h>
++#include <ironclad.h>
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
 +
@@ -284,18 +287,19 @@ index 00000000..5bd2e689
 +                  : "memory");                                 \
 +})
 +
-+#define SYSCALL_LOG     0
-+#define SYSCALL_EXIT    1
-+#define SYSCALL_SET_TCB 2
-+#define SYSCALL_OPEN    3
-+#define SYSCALL_CLOSE   4
-+#define SYSCALL_READ    5
-+#define SYSCALL_WRITE   6
-+#define SYSCALL_SEEK    7
-+#define SYSCALL_MMAP    8
-+#define SYSCALL_MUNMAP  9
-+#define SYSCALL_GETPID  10
-+#define SYSCALL_GETPPID 11
++#define SYSCALL_LOG                0
++#define SYSCALL_EXIT               1
++#define SYSCALL_SET_TCB            2
++#define SYSCALL_OPEN               3
++#define SYSCALL_CLOSE              4
++#define SYSCALL_READ               5
++#define SYSCALL_WRITE              6
++#define SYSCALL_SEEK               7
++#define SYSCALL_MMAP               8
++#define SYSCALL_MUNMAP             9
++#define SYSCALL_GETPID            10
++#define SYSCALL_GETPPID           11
++#define SYSCALL_THREAD_PREFERENCE 12
 +
 +namespace mlibc {
 +
@@ -433,6 +437,18 @@ index 00000000..5bd2e689
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
 +} // namespace mlibc
++
++// ironclad.h
++#ifndef MLIBC_BUILDING_RTDL
++
++int thread_preference(int desired_preference) {
++    int ret, errn;
++    SYSCALL1(SYSCALL_THREAD_PREFERENCE, desired_preference);
++    errno = errn;
++    return ret;
++}
++
++#endif
 diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
 new file mode 120000
 index 00000000..b466b4b2
@@ -633,12 +649,32 @@ index 00000000..6d911c7f
 @@ -0,0 +1 @@
 +../../../../abis/mlibc/wait.h
 \ No newline at end of file
+diff --git a/sysdeps/ironclad/include/ironclad.h b/sysdeps/ironclad/include/ironclad.h
+new file mode 100644
+index 00000000..16122fa4
+--- /dev/null
++++ b/sysdeps/ironclad/include/ironclad.h
+@@ -0,0 +1,14 @@
++#ifndef _IRONCLAD_H
++#define _IRONCLAD_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++int thread_preference(int desired_preference);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _IRONCLAD_H
 diff --git a/sysdeps/ironclad/meson.build b/sysdeps/ironclad/meson.build
 new file mode 100644
-index 00000000..b9e4372d
+index 00000000..0a0c46ea
 --- /dev/null
 +++ b/sysdeps/ironclad/meson.build
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,56 @@
 +
 +rtdl_sources += files(
 +	'generic/generic.cpp'
@@ -677,6 +713,10 @@ index 00000000..b9e4372d
 +		'include/abi-bits/wait.h',
 +		'include/abi-bits/limits.h',
 +		subdir: 'abi-bits'
++	)
++	install_headers(
++		'include/ironclad.h',
++		subdir: 'sys'
 +	)
 +endif
 +

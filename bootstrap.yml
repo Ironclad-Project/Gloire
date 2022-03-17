@@ -335,9 +335,8 @@ packages:
   - name: ironclad
     from_source: ironclad
     configure:
-      - args: ['cp', '-r', '@THIS_SOURCE_DIR@/.', '@THIS_BUILD_DIR@']
       - args:
-        - './configure'
+        - '@THIS_SOURCE_DIR@/configure'
         - '--prefix=/usr'
     build:
       - args: ['make', '-j@PARALLELISM@']

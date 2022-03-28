@@ -147,7 +147,7 @@ tools:
       name: limine
       subdir: 'ports'
       git: 'https://github.com/limine-bootloader/limine.git'
-      branch: 'v2.0-branch-binary'
+      branch: 'latest-binary'
     install:
       - args: ['make', '-C', '@THIS_SOURCE_DIR@', 'PREFIX=@PREFIX@', 'install-strip']
 

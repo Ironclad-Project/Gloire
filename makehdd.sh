@@ -38,4 +38,4 @@ sudo losetup -d `cat loopback_dev`
 sudo rm -rf loopback_dev loopback_dir
 
 # Install limine.
-../ports/limine/limine-install-linux-x86_64 gloire.hdd
+../ports/limine/limine-s2deploy gloire.hdd

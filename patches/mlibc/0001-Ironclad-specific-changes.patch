@@ -1,17 +1,17 @@
-From fcd54e69ec8889a143dc0609452478571e587a4d Mon Sep 17 00:00:00 2001
+From e3a65d25700b97cb11a661a90b64c300267452dd Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Tue, 15 Mar 2022 21:26:15 +0100
+Date: Wed, 30 Mar 2022 01:40:34 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
- abis/ironclad/abi.h                           |  29 +++
+ abis/ironclad/abi.h                           |  29 ++
  abis/ironclad/auxv.h                          |  11 +
  abis/ironclad/seek-whence.h                   |   8 +
  meson.build                                   |   6 +-
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 +++
- sysdeps/ironclad/generic/generic.cpp          | 213 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 259 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -37,9 +37,9 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/uid_t.h     |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
- sysdeps/ironclad/include/ironclad.h           |  14 ++
- sysdeps/ironclad/meson.build                  |  56 +++++
- 35 files changed, 403 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/include/ironclad.h           |  14 +
+ sysdeps/ironclad/meson.build                  |  56 ++++
+ 35 files changed, 449 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -232,10 +232,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..85481286
+index 00000000..24fb93a5
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,259 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -287,25 +287,30 @@ index 00000000..85481286
 +                  : "memory");                                 \
 +})
 +
-+#define SYSCALL_LOG                0
-+#define SYSCALL_EXIT               1
-+#define SYSCALL_SET_TCB            2
-+#define SYSCALL_OPEN               3
-+#define SYSCALL_CLOSE              4
-+#define SYSCALL_READ               5
-+#define SYSCALL_WRITE              6
-+#define SYSCALL_SEEK               7
-+#define SYSCALL_MMAP               8
-+#define SYSCALL_MUNMAP             9
-+#define SYSCALL_GETPID            10
-+#define SYSCALL_GETPPID           11
-+#define SYSCALL_THREAD_PREFERENCE 12
++#define SYSCALL_EXIT               0
++#define SYSCALL_SET_TCB            1
++#define SYSCALL_OPEN               2
++#define SYSCALL_CLOSE              3
++#define SYSCALL_READ               4
++#define SYSCALL_WRITE              5
++#define SYSCALL_SEEK               6
++#define SYSCALL_MMAP               7
++#define SYSCALL_MUNMAP             8
++#define SYSCALL_GETPID             9
++#define SYSCALL_GETPPID           10
++#define SYSCALL_THREAD_PREFERENCE 11
 +
 +namespace mlibc {
 +
 +void sys_libc_log(const char *message) {
-+    int ret, errno;
-+    SYSCALL1(SYSCALL_LOG, message);
++    int fd;
++    if (int e = sys_open("@serial1", O_WRONLY, &fd); !e) {
++        ssize_t unused;
++        char new_line = '\n';
++        sys_write(fd, message, strlen(message), &unused);
++        sys_write(fd, &new_line, 1, &unused);
++        sys_close(fd);
++    }
 +}
 +
 +void sys_libc_panic() {
@@ -400,6 +405,47 @@ index 00000000..85481286
 +    int errno;
 +    SYSCALL0(SYSCALL_GETPPID);
 +    return ret;
++}
++
++int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
++    // TODO: This is a placeholder.
++    statbuf->st_dev = 0;
++    statbuf->st_ino = 0;
++    statbuf->st_nlink = 1;
++    statbuf->st_blksize = 512;
++    statbuf->st_blocks = 1;
++    statbuf->st_size = 512;
++	return 0;
++}
++
++int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
++    mlibc::infoLogger() << "sigaction() is a stub" << frg::endlog;
++    return 0;
++}
++
++int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
++    mlibc::infoLogger() << "ioctl() is a stub!" << frg::endlog;
++    return ENOSYS;
++}
++
++int sys_fcntl(int fd, int request, va_list args, int *result) {
++    mlibc::infoLogger() << "fcntl() is a stub!" << frg::endlog;
++    return 0;
++}
++
++int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
++    mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
++    return ENOSYS;
++}
++
++int sys_ttyname(int fd, char *buf, size_t size) {
++    mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
++    return ENOSYS;
++}
++
++int sys_isatty(int fd) {
++    // TODO: Placeholder.
++    return 0;
 +}
 +
 +uid_t sys_getuid() {

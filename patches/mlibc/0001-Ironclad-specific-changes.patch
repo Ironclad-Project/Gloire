@@ -1,17 +1,17 @@
-From e3a65d25700b97cb11a661a90b64c300267452dd Mon Sep 17 00:00:00 2001
+From 9544debe9b0cdb3b81b47a9ac5e8e2295ada3689 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Wed, 30 Mar 2022 01:40:34 +0200
+Date: Wed, 30 Mar 2022 06:35:13 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
  abis/ironclad/abi.h                           |  29 ++
  abis/ironclad/auxv.h                          |  11 +
  abis/ironclad/seek-whence.h                   |   8 +
- meson.build                                   |   6 +-
+ meson.build                                   |   7 +-
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 +++
- sysdeps/ironclad/generic/generic.cpp          | 259 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 270 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -39,7 +39,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 ++++
- 35 files changed, 449 insertions(+), 2 deletions(-)
+ 35 files changed, 461 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -141,7 +141,7 @@ index 00000000..617b6f41
 +
 +#endif // _ABIBITS_SEEK_WHENCE_H
 diff --git a/meson.build b/meson.build
-index 4027c99a..cf88ddb4 100644
+index 4027c99a..f02b8233 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -48,7 +48,7 @@ if not headers_only
@@ -153,11 +153,12 @@ index 4027c99a..cf88ddb4 100644
  	add_project_arguments('-fno-rtti', '-fno-exceptions', language: 'cpp')
  	add_project_arguments('-Wall', '-Wextra', language: ['c', 'cpp'])
  	add_project_link_arguments('-nostdlib', language: ['c', 'cpp'])
-@@ -110,6 +110,10 @@ elif host_machine.system() == 'qword'
+@@ -110,6 +110,11 @@ elif host_machine.system() == 'qword'
  	rtdl_include_dirs += include_directories('sysdeps/qword/include')
  	libc_include_dirs += include_directories('sysdeps/qword/include')
  	subdir('sysdeps/qword')
 +elif host_machine.system() == 'ironclad'
++	disable_linux_option = true
 +	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
 +	libc_include_dirs += include_directories('sysdeps/ironclad/include')
 +	subdir('sysdeps/ironclad')
@@ -232,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..24fb93a5
+index 00000000..b2e11728
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,259 @@
+@@ -0,0 +1,270 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -250,41 +251,41 @@ index 00000000..24fb93a5
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
 +
 +#define SYSCALL0(NUM) ({                   \
-+    asm volatile ("int $0x80"              \
-+                  : "=a"(ret), "=d"(errno) \
-+                  : "a"(NUM)               \
-+                  : "memory");             \
++	asm volatile ("int $0x80"              \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM)               \
++				  : "memory");             \
 +})
 +
 +#define SYSCALL1(NUM, ARG0) ({             \
-+    asm volatile ("int $0x80"              \
-+                  : "=a"(ret), "=d"(errno) \
-+                  : "a"(NUM), "D"(ARG0)    \
-+                  : "memory");             \
++	asm volatile ("int $0x80"              \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0)    \
++				  : "memory");             \
 +})
 +
 +#define SYSCALL2(NUM, ARG0, ARG1) ({               \
-+    asm volatile ("int $0x80"                      \
-+                  : "=a"(ret), "=d"(errno)         \
-+                  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
-+                  : "memory");                     \
++	asm volatile ("int $0x80"                      \
++				  : "=a"(ret), "=d"(errno)         \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
++				  : "memory");                     \
 +})
 +
 +#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({                    \
-+    asm volatile ("int $0x80"                                 \
-+                  : "=a"(ret), "=d"(errno)                    \
-+                  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
-+                  : "memory");                                \
++	asm volatile ("int $0x80"                                 \
++				  : "=a"(ret), "=d"(errno)                    \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
++				  : "memory");                                \
 +})
 +
 +#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({   \
-+    register typeof(ARG4) arg_r8 asm("r8") = ARG4;             \
-+    register typeof(ARG5) arg_r9 asm("r9") = ARG5;             \
-+    asm volatile ("int $0x80"                                  \
-+                  : "=a"(ret), "=d"(errno)                     \
-+                  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-+                    "c"(ARG3), "r"(arg_r8), "r"(arg_r9)        \
-+                  : "memory");                                 \
++	register typeof(ARG4) arg_r8 asm("r8") = ARG4;             \
++	register typeof(ARG5) arg_r9 asm("r9") = ARG5;             \
++	asm volatile ("int $0x80"                                  \
++				  : "=a"(ret), "=d"(errno)                     \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"c"(ARG3), "r"(arg_r8), "r"(arg_r9)        \
++				  : "memory");                                 \
 +})
 +
 +#define SYSCALL_EXIT               0
@@ -303,180 +304,191 @@ index 00000000..24fb93a5
 +namespace mlibc {
 +
 +void sys_libc_log(const char *message) {
-+    int fd;
-+    if (int e = sys_open("@serial1", O_WRONLY, &fd); !e) {
-+        ssize_t unused;
-+        char new_line = '\n';
-+        sys_write(fd, message, strlen(message), &unused);
-+        sys_write(fd, &new_line, 1, &unused);
-+        sys_close(fd);
-+    }
++	int fd;
++	if (int e = sys_open("@serial1", O_WRONLY, &fd); !e) {
++		ssize_t unused;
++		char new_line = '\n';
++		sys_write(fd, message, strlen(message), &unused);
++		sys_write(fd, &new_line, 1, &unused);
++		sys_close(fd);
++	}
 +}
 +
 +void sys_libc_panic() {
-+    sys_libc_log("mlibc panicked unrecoverably");
-+    sys_exit(1);
++	sys_libc_log("mlibc panicked unrecoverably");
++	sys_exit(1);
 +}
 +
 +void sys_exit(int status) {
-+    int ret, errno;
-+    SYSCALL1(SYSCALL_EXIT, status);
++	int ret, errno;
++	SYSCALL1(SYSCALL_EXIT, status);
 +}
 +
 +int sys_tcb_set(void *pointer) {
-+    int ret, errno;
-+    SYSCALL1(SYSCALL_SET_TCB, pointer);
-+    return errno;
++	int ret, errno;
++	SYSCALL1(SYSCALL_SET_TCB, pointer);
++	return errno;
 +}
 +
 +int sys_open(const char *path, int flags, int *fd) {
-+    int ret, errno;
-+    SYSCALL2(SYSCALL_OPEN, path, flags);
-+    *fd = ret;
-+    return errno;
++	int ret, errno;
++	SYSCALL2(SYSCALL_OPEN, path, flags);
++	*fd = ret;
++	return errno;
 +}
 +
 +int sys_close(int fd) {
-+    int ret, errno;
-+    SYSCALL1(SYSCALL_CLOSE, fd);
-+    return errno;
++	int ret, errno;
++	SYSCALL1(SYSCALL_CLOSE, fd);
++	return errno;
 +}
 +
 +int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
-+    ssize_t ret;
-+    int errno;
-+    SYSCALL3(SYSCALL_READ, fd, buf, count);
-+    *bytes_read = ret;
-+    return errno;
++	ssize_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_READ, fd, buf, count);
++	*bytes_read = ret;
++	return errno;
 +}
 +
 +int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
-+    ssize_t ret;
-+    int errno;
-+    SYSCALL3(SYSCALL_WRITE, fd, buf, count);
-+    *bytes_written = ret;
-+    return errno;
++	ssize_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_WRITE, fd, buf, count);
++	*bytes_written = ret;
++	return errno;
 +}
 +
 +int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
-+    ssize_t ret;
-+    int errno;
-+    SYSCALL3(SYSCALL_SEEK, fd, offset, whence);
-+    *new_offset = ret;
-+    return errno;
++	ssize_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_SEEK, fd, offset, whence);
++	*new_offset = ret;
++	return errno;
 +}
 +
 +int sys_anon_allocate(size_t size, void **pointer) {
-+    return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
++	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
 +}
 +
 +int sys_anon_free(void *pointer, size_t size) {
-+    return sys_vm_unmap(pointer, size);
++	return sys_vm_unmap(pointer, size);
 +}
 +
 +int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window) {
-+    void *ret;
-+    int errno;
-+    SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
-+    *window = ret;
-+    return errno;
++	void *ret;
++	int errno;
++	SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
++	*window = ret;
++	return errno;
 +}
 +
 +int sys_vm_unmap(void *pointer, size_t size) {
-+    int ret;
-+    int errno;
-+    SYSCALL2(SYSCALL_MUNMAP, pointer, size);
-+    if (ret != 0) {
-+        return errno;
-+    } else {
-+        return 0;
-+    }
++	int ret;
++	int errno;
++	SYSCALL2(SYSCALL_MUNMAP, pointer, size);
++	if (ret != 0) {
++		return errno;
++	} else {
++		return 0;
++	}
 +}
 +
 +pid_t sys_getpid() {
-+    pid_t ret;
-+    int errno;
-+    SYSCALL0(SYSCALL_GETPID);
-+    return ret;
++	pid_t ret;
++	int errno;
++	SYSCALL0(SYSCALL_GETPID);
++	return ret;
 +}
 +
 +pid_t sys_getppid() {
-+    pid_t ret;
-+    int errno;
-+    SYSCALL0(SYSCALL_GETPPID);
-+    return ret;
++	pid_t ret;
++	int errno;
++	SYSCALL0(SYSCALL_GETPPID);
++	return ret;
 +}
 +
 +int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
-+    // TODO: This is a placeholder.
-+    statbuf->st_dev = 0;
-+    statbuf->st_ino = 0;
-+    statbuf->st_nlink = 1;
-+    statbuf->st_blksize = 512;
-+    statbuf->st_blocks = 1;
-+    statbuf->st_size = 512;
++	// TODO: This is a placeholder.
++	statbuf->st_dev = 0;
++	statbuf->st_ino = 0;
++	statbuf->st_nlink = 1;
++	statbuf->st_blksize = 512;
++	statbuf->st_blocks = 1;
++	statbuf->st_size = 512;
 +	return 0;
 +}
 +
 +int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
-+    mlibc::infoLogger() << "sigaction() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "sigaction() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
-+    mlibc::infoLogger() << "ioctl() is a stub!" << frg::endlog;
-+    return ENOSYS;
++	mlibc::infoLogger() << "ioctl() is a stub!" << frg::endlog;
++	return ENOSYS;
 +}
 +
 +int sys_fcntl(int fd, int request, va_list args, int *result) {
-+    mlibc::infoLogger() << "fcntl() is a stub!" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "fcntl() is a stub!" << frg::endlog;
++	return 0;
 +}
 +
 +int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
-+    mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
-+    return ENOSYS;
++	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
++	return ENOSYS;
 +}
 +
 +int sys_ttyname(int fd, char *buf, size_t size) {
-+    mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+    return ENOSYS;
++	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
++	return ENOSYS;
++}
++
++int sys_setpgid(pid_t pid, pid_t pgid) {
++	mlibc::infoLogger() << "mlibc: " << __func__ << " is a stub!" << frg::endlog;
++	return 0;
++}
++
++int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except_set,
++	const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
++	mlibc::infoLogger() << "mlibc: " << __func__ << " is a stub!\n" << frg::endlog;
++	return 0;
 +}
 +
 +int sys_isatty(int fd) {
-+    // TODO: Placeholder.
-+    return 0;
++	// TODO: Placeholder.
++	return 0;
 +}
 +
 +uid_t sys_getuid() {
-+    mlibc::infoLogger() << "getuid() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "getuid() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +uid_t sys_geteuid() {
-+    mlibc::infoLogger() << "geteuid() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "geteuid() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +gid_t sys_getgid() {
-+    mlibc::infoLogger() << "getgid() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "getgid() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +gid_t sys_getegid() {
-+    mlibc::infoLogger() << "getegid() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "getegid() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +pid_t sys_getpgid(pid_t pid, pid_t *pgid) {
-+    mlibc::infoLogger() << "getpgid() is a stub" << frg::endlog;
-+    *pgid = 0;
-+    return 0;
++	mlibc::infoLogger() << "getpgid() is a stub" << frg::endlog;
++	*pgid = 0;
++	return 0;
 +}
 +
 +int sys_clock_get(int clock, time_t *secs, long *nanos) {
-+    mlibc::infoLogger() << "clock_get() is a stub" << frg::endlog;
-+    return 0;
++	mlibc::infoLogger() << "clock_get() is a stub" << frg::endlog;
++	return 0;
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
@@ -488,10 +500,10 @@ index 00000000..24fb93a5
 +#ifndef MLIBC_BUILDING_RTDL
 +
 +int thread_preference(int desired_preference) {
-+    int ret, errn;
-+    SYSCALL1(SYSCALL_THREAD_PREFERENCE, desired_preference);
-+    errno = errn;
-+    return ret;
++	int ret, errn;
++	SYSCALL1(SYSCALL_THREAD_PREFERENCE, desired_preference);
++	errno = errn;
++	return ret;
 +}
 +
 +#endif

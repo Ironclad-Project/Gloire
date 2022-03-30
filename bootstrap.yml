@@ -340,7 +340,7 @@ packages:
         - '--prefix=/usr'
     build:
       - args: ['make', '-j@PARALLELISM@']
-      - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install-strip']
+      - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install']
 
   - name: ncurses
     from_source: ncurses

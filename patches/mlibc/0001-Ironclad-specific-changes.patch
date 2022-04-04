@@ -1,6 +1,6 @@
-From 9544debe9b0cdb3b81b47a9ac5e8e2295ada3689 Mon Sep 17 00:00:00 2001
+From 5f435c87edfa1d26b6595d47ed4e99d7f0d6c626 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Wed, 30 Mar 2022 06:35:13 +0200
+Date: Mon, 4 Apr 2022 05:30:17 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 +++
- sysdeps/ironclad/generic/generic.cpp          | 270 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 280 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -39,7 +39,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 ++++
- 35 files changed, 461 insertions(+), 2 deletions(-)
+ 35 files changed, 471 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -233,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..b2e11728
+index 00000000..55d49806
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,270 @@
+@@ -0,0 +1,280 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -247,6 +247,7 @@ index 00000000..b2e11728
 +#include <asm/ioctls.h>
 +#include <stdlib.h>
 +#include <ironclad.h>
++#include <string.h>
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
 +
@@ -493,6 +494,15 @@ index 00000000..b2e11728
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
++
++#ifndef MLIBC_BUILDING_RTDL
++
++int sys_gethostname(char *buffer, size_t bufsize) {
++    strncpy(buffer, "default_hostname", bufsize);
++    return 0;
++}
++
++#endif
 +
 +} // namespace mlibc
 +

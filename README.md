@@ -31,7 +31,7 @@ xbstrap install --all  # Tell xbstrap to install all the packages.
 A bootable ISO image can be generated running `xbstrap run make-iso` script,
 and it can be booted using a machine or QEMU with a command like
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu-host -m 2G -smp 4 -hda gloire.hdd
+qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.hdd
 ```
 
 A list of the tools needed for compilation of everything are:

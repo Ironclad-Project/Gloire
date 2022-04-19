@@ -1,6 +1,6 @@
-From ccc1abdf716b60f399c50b377579a5321c7013bc Mon Sep 17 00:00:00 2001
+From 30b832e7d24bfcfe2d8136dcf47f00636603b804 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Mon, 4 Apr 2022 09:01:09 +0200
+Date: Tue, 19 Apr 2022 21:01:35 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -10,8 +10,8 @@ Subject: [PATCH] Ironclad specific changes
  meson.build                                   |   7 +-
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
- sysdeps/ironclad/generic/entry.cpp            |  34 +++
- sysdeps/ironclad/generic/generic.cpp          | 288 ++++++++++++++++++
+ sysdeps/ironclad/generic/entry.cpp            |  34 ++
+ sysdeps/ironclad/generic/generic.cpp          | 301 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -39,7 +39,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 ++++
- 35 files changed, 479 insertions(+), 2 deletions(-)
+ 35 files changed, 492 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -233,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..aa43c5e2
+index 00000000..427118ce
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,301 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -301,6 +301,7 @@ index 00000000..aa43c5e2
 +#define SYSCALL_GETPID             9
 +#define SYSCALL_GETPPID           10
 +#define SYSCALL_THREAD_PREFERENCE 11
++#define SYSCALL_EXEC              12
 +
 +namespace mlibc {
 +
@@ -497,6 +498,18 @@ index 00000000..aa43c5e2
 +
 +int sys_clock_get(int clock, time_t *secs, long *nanos) {
 +	mlibc::infoLogger() << "clock_get() is a stub" << frg::endlog;
++	return 0;
++}
++
++int sys_execve(const char *path, char *const argv[], char *const envp[]) {
++	int ret, errno;
++   // FIXME: Bad, no good, awful, despicable hack, that is to be removed when
++   // the VFS doesnt suck.
++	SYSCALL3(SYSCALL_EXEC, path + 1, argv, envp);
++
++	if (ret == -1)
++		return errno;
++
 +	return 0;
 +}
 +
@@ -808,5 +821,5 @@ index 00000000..0a0c46ea
 +endif
 +
 -- 
-2.35.1
+2.36.0
 

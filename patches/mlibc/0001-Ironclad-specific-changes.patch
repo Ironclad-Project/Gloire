@@ -1,6 +1,6 @@
-From 30b832e7d24bfcfe2d8136dcf47f00636603b804 Mon Sep 17 00:00:00 2001
+From 69b864c7db5bc258ce3c6d6c6d31e68481e22c1f Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Tue, 19 Apr 2022 21:01:35 +0200
+Date: Fri, 22 Apr 2022 02:43:51 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 301 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 318 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -38,8 +38,8 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
- sysdeps/ironclad/meson.build                  |  56 ++++
- 35 files changed, 492 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/meson.build                  |  56 +++
+ 35 files changed, 509 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -233,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..427118ce
+index 00000000..a8866cfc
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,318 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -248,6 +248,7 @@ index 00000000..427118ce
 +#include <stdlib.h>
 +#include <ironclad.h>
 +#include <string.h>
++#include <stdio.h>
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
 +
@@ -302,6 +303,7 @@ index 00000000..427118ce
 +#define SYSCALL_GETPPID           10
 +#define SYSCALL_THREAD_PREFERENCE 11
 +#define SYSCALL_EXEC              12
++#define SYSCALL_FORK              13
 +
 +namespace mlibc {
 +
@@ -507,10 +509,25 @@ index 00000000..427118ce
 +   // the VFS doesnt suck.
 +	SYSCALL3(SYSCALL_EXEC, path + 1, argv, envp);
 +
-+	if (ret == -1)
++	if (ret == -1) {
 +		return errno;
++    }
 +
 +	return 0;
++}
++
++int sys_fork(pid_t *child) {
++    pid_t ret;
++    int errno;
++
++    SYSCALL0(SYSCALL_FORK);
++
++    if (ret == -1) {
++        return errno;
++    }
++
++    *child = ret;
++    return 0;
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY

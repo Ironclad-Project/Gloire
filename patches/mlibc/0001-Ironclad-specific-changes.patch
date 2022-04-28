@@ -1,6 +1,6 @@
-From 69b864c7db5bc258ce3c6d6c6d31e68481e22c1f Mon Sep 17 00:00:00 2001
+From fd4053d8f6ad7cfa5cb8c8cd6a53fe3d3c5b41c6 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Fri, 22 Apr 2022 02:43:51 +0200
+Date: Thu, 28 Apr 2022 02:29:44 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -141,7 +141,7 @@ index 00000000..617b6f41
 +
 +#endif // _ABIBITS_SEEK_WHENCE_H
 diff --git a/meson.build b/meson.build
-index 4027c99a..f02b8233 100644
+index 4027c99a..3f8f26e9 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -48,7 +48,7 @@ if not headers_only
@@ -158,7 +158,7 @@ index 4027c99a..f02b8233 100644
  	libc_include_dirs += include_directories('sysdeps/qword/include')
  	subdir('sysdeps/qword')
 +elif host_machine.system() == 'ironclad'
-+	disable_linux_option = true
++	# disable_linux_option = true
 +	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
 +	libc_include_dirs += include_directories('sysdeps/ironclad/include')
 +	subdir('sysdeps/ironclad')

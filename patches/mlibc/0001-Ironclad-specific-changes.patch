@@ -1,6 +1,6 @@
-From fd4053d8f6ad7cfa5cb8c8cd6a53fe3d3c5b41c6 Mon Sep 17 00:00:00 2001
+From fe12977c9ccb41cd8fce4a3d36fd8ec97277b4d5 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Thu, 28 Apr 2022 02:29:44 +0200
+Date: Sat, 30 Apr 2022 01:35:00 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 318 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 326 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -39,7 +39,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 +++
- 35 files changed, 509 insertions(+), 2 deletions(-)
+ 35 files changed, 517 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -233,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..a8866cfc
+index 00000000..40a44bf5
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,318 @@
+@@ -0,0 +1,326 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -304,30 +304,23 @@ index 00000000..a8866cfc
 +#define SYSCALL_THREAD_PREFERENCE 11
 +#define SYSCALL_EXEC              12
 +#define SYSCALL_FORK              13
++#define SYSCALL_WAIT              14
 +
 +namespace mlibc {
 +
-+bool is_serial_debug = true;
-+int serial_fd = -1;
-+
 +void sys_libc_log(const char *message) {
-+	if (is_serial_debug) {
-+		if (serial_fd == -1) {
-+			if (int e = sys_open("@serial1", O_WRONLY, &serial_fd); e) {
-+				is_serial_debug = false;
-+				return;
-+			}
-+		}
-+
-+		ssize_t unused;
-+		char new_line = '\n';
-+		sys_write(serial_fd, message, strlen(message), &unused);
-+		sys_write(serial_fd, &new_line, 1, &unused);
-+	}
++   /*
++	ssize_t unused;
++	char new_line = '\n';
++	sys_write(1, message, strlen(message), &unused);
++	sys_write(1, &new_line, 1, &unused);
++   */
 +}
 +
 +void sys_libc_panic() {
-+	sys_libc_log("mlibc panicked unrecoverably");
++	ssize_t unused;
++	char *message = "mlibc panicked unrecoverably\n";
++	sys_write(1, message, strlen(message), &unused);
 +	sys_exit(1);
 +}
 +
@@ -505,6 +498,7 @@ index 00000000..a8866cfc
 +
 +int sys_execve(const char *path, char *const argv[], char *const envp[]) {
 +	int ret, errno;
++
 +   // FIXME: Bad, no good, awful, despicable hack, that is to be removed when
 +   // the VFS doesnt suck.
 +	SYSCALL3(SYSCALL_EXEC, path + 1, argv, envp);
@@ -528,6 +522,20 @@ index 00000000..a8866cfc
 +
 +    *child = ret;
 +    return 0;
++}
++
++int sys_waitpid(pid_t pid, int *status, int flags, pid_t *ret_pid) {
++	pid_t ret;
++	int errno;
++
++	SYSCALL3(SYSCALL_WAIT, pid, status, flags);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	*ret_pid = ret;
++	return 0;
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY

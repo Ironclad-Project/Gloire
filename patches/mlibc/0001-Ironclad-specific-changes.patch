@@ -1,6 +1,6 @@
-From fe12977c9ccb41cd8fce4a3d36fd8ec97277b4d5 Mon Sep 17 00:00:00 2001
+From 09ecb677e8d736ce97155409de92f5e642a6134a Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Sat, 30 Apr 2022 01:35:00 +0200
+Date: Wed, 4 May 2022 20:22:56 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 326 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 340 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -39,7 +39,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 +++
- 35 files changed, 517 insertions(+), 2 deletions(-)
+ 35 files changed, 531 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -233,10 +233,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..40a44bf5
+index 00000000..354a000b
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,326 @@
+@@ -0,0 +1,340 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -305,6 +305,8 @@ index 00000000..40a44bf5
 +#define SYSCALL_EXEC              12
 +#define SYSCALL_FORK              13
 +#define SYSCALL_WAIT              14
++#define SYSCALL_UNAME             15
++#define SYSCALL_SETHOSTNAME       16
 +
 +namespace mlibc {
 +
@@ -535,6 +537,18 @@ index 00000000..40a44bf5
 +	}
 +
 +	*ret_pid = ret;
++	return 0;
++}
++
++int sys_sethostname(const char *buff, size_t size) {
++	int ret, errno;
++
++	SYSCALL2(SYSCALL_SETHOSTNAME, buff, size);
++
++	if (ret == -1) {
++		return errno;
++	}
++
 +	return 0;
 +}
 +

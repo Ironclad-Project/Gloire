@@ -5,6 +5,7 @@ HISTFILESIZE=-1
 
 export PATH=/usr/bin
 export USER=root
+export SHELL=$BASH
 
 alias ls="ls --color=auto"
 alias clear='printf "\e[2J\e[H"'

@@ -1,17 +1,17 @@
 #!/bin/sh
 
 lm='\e[1;35m'
-dm='\e[0;35m'
+dm='\e[1;37m'
 rt='\e[0m'
 
-printf "$dm                  &#BGPPPPPG#&           $rt\n"
-printf "$dm               B5?77!!?YJJ7!7YBB&        $rt\n"
-printf "$dm            &G5YJ77!7JYYYYYBPJ&PY#       $rt$lm $USER$rt@default_hostname\n"
-printf "$dm          #PYYYYYY?!?YYYYY7?7JP5JJ       $rt$lm OS$rt:     Gloire\n"
-printf "$dm         B?YYYYYY7!!7JYYYYJ!!?JJJ5       $rt$lm Kernel$rt: Ironclad$dm 0.0.1$rt\n"
-printf "$dm  &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG& $rt$lm Shell$rt:  bash\n"
-printf "$dm G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG& $rt\n"
-printf "$dm J777JB?!7JJ???!!!7?JYYYYYPJ!7JB         $rt\n"
-printf "$dm GYYG #JJJJJ??7!!!JYYY5PGB&GB&           $rt\n"
-printf "$dm    #Y!?GB5YYJY5PG###&                   $rt\n"
-printf "$dm    GJJP                                 $rt\n"
+printf "                  &#BGPPPPPG#&           \n"
+printf "               B5?77!!?YJJ7!7YBB&        \n"
+printf "            &G5YJ77!7JYYYYYBPJ&PY#       $lm $USER$rt@${lm}default_hostname$rt\n"
+printf "          #PYYYYYY?!?YYYYY7?7JP5JJ       $lm OS$rt:     Gloire\n"
+printf "         B?YYYYYY7!!7JYYYYJ!!?JJJ5       $lm Kernel$rt: Ironclad ${dm}0.0.1 $HOSTTYPE$rt\n"
+printf "  &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG& $lm Shell$rt:  $BASH $dm$BASH_VERSION$rt\n"
+printf " G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG& \n"
+printf " J777JB?!7JJ???!!!7?JYYYYYPJ!7JB         \n"
+printf " GYYG #JJJJJ??7!!!JYYY5PGB&GB&           \n"
+printf "    #Y!?GB5YYJY5PG###&                   \n"
+printf "    GJJP                                 \n"

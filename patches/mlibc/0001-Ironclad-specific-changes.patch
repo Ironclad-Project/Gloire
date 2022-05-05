@@ -1,6 +1,6 @@
-From 09ecb677e8d736ce97155409de92f5e642a6134a Mon Sep 17 00:00:00 2001
+From 31ce819d904c64925b896f8daa79eaa795e3f31b Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Wed, 4 May 2022 20:22:56 +0200
+Date: Thu, 5 May 2022 16:11:22 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -11,7 +11,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 340 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 356 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -35,11 +35,12 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/termios.h   |   1 +
  sysdeps/ironclad/include/abi-bits/time.h      |   1 +
  sysdeps/ironclad/include/abi-bits/uid_t.h     |   1 +
+ sysdeps/ironclad/include/abi-bits/utsname.h   |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 +++
- 35 files changed, 531 insertions(+), 2 deletions(-)
+ 36 files changed, 548 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -69,6 +70,7 @@ Subject: [PATCH] Ironclad specific changes
  create mode 120000 sysdeps/ironclad/include/abi-bits/termios.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/time.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/uid_t.h
+ create mode 120000 sysdeps/ironclad/include/abi-bits/utsname.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/vm-flags.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
  create mode 100644 sysdeps/ironclad/include/ironclad.h
@@ -141,10 +143,10 @@ index 00000000..617b6f41
 +
 +#endif // _ABIBITS_SEEK_WHENCE_H
 diff --git a/meson.build b/meson.build
-index 4027c99a..3f8f26e9 100644
+index 6c7b4073..903047a6 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -48,7 +48,7 @@ if not headers_only
+@@ -49,7 +49,7 @@ if not headers_only
  	c_compiler = meson.get_compiler('c')
  
  	add_project_arguments('-nostdinc', '-fno-builtin', language: ['c', 'cpp'])
@@ -153,7 +155,7 @@ index 4027c99a..3f8f26e9 100644
  	add_project_arguments('-fno-rtti', '-fno-exceptions', language: 'cpp')
  	add_project_arguments('-Wall', '-Wextra', language: ['c', 'cpp'])
  	add_project_link_arguments('-nostdlib', language: ['c', 'cpp'])
-@@ -110,6 +110,11 @@ elif host_machine.system() == 'qword'
+@@ -115,6 +115,11 @@ elif host_machine.system() == 'qword'
  	rtdl_include_dirs += include_directories('sysdeps/qword/include')
  	libc_include_dirs += include_directories('sysdeps/qword/include')
  	subdir('sysdeps/qword')
@@ -166,10 +168,10 @@ index 4027c99a..3f8f26e9 100644
  	#disable_linux_option = true
  	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
-index bed8e11d..c3b6a2a8 100644
+index 86c9e00c..73064ac5 100644
 --- a/options/rtdl/generic/main.cpp
 +++ b/options/rtdl/generic/main.cpp
-@@ -173,7 +173,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
+@@ -175,7 +175,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
  	}
  	__ensure(strtab_offset);
  	__ensure(soname_str);
@@ -233,10 +235,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..354a000b
+index 00000000..399a48f7
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,356 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -540,6 +542,18 @@ index 00000000..354a000b
 +	return 0;
 +}
 +
++int sys_uname(struct utsname *buf) {
++	int ret, errno;
++
++	SYSCALL1(SYSCALL_UNAME, buf);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	return 0;
++}
++
 +int sys_sethostname(const char *buff, size_t size) {
 +	int ret, errno;
 +
@@ -558,12 +572,16 @@ index 00000000..354a000b
 +#ifndef MLIBC_BUILDING_RTDL
 +
 +int sys_gethostname(char *buffer, size_t bufsize) {
-+    strncpy(buffer, "default_hostname", bufsize);
-+    return 0;
++	struct utsname buf;
++	if (uname(&buf)) {
++		return -1;
++	}
++
++	strncpy(buffer, buf.nodename, bufsize);
++	return 0;
 +}
 +
 +#endif
-+
 +} // namespace mlibc
 +
 +// ironclad.h
@@ -760,6 +778,14 @@ index 00000000..1113eba6
 +++ b/sysdeps/ironclad/include/abi-bits/uid_t.h
 @@ -0,0 +1 @@
 +../../../../abis/mlibc/uid_t.h
+\ No newline at end of file
+diff --git a/sysdeps/ironclad/include/abi-bits/utsname.h b/sysdeps/ironclad/include/abi-bits/utsname.h
+new file mode 120000
+index 00000000..17b993fe
+--- /dev/null
++++ b/sysdeps/ironclad/include/abi-bits/utsname.h
+@@ -0,0 +1 @@
++../../../../abis/mlibc/utsname.h
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/vm-flags.h b/sysdeps/ironclad/include/abi-bits/vm-flags.h
 new file mode 120000

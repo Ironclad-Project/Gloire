@@ -47,7 +47,7 @@ sources:
     subdir: 'ports'
     git: 'https://github.com/managarm/mlibc.git'
     branch: 'master'
-    commit: 'a569f1edddad6017177118713b3d42858305a4d0'
+    commit: '3d0cc2ad0692541f18894db723c496344b325eaa'
     rolling_version: true
     version: '0.0pl@ROLLING_ID@'
 

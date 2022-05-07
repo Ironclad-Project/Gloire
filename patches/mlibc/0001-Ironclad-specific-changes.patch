@@ -1,6 +1,6 @@
-From 31ce819d904c64925b896f8daa79eaa795e3f31b Mon Sep 17 00:00:00 2001
+From 5bb58b20900854ac1615dbecf4f583b4b3be313c Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Thu, 5 May 2022 16:11:22 +0200
+Date: Sat, 7 May 2022 13:19:48 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -8,10 +8,12 @@ Subject: [PATCH] Ironclad specific changes
  abis/ironclad/auxv.h                          |  11 +
  abis/ironclad/seek-whence.h                   |   8 +
  meson.build                                   |   7 +-
+ options/ansi/include/inttypes.h               |   2 +
+ options/ansi/include/stdio.h                  |   2 +
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 356 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 375 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -40,7 +42,7 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/ironclad.h           |  14 +
  sysdeps/ironclad/meson.build                  |  56 +++
- 36 files changed, 548 insertions(+), 2 deletions(-)
+ 38 files changed, 571 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -167,6 +169,32 @@ index 6c7b4073..903047a6 100644
  elif host_machine.system() == 'sigma'
  	#disable_linux_option = true
  	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
+diff --git a/options/ansi/include/inttypes.h b/options/ansi/include/inttypes.h
+index 50549ae8..d836d991 100644
+--- a/options/ansi/include/inttypes.h
++++ b/options/ansi/include/inttypes.h
+@@ -102,6 +102,8 @@
+ #define SCNd32 "d"
+ #define SCNd64 "ld"
+ 
++#define SCNdMAX "ld"
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff --git a/options/ansi/include/stdio.h b/options/ansi/include/stdio.h
+index ce5f5f21..42b98f54 100644
+--- a/options/ansi/include/stdio.h
++++ b/options/ansi/include/stdio.h
+@@ -23,6 +23,8 @@ extern "C" {
+ 
+ #define __MLIBC_EOF_BIT 1
+ #define __MLIBC_ERROR_BIT 2
++#define HAVE_STDIO_EXT_H 1
++#define IN_ALL_EVENTS 42069
+ 
+ struct __mlibc_file_base {
+ 	// Buffer for I/O operations.
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
 index 86c9e00c..73064ac5 100644
 --- a/options/rtdl/generic/main.cpp
@@ -235,10 +263,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..399a48f7
+index 00000000..0bc69ada
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,356 @@
+@@ -0,0 +1,375 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -309,6 +337,8 @@ index 00000000..399a48f7
 +#define SYSCALL_WAIT              14
 +#define SYSCALL_UNAME             15
 +#define SYSCALL_SETHOSTNAME       16
++#define SYSCALL_FSTAT             17
++#define SYSCALL_LSTAT             18
 +
 +namespace mlibc {
 +
@@ -415,17 +445,6 @@ index 00000000..399a48f7
 +	int errno;
 +	SYSCALL0(SYSCALL_GETPPID);
 +	return ret;
-+}
-+
-+int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
-+	// TODO: This is a placeholder.
-+	statbuf->st_dev = 0;
-+	statbuf->st_ino = 0;
-+	statbuf->st_nlink = 1;
-+	statbuf->st_blksize = 512;
-+	statbuf->st_blocks = 1;
-+	statbuf->st_size = 512;
-+	return 0;
 +}
 +
 +int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
@@ -579,6 +598,34 @@ index 00000000..399a48f7
 +
 +	strncpy(buffer, buf.nodename, bufsize);
 +	return 0;
++}
++
++int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
++	int ret, errno;
++
++	switch (fsfdt) {
++		case fsfd_target::fd: {
++			// mlibc wants us to do a fstat.
++			SYSCALL2(SYSCALL_FSTAT, fd, statbuf);
++			return errno;
++		}
++		case fsfd_target::path: {
++			// mlibc wants us to do a lstat.
++         SYSCALL2(SYSCALL_LSTAT, path, statbuf);
++			return errno;
++		}
++		case fsfd_target::fd_path: {
++			// mlibc wants us to do an fstatat
++			__ensure(!"stat: Invalid fstatat");
++			__builtin_unreachable();
++		}
++		default: {
++			__ensure(!"stat: Invalid fsfdt");
++			__builtin_unreachable();
++		}
++	}
++
++	__builtin_unreachable();
 +}
 +
 +#endif

@@ -1,6 +1,6 @@
-From 5bb58b20900854ac1615dbecf4f583b4b3be313c Mon Sep 17 00:00:00 2001
+From 26353a9b09db2a0911d9584ebdf3a62a33acfbb9 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Sat, 7 May 2022 13:19:48 +0200
+Date: Mon, 9 May 2022 23:05:18 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -9,11 +9,11 @@ Subject: [PATCH] Ironclad specific changes
  abis/ironclad/seek-whence.h                   |   8 +
  meson.build                                   |   7 +-
  options/ansi/include/inttypes.h               |   2 +
- options/ansi/include/stdio.h                  |   2 +
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 375 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 328 ++++++++++++++++++
+ sysdeps/ironclad/generic/ironclad.cpp         |  10 +
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -40,15 +40,17 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/utsname.h   |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
- sysdeps/ironclad/include/ironclad.h           |  14 +
- sysdeps/ironclad/meson.build                  |  56 +++
- 38 files changed, 571 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/include/sys/ironclad.h       |  14 +
+ sysdeps/ironclad/include/sys/syscall.h        |  64 ++++
+ sysdeps/ironclad/meson.build                  |  59 ++++
+ 39 files changed, 599 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
+ create mode 100644 sysdeps/ironclad/generic/ironclad.cpp
  create mode 120000 sysdeps/ironclad/include/abi-bits/abi.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/auxv.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/blkcnt_t.h
@@ -75,7 +77,8 @@ Subject: [PATCH] Ironclad specific changes
  create mode 120000 sysdeps/ironclad/include/abi-bits/utsname.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/vm-flags.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/wait.h
- create mode 100644 sysdeps/ironclad/include/ironclad.h
+ create mode 100644 sysdeps/ironclad/include/sys/ironclad.h
+ create mode 100644 sysdeps/ironclad/include/sys/syscall.h
  create mode 100644 sysdeps/ironclad/meson.build
 
 diff --git a/abis/ironclad/abi.h b/abis/ironclad/abi.h
@@ -182,19 +185,6 @@ index 50549ae8..d836d991 100644
  #ifdef __cplusplus
  extern "C" {
  #endif
-diff --git a/options/ansi/include/stdio.h b/options/ansi/include/stdio.h
-index ce5f5f21..42b98f54 100644
---- a/options/ansi/include/stdio.h
-+++ b/options/ansi/include/stdio.h
-@@ -23,6 +23,8 @@ extern "C" {
- 
- #define __MLIBC_EOF_BIT 1
- #define __MLIBC_ERROR_BIT 2
-+#define HAVE_STDIO_EXT_H 1
-+#define IN_ALL_EVENTS 42069
- 
- struct __mlibc_file_base {
- 	// Buffer for I/O operations.
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
 index 86c9e00c..73064ac5 100644
 --- a/options/rtdl/generic/main.cpp
@@ -263,10 +253,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..0bc69ada
+index 00000000..1555b193
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,375 @@
+@@ -0,0 +1,328 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -276,69 +266,11 @@ index 00000000..0bc69ada
 +#include <limits.h>
 +#include <asm/ioctls.h>
 +#include <stdlib.h>
-+#include <ironclad.h>
 +#include <string.h>
 +#include <stdio.h>
++#include <sys/syscall.h>
 +
 +#define STUB_ONLY { __ensure(!"STUB_ONLY function was called"); __builtin_unreachable(); }
-+
-+#define SYSCALL0(NUM) ({                   \
-+	asm volatile ("int $0x80"              \
-+				  : "=a"(ret), "=d"(errno) \
-+				  : "a"(NUM)               \
-+				  : "memory");             \
-+})
-+
-+#define SYSCALL1(NUM, ARG0) ({             \
-+	asm volatile ("int $0x80"              \
-+				  : "=a"(ret), "=d"(errno) \
-+				  : "a"(NUM), "D"(ARG0)    \
-+				  : "memory");             \
-+})
-+
-+#define SYSCALL2(NUM, ARG0, ARG1) ({               \
-+	asm volatile ("int $0x80"                      \
-+				  : "=a"(ret), "=d"(errno)         \
-+				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
-+				  : "memory");                     \
-+})
-+
-+#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({                    \
-+	asm volatile ("int $0x80"                                 \
-+				  : "=a"(ret), "=d"(errno)                    \
-+				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
-+				  : "memory");                                \
-+})
-+
-+#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({   \
-+	register typeof(ARG4) arg_r8 asm("r8") = ARG4;             \
-+	register typeof(ARG5) arg_r9 asm("r9") = ARG5;             \
-+	asm volatile ("int $0x80"                                  \
-+				  : "=a"(ret), "=d"(errno)                     \
-+				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-+					"c"(ARG3), "r"(arg_r8), "r"(arg_r9)        \
-+				  : "memory");                                 \
-+})
-+
-+#define SYSCALL_EXIT               0
-+#define SYSCALL_SET_TCB            1
-+#define SYSCALL_OPEN               2
-+#define SYSCALL_CLOSE              3
-+#define SYSCALL_READ               4
-+#define SYSCALL_WRITE              5
-+#define SYSCALL_SEEK               6
-+#define SYSCALL_MMAP               7
-+#define SYSCALL_MUNMAP             8
-+#define SYSCALL_GETPID             9
-+#define SYSCALL_GETPPID           10
-+#define SYSCALL_THREAD_PREFERENCE 11
-+#define SYSCALL_EXEC              12
-+#define SYSCALL_FORK              13
-+#define SYSCALL_WAIT              14
-+#define SYSCALL_UNAME             15
-+#define SYSCALL_SETHOSTNAME       16
-+#define SYSCALL_FSTAT             17
-+#define SYSCALL_LSTAT             18
 +
 +namespace mlibc {
 +
@@ -522,9 +454,7 @@ index 00000000..0bc69ada
 +int sys_execve(const char *path, char *const argv[], char *const envp[]) {
 +	int ret, errno;
 +
-+   // FIXME: Bad, no good, awful, despicable hack, that is to be removed when
-+   // the VFS doesnt suck.
-+	SYSCALL3(SYSCALL_EXEC, path + 1, argv, envp);
++	SYSCALL3(SYSCALL_EXEC, path, argv, envp);
 +
 +	if (ret == -1) {
 +		return errno;
@@ -585,6 +515,31 @@ index 00000000..0bc69ada
 +	return 0;
 +}
 +
++int sys_getcwd(const char *buff, size_t size) {
++	char* ret;
++	int errno;
++
++	SYSCALL2(SYSCALL_GETCWD, buff, size);
++
++	if (ret == NULL) {
++		return errno;
++	}
++
++	return 0;
++}
++
++int sys_chdir(const char *buff) {
++	int ret, errno;
++
++	SYSCALL1(SYSCALL_CHDIR, buff);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	return 0;
++}
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
@@ -611,7 +566,7 @@ index 00000000..0bc69ada
 +		}
 +		case fsfd_target::path: {
 +			// mlibc wants us to do a lstat.
-+         SYSCALL2(SYSCALL_LSTAT, path, statbuf);
++			SYSCALL2(SYSCALL_LSTAT, path, statbuf);
 +			return errno;
 +		}
 +		case fsfd_target::fd_path: {
@@ -630,9 +585,15 @@ index 00000000..0bc69ada
 +
 +#endif
 +} // namespace mlibc
-+
-+// ironclad.h
-+#ifndef MLIBC_BUILDING_RTDL
+diff --git a/sysdeps/ironclad/generic/ironclad.cpp b/sysdeps/ironclad/generic/ironclad.cpp
+new file mode 100644
+index 00000000..f05cb95d
+--- /dev/null
++++ b/sysdeps/ironclad/generic/ironclad.cpp
+@@ -0,0 +1,10 @@
++#include <sys/ironclad.h>
++#include <errno.h>
++#include <sys/syscall.h>
 +
 +int thread_preference(int desired_preference) {
 +	int ret, errn;
@@ -640,8 +601,6 @@ index 00000000..0bc69ada
 +	errno = errn;
 +	return ret;
 +}
-+
-+#endif
 diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
 new file mode 120000
 index 00000000..b466b4b2
@@ -850,11 +809,11 @@ index 00000000..6d911c7f
 @@ -0,0 +1 @@
 +../../../../abis/mlibc/wait.h
 \ No newline at end of file
-diff --git a/sysdeps/ironclad/include/ironclad.h b/sysdeps/ironclad/include/ironclad.h
+diff --git a/sysdeps/ironclad/include/sys/ironclad.h b/sysdeps/ironclad/include/sys/ironclad.h
 new file mode 100644
 index 00000000..16122fa4
 --- /dev/null
-+++ b/sysdeps/ironclad/include/ironclad.h
++++ b/sysdeps/ironclad/include/sys/ironclad.h
 @@ -0,0 +1,14 @@
 +#ifndef _IRONCLAD_H
 +#define _IRONCLAD_H
@@ -870,12 +829,82 @@ index 00000000..16122fa4
 +#endif
 +
 +#endif // _IRONCLAD_H
+diff --git a/sysdeps/ironclad/include/sys/syscall.h b/sysdeps/ironclad/include/sys/syscall.h
+new file mode 100644
+index 00000000..5ae49034
+--- /dev/null
++++ b/sysdeps/ironclad/include/sys/syscall.h
+@@ -0,0 +1,64 @@
++#ifndef _SYSCALL_H
++#define _SYSCALL_H
++
++#define SYSCALL0(NUM) ({                   \
++	asm volatile ("int $0x80"              \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM)               \
++				  : "memory");             \
++})
++
++#define SYSCALL1(NUM, ARG0) ({             \
++	asm volatile ("int $0x80"              \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0)    \
++				  : "memory");             \
++})
++
++#define SYSCALL2(NUM, ARG0, ARG1) ({               \
++	asm volatile ("int $0x80"                      \
++				  : "=a"(ret), "=d"(errno)         \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
++				  : "memory");                     \
++})
++
++#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({                    \
++	asm volatile ("int $0x80"                                 \
++				  : "=a"(ret), "=d"(errno)                    \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
++				  : "memory");                                \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({   \
++	register typeof(ARG4) arg_r8 asm("r8") = ARG4;             \
++	register typeof(ARG5) arg_r9 asm("r9") = ARG5;             \
++	asm volatile ("int $0x80"                                  \
++				  : "=a"(ret), "=d"(errno)                     \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"c"(ARG3), "r"(arg_r8), "r"(arg_r9)        \
++				  : "memory");                                 \
++})
++
++#define SYSCALL_EXIT               0
++#define SYSCALL_SET_TCB            1
++#define SYSCALL_OPEN               2
++#define SYSCALL_CLOSE              3
++#define SYSCALL_READ               4
++#define SYSCALL_WRITE              5
++#define SYSCALL_SEEK               6
++#define SYSCALL_MMAP               7
++#define SYSCALL_MUNMAP             8
++#define SYSCALL_GETPID             9
++#define SYSCALL_GETPPID           10
++#define SYSCALL_THREAD_PREFERENCE 11
++#define SYSCALL_EXEC              12
++#define SYSCALL_FORK              13
++#define SYSCALL_WAIT              14
++#define SYSCALL_UNAME             15
++#define SYSCALL_SETHOSTNAME       16
++#define SYSCALL_FSTAT             17
++#define SYSCALL_LSTAT             18
++#define SYSCALL_GETCWD            19
++#define SYSCALL_CHDIR             20
++
++#endif // _SYSCALL_H
 diff --git a/sysdeps/ironclad/meson.build b/sysdeps/ironclad/meson.build
 new file mode 100644
-index 00000000..0a0c46ea
+index 00000000..258f74c5
 --- /dev/null
 +++ b/sysdeps/ironclad/meson.build
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,59 @@
 +
 +rtdl_sources += files(
 +	'generic/generic.cpp'
@@ -883,7 +912,8 @@ index 00000000..0a0c46ea
 +
 +libc_sources += files(
 +	'generic/entry.cpp',
-+	'generic/generic.cpp'
++	'generic/generic.cpp',
++	'generic/ironclad.cpp'
 +)
 +
 +if not no_headers
@@ -913,10 +943,12 @@ index 00000000..0a0c46ea
 +		'include/abi-bits/uid_t.h',
 +		'include/abi-bits/wait.h',
 +		'include/abi-bits/limits.h',
++      'include/abi-bits/utsname.h',
 +		subdir: 'abi-bits'
 +	)
 +	install_headers(
-+		'include/ironclad.h',
++		'include/sys/ironclad.h',
++		'include/sys/syscall.h',
 +		subdir: 'sys'
 +	)
 +endif
@@ -933,5 +965,5 @@ index 00000000..0a0c46ea
 +endif
 +
 -- 
-2.36.0
+2.36.1
 

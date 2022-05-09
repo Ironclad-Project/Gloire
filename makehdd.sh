@@ -16,13 +16,12 @@ sudo mkfs.fat -F32 `cat loopback_dev`p1
 sudo mount `cat loopback_dev`p1 loopback_dir
 sync
 
-# Copy the files to the final sysroot and make an initramfs with it.
-sudo cp -r ../sysroot/* ../build/system-root/
+# Make an initramfs with the sysroot.
 (cd ../build/system-root && tar cvf ../initramfs.tar *)
 
 # Copy the config files, tar, background, and the kernel.
 sudo mkdir -pv loopback_dir/boot
-sudo cp -r ../sysroot/boot/* loopback_dir/boot/
+sudo cp -r ../base-files/boot/* loopback_dir/boot/
 sudo cp -r ../build/initramfs.tar loopback_dir/boot/
 sudo cp -r ../build/system-root/usr/share/ironclad loopback_dir/boot/
 sudo cp -r ../artwork/background.bmp loopback_dir/boot/

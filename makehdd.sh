@@ -23,7 +23,7 @@ sync
 sudo mkdir -pv loopback_dir/boot
 sudo cp -r ../base-files/boot/* loopback_dir/boot/
 sudo cp -r ../build/initramfs.tar loopback_dir/boot/
-sudo cp -r ../build/system-root/usr/share/ironclad loopback_dir/boot/
+sudo cp -r ../build/system-root/usr/share/ironclad/ironclad loopback_dir/boot/
 sudo cp -r ../artwork/background.bmp loopback_dir/boot/
 
 # Copy limine binaries.

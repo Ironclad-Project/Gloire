@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <fb.h>
 
 #define WINDOW_NAME_LEN 64
 #define WINDOW_TEXT_LEN 40
@@ -16,4 +17,4 @@ struct window {
 
 struct window *create_window(const char *name);
 void add_text(struct window *win, const char *text);
-void draw_window(struct window *win, uint32_t *fb);
+void draw_window(struct window *win, struct framebuffer *fb);

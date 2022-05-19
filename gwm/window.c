@@ -28,25 +28,17 @@ void add_text(struct window *win, const char *text) {
     }
 }
 
-void draw_window(struct window *win, uint32_t *fb) {
+void draw_window(struct window *win, struct framebuffer *fb) {
     const int start_x = win->top_corner_x;
     const int final_x = win->top_corner_x + win->length_x;
     const int start_y = win->top_corner_y;
     const int final_y = win->top_corner_y + win->length_y;
 
     // Draw the window bar.
-    for (int i = start_x; i < final_x; i++) {
-        for (int j = start_y; j < start_y + FONT_HEIGHT; j++) {
-            draw_pixel(fb, i, j, TITLE_BAR_COLOR);
-        }
-    }
+    draw_rectangle(fb, start_x, start_y, final_x, start_y + FONT_HEIGHT, TITLE_BAR_COLOR);
 
     // Draw the rest of the window background.
-    for (int i = start_x; i < final_x; i++) {
-        for (int j = start_y + FONT_HEIGHT; j < final_y; j++) {
-            draw_pixel(fb, i, j, WINDOW_BACKGROUND_COLOR);
-        }
-    }
+    draw_rectangle(fb, start_x, start_y + FONT_HEIGHT, final_x, final_y, WINDOW_BACKGROUND_COLOR);
 
     // Draw window title.
     size_t char_count = strlen(win->name);

@@ -1,5 +1,5 @@
 build
 ports
-init/*.o
-init/*.xbstrap
-init/init
+gwm/*.o
+gwm/*.xbstrap
+gwm/gwm

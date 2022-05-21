@@ -1,6 +1,6 @@
-From 698743270b561e00f184365cd24e1f8f258b09db Mon Sep 17 00:00:00 2001
+From c9dcf9895672ea880f3f395fb20ae19dee0ea293 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Wed, 18 May 2022 22:03:20 +0200
+Date: Sat, 21 May 2022 09:56:39 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -12,8 +12,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 340 ++++++++++++++++++
- sysdeps/ironclad/generic/ironclad.cpp         |  10 +
+ sysdeps/ironclad/generic/generic.cpp          | 353 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -40,17 +39,16 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/utsname.h   |   1 +
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
- sysdeps/ironclad/include/sys/ironclad.h       |  30 ++
- sysdeps/ironclad/include/sys/syscall.h        |  72 ++++
- sysdeps/ironclad/meson.build                  |  59 +++
- 39 files changed, 635 insertions(+), 2 deletions(-)
+ sysdeps/ironclad/include/sys/ironclad.h       |  28 ++
+ sysdeps/ironclad/include/sys/syscall.h        |  74 ++++
+ sysdeps/ironclad/meson.build                  |  58 +++
+ 38 files changed, 637 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
  create mode 100644 sysdeps/ironclad/crt-x86_64/crt0.S
  create mode 100644 sysdeps/ironclad/generic/entry.cpp
  create mode 100644 sysdeps/ironclad/generic/generic.cpp
- create mode 100644 sysdeps/ironclad/generic/ironclad.cpp
  create mode 120000 sysdeps/ironclad/include/abi-bits/abi.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/auxv.h
  create mode 120000 sysdeps/ironclad/include/abi-bits/blkcnt_t.h
@@ -253,10 +251,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..9043dc8d
+index 00000000..3c33d612
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,353 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -552,6 +550,19 @@ index 00000000..9043dc8d
 +	return 0;
 +}
 +
++int sys_sched_yield(void) {
++	int ret, errno;
++
++	SYSCALL0(SYSCALL_SCHED_YIELD);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	return 0;
++}
++
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
@@ -597,22 +608,6 @@ index 00000000..9043dc8d
 +
 +#endif
 +} // namespace mlibc
-diff --git a/sysdeps/ironclad/generic/ironclad.cpp b/sysdeps/ironclad/generic/ironclad.cpp
-new file mode 100644
-index 00000000..f05cb95d
---- /dev/null
-+++ b/sysdeps/ironclad/generic/ironclad.cpp
-@@ -0,0 +1,10 @@
-+#include <sys/ironclad.h>
-+#include <errno.h>
-+#include <sys/syscall.h>
-+
-+int thread_preference(int desired_preference) {
-+	int ret, errn;
-+	SYSCALL1(SYSCALL_THREAD_PREFERENCE, desired_preference);
-+	errno = errn;
-+	return ret;
-+}
 diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
 new file mode 120000
 index 00000000..b466b4b2
@@ -823,10 +818,10 @@ index 00000000..6d911c7f
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/sys/ironclad.h b/sysdeps/ironclad/include/sys/ironclad.h
 new file mode 100644
-index 00000000..049797bf
+index 00000000..69427cd8
 --- /dev/null
 +++ b/sysdeps/ironclad/include/sys/ironclad.h
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,28 @@
 +#ifndef _IRONCLAD_H
 +#define _IRONCLAD_H
 +
@@ -850,8 +845,6 @@ index 00000000..049797bf
 +   uint8_t  blue_mask_shift;
 +};
 +
-+int thread_preference(int desired_preference);
-+
 +#ifdef __cplusplus
 +}
 +#endif
@@ -859,10 +852,10 @@ index 00000000..049797bf
 +#endif // _IRONCLAD_H
 diff --git a/sysdeps/ironclad/include/sys/syscall.h b/sysdeps/ironclad/include/sys/syscall.h
 new file mode 100644
-index 00000000..4a7daccc
+index 00000000..d616ebe6
 --- /dev/null
 +++ b/sysdeps/ironclad/include/sys/syscall.h
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,74 @@
 +#ifndef _SYSCALL_H
 +#define _SYSCALL_H
 +
@@ -922,25 +915,27 @@ index 00000000..4a7daccc
 +#define SYSCALL_MUNMAP             8
 +#define SYSCALL_GETPID             9
 +#define SYSCALL_GETPPID           10
-+#define SYSCALL_THREAD_PREFERENCE 11
-+#define SYSCALL_EXEC              12
-+#define SYSCALL_FORK              13
-+#define SYSCALL_WAIT              14
-+#define SYSCALL_UNAME             15
-+#define SYSCALL_SETHOSTNAME       16
-+#define SYSCALL_FSTAT             17
-+#define SYSCALL_LSTAT             18
-+#define SYSCALL_GETCWD            19
-+#define SYSCALL_CHDIR             20
-+#define SYSCALL_IOCTL             21
++#define SYSCALL_EXEC              11
++#define SYSCALL_FORK              12
++#define SYSCALL_WAIT              13
++#define SYSCALL_UNAME             14
++#define SYSCALL_SETHOSTNAME       15
++#define SYSCALL_FSTAT             16
++#define SYSCALL_LSTAT             17
++#define SYSCALL_GETCWD            18
++#define SYSCALL_CHDIR             29
++#define SYSCALL_IOCTL             20
++#define SYSCALL_SCHED_YIELD       21
++#define SYSCALL_GETPRIORITY       22
++#define SYSCALL_SETPRIORITY       23
 +
 +#endif // _SYSCALL_H
 diff --git a/sysdeps/ironclad/meson.build b/sysdeps/ironclad/meson.build
 new file mode 100644
-index 00000000..258f74c5
+index 00000000..26cd7ad7
 --- /dev/null
 +++ b/sysdeps/ironclad/meson.build
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,58 @@
 +
 +rtdl_sources += files(
 +	'generic/generic.cpp'
@@ -948,8 +943,7 @@ index 00000000..258f74c5
 +
 +libc_sources += files(
 +	'generic/entry.cpp',
-+	'generic/generic.cpp',
-+	'generic/ironclad.cpp'
++	'generic/generic.cpp'
 +)
 +
 +if not no_headers

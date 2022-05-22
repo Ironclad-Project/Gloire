@@ -41,6 +41,7 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
 }
 
 void refresh_to_backend(struct framebuffer *fb) {
+    lseek(fb->backing_fd, 0, SEEK_SET);
     write(fb->backing_fd, fb->memory, fb->pixel_size);
 }
 

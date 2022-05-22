@@ -5,11 +5,13 @@
 #include <window.h>
 #include <fb.h>
 #include <taskbar.h>
+#include <cursor.h>
 
 #define BACKGROUND_COLOR 0xaaaaaa
 
 static struct framebuffer *main_fb;
 static struct taskbar     *taskbar;
+static struct cursor      *cursor;
 static struct window      *win_array[20];
 
 struct window *add_window(const char *name) {
@@ -19,31 +21,48 @@ struct window *add_window(const char *name) {
             return win_array[i];
         }
     }
+
+   return NULL;
 }
 
 void refresh() {
     // Clear the background.
     draw_solid_background(main_fb, BACKGROUND_COLOR);
 
-    // Write the windows.
+    // Go thru the windows, check if we are clicking any, move and draw.
     for (int i = 0; i < 20; i++) {
         if (win_array[i] != NULL) {
             draw_window(win_array[i], main_fb);
         }
     }
 
-    // Write the taskbar.
+    // Write the taskbar and cursor.
     draw_taskbar(taskbar, main_fb);
+    draw_cursor(cursor, main_fb);
 
     // Finally write.
     refresh_to_backend(main_fb);
 }
+
+struct mouse_data {
+   int  x_variation;
+   int  y_variation;
+   bool is_left;
+   bool is_right;
+};
 
 int main() {
     // Open the framebuffer.
     int fb = open("/dev/bootmfb", O_RDONLY);
     if (fb == -1) {
         perror("Could not open the framebuffer");
+        exit(1);
+    }
+
+    // Open the mouse.
+    int ps = open("/dev/psmouse", O_RDONLY);
+    if (ps == -1) {
+        perror("Could not open the mouse");
         exit(1);
     }
 
@@ -56,6 +75,7 @@ int main() {
 
     // Initialize desktop widgets and create the welcome window.
     taskbar = create_taskbar();
+    cursor  = create_cursor();
     struct window *win = add_window("Welcome!");
     add_text(win, "Gloire is an Ironclad distribution using mlibc and several GNU tools.");
     add_text(win, "");
@@ -69,8 +89,40 @@ int main() {
     add_text(win, "");
     add_text(win, "Have a nice time around!");
 
-    // Initial refresh and loop waiting for events.
-    // TODO: Wait for events.
-    refresh();
-    for (;;);
+    // Initial refresh and loop waiting for mouse.
+    for (;;) {
+        struct mouse_data data;
+
+        refresh();
+        read(ps, &data, sizeof(struct mouse_data));
+        update_cursor(cursor, main_fb, data.x_variation, data.y_variation);
+
+        // If left-clicking, check if we are clicking any window bars and move.
+        if (data.is_left) {
+            for (int i = 0; i < 20; i++) {
+                if (win_array[i] != NULL) {
+                    if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position) ||
+                        pixel_is_in_window(win_array[i], cursor->x_position, cursor->y_position)) {
+                        focus_window(win_array[i]);
+                        move_window(win_array[i], data.x_variation, data.y_variation);
+                    } else {
+                        unfocus_window(win_array[i]);
+                    }
+                }
+            }
+        }
+
+        // If right-clicking, remove the window if we are in the bar.
+        if (data.is_right) {
+            for (int i = 0; i < 20; i++) {
+                if (win_array[i] != NULL) {
+                    if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position)) {
+                        free(win_array[i]);
+                        win_array[i] = NULL;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }

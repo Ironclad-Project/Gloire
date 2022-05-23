@@ -17,13 +17,19 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
         return NULL;
     }
 
-    // Allocate the memory representation.
-    size_t pixel_size    = dimensions.height * (dimensions.pitch / sizeof (uint32_t));
-    size_t linear_size   = pixel_size * sizeof (uint32_t);
+    // Allocate the memory representation and get the current one for
+    // background purposes.
+    size_t pixel_size    = dimensions.height * (dimensions.pitch / sizeof(uint32_t));
+    size_t linear_size   = pixel_size * sizeof(uint32_t);
     uint32_t *antibuffer = malloc(linear_size);
-    if (antibuffer == NULL) {
+    uint32_t *current_fb = malloc(linear_size);
+    if (antibuffer == NULL || current_fb == NULL) {
         return NULL;
     }
+
+    // Read the background.
+    lseek(fd, 0, SEEK_SET);
+    read(fd, current_fb, pixel_size);
 
     // Allocate the final object and return it.
     struct framebuffer *ret = malloc(sizeof(ret));
@@ -31,12 +37,14 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
         return NULL;
     }
     ret->backing_fd   = fd;
+    ret->background   = current_fb;
     ret->memory       = antibuffer;
     ret->pixel_width  = dimensions.width;
     ret->pixel_height = dimensions.height;
     ret->pitch        = dimensions.pitch;
     ret->pixel_size   = pixel_size;
     ret->linear_size  = linear_size;
+
     return ret;
 }
 
@@ -45,9 +53,9 @@ void refresh_to_backend(struct framebuffer *fb) {
     write(fb->backing_fd, fb->memory, fb->pixel_size);
 }
 
-void draw_solid_background(struct framebuffer *fb, uint32_t color) {
+void draw_background(struct framebuffer *fb) {
     for (uint64_t i = 0; i < fb->pixel_size; i++) {
-        fb->memory[i] = color;
+        fb->memory[i] = fb->background[i];
     }
 }
 

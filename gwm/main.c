@@ -27,7 +27,7 @@ struct window *add_window(const char *name) {
 
 void refresh() {
     // Clear the background.
-    draw_solid_background(main_fb, BACKGROUND_COLOR);
+    draw_background(main_fb);
 
     // Go thru the windows, check if we are clicking any, move and draw.
     for (int i = 0; i < 20; i++) {
@@ -52,8 +52,12 @@ struct mouse_data {
 };
 
 int main() {
+    // Clear the screen and disable the cursor.
+    printf("\e[2J\e[H\e[?25l");
+    fflush(stdout);
+
     // Open the framebuffer.
-    int fb = open("/dev/bootmfb", O_RDONLY);
+    int fb = open("/dev/bootmfb", O_RDWR);
     if (fb == -1) {
         perror("Could not open the framebuffer");
         exit(1);
@@ -75,7 +79,17 @@ int main() {
 
     // Initialize desktop widgets and create the welcome window.
     taskbar = create_taskbar();
-    cursor  = create_cursor();
+    if (taskbar == NULL) {
+        perror("Could not create taskbar");
+        exit(1);
+    }
+
+    cursor = create_cursor();
+    if (cursor == NULL) {
+        perror("Could not create cursor");
+        exit(1);
+    }
+
     struct window *win = add_window("Welcome!");
     add_text(win, "Gloire is an Ironclad distribution using mlibc and several GNU tools.");
     add_text(win, "");
@@ -102,9 +116,12 @@ int main() {
             for (int i = 0; i < 20; i++) {
                 if (win_array[i] != NULL) {
                     if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position) ||
-                        pixel_is_in_window(win_array[i], cursor->x_position, cursor->y_position)) {
+                        pixel_is_in_window(win_array[i], cursor->x_position,
+                                           cursor->y_position)) {
                         focus_window(win_array[i]);
-                        move_window(win_array[i], data.x_variation, data.y_variation);
+                        move_window(win_array[i], data.x_variation,
+                                    data.y_variation);
+                        break;
                     } else {
                         unfocus_window(win_array[i]);
                     }
@@ -119,10 +136,13 @@ int main() {
                     if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position)) {
                         free(win_array[i]);
                         win_array[i] = NULL;
-                        break;
+                        goto done;
                     }
                 }
             }
+
+            add_window("New Window");
         }
+done:
     }
 }

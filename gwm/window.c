@@ -18,6 +18,7 @@ struct window *create_window(const char *name) {
     ret->top_corner_y = 100;
     ret->length_x     = 570;
     ret->length_y     = 300;
+    memset(ret->children_text, 0, sizeof(ret->children_text));
     return ret;
 }
 

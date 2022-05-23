@@ -4,7 +4,11 @@
 #include <fb.h>
 
 struct taskbar {
-    bool is_top;
+    bool      is_top;
+    uint32_t *logo_arr;
+    size_t    logo_len;
+    size_t    logo_width;
+    size_t    logo_height;
 };
 
 struct taskbar *create_taskbar(void);

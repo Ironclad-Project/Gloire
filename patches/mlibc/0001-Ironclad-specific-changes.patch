@@ -1,6 +1,6 @@
-From c9dcf9895672ea880f3f395fb20ae19dee0ea293 Mon Sep 17 00:00:00 2001
+From f03ef0fd34c3529fcba4149274f911ee4e3ff2d7 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Sat, 21 May 2022 09:56:39 +0200
+Date: Wed, 25 May 2022 06:17:14 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -852,7 +852,7 @@ index 00000000..69427cd8
 +#endif // _IRONCLAD_H
 diff --git a/sysdeps/ironclad/include/sys/syscall.h b/sysdeps/ironclad/include/sys/syscall.h
 new file mode 100644
-index 00000000..d616ebe6
+index 00000000..4dec7819
 --- /dev/null
 +++ b/sysdeps/ironclad/include/sys/syscall.h
 @@ -0,0 +1,74 @@
@@ -923,7 +923,7 @@ index 00000000..d616ebe6
 +#define SYSCALL_FSTAT             16
 +#define SYSCALL_LSTAT             17
 +#define SYSCALL_GETCWD            18
-+#define SYSCALL_CHDIR             29
++#define SYSCALL_CHDIR             19
 +#define SYSCALL_IOCTL             20
 +#define SYSCALL_SCHED_YIELD       21
 +#define SYSCALL_GETPRIORITY       22

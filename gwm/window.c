@@ -12,7 +12,7 @@
 
 struct window *create_window(const char *name) {
     struct window *ret = malloc(sizeof(struct window));
-    strncpy(ret->name, name, WINDOW_NAME_LEN);
+    strncpy(ret->name, name, WINDOW_NAME_LEN - 1);
     ret->is_focus     = 0;
     ret->is_packed    = 0;
     ret->top_corner_x = 100;
@@ -50,14 +50,20 @@ int pixel_is_in_window(struct window *win, int x, int y) {
     }
 }
 
-void move_window(struct window *win, int x_variation, int y_variation) {
+void move_window(struct window *win, int x_variation, int y_variation, int start_x, int start_y, int max_x, int max_y) {
     win->top_corner_x += x_variation;
     win->top_corner_y += y_variation;
-    if (win->top_corner_x < 0) {
-        win->top_corner_x = 0;
+
+    if (win->top_corner_x + win->length_x < start_x + 20) {
+        win->top_corner_x = start_x + 20 - win->length_x;
+    } else if (win->top_corner_x + 20 > max_x) {
+        win->top_corner_x = max_x - 20;
     }
-    if (win->top_corner_y < 0) {
-        win->top_corner_y = 0;
+
+    if (win->top_corner_y <= start_y + FONT_HEIGHT) {
+        win->top_corner_y = start_y + FONT_HEIGHT;
+    } else if (win->top_corner_y > max_y - FONT_HEIGHT) {
+        win->top_corner_y = max_y - FONT_HEIGHT;
     }
 }
 

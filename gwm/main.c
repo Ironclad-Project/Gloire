@@ -7,7 +7,9 @@
 #include <taskbar.h>
 #include <cursor.h>
 #include <bmp.h>
+#include <font.h>
 #include <widgets/widget.h>
+#include <sys/ironclad.h>
 
 #define BACKGROUND_COLOR 0xaaaaaa
 
@@ -45,13 +47,6 @@ void refresh() {
     // Finally write.
     refresh_to_backend(main_fb);
 }
-
-struct mouse_data {
-   int  x_variation;
-   int  y_variation;
-   bool is_left;
-   bool is_right;
-};
 
 int main() {
     // Clear the screen and disable the cursor.
@@ -111,23 +106,34 @@ int main() {
 
     // Initial refresh and loop waiting for mouse.
     for (;;) {
-        struct mouse_data data;
+        struct ironclad_mouse_data data;
 
         refresh();
-        read(ps, &data, sizeof(struct mouse_data));
+        read(ps, &data, sizeof(struct ironclad_mouse_data));
+
+        size_t old_cursor_x = cursor->x_position;
+        size_t old_cursor_y = cursor->y_position;
         update_cursor(cursor, main_fb, data.x_variation, data.y_variation);
 
         // If left-clicking, check if we are clicking any window bars and move.
+        // We use the old cursor data because the new one will make it so
+        // sometimes the user moves the cursor out when trying to move.
         if (data.is_left) {
             for (int i = 0; i < 20; i++) {
                 if (win_array[i] != NULL) {
-                    if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position) ||
-                        pixel_is_in_window(win_array[i], cursor->x_position,
-                                           cursor->y_position)) {
+                    if (pixel_is_in_window(win_array[i], old_cursor_x, old_cursor_y)) {
                         focus_window(win_array[i]);
-                        move_window(win_array[i], data.x_variation,
-                                    data.y_variation);
-                        break;
+                        if (pixel_is_in_window_bar(win_array[i], old_cursor_x, old_cursor_y)) {
+                            // FIXME: This hardcodes the thickness of the bar.
+                            int start_y = 0;
+                            int final_y = main_fb->pixel_height - FONT_HEIGHT;
+                            if (taskbar->is_top) {
+                                start_y = FONT_HEIGHT;
+                                final_y = main_fb->pixel_height;
+                            }
+                            move_window(win_array[i], data.x_variation, data.y_variation, 0, start_y, main_fb->pixel_width, final_y);
+                            break;
+                        }
                     } else {
                         unfocus_window(win_array[i]);
                     }
@@ -151,6 +157,8 @@ int main() {
 
             struct window *new_window = add_window("Look at this cool cat");
             new_window->length_y = 700;
+            new_window->top_corner_x = cursor->x_position;
+            new_window->top_corner_y = cursor->y_position;
             add_child(new_window, create_image("/etc/gwm-jinx.bmp"));
         }
 done:

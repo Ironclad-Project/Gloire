@@ -22,7 +22,7 @@ struct window *create_window(const char *name);
 void add_child(struct window *win, struct widget *wid);
 int pixel_is_in_window_bar(struct window *win, int x, int y);
 int pixel_is_in_window(struct window *win, int x, int y);
-void move_window(struct window *win, int x_variation, int y_variation);
+void move_window(struct window *win, int x_variation, int y_variation, int start_x, int start_y, int max_x, int max_y);
 void pack_window(struct window *win);
 void focus_window(struct window *win);
 void unfocus_window(struct window *win);

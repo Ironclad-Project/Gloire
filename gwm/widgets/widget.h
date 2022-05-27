@@ -19,6 +19,5 @@ struct widget {
 
 struct widget *create_image(const char *path);
 struct widget *create_textbox(const char *text);
-size_t get_real_y_width(struct widget *wid);
 void draw_widget(struct widget *wid, struct framebuffer *fb, int start_x, int start_y, int width_x, int width_y);
 void destroy_widget(struct widget *wid);

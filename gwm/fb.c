@@ -12,7 +12,7 @@ static int bittest(int var, int index) {
 
 struct framebuffer *create_framebuffer_from_fd(int fd) {
     // Fetch the dimensions.
-    struct fb_dimensions dimensions;
+    struct ironclad_fb_dimensions dimensions;
     if (ioctl(fd, IOCTL_FB_DIMENSIONS, &dimensions) == -1) {
         return NULL;
     }
@@ -32,7 +32,7 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
     read(fd, current_fb, pixel_size);
 
     // Allocate the final object and return it.
-    struct framebuffer *ret = malloc(sizeof(ret));
+    struct framebuffer *ret = malloc(sizeof(struct framebuffer));
     if (ret == NULL) {
         return NULL;
     }

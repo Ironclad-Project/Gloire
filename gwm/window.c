@@ -14,18 +14,19 @@ struct window *create_window(const char *name) {
     struct window *ret = malloc(sizeof(struct window));
     strncpy(ret->name, name, WINDOW_NAME_LEN);
     ret->is_focus     = 0;
+    ret->is_packed    = 0;
     ret->top_corner_x = 100;
     ret->top_corner_y = 100;
     ret->length_x     = 570;
     ret->length_y     = 300;
-    memset(ret->children_text, 0, sizeof(ret->children_text));
+    memset(ret->children, 0, sizeof(ret->children));
     return ret;
 }
 
-void add_text(struct window *win, const char *text) {
-    for (int i = 0; i < WINDOW_TEXT_LEN; i++) {
-        if (win->children_text[i] == NULL) {
-            win->children_text[i] = text;
+void add_child(struct window *win, struct widget *wid) {
+    for (int i = 0; i < WINDOW_CHILDREN_LEN; i++) {
+        if (win->children[i] == NULL) {
+            win->children[i] = wid;
             return;
         }
     }
@@ -33,7 +34,7 @@ void add_text(struct window *win, const char *text) {
 
 int pixel_is_in_window_bar(struct window *win, int x, int y) {
     if (x >= win->top_corner_x && x <= win->top_corner_x + win->length_x &&
-        y >= win->top_corner_y && y <= win->top_corner_y + FONT_HEIGHT) {
+        y >= win->top_corner_y - FONT_HEIGHT && y <= win->top_corner_y) {
         return 1;
     } else {
         return 0;
@@ -42,7 +43,7 @@ int pixel_is_in_window_bar(struct window *win, int x, int y) {
 
 int pixel_is_in_window(struct window *win, int x, int y) {
     if (x >= win->top_corner_x && x <= win->top_corner_x + win->length_x &&
-        y >= win->top_corner_y && y <= win->top_corner_y + FONT_HEIGHT + win->length_y) {
+        y >= win->top_corner_y - FONT_HEIGHT && y <= win->top_corner_y + win->length_y) {
         return 1;
     } else {
         return 0;
@@ -58,6 +59,10 @@ void move_window(struct window *win, int x_variation, int y_variation) {
     if (win->top_corner_y < 0) {
         win->top_corner_y = 0;
     }
+}
+
+void pack_window(struct window *win) {
+    win->is_packed = 1;
 }
 
 void focus_window(struct window *win) {
@@ -76,38 +81,63 @@ void draw_window(struct window *win, struct framebuffer *fb) {
 
     // Draw the window bar.
     const uint32_t title_color = win->is_focus ? TITLEBAR_FOCUS_COLOR : TITLEBAR_NO_FOCUS_COLOR;
-    draw_rectangle(fb, start_x, start_y, final_x, start_y + FONT_HEIGHT, title_color);
+    draw_rectangle(fb, start_x, start_y - FONT_HEIGHT, final_x, start_y, title_color);
 
     // Draw the rest of the window background.
-    draw_rectangle(fb, start_x, start_y + FONT_HEIGHT, final_x, final_y, WINDOW_BACKGROUND_COLOR);
+    draw_rectangle(fb, start_x, start_y, final_x, final_y, WINDOW_BACKGROUND_COLOR);
 
     // Draw window title.
     size_t char_count = strlen(win->name);
     if (char_count * FONT_WIDTH > win->length_x) {
         char_count = win->length_x / FONT_WIDTH;
     }
-    draw_string(fb, start_x, start_y, win->name, char_count, TITLEBAR_FONT_COLOR, title_color);
+    draw_string(fb, start_x, start_y - FONT_HEIGHT, win->name, char_count, TITLEBAR_FONT_COLOR, title_color);
 
     // Draw borders.
-    for (int i = 0; i <= win->length_y; i++) {
+    for (int i = -FONT_HEIGHT; i <= win->length_y; i++) {
         draw_pixel(fb, start_x - 1, start_y + i, WINDOW_BORDERS_COLOR);
         draw_pixel(fb, final_x,     start_y + i, WINDOW_BORDERS_COLOR);
     }
     for (int i = 0; i < win->length_x; i++) {
-        draw_pixel(fb, start_x + i, start_y, WINDOW_BORDERS_COLOR);
+        draw_pixel(fb, start_x + i, start_y - FONT_HEIGHT, WINDOW_BORDERS_COLOR);
         draw_pixel(fb, start_x + i, final_y, WINDOW_BORDERS_COLOR);
     }
 
-    // Draw text.
-    size_t current_y = start_y + FONT_HEIGHT;
-    for (int i = 0; i < WINDOW_TEXT_LEN; i++) {
-        if (win->children_text[i] != NULL) {
-            size_t char_count = strlen(win->children_text[i]);
-            draw_string(fb, start_x, current_y, win->children_text[i], char_count, TITLEBAR_FONT_COLOR, WINDOW_BACKGROUND_COLOR);
-        }
-        current_y += FONT_HEIGHT;
-        if (current_y >= final_y) {
-            break;
+    // Count the children so we can divide the window real state in rows.
+    int child_count = 0;
+    for (int i = 0; i < WINDOW_CHILDREN_LEN; i++) {
+        if (win->children[i] != NULL) {
+            child_count++;
         }
     }
+    if (child_count == 0) {
+        return;
+    }
+
+    const size_t step   = win->length_y / child_count;
+    size_t current_y    = start_y;
+    size_t taken_away_y = 0;
+    for (int i = 0; i < WINDOW_CHILDREN_LEN; i++) {
+        if (win->children[i] != NULL) {
+            draw_widget(win->children[i], fb, start_x, current_y, win->length_x, step + taken_away_y);
+            //  TODO: Breaks encapsulation for ease of implementation
+            // (and lazyness).
+            if (win->is_packed && win->children[i]->type == WIDGET_IMAGE) {
+                current_y    += win->children[i]->image->image_height;
+                taken_away_y = (current_y - start_y) % step;
+            } else {
+                current_y += step;
+            }
+        }
+    }
+}
+
+void destroy_window(struct window *win) {
+    for (int i = 0; i < WINDOW_CHILDREN_LEN; i++) {
+        if (win->children[i] != NULL) {
+            destroy_widget(win->children[i]);
+        }
+    }
+
+    free(win);
 }

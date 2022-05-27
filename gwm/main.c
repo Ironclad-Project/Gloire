@@ -6,6 +6,8 @@
 #include <fb.h>
 #include <taskbar.h>
 #include <cursor.h>
+#include <bmp.h>
+#include <widgets/widget.h>
 
 #define BACKGROUND_COLOR 0xaaaaaa
 
@@ -91,17 +93,21 @@ int main() {
     }
 
     struct window *win = add_window("Welcome!");
-    add_text(win, "Gloire is an Ironclad distribution using mlibc and several GNU tools.");
-    add_text(win, "");
-    add_text(win, "To find command-line arguments and syscall documentation, there is");
-    add_text(win, "documentation in Info and PDF formats in /usr/share/info and");
-    add_text(win, "/usr/share/docs/ironclad");
-    add_text(win, "");
-    add_text(win, "Ironclad: https://github.com/streaksu/Ironclad");
-    add_text(win, "Gloire:   https://github.com/streaksu/Gloire");
-    add_text(win, "Mlibc:    https://github.com/managarm/mlibc");
-    add_text(win, "");
-    add_text(win, "Have a nice time around!");
+    add_child(win, create_image("/etc/gwm-gloire.bmp"));
+    add_child(win, create_textbox(
+        "Gloire is an Ironclad distribution using mlibc and several GNU tools.\n"
+        "\n"
+        "To find command-line arguments and syscall documentation, there is\n"
+        "documentation in Info and PDF formats in /usr/share/info and\n"
+        "/usr/share/docs/ironclad\n"
+        "\n"
+        "Ironclad: https://github.com/streaksu/Ironclad\n"
+        "Gloire:   https://github.com/streaksu/Gloire\n"
+        "Mlibc:    https://github.com/managarm/mlibc\n"
+        "\n"
+        "Have a nice time around!"
+    ));
+    pack_window(win);
 
     // Initial refresh and loop waiting for mouse.
     for (;;) {
@@ -134,14 +140,18 @@ int main() {
             for (int i = 0; i < 20; i++) {
                 if (win_array[i] != NULL) {
                     if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position)) {
-                        free(win_array[i]);
+                        // FIXME: Uncommenting this with qemu-system-x86_64 -hda gloire.hdd -m 4G -smp 4 -enable-kvm
+                        // makes ironclad die, uncomment this when fixed lol.
+                        // destroy_window(win_array[i]);
                         win_array[i] = NULL;
                         goto done;
                     }
                 }
             }
 
-            add_window("New Window");
+            struct window *new_window = add_window("Look at this cool cat");
+            new_window->length_y = 700;
+            add_child(new_window, create_image("/etc/gwm-jinx.bmp"));
         }
 done:
     }

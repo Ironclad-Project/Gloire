@@ -29,7 +29,6 @@ uint32_t *open_bmp_to_array(const char *path, size_t *size, size_t *width,
     // Open the file.
     FILE *bmp = fopen(path, "r");
     if (bmp == NULL) {
-        puts("death 1");
         return NULL;
     }
 
@@ -38,7 +37,6 @@ uint32_t *open_bmp_to_array(const char *path, size_t *size, size_t *width,
         return NULL;
     }
     if (memcmp(&header.bf_signature, "BM", 2) != 0) {
-        puts("death 2");
         return NULL;
     }
 
@@ -59,7 +57,6 @@ uint32_t *open_bmp_to_array(const char *path, size_t *size, size_t *width,
     *height = header.bi_height;
     fseek (bmp, header.bf_offset, SEEK_SET);
     if (fread(ret, bf_size, 1, bmp) != 1) {
-        puts("death 3");
         return NULL;
     }
     fclose(bmp);

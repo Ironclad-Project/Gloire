@@ -57,14 +57,14 @@ int main() {
     fflush(stdout);
 
     // Open the framebuffer.
-    int fb = open("/dev/bootmfb", O_RDWR);
+    int fb = open("/dev/bootfb", O_RDWR);
     if (fb == -1) {
         perror("Could not open the framebuffer");
         exit(1);
     }
 
     // Open the mouse.
-    int ps = open("/dev/psmouse", O_RDONLY);
+    int ps = open("/dev/ps2mouse", O_RDONLY);
     if (ps == -1) {
         perror("Could not open the mouse");
         exit(1);

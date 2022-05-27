@@ -40,3 +40,10 @@ A list of the tools needed for compilation of everything are:
 - An Ada compiler, preferably `gcc`.
 - A standard linker and GAS assembler.
 - `xorriso` and QEMU for testing.
+
+## Thanks to
+
+- [Mintsuki](https://github.com/mintsuki) for the limine bootloader and help
+setting it up.
+- [The managarm project](https://github.com/managarm) for making xbstrap and
+most of the recipes.

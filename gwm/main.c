@@ -10,6 +10,7 @@
 #include <font.h>
 #include <widgets/widget.h>
 #include <sys/ironclad.h>
+#include <sys/ioctl.h>
 
 #define BACKGROUND_COLOR 0xaaaaaa
 
@@ -67,6 +68,11 @@ int main() {
         exit(1);
     }
 
+    // Set mouse modes.
+    ioctl(ps, PS2MOUSE_2_1_SCALING,     0);
+    ioctl(ps, PS2MOUSE_SET_RES,         3);
+    ioctl(ps, PS2MOUSE_SET_SAMPLE_RATE, 100);
+
     // Create a framebuffer from that one.
     main_fb = create_framebuffer_from_fd(fb);
     if (main_fb == NULL) {
@@ -106,9 +112,9 @@ int main() {
 
     // Initial refresh and loop waiting for mouse.
     for (;;) {
-        struct ironclad_mouse_data data;
-
         refresh();
+
+        struct ironclad_mouse_data data;
         read(ps, &data, sizeof(struct ironclad_mouse_data));
 
         size_t old_cursor_x = cursor->x_position;

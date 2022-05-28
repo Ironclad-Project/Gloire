@@ -6,7 +6,9 @@
 struct framebuffer {
     int       backing_fd;
     uint32_t *background;
-    uint32_t *memory;
+    uint32_t *antibuffer;
+    uint32_t *frontbuffer;
+    uint32_t *memory_window;
     size_t    pixel_width;
     size_t    pixel_height;
     size_t    pitch;

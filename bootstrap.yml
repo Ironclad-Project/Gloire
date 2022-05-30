@@ -55,13 +55,6 @@ sources:
     subdir: 'ports'
     git: 'https://github.com/streaksu/Ironclad'
     branch: 'main'
-    tools_required:
-      - host-autoconf-v2.69
-      - host-automake-v1.16
-    regenerate:
-      - args: ['./autogen.sh']
-        environ:
-          NOCONFIGURE: 'yes'
 
   - name: pkg-config
     subdir: 'ports'
@@ -386,16 +379,11 @@ packages:
 
   - name: ironclad
     from_source: ironclad
-    configure:
-      - args: |
-          set -e
-          cd "@THIS_SOURCE_DIR@"
-          ./configure
     build:
       - args: |
           set -e
           cd "@THIS_SOURCE_DIR@"
-          gprbuild -r ironclad.gpr -j@PARALLELISM@
+          gprbuild -j@PARALLELISM@
           DESTDIR="@THIS_COLLECT_DIR@" PREFIX="/usr" ./install.sh
 
   - name: ncurses

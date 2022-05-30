@@ -387,12 +387,16 @@ packages:
   - name: ironclad
     from_source: ironclad
     configure:
-      - args:
-        - '@THIS_SOURCE_DIR@/configure'
-        - '--prefix=/usr'
+      - args: |
+          set -e
+          cd "@THIS_SOURCE_DIR@"
+          ./configure
     build:
-      - args: ['make', '-j@PARALLELISM@']
-      - args: ['make', 'DESTDIR=@THIS_COLLECT_DIR@', 'install']
+      - args: |
+          set -e
+          cd "@THIS_SOURCE_DIR@"
+          gprbuild -r ironclad.gpr -j@PARALLELISM@
+          DESTDIR="@THIS_COLLECT_DIR@" PREFIX="/usr" ./install.sh
 
   - name: ncurses
     from_source: ncurses

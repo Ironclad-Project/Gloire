@@ -39,7 +39,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.hdd
 A list of the tools needed for compilation of the OS are:
 
 - `autoconf` 2.69 and `automake`.
-- An Ada compiler, preferably `gcc`.
+- `gprbuild` and compatible C and Ada compilers.
 - A standard linker and GAS assembler.
 - `xorriso` and QEMU for testing.
 

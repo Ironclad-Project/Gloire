@@ -25,9 +25,9 @@ pip install xbstrap
 Once `xbstrap` is installed, one can do the following to build the project:
 
 ```bash
-make build && cd build # Prepare a directory and switch to it.
-xbstrap init ..        # Prepare xbstrap.
-xbstrap install --all  # Tell xbstrap to install all the packages.
+mkdir build && cd build # Prepare a directory and switch to it.
+xbstrap init ..         # Prepare xbstrap.
+xbstrap install --all   # Tell xbstrap to install all the packages.
 ```
 
 A bootable ISO image can be generated running `xbstrap run make-iso`, and it

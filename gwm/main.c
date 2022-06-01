@@ -152,9 +152,7 @@ int main() {
             for (int i = 0; i < 20; i++) {
                 if (win_array[i] != NULL) {
                     if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position)) {
-                        // FIXME: Uncommenting this with qemu-system-x86_64 -hda gloire.hdd -m 4G -smp 4 -enable-kvm
-                        // makes ironclad die, uncomment this when fixed lol.
-                        // destroy_window(win_array[i]);
+                        destroy_window(win_array[i]);
                         win_array[i] = NULL;
                         goto done;
                     }

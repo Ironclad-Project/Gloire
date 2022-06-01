@@ -197,7 +197,7 @@ destroy_container() {
 do_git_fetch() {
     source_dir="${base_dir}"/sources/${name}
     [ -d "${source_dir}" ] && return
-    if [ -z "${commit}" ]; then
+    if ! [ -z "${commit}" ]; then
         git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
         ( cd "${base_dir}"/sources/${name} && git checkout ${commit} )
     else

@@ -383,7 +383,7 @@ packages:
       - args: |
           set -e
           cd "@THIS_SOURCE_DIR@"
-          gprbuild -j@PARALLELISM@
+          gprbuild -p -j@PARALLELISM@
           DESTDIR="@THIS_COLLECT_DIR@" PREFIX="/usr" ./install.sh
 
   - name: ncurses

@@ -16,36 +16,31 @@ which was the first ocean-going vessel of its kind.
 
 ## Building
 
-The project uses `xbstrap`, which can be adquired easily from pip:
+The project uses `jinx` as its build system, which is included in the tree.
+The instructions to build are:
 
 ```bash
-pip install xbstrap
+./jinx build-all           # Build all packages.
+./build-support/makeiso.sh # Create the image.
 ```
-
-Once `xbstrap` is installed, one can do the following to build the project:
+This commands will generate a bootable disk image that can be burned to
+USB mass-storage media or be booted by several emulators, an example to boot
+the image with QEMU would be:
 
 ```bash
-mkdir build && cd build # Prepare a directory and switch to it.
-xbstrap init ..         # Prepare xbstrap.
-xbstrap install --all   # Tell xbstrap to install all the packages.
-```
-
-A bootable ISO image can be generated running `xbstrap run make-iso`, and it
-can be booted using a machine and a USB or QEMU, with a command like:
-```bash
-qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.hdd
+qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.iso
 ```
 
 A list of the tools needed for compilation of the OS are:
 
-- `autoconf` 2.69 and `automake`.
-- `gprbuild` and compatible C and Ada compilers.
-- A standard linker and GAS assembler.
-- `xorriso` and QEMU for testing.
+- `GNU Bash`.
+- A working `docker` install.
+- Common UNIX tools like `coreutils`, `grep`, `find`, etc.
+- `xorriso` for image building.
+- `qemu` for testing, if wanted.
 
 ## Thanks to
 
-- [Mintsuki](https://github.com/mintsuki) for the limine bootloader and help
-setting it up.
-- [The managarm project](https://github.com/managarm) for making xbstrap and
-most of the recipes.
+- [Mintsuki](https://github.com/mintsuki) for the limine bootloader and `jinx`.
+- [The managarm project](https://github.com/managarm) for help with some
+of the recipes and `mlibc`.

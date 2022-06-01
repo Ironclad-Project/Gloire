@@ -1,0 +1,19 @@
+name=ironclad
+from_source=ironclad
+revision=1
+imagedeps="gcc-ada"
+imagedeps_aur="gprbuild"
+
+configure() {
+    true
+}
+
+build() {
+    cd ${source_dir}
+    gprbuild -p -r ironclad.gpr -j${parallelism}
+}
+
+install() {
+    cd ${source_dir}
+    PREFIX="${prefix}" DESTDIR="${dest_dir}" ./install.sh
+}

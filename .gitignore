@@ -1,5 +1,11 @@
-build
-ports
+builds
+host-builds
+host-pkgs
+pkgs
+sources
+sysroot
+initramfs.tar
 gwm/**/*.o
-gwm/**/*.xbstrap
 gwm/gwm
+gloire.iso
+iso_root

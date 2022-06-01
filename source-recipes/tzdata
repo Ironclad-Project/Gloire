@@ -1,0 +1,10 @@
+name=tzdata
+version=2022a
+source_method=tarball
+tarball_url="https://data.iana.org/time-zones/releases/tzdata2022a.tar.gz"
+
+regenerate() {
+    curl -o tzcode2022a.tar.gz https://data.iana.org/time-zones/releases/tzcode2022a.tar.gz
+    tar xf tzcode2022a.tar.gz
+    rm -rf tzcode2022a.tar.gz
+}

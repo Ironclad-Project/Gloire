@@ -28,19 +28,6 @@ index 30087e3b..9ca38637 100644
    i[3-7]86-*-interix*)
      targ_defvec=i386_pei_vec
      targ_selvecs="i386_pe_vec"
-diff --git a/config.sub b/config.sub
-index 7384e919..6905e3f3 100755
---- a/config.sub
-+++ b/config.sub
-@@ -1704,7 +1704,7 @@ case $os in
- 	     | hpux* | unos* | osf* | luna* | dgux* | auroraux* | solaris* \
- 	     | sym* |  plan9* | psp* | sim* | xray* | os68k* | v88r* \
- 	     | hiux* | abug | nacl* | netware* | windows* \
--	     | os9* | macos* | osx* | ios* \
-+	     | os9* | macos* | osx* | ios* | ironclad* \
- 	     | mpw* | magic* | mmixware* | mon960* | lnews* \
- 	     | amigaos* | amigados* | msdos* | newsos* | unicos* | aof* \
- 	     | aos* | aros* | cloudabi* | sortix* | twizzler* \
 diff --git a/gas/configure.tgt b/gas/configure.tgt
 index 338892ad..06235798 100644
 --- a/gas/configure.tgt

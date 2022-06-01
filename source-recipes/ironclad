@@ -1,0 +1,9 @@
+name=ironclad
+version=0.0.1
+source_method=git
+clone_url="https://github.com/streaksu/Ironclad.git"
+tag="main"
+
+regenerate() {
+    true
+}

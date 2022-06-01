@@ -33,6 +33,8 @@ qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.iso
 
 A list of the tools needed for compilation of the OS are:
 
+- `git` for cloning packages.
+- `curl` for downloading tarballs.
 - `GNU Bash`.
 - A working `docker` install.
 - Common UNIX tools like `coreutils`, `grep`, `find`, etc.

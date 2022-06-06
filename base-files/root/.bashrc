@@ -3,9 +3,11 @@ HISTCONTROL=ignoredups
 HISTSIZE=-1
 HISTFILESIZE=-1
 
-export PATH=/usr/bin
+export HOME=/root
 export USER=root
+export LOGNAME=root
+export TERMINFO=/usr/share/terminfo
+export TERM=linux
 export SHELL=$BASH
 
 alias ls="ls --color=auto"
-alias clear='printf "\e[2J\e[H"'

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Copyright (c) 2022, mintsuki
 
@@ -25,20 +25,34 @@
 
 set -e
 
-parallelism="$(nproc)"
+parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
 
 base_dir="$(pwd -P)"
-script_dir="$(dirname "$0")"
-test -z "$script_dir" && script_dir=.
-script_dir="$(cd "${script_dir}" && pwd -P)"
 script_name="$(basename "$0")"
+script_dir="$(dirname "$0")"
+if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
+    if echo "$0" | grep "/" >/dev/null 2>&1; then
+        script_dir=.
+    else
+        script_dir="$(dirname $(which "${script_name}"))"
+    fi
+fi
+script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
-[ -f "${base_dir}"/jinx-config ] && source "${base_dir}"/jinx-config
+[ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
 
 die() {
     echo $1
     exit 1
+}
+
+temp_collect=""
+trap 'rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
+
+make_temp() {
+    tmp="$(mktemp $1)"
+    temp_collect="${temp_collect} ${tmp}"
 }
 
 build_hostdeps() {
@@ -47,7 +61,7 @@ build_hostdeps() {
 
         [ -f "${base_dir}"/host-builds/${hostdep}.installed ] && continue
 
-        cd "${base_dir}" && "${script}" host-build ${hostdep}
+        "${script}" host-build ${hostdep}
     done
 }
 
@@ -57,54 +71,54 @@ build_deps() {
 
         [ -f "${base_dir}"/builds/${dep}.installed ] && continue
 
-        cd "${base_dir}" && "${script}" build ${dep}
+        "${script}" build ${dep}
     done
 }
 
 get_hostdeps_file_run() {
-    local deps_to_do=""
+    deps_to_do=""
 
     for hostdep in ${hostrundeps}; do
-        grep ${hostdep} "${hostdeps_file}" &>/dev/null || deps_to_do="${deps_to_do} ${hostdep}"
-        grep ${hostdep} "${hostdeps_file}" &>/dev/null || printf "${hostdep} " >> "${hostdeps_file}"
+        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
-        ( source "${base_dir}"/host-recipes/${hostdep} && get_hostdeps_file_run )
+        "${script}" internal-get-hostdeps-file-run ${hostdep} "${hostdeps_file}"
     done
 }
 
 get_hostdeps_file() {
-    local deps_to_do=""
+    deps_to_do=""
 
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        grep ${hostdep} "${hostdeps_file}" &>/dev/null || deps_to_do="${deps_to_do} ${hostdep}"
-        grep ${hostdep} "${hostdeps_file}" &>/dev/null || printf "${hostdep} " >> "${hostdeps_file}"
+        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
-        ( source "${base_dir}"/host-recipes/${hostdep} && get_hostdeps_file_run )
+        "${script}" internal-get-hostdeps-file-run ${hostdep} "${hostdeps_file}"
     done
 }
 
 get_deps_file() {
-    local deps_to_do=""
+    deps_to_do=""
 
     for dep in ${deps}; do
-        grep ${dep} "${deps_file}" &>/dev/null || deps_to_do="${deps_to_do} ${dep}"
-        grep ${dep} "${deps_file}" &>/dev/null || printf "${dep} " >> "${deps_file}"
+        grep ${dep} "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
+        grep ${dep} "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
     done
 
     for dep in ${deps_to_do}; do
-        ( source "${base_dir}"/recipes/${dep} && get_deps_file )
+        "${script}" internal-get-deps-file ${dep} "${deps_file}"
     done
 }
 
 prepare_container() {
-    hostdeps_file="$(mktemp)"
-    printf "" > "${hostdeps_file}"
-    deps_file="$(mktemp)"
-    printf "" > "${deps_file}"
+    make_temp
+    hostdeps_file="${tmp}"
+    make_temp
+    deps_file="${tmp}"
 
     build_hostdeps
     build_deps
@@ -112,8 +126,10 @@ prepare_container() {
     get_hostdeps_file
     get_deps_file
 
-    container_pkgs="$(mktemp -d)"
-    sysroot_dir="$(mktemp -d)"
+    make_temp -d
+    container_pkgs="${tmp}"
+    make_temp -d
+    sysroot_dir="${tmp}"
 
     for hostdep in $(cat "${hostdeps_file}"); do
         cp -r "${base_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
@@ -129,14 +145,16 @@ prepare_container() {
 
     echo "* creating container..."
 
-    dockerfile_dir="$(mktemp -d)"
+    make_temp -d
+    dockerfile_dir="${tmp}"
     dockerfile="${dockerfile_dir}/Dockerfile"
     cat >"${dockerfile}" <<EOF
 FROM archlinux:latest
 
 RUN pacman -Syu --noconfirm
-RUN pacman --needed --noconfirm -S bison diffutils flex gettext m4 make patch perl texinfo which
-RUN cp -r /usr/bin/core_perl/* /usr/bin/
+RUN pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
+ENV PATH "\$PATH:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+
 EOF
 
     if ! [ -z "${imagedeps_aur}" ]; then
@@ -162,7 +180,7 @@ EOF
 
         echo "USER root" >> "${dockerfile}"
 
-        ( echo "${imagedeps_aur}" | grep aura-bin &>/dev/null ) || \
+        ( echo "${imagedeps_aur}" | grep aura-bin >/dev/null 2>&1 ) || \
             echo "RUN pacman -Rs aura-bin --noconfirm || true" >> "${dockerfile}"
 
         echo "RUN pacman -Rs git sudo fakeroot gcc binutils --noconfirm || true" >> "${dockerfile}"
@@ -179,14 +197,20 @@ EOF
 }
 
 run_in_container() {
-    docker run --rm \
+    image_id=$(docker build -q "${dockerfile_dir}" || echo "failed")
+    if [ "$image_id" = "failed" ]; then
+        echo "* cached image causing issues, trying clean..."
+        image_id=$(docker build -q --no-cache "${dockerfile_dir}")
+    fi
+
+    docker run -it --rm \
         --user=$(id -u):$(id -g) \
         -v "${container_pkgs}":/usr/local \
         -v "${sysroot_dir}":/sysroot \
         -v "${script_dir}":/jinx \
         -v "${base_dir}":/base_dir \
         -w /base_dir \
-        $(docker build -q "${dockerfile_dir}") \
+        ${image_id} \
         /jinx/${script_name} $1 $2 $3 $4 $5
 }
 
@@ -194,8 +218,13 @@ destroy_container() {
     rm -rf "${container_pkgs}" "${sysroot_dir}" "${dockerfile_dir}"
 }
 
+do_hg_fetch() {
+    [ -d "${source_dir}" ] && return
+    hg clone ${clone_url} "${base_dir}"/sources/${name}
+    ( cd "${base_dir}"/sources/${name} && hg up ${tag} )
+}
+
 do_git_fetch() {
-    source_dir="${base_dir}"/sources/${name}
     [ -d "${source_dir}" ] && return
     if ! [ -z "${commit}" ]; then
         git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
@@ -206,16 +235,15 @@ do_git_fetch() {
 }
 
 do_tarball_fetch() {
-    source_dir="${base_dir}"/sources/${name}
     [ -d "${source_dir}" ] && return
 
-    local extract_dir="$(mktemp -d)"
-    local tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
+    make_temp -d
+    extract_dir="${tmp}"
+    tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
     curl -o "${tarball_path}" "${tarball_url}"
 
-    cd "${extract_dir}"
-    tar -xf "${tarball_path}"
+    ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
     mv "${extract_dir}"/* "${base_dir}"/sources/${name} || (
         mkdir -p "${base_dir}"/sources/${name}
@@ -225,10 +253,21 @@ do_tarball_fetch() {
     rm -rf "${extract_dir}" "${tarball_path}"
 }
 
+get_real_source_dir() {
+    source_dir="${base_dir}"/"${source_dir}"
+    case ${source_method} in
+        tarball|git|mercurial)
+            source_dir="${base_dir}"/sources/${name}
+            ;;
+        *)
+            is_local_package=true
+            ;;
+    esac
+}
+
 do_fetch() {
     mkdir -p "${base_dir}"/sources
 
-    source_dir="${base_dir}"/"${source_dir}"
     case ${source_method} in
         tarball)
             do_tarball_fetch
@@ -236,26 +275,43 @@ do_fetch() {
         git)
             do_git_fetch
             ;;
+        mercurial)
+            do_hg_fetch
+            ;;
         *)
             ;;
     esac
 }
 
 do_patch() {
-    [ -d "${base_dir}"/patches/${name} ] || return 0
     [ -f "${base_dir}"/sources/${name}.patched ] && return
 
     cd "${source_dir}"
 
-    for patch in $(ls "${base_dir}"/patches/${name}); do
-        patch -p1 < "${base_dir}"/patches/${name}/${patch}
-    done
+    if [ -d "${base_dir}"/patches/${name} ]; then
+        for patch in "${base_dir}"/patches/${name}/*; do
+            [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
+            [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
+            patch -p1 < "${patch}"
+        done
+    fi
+
+
+    cp -r "${source_dir}" "${base_dir}"/sources/${name}-clean
+
+    if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
+        patch -p1 < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+    fi
+
+    cp -r "${source_dir}" "${base_dir}"/sources/${name}-workdir
+
+    cd "${base_dir}"
 
     touch "${base_dir}"/sources/${name}.patched
 }
 
 do_regenerate() {
-    source "${base_dir}"/source-recipes/$1
+    . "${base_dir}"/source-recipes/$1
 
     [ -f "${base_dir}"/sources/${name}.regenerated ] && return
 
@@ -263,19 +319,18 @@ do_regenerate() {
     [ -z "${source_dir}" ] && source_dir="${base_dir}"/sources/${name}
 
     cd "${source_dir}"
-
     regenerate
+    cd "${base_dir}"
 
     touch "${base_dir}"/sources/${name}.regenerated
 }
 
 do_configure_host() {
-    source "${base_dir}"/host-recipes/$1
+    . "${base_dir}"/host-recipes/$1
 
     [ -f "${base_dir}"/host-builds/${name}.configured ] && return
 
     mkdir -p "${base_dir}"/host-builds/${name}
-    cd "${base_dir}"/host-builds/${name}
 
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -286,17 +341,18 @@ do_configure_host() {
 
     prefix="/usr/local"
     sysroot_dir="/sysroot"
+
+    cd "${base_dir}"/host-builds/${name}
     configure
+    cd "${base_dir}"
 
     touch "${base_dir}"/host-builds/${name}.configured
 }
 
 do_build_host() {
-    source "${base_dir}"/host-recipes/$1
+    . "${base_dir}"/host-recipes/$1
 
     [ -f "${base_dir}"/host-builds/${name}.built ] && return
-
-    cd "${base_dir}"/host-builds/${name}
 
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -307,13 +363,16 @@ do_build_host() {
 
     prefix="/usr/local"
     sysroot_dir="/sysroot"
+
+    cd "${base_dir}"/host-builds/${name}
     build
+    cd "${base_dir}"
 
     touch "${base_dir}"/host-builds/${name}.built
 }
 
 do_install_host() {
-    source "${base_dir}"/host-recipes/$1
+    . "${base_dir}"/host-recipes/$1
 
     [ -f "${base_dir}"/host-builds/${name}.installed ] && return
 
@@ -322,8 +381,6 @@ do_install_host() {
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    cd "${base_dir}"/host-builds/${name}
-
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
@@ -336,18 +393,24 @@ do_install_host() {
 
     mkdir -p "${dest_dir}${prefix}"
 
+    cd "${base_dir}"/host-builds/${name}
     install
+    cd "${base_dir}"
+
+    # Remove libtool files
+    for i in lib lib64 lib32 usr/lib usr/lib64 usr/lib32; do
+        rm -rvf "${dest_dir}${prefix}"/$i/*.la
+    done
 
     touch "${base_dir}"/host-builds/${name}.installed
 }
 
 do_configure() {
-    source "${base_dir}"/recipes/$1
+    . "${base_dir}"/recipes/$1
 
     [ -f "${base_dir}"/builds/${name}.configured ] && return
 
     mkdir -p "${base_dir}"/builds/${name}
-    cd "${base_dir}"/builds/${name}
 
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -358,17 +421,18 @@ do_configure() {
 
     prefix="/usr"
     sysroot_dir="/sysroot"
+
+    cd "${base_dir}"/builds/${name}
     configure
+    cd "${base_dir}"
 
     touch "${base_dir}"/builds/${name}.configured
 }
 
 do_build() {
-    source "${base_dir}"/recipes/$1
+    . "${base_dir}"/recipes/$1
 
     [ -f "${base_dir}"/builds/${name}.built ] && return
-
-    cd "${base_dir}"/builds/${name}
 
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -379,13 +443,16 @@ do_build() {
 
     prefix="/usr"
     sysroot_dir="/sysroot"
+
+    cd "${base_dir}"/builds/${name}
     build
+    cd "${base_dir}"
 
     touch "${base_dir}"/builds/${name}.built
 }
 
 do_install() {
-    source "${base_dir}"/recipes/$1
+    . "${base_dir}"/recipes/$1
 
     [ -f "${base_dir}"/builds/${name}.installed ] && return
 
@@ -393,8 +460,6 @@ do_install() {
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
-
-    cd "${base_dir}"/builds/${name}
 
     eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -408,41 +473,74 @@ do_install() {
 
     mkdir -p "${dest_dir}${prefix}"
 
+    cd "${base_dir}"/builds/${name}
     install
+    cd "${base_dir}"
+
+    # Remove libtool files
+    for i in lib lib64 lib32 usr/lib usr/lib64 usr/lib32; do
+        rm -rvf "${dest_dir}${prefix}"/$i/*.la
+    done
 
     touch "${base_dir}"/builds/${name}.installed
 }
 
 do_source() {
-    [ -f "${base_dir}"/sources/${from_source}.regenerated ] || (
-        source "${base_dir}"/source-recipes/${from_source}
+    . "${base_dir}"/source-recipes/$1
 
-        grep 'imagedeps=' "${base_dir}"/source-recipes/${from_source} &>/dev/null || \
-            imagedeps=""
-        grep 'hostdeps=' "${base_dir}"/source-recipes/${from_source} &>/dev/null || \
-            hostdeps=""
-        grep 'hostrundeps=' "${base_dir}"/source-recipes/${from_source} &>/dev/null || \
-            hostrundeps=""
-        grep 'deps=' "${base_dir}"/source-recipes/${from_source} &>/dev/null || \
-            deps=""
+    get_real_source_dir
 
-        do_fetch
-        do_patch
+    do_fetch
+    do_patch
 
-        prepare_container
-        run_in_container internal-regenerate ${from_source}
-        destroy_container
-    )
+    prepare_container
+    run_in_container internal-regenerate $1
+    destroy_container
+}
+
+do_regen_cmd() {
+    . "${base_dir}"/source-recipes/$1
+
+    [ -f "${base_dir}"/sources/$1.patched ] || die "cannot regenerate non-built package"
+
+    get_real_source_dir
+
+    make_temp
+    patch_file="${tmp}"
+
+    if [ "${is_local_package}" = true ]; then
+        cd "${base_dir}"/sources
+
+        git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
+
+        if [ -s "${patch_file}" ]; then
+            mkdir -p "${base_dir}"/patches/$1
+            mv "${patch_file}" "${base_dir}"/patches/$1/jinx-working-patch.patch
+        fi
+
+        cd "${base_dir}"
+
+        rm -rf "${source_dir}"
+        cp -r "${base_dir}"/sources/$1-workdir "${source_dir}"
+    fi
+
+    rm -rf "${base_dir}"/sources/$1.regenerated
+
+    prepare_container
+    run_in_container internal-regenerate $1
+    destroy_container
 }
 
 do_host_pkg() {
-    source "${base_dir}"/host-recipes/$1
+    . "${base_dir}"/host-recipes/$1
 
     [ -f "${base_dir}"/host-builds/${name}.installed ] && return
 
     echo "* building host package: $name"
 
-    do_source
+    eval $(grep from_source < "${base_dir}"/host-recipes/$1)
+    [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
+        "${script}" internal-source "${from_source}"
 
     prepare_container
 
@@ -454,13 +552,15 @@ do_host_pkg() {
 }
 
 do_pkg() {
-    source "${base_dir}"/recipes/$1
+    . "${base_dir}"/recipes/$1
 
     [ -f "${base_dir}"/builds/${name}.installed ] && return
 
     echo "* building package: $name"
 
-    do_source
+    eval $(grep from_source < "${base_dir}"/recipes/$1)
+    [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
+        "${script}" internal-source "${from_source}"
 
     prepare_container
 
@@ -471,24 +571,40 @@ do_pkg() {
     destroy_container
 }
 
-do_all() {
-    for pkg in $(ls "${base_dir}"/recipes); do
-        cd "${base_dir}" && "${script}" build ${pkg}
+cmd_build_all() {
+    for pkg in "${base_dir}"/recipes/*; do
+        "${script}" internal-do-pkg $(basename "${pkg}")
     done
 }
 
-do_sysroot() {
+cmd_host_build() {
+    for i in "$@"; do
+        "${script}" internal-do-host-pkg "$i"
+    done
+}
+
+cmd_build() {
+    for i in "$@"; do
+        "${script}" internal-do-pkg "$i"
+    done
+}
+
+cmd_regenerate() {
+    for i in "$@"; do
+        "${script}" internal-do-regenerate "$i"
+    done
+}
+
+cmd_sysroot() {
+    rm -rf "${base_dir}"/sysroot
     mkdir -p "${base_dir}"/sysroot
-    for pkg in $(ls "${base_dir}"/pkgs); do
-        echo "* copying ${pkg} to sysroot..."
-        cp -r "${base_dir}"/pkgs/${pkg}/. "${base_dir}"/sysroot/
+    for pkg in "${base_dir}"/pkgs/*; do
+        echo "* copying $(basename ${pkg}) to sysroot..."
+        cp -r "${pkg}"/. "${base_dir}"/sysroot/
     done
 }
 
 case "$1" in
-    sysroot)
-        do_sysroot
-        ;;
     internal-regenerate)
         do_regenerate "$2"
         ;;
@@ -510,14 +626,45 @@ case "$1" in
     internal-install)
         do_install "$2"
         ;;
-    host-build)
+    internal-get-deps-file)
+        . "${base_dir}"/recipes/$2
+        deps_file="$3"
+        get_deps_file
+        ;;
+    internal-get-hostdeps-file-run)
+        . "${base_dir}"/host-recipes/$2
+        hostdeps_file="$3"
+        get_hostdeps_file_run
+        ;;
+    internal-source)
+        do_source "$2"
+        ;;
+    internal-do-host-pkg)
         do_host_pkg "$2"
         ;;
-    build)
+    internal-do-pkg)
         do_pkg "$2"
         ;;
+    internal-do-regenerate)
+        do_regen_cmd "$2"
+        ;;
+    host-build)
+        shift 1
+        cmd_host_build "$@"
+        ;;
+    build)
+        shift 1
+        cmd_build "$@"
+        ;;
     build-all)
-        do_all
+        cmd_build_all
+        ;;
+    regenerate)
+        shift 1
+        cmd_regenerate "$@"
+        ;;
+    sysroot)
+        cmd_sysroot
         ;;
     *)
         die "unknown command: $1"

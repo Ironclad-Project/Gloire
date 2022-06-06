@@ -1,6 +1,6 @@
-From c569545fe136eac3b4c5cd369639e3a4373b1b32 Mon Sep 17 00:00:00 2001
+From 2881007fcec60b2e82c673cd935fd585eb7cb4a0 Mon Sep 17 00:00:00 2001
 From: streaksu <assemblyislaw@gmail.com>
-Date: Mon, 6 Jun 2022 12:43:32 +0200
+Date: Mon, 6 Jun 2022 19:31:11 +0200
 Subject: [PATCH] Ironclad specific changes
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] Ironclad specific changes
  options/rtdl/generic/main.cpp                 |   2 +-
  sysdeps/ironclad/crt-x86_64/crt0.S            |   7 +
  sysdeps/ironclad/generic/entry.cpp            |  34 ++
- sysdeps/ironclad/generic/generic.cpp          | 413 ++++++++++++++++++
+ sysdeps/ironclad/generic/generic.cpp          | 425 ++++++++++++++++++
  sysdeps/ironclad/include/abi-bits/abi.h       |   1 +
  sysdeps/ironclad/include/abi-bits/auxv.h      |   1 +
  sysdeps/ironclad/include/abi-bits/blkcnt_t.h  |   1 +
@@ -40,9 +40,9 @@ Subject: [PATCH] Ironclad specific changes
  sysdeps/ironclad/include/abi-bits/vm-flags.h  |   1 +
  sysdeps/ironclad/include/abi-bits/wait.h      |   1 +
  sysdeps/ironclad/include/sys/ironclad.h       |  41 ++
- sysdeps/ironclad/include/sys/syscall.h        |  77 ++++
+ sysdeps/ironclad/include/sys/syscall.h        |  78 ++++
  sysdeps/ironclad/meson.build                  |  58 +++
- 38 files changed, 713 insertions(+), 2 deletions(-)
+ 38 files changed, 726 insertions(+), 2 deletions(-)
  create mode 100644 abis/ironclad/abi.h
  create mode 100644 abis/ironclad/auxv.h
  create mode 100644 abis/ironclad/seek-whence.h
@@ -81,7 +81,7 @@ Subject: [PATCH] Ironclad specific changes
 
 diff --git a/abis/ironclad/abi.h b/abis/ironclad/abi.h
 new file mode 100644
-index 00000000..403f7ca3
+index 0000000..403f7ca
 --- /dev/null
 +++ b/abis/ironclad/abi.h
 @@ -0,0 +1,29 @@
@@ -116,7 +116,7 @@ index 00000000..403f7ca3
 +#endif // _ABIBITS_ABI_H
 diff --git a/abis/ironclad/auxv.h b/abis/ironclad/auxv.h
 new file mode 100644
-index 00000000..4dc3b4e7
+index 0000000..4dc3b4e
 --- /dev/null
 +++ b/abis/ironclad/auxv.h
 @@ -0,0 +1,11 @@
@@ -133,7 +133,7 @@ index 00000000..4dc3b4e7
 +#endif
 diff --git a/abis/ironclad/seek-whence.h b/abis/ironclad/seek-whence.h
 new file mode 100644
-index 00000000..617b6f41
+index 0000000..617b6f4
 --- /dev/null
 +++ b/abis/ironclad/seek-whence.h
 @@ -0,0 +1,8 @@
@@ -146,7 +146,7 @@ index 00000000..617b6f41
 +
 +#endif // _ABIBITS_SEEK_WHENCE_H
 diff --git a/meson.build b/meson.build
-index d3937245..a12963d5 100644
+index 6c1103d..fc2e186 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -1,4 +1,4 @@
@@ -155,7 +155,7 @@ index d3937245..a12963d5 100644
  
  fs = import('fs')
  
-@@ -117,6 +117,11 @@ elif host_machine.system() == 'qword'
+@@ -119,6 +119,11 @@ elif host_machine.system() == 'qword'
  	rtdl_include_dirs += include_directories('sysdeps/qword/include')
  	libc_include_dirs += include_directories('sysdeps/qword/include')
  	subdir('sysdeps/qword')
@@ -168,7 +168,7 @@ index d3937245..a12963d5 100644
  	#disable_linux_option = true
  	rtdl_include_dirs += include_directories('sysdeps/sigma/include')
 diff --git a/options/ansi/include/inttypes.h b/options/ansi/include/inttypes.h
-index 50549ae8..d836d991 100644
+index 50549ae..d836d99 100644
 --- a/options/ansi/include/inttypes.h
 +++ b/options/ansi/include/inttypes.h
 @@ -102,6 +102,8 @@
@@ -181,10 +181,10 @@ index 50549ae8..d836d991 100644
  extern "C" {
  #endif
 diff --git a/options/rtdl/generic/main.cpp b/options/rtdl/generic/main.cpp
-index 86c9e00c..73064ac5 100644
+index 445dbf8..5fa34dd 100644
 --- a/options/rtdl/generic/main.cpp
 +++ b/options/rtdl/generic/main.cpp
-@@ -175,7 +175,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
+@@ -176,7 +176,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {
  	}
  	__ensure(strtab_offset);
  	__ensure(soname_str);
@@ -195,7 +195,7 @@ index 86c9e00c..73064ac5 100644
  	aux += *aux + 1; // First, we skip argc and all args.
 diff --git a/sysdeps/ironclad/crt-x86_64/crt0.S b/sysdeps/ironclad/crt-x86_64/crt0.S
 new file mode 100644
-index 00000000..0a0a4a0c
+index 0000000..0a0a4a0
 --- /dev/null
 +++ b/sysdeps/ironclad/crt-x86_64/crt0.S
 @@ -0,0 +1,7 @@
@@ -208,7 +208,7 @@ index 00000000..0a0a4a0c
 +
 diff --git a/sysdeps/ironclad/generic/entry.cpp b/sysdeps/ironclad/generic/entry.cpp
 new file mode 100644
-index 00000000..ee7a794b
+index 0000000..ee7a794
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/entry.cpp
 @@ -0,0 +1,34 @@
@@ -248,10 +248,10 @@ index 00000000..ee7a794b
 +
 diff --git a/sysdeps/ironclad/generic/generic.cpp b/sysdeps/ironclad/generic/generic.cpp
 new file mode 100644
-index 00000000..7e00fcd0
+index 0000000..98a2c1f
 --- /dev/null
 +++ b/sysdeps/ironclad/generic/generic.cpp
-@@ -0,0 +1,413 @@
+@@ -0,0 +1,425 @@
 +#include <bits/ensure.h>
 +#include <mlibc/debug.hpp>
 +#include <mlibc/all-sysdeps.hpp>
@@ -620,6 +620,18 @@ index 00000000..7e00fcd0
 +    return 0;
 +}
 +
++int sys_access(const char *path, int mode) {
++	int ret, errno;
++
++	SYSCALL2(SYSCALL_ACCESS, path, mode);
++
++	if (ret == -1) {
++        return errno;
++	} else {
++        return 0;
++   }
++}
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) STUB_ONLY
 +int sys_futex_wake(int *pointer) STUB_ONLY
 +
@@ -667,7 +679,7 @@ index 00000000..7e00fcd0
 +} // namespace mlibc
 diff --git a/sysdeps/ironclad/include/abi-bits/abi.h b/sysdeps/ironclad/include/abi-bits/abi.h
 new file mode 120000
-index 00000000..b466b4b2
+index 0000000..b466b4b
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/abi.h
 @@ -0,0 +1 @@
@@ -675,7 +687,7 @@ index 00000000..b466b4b2
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/auxv.h b/sysdeps/ironclad/include/abi-bits/auxv.h
 new file mode 120000
-index 00000000..f9be8994
+index 0000000..f9be899
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/auxv.h
 @@ -0,0 +1 @@
@@ -683,7 +695,7 @@ index 00000000..f9be8994
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/blkcnt_t.h b/sysdeps/ironclad/include/abi-bits/blkcnt_t.h
 new file mode 120000
-index 00000000..e9d9f1b4
+index 0000000..e9d9f1b
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/blkcnt_t.h
 @@ -0,0 +1 @@
@@ -691,7 +703,7 @@ index 00000000..e9d9f1b4
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/blksize_t.h b/sysdeps/ironclad/include/abi-bits/blksize_t.h
 new file mode 120000
-index 00000000..c6dfb6e0
+index 0000000..c6dfb6e
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/blksize_t.h
 @@ -0,0 +1 @@
@@ -699,7 +711,7 @@ index 00000000..c6dfb6e0
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/dev_t.h b/sysdeps/ironclad/include/abi-bits/dev_t.h
 new file mode 120000
-index 00000000..0c1143b9
+index 0000000..0c1143b
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/dev_t.h
 @@ -0,0 +1 @@
@@ -707,7 +719,7 @@ index 00000000..0c1143b9
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/errno.h b/sysdeps/ironclad/include/abi-bits/errno.h
 new file mode 120000
-index 00000000..589859fb
+index 0000000..589859f
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/errno.h
 @@ -0,0 +1 @@
@@ -715,7 +727,7 @@ index 00000000..589859fb
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/fcntl.h b/sysdeps/ironclad/include/abi-bits/fcntl.h
 new file mode 120000
-index 00000000..ea5323ad
+index 0000000..ea5323a
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/fcntl.h
 @@ -0,0 +1 @@
@@ -723,7 +735,7 @@ index 00000000..ea5323ad
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/gid_t.h b/sysdeps/ironclad/include/abi-bits/gid_t.h
 new file mode 120000
-index 00000000..6a772180
+index 0000000..6a77218
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/gid_t.h
 @@ -0,0 +1 @@
@@ -731,7 +743,7 @@ index 00000000..6a772180
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/in.h b/sysdeps/ironclad/include/abi-bits/in.h
 new file mode 120000
-index 00000000..b58c683f
+index 0000000..b58c683
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/in.h
 @@ -0,0 +1 @@
@@ -739,7 +751,7 @@ index 00000000..b58c683f
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/ino_t.h b/sysdeps/ironclad/include/abi-bits/ino_t.h
 new file mode 120000
-index 00000000..10d644e7
+index 0000000..10d644e
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/ino_t.h
 @@ -0,0 +1 @@
@@ -747,7 +759,7 @@ index 00000000..10d644e7
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/limits.h b/sysdeps/ironclad/include/abi-bits/limits.h
 new file mode 120000
-index 00000000..1aa58942
+index 0000000..1aa5894
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/limits.h
 @@ -0,0 +1 @@
@@ -755,7 +767,7 @@ index 00000000..1aa58942
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/mode_t.h b/sysdeps/ironclad/include/abi-bits/mode_t.h
 new file mode 120000
-index 00000000..29d77331
+index 0000000..29d7733
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/mode_t.h
 @@ -0,0 +1 @@
@@ -763,7 +775,7 @@ index 00000000..29d77331
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/nlink_t.h b/sysdeps/ironclad/include/abi-bits/nlink_t.h
 new file mode 120000
-index 00000000..7618c27f
+index 0000000..7618c27
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/nlink_t.h
 @@ -0,0 +1 @@
@@ -771,7 +783,7 @@ index 00000000..7618c27f
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/pid_t.h b/sysdeps/ironclad/include/abi-bits/pid_t.h
 new file mode 120000
-index 00000000..3fd26a7f
+index 0000000..3fd26a7
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/pid_t.h
 @@ -0,0 +1 @@
@@ -779,7 +791,7 @@ index 00000000..3fd26a7f
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/reboot.h b/sysdeps/ironclad/include/abi-bits/reboot.h
 new file mode 120000
-index 00000000..ecc3ddb9
+index 0000000..ecc3ddb
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/reboot.h
 @@ -0,0 +1 @@
@@ -787,7 +799,7 @@ index 00000000..ecc3ddb9
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/resource.h b/sysdeps/ironclad/include/abi-bits/resource.h
 new file mode 120000
-index 00000000..3e59c750
+index 0000000..3e59c75
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/resource.h
 @@ -0,0 +1 @@
@@ -795,7 +807,7 @@ index 00000000..3e59c750
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/seek-whence.h b/sysdeps/ironclad/include/abi-bits/seek-whence.h
 new file mode 120000
-index 00000000..fbd0a8fa
+index 0000000..fbd0a8f
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/seek-whence.h
 @@ -0,0 +1 @@
@@ -803,7 +815,7 @@ index 00000000..fbd0a8fa
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/signal.h b/sysdeps/ironclad/include/abi-bits/signal.h
 new file mode 120000
-index 00000000..b20e5119
+index 0000000..b20e511
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/signal.h
 @@ -0,0 +1 @@
@@ -811,7 +823,7 @@ index 00000000..b20e5119
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/socket.h b/sysdeps/ironclad/include/abi-bits/socket.h
 new file mode 120000
-index 00000000..0e1d6be9
+index 0000000..0e1d6be
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/socket.h
 @@ -0,0 +1 @@
@@ -819,7 +831,7 @@ index 00000000..0e1d6be9
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/stat.h b/sysdeps/ironclad/include/abi-bits/stat.h
 new file mode 120000
-index 00000000..82642c3c
+index 0000000..82642c3
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/stat.h
 @@ -0,0 +1 @@
@@ -827,7 +839,7 @@ index 00000000..82642c3c
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/termios.h b/sysdeps/ironclad/include/abi-bits/termios.h
 new file mode 120000
-index 00000000..cfcfe763
+index 0000000..cfcfe76
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/termios.h
 @@ -0,0 +1 @@
@@ -835,7 +847,7 @@ index 00000000..cfcfe763
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/time.h b/sysdeps/ironclad/include/abi-bits/time.h
 new file mode 120000
-index 00000000..97f3d52d
+index 0000000..97f3d52
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/time.h
 @@ -0,0 +1 @@
@@ -843,7 +855,7 @@ index 00000000..97f3d52d
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/uid_t.h b/sysdeps/ironclad/include/abi-bits/uid_t.h
 new file mode 120000
-index 00000000..1113eba6
+index 0000000..1113eba
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/uid_t.h
 @@ -0,0 +1 @@
@@ -851,7 +863,7 @@ index 00000000..1113eba6
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/utsname.h b/sysdeps/ironclad/include/abi-bits/utsname.h
 new file mode 120000
-index 00000000..17b993fe
+index 0000000..17b993f
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/utsname.h
 @@ -0,0 +1 @@
@@ -859,7 +871,7 @@ index 00000000..17b993fe
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/vm-flags.h b/sysdeps/ironclad/include/abi-bits/vm-flags.h
 new file mode 120000
-index 00000000..f1a985e6
+index 0000000..f1a985e
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/vm-flags.h
 @@ -0,0 +1 @@
@@ -867,7 +879,7 @@ index 00000000..f1a985e6
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/abi-bits/wait.h b/sysdeps/ironclad/include/abi-bits/wait.h
 new file mode 120000
-index 00000000..6d911c7f
+index 0000000..6d911c7
 --- /dev/null
 +++ b/sysdeps/ironclad/include/abi-bits/wait.h
 @@ -0,0 +1 @@
@@ -875,7 +887,7 @@ index 00000000..6d911c7f
 \ No newline at end of file
 diff --git a/sysdeps/ironclad/include/sys/ironclad.h b/sysdeps/ironclad/include/sys/ironclad.h
 new file mode 100644
-index 00000000..a904870f
+index 0000000..a904870
 --- /dev/null
 +++ b/sysdeps/ironclad/include/sys/ironclad.h
 @@ -0,0 +1,41 @@
@@ -922,10 +934,10 @@ index 00000000..a904870f
 +#endif // _IRONCLAD_H
 diff --git a/sysdeps/ironclad/include/sys/syscall.h b/sysdeps/ironclad/include/sys/syscall.h
 new file mode 100644
-index 00000000..7dc32772
+index 0000000..109f515
 --- /dev/null
 +++ b/sysdeps/ironclad/include/sys/syscall.h
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,78 @@
 +#ifndef _SYSCALL_H
 +#define _SYSCALL_H
 +
@@ -1001,11 +1013,12 @@ index 00000000..7dc32772
 +#define SYSCALL_DUP               24
 +#define SYSCALL_DUP2              25
 +#define SYSCALL_DUP3              26
++#define SYSCALL_ACCESS            27
 +
 +#endif // _SYSCALL_H
 diff --git a/sysdeps/ironclad/meson.build b/sysdeps/ironclad/meson.build
 new file mode 100644
-index 00000000..26cd7ad7
+index 0000000..26cd7ad
 --- /dev/null
 +++ b/sysdeps/ironclad/meson.build
 @@ -0,0 +1,58 @@

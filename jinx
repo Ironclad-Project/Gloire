@@ -498,7 +498,21 @@ do_source() {
     destroy_container
 }
 
-do_regen_cmd() {
+do_cmd_rebuild() {
+    rm -rf "${base_dir}"/builds/"$1"*
+    rm -rf "${base_dir}"/pkgs/"$1"*
+
+    do_pkg "$1"
+}
+
+do_cmd_host_rebuild() {
+    rm -rf "${base_dir}"/host-builds/"$1"*
+    rm -rf "${base_dir}"/host-pkgs/"$1"*
+
+    do_host_pkg "$1"
+}
+
+do_cmd_regenerate() {
     . "${base_dir}"/source-recipes/$1
 
     [ -f "${base_dir}"/sources/$1.patched ] || die "cannot regenerate non-built package"
@@ -508,7 +522,7 @@ do_regen_cmd() {
     make_temp
     patch_file="${tmp}"
 
-    if [ "${is_local_package}" = true ]; then
+    if ! [ "${is_local_package}" = true ]; then
         cd "${base_dir}"/sources
 
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
@@ -595,6 +609,27 @@ cmd_regenerate() {
     done
 }
 
+cmd_host_rebuild() {
+    for i in "$@"; do
+        "${script}" internal-do-host-rebuild "$i"
+    done
+}
+
+cmd_rebuild() {
+    for i in "$@"; do
+        "${script}" internal-do-rebuild "$i"
+    done
+}
+
+cmd_clean() {
+    rm -rf "${base_dir}"/builds
+    rm -rf "${base_dir}"/host-builds
+    rm -rf "${base_dir}"/pkgs
+    rm -rf "${base_dir}"/host-pkgs
+    rm -rf "${base_dir}"/sources
+    rm -rf "${base_dir}"/sysroot
+}
+
 cmd_sysroot() {
     rm -rf "${base_dir}"/sysroot
     mkdir -p "${base_dir}"/sysroot
@@ -646,7 +681,13 @@ case "$1" in
         do_pkg "$2"
         ;;
     internal-do-regenerate)
-        do_regen_cmd "$2"
+        do_cmd_regenerate "$2"
+        ;;
+    internal-do-host-rebuild)
+        do_cmd_host_rebuild "$2"
+        ;;
+    internal-do-rebuild)
+        do_cmd_rebuild "$2"
         ;;
     host-build)
         shift 1
@@ -663,8 +704,19 @@ case "$1" in
         shift 1
         cmd_regenerate "$@"
         ;;
+    host-rebuild)
+        shift 1
+        cmd_host_rebuild "$@"
+        ;;
+    rebuild)
+        shift 1
+        cmd_rebuild "$@"
+        ;;
     sysroot)
         cmd_sysroot
+        ;;
+    clean)
+        cmd_clean
         ;;
     *)
         die "unknown command: $1"

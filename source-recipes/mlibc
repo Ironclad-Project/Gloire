@@ -3,6 +3,7 @@ version=0.0
 source_method=git
 clone_url="https://github.com/managarm/mlibc.git"
 tag="master"
+commit="ae54d513c6dbad0c659f4c145e15e5f6e099ea5c"
 
 regenerate() {
     true

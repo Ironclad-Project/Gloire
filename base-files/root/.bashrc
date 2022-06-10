@@ -3,6 +3,9 @@ HISTCONTROL=ignoredups
 HISTSIZE=-1
 HISTFILESIZE=-1
 
+# FIXME: Remove this line once the VFS does not suck
+export PATH=/usr/bin
+
 export HOME=/root
 export USER=root
 export LOGNAME=root

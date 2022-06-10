@@ -1,0 +1,12 @@
+diff --git mlibc-clean/abis/ironclad/abi.h mlibc-workdir/abis/ironclad/abi.h
+index d522358..cb4854d 100644
+--- mlibc-clean/abis/ironclad/abi.h
++++ mlibc-workdir/abis/ironclad/abi.h
+@@ -21,6 +21,7 @@
+ #define __MLIBC_O_DSYNC 0x00800
+ #define __MLIBC_O_RSYNC 0x01000
+ #define __MLIBC_O_SYNC 0x02000
++#define __MLIBC_O_ASYNC 0x6969
+ #define __MLIBC_O_CLOEXEC 0x04000
+ #define __MLIBC_O_PATH 0x08000
+ #define __MLIBC_O_LARGEFILE 0x10000

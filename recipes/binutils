@@ -1,0 +1,25 @@
+name=binutils
+from_source=binutils
+revision=1
+hostdeps="gcc automake autoconf"
+deps="tzdata mlibc"
+imagedeps="gcc gperf bison flex"
+
+configure() {
+    ${source_dir}/configure      \
+        --host=x86_64-ironclad   \
+        --target=x86_64-ironclad \
+        --prefix=${prefix}       \
+        --disable-nls            \
+        --with-sysroot="${sysroot_dir}" \
+        --disable-werror \
+        CFLAGS="-DSLOW_BUT_NO_HACKS -Wno-error -O2 -pipe"
+}
+
+build() {
+    make -j${parallelism} all-binutils all-ld all-gas
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip-binutils install-strip-gas install-strip-ld
+}

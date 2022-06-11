@@ -68,21 +68,6 @@ index 48d09747..8a6426fb 100644
      case "$EMULATION_NAME" in
        *64*)
  	LIBPATH_SUFFIX=64
-diff --git a/libiberty/rust-demangle.c b/libiberty/rust-demangle.c
-index df09b7b8..4a596b88 100644
---- a/libiberty/rust-demangle.c
-+++ b/libiberty/rust-demangle.c
-@@ -32,6 +32,10 @@ If not, see <http://www.gnu.org/licenses/>.  */
- #include "config.h"
- #endif
-
-+#if defined (__ironclad__)
-+#define uint unsigned int
-+#endif
-+
- #include "safe-ctype.h"
-
- #include <inttypes.h>
 --
 2.33.0
 

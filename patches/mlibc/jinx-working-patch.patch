@@ -10,3 +10,23 @@ index d522358..cb4854d 100644
  #define __MLIBC_O_CLOEXEC 0x04000
  #define __MLIBC_O_PATH 0x08000
  #define __MLIBC_O_LARGEFILE 0x10000
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index 3b63ed3..bf6c9c1 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -181,9 +181,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
+ }
+ 
+ int sys_isatty(int fd) {
+-	(void)fd;
+-	mlibc::infoLogger() << "mlibc: " << __func__ << " is a stub!\n" << frg::endlog;
+-	return 0;
++	struct termios t;
++	if (sys_tcgetattr(fd, &t) == 0) {
++		return 0;
++	} else {
++		return ENOTTY;
++	}
+ }
+ 
+ uid_t sys_getuid() {

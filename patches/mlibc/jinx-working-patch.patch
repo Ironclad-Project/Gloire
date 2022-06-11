@@ -11,9 +11,18 @@ index d522358..cb4854d 100644
  #define __MLIBC_O_PATH 0x08000
  #define __MLIBC_O_LARGEFILE 0x10000
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..bf6c9c1 100644
+index 3b63ed3..2e67e45 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -39,7 +39,7 @@ void sys_exit(int status) {
+ 
+ int sys_tcb_set(void *pointer) {
+ 	int ret, errno;
+-	SYSCALL1(SYSCALL_SET_TCB, pointer);
++	SYSCALL2(SYSCALL_ARCH_PRCTL, 1, pointer);
+ 	return errno;
+ }
+ 
 @@ -181,9 +181,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
  }
  
@@ -30,3 +39,16 @@ index 3b63ed3..bf6c9c1 100644
  }
  
  uid_t sys_getuid() {
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+index 28d233e..6f85c50 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -49,7 +49,7 @@
+ })
+ 
+ #define SYSCALL_EXIT               0
+-#define SYSCALL_SET_TCB            1
++#define SYSCALL_ARCH_PRCTL         1
+ #define SYSCALL_OPEN               2
+ #define SYSCALL_CLOSE              3
+ #define SYSCALL_READ               4

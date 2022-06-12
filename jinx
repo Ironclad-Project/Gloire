@@ -283,8 +283,13 @@ do_fetch() {
     esac
 }
 
-do_patch() {
-    [ -f "${base_dir}"/sources/${name}.patched ] && return
+cont_patch() {
+    . "${base_dir}"/source-recipes/$1
+
+    get_real_source_dir
+
+    make_temp
+    patch_trash="${tmp}"
 
     cd "${source_dir}"
 
@@ -292,7 +297,7 @@ do_patch() {
         for patch in "${base_dir}"/patches/${name}/*; do
             [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
             [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
-            patch -p1 < "${patch}"
+            patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
         done
     fi
 
@@ -300,7 +305,7 @@ do_patch() {
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
-        patch -p1 < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
     fi
 
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-workdir
@@ -313,10 +318,9 @@ do_patch() {
 do_regenerate() {
     . "${base_dir}"/source-recipes/$1
 
-    [ -f "${base_dir}"/sources/${name}.regenerated ] && return
+    get_real_source_dir
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${name})
-    [ -z "${source_dir}" ] && source_dir="${base_dir}"/sources/${name}
+    [ -f "${base_dir}"/sources/${name}.regenerated ] && return
 
     cd "${source_dir}"
     regenerate
@@ -485,13 +489,22 @@ do_install() {
     touch "${base_dir}"/builds/${name}.installed
 }
 
+precont_patch() {
+    [ -f "${base_dir}"/sources/$1.patched ] && return
+
+    prepare_container
+    run_in_container internal-cont-patch $1
+    destroy_container
+}
+
 do_source() {
     . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
     do_fetch
-    do_patch
+
+    "${script}" internal-precont-patch $1
 
     prepare_container
     run_in_container internal-regenerate $1
@@ -525,7 +538,41 @@ do_cmd_regenerate() {
     if ! [ "${is_local_package}" = true ]; then
         cd "${base_dir}"/sources
 
+        # exclude version control dirs
+        make_temp -d
+        vc_dir_clean="${tmp}"
+        rm -rf "${vc_dir_clean}"
+        make_temp -d
+        vc_dir_workdir="${tmp}"
+        rm -rf "${vc_dir_workdir}"
+
+        case "${source_method}" in
+            git)
+                mv $1-clean/.git "${vc_dir_clean}"
+                mv $1-workdir/.git "${vc_dir_workdir}"
+                ;;
+            mercurial)
+                mv $1-clean/.hg "${vc_dir_clean}"
+                mv $1-workdir/.hg "${vc_dir_workdir}"
+                ;;
+            *)
+                ;;
+        esac
+
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
+
+        case "${source_method}" in
+            git)
+                mv "${vc_dir_clean}" $1-clean/.git
+                mv "${vc_dir_workdir}" $1-workdir/.git
+                ;;
+            mercurial)
+                mv "${vc_dir_clean}" $1-clean/.hg
+                mv "${vc_dir_workdir}" $1-workdir/.hg
+                ;;
+            *)
+                ;;
+        esac
 
         if [ -s "${patch_file}" ]; then
             mkdir -p "${base_dir}"/patches/$1
@@ -642,6 +689,12 @@ cmd_sysroot() {
 case "$1" in
     internal-regenerate)
         do_regenerate "$2"
+        ;;
+    internal-precont-patch)
+        precont_patch "$2"
+        ;;
+    internal-cont-patch)
+        cont_patch "$2"
         ;;
     internal-configure-host)
         do_configure_host "$2"

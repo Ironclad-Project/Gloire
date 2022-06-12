@@ -22,8 +22,12 @@ static struct window      *win_array[20];
 struct window *add_window(const char *name) {
     for (int i = 0; i < 20; i++) {
         if (win_array[i] == NULL) {
-            win_array[i] = create_window(name);
-            return win_array[i];
+            struct window *intermediate = win_array[0];
+            win_array[0] = create_window(name);
+            if (i != 0) {
+                win_array[i] = intermediate;
+            }
+            return win_array[0];
         }
     }
 
@@ -35,8 +39,12 @@ void refresh() {
     draw_background(main_fb);
 
     // Go thru the windows, check if we are clicking any, move and draw.
-    for (int i = 0; i < 20; i++) {
+    // Window at index 0 is always the focused one.
+    for (int i = 19; i >= 0; i--) {
         if (win_array[i] != NULL) {
+            if (i != 0) {
+                unfocus_window(win_array[i]);
+            }
             draw_window(win_array[i], main_fb);
         }
     }
@@ -129,6 +137,11 @@ int main() {
                 if (win_array[i] != NULL) {
                     if (pixel_is_in_window(win_array[i], old_cursor_x, old_cursor_y)) {
                         focus_window(win_array[i]);
+
+                        struct window *intermediate = win_array[0];
+                        win_array[0] = win_array[i];
+                        win_array[i] = intermediate;
+
                         if (pixel_is_in_window_bar(win_array[i], old_cursor_x, old_cursor_y)) {
                             // FIXME: This hardcodes the thickness of the bar.
                             int start_y = 0;
@@ -138,8 +151,8 @@ int main() {
                                 final_y = main_fb->pixel_height;
                             }
                             move_window(win_array[i], data.x_variation, data.y_variation, 0, start_y, main_fb->pixel_width, final_y);
-                            break;
                         }
+                        break;
                     } else {
                         unfocus_window(win_array[i]);
                     }

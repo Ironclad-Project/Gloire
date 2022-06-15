@@ -142,7 +142,7 @@ int main() {
                         win_array[0] = win_array[i];
                         win_array[i] = intermediate;
 
-                        if (pixel_is_in_window_bar(win_array[i], old_cursor_x, old_cursor_y)) {
+                        if (pixel_is_in_window_bar(win_array[0], old_cursor_x, old_cursor_y)) {
                             // FIXME: This hardcodes the thickness of the bar.
                             int start_y = 0;
                             int final_y = main_fb->pixel_height - FONT_HEIGHT;
@@ -150,7 +150,7 @@ int main() {
                                 start_y = FONT_HEIGHT;
                                 final_y = main_fb->pixel_height;
                             }
-                            move_window(win_array[i], data.x_variation, data.y_variation, 0, start_y, main_fb->pixel_width, final_y);
+                            move_window(win_array[0], data.x_variation, data.y_variation, 0, start_y, main_fb->pixel_width, final_y);
                         }
                         break;
                     } else {

@@ -41,6 +41,22 @@ A list of the tools needed for compilation of the OS are:
 - `xorriso` for image building.
 - `qemu` for testing, if wanted.
 
+## Licensing
+
+Original code distributed along with the distribution like `gwm` fall under
+the [GPLv3-Or-Later](https://www.gnu.org/licenses/gpl-3.0.html) license
+detailed in [COPYING](COPYING).
+
+While that is true for original code, patches for packages fall under the
+license of the patched project. A list of the licenses used by the software
+ported to Gloire is:
+
+- [GPLv3 (Or-Later and Only)](https://www.gnu.org/licenses/gpl-3.0.html)
+- [GPLv2 (Or-Later and Only)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+- [The Less License](https://github.com/gwsw/less/blob/master/LICENSE)
+- [MIT License](https://opensource.org/licenses/MIT)
+- [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause)
+
 ## Thanks to
 
 - [Mintsuki](https://github.com/mintsuki) for the limine bootloader and `jinx`.

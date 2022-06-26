@@ -6,7 +6,7 @@ hostdeps="gcc autoconf automake"
 deps="mlibc ncurses libiconv readline"
 
 configure() {
-        ac_cv_func_wcswidth=no \
+    ac_cv_func_wcswidth=no     \
     ${source_dir}/configure    \
         --host=x86_64-ironclad \
         --prefix=${prefix}     \
@@ -23,4 +23,9 @@ install() {
     mkdir -p "${dest_dir}"/bin
     ln -s /usr/bin/bash "${dest_dir}"/bin/bash
     ln -s /usr/bin/bash "${dest_dir}"/bin/sh
+
+    mkdir -p "${licenses_dir}"/bash
+    cp "${source_dir}"/COPYING "${licenses_dir}"/bash/
+    cp "${source_dir}"/AUTHORS "${licenses_dir}"/bash/
+    cp "${source_dir}"/README  "${licenses_dir}"/bash/
 }

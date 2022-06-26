@@ -1,1 +1,2 @@
 common_cflags="-O2 -pipe"
+licenses_dir=${dest_dir}/usr/share/licenses

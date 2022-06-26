@@ -40,8 +40,6 @@ fi
 script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
-[ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
-
 die() {
     echo $1
     exit 1
@@ -229,6 +227,8 @@ do_git_fetch() {
     if ! [ -z "${commit}" ]; then
         git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
         ( cd "${base_dir}"/sources/${name} && git checkout ${commit} )
+    elif [ "${shallow}" = "no" ]; then
+        git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
     else
         git clone ${clone_url} --branch=${tag} --depth=1 "${base_dir}"/sources/${name}
     fi
@@ -283,13 +283,8 @@ do_fetch() {
     esac
 }
 
-cont_patch() {
-    . "${base_dir}"/source-recipes/$1
-
-    get_real_source_dir
-
-    make_temp
-    patch_trash="${tmp}"
+do_patch() {
+    [ -f "${base_dir}"/sources/${name}.patched ] && return
 
     cd "${source_dir}"
 
@@ -297,7 +292,7 @@ cont_patch() {
         for patch in "${base_dir}"/patches/${name}/*; do
             [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
             [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
-            patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
+            git apply --no-index "${patch}"
         done
     fi
 
@@ -305,7 +300,7 @@ cont_patch() {
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
-        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+        git apply --no-index "${base_dir}"/patches/${name}/jinx-working-patch.patch
     fi
 
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-workdir
@@ -321,6 +316,8 @@ do_regenerate() {
     get_real_source_dir
 
     [ -f "${base_dir}"/sources/${name}.regenerated ] && return
+
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
 
     cd "${source_dir}"
     regenerate
@@ -346,6 +343,8 @@ do_configure_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+
     cd "${base_dir}"/host-builds/${name}
     configure
     cd "${base_dir}"
@@ -367,6 +366,8 @@ do_build_host() {
 
     prefix="/usr/local"
     sysroot_dir="/sysroot"
+
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
 
     cd "${base_dir}"/host-builds/${name}
     build
@@ -397,6 +398,8 @@ do_install_host() {
 
     mkdir -p "${dest_dir}${prefix}"
 
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+
     cd "${base_dir}"/host-builds/${name}
     install
     cd "${base_dir}"
@@ -426,6 +429,8 @@ do_configure() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+
     cd "${base_dir}"/builds/${name}
     configure
     cd "${base_dir}"
@@ -447,6 +452,8 @@ do_build() {
 
     prefix="/usr"
     sysroot_dir="/sysroot"
+
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
 
     cd "${base_dir}"/builds/${name}
     build
@@ -477,6 +484,8 @@ do_install() {
 
     mkdir -p "${dest_dir}${prefix}"
 
+    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+
     cd "${base_dir}"/builds/${name}
     install
     cd "${base_dir}"
@@ -489,22 +498,13 @@ do_install() {
     touch "${base_dir}"/builds/${name}.installed
 }
 
-precont_patch() {
-    [ -f "${base_dir}"/sources/$1.patched ] && return
-
-    prepare_container
-    run_in_container internal-cont-patch $1
-    destroy_container
-}
-
 do_source() {
     . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
     do_fetch
-
-    "${script}" internal-precont-patch $1
+    do_patch
 
     prepare_container
     run_in_container internal-regenerate $1
@@ -689,12 +689,6 @@ cmd_sysroot() {
 case "$1" in
     internal-regenerate)
         do_regenerate "$2"
-        ;;
-    internal-precont-patch)
-        precont_patch "$2"
-        ;;
-    internal-cont-patch)
-        cont_patch "$2"
         ;;
     internal-configure-host)
         do_configure_host "$2"

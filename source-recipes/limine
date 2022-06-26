@@ -1,11 +1,8 @@
 name=limine
-version=3.5.1
-source_method=git
-clone_url="https://github.com/limine-bootloader/limine.git"
-tag="v${version}"
-hostdeps="autoconf automake"
-imagedeps="git"
+version=3.8
+source_method=tarball
+tarball_url="https://limine-bootloader.org/files/limine/limine-v${version}.tar.gz"
 
 regenerate() {
-    NOCONFIGURE=yes ./autogen.sh
+    true
 }

@@ -18,4 +18,8 @@ build() {
 
 install() {
     make install DESTDIR="${dest_dir}"
+
+    mkdir -p "${licenses_dir}"/readline
+    cp "${source_dir}"/COPYING "${licenses_dir}"/readline/
+    cp "${source_dir}"/README  "${licenses_dir}"/readline/
 }

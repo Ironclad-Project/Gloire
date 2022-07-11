@@ -1,7 +1,7 @@
 name=ironclad
 version=0.0.1
 source_method=git
-clone_url="https://github.com/streaksu/Ironclad.git"
+clone_url="https://git.savannah.nongnu.org/git/ironclad.git"
 tag="main"
 
 regenerate() {

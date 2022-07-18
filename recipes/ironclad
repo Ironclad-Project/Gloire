@@ -2,7 +2,7 @@ name=ironclad
 from_source=ironclad
 revision=1
 imagedeps="gcc-ada texinfo texlive-bin texlive-core"
-imagedeps_aur="gprbuild"
+hostdeps="gprbuild"
 
 configure() {
     true

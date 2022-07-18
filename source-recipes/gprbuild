@@ -1,0 +1,11 @@
+name=gprbuild
+version=22.0.0
+source_method=git
+clone_url="https://github.com/AdaCore/gprbuild.git"
+tag="v${version}"
+imagedeps="git"
+
+regenerate() {
+    git clone https://github.com/AdaCore/xmlada.git --branch=v${version} --depth=1
+    git clone https://github.com/AdaCore/gprconfig_kb.git --branch=v${version} --depth=1
+}

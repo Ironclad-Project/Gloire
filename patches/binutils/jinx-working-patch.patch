@@ -1,24 +1,10 @@
-From 67a0c2cf260bb15031c04a15357f1a2c7f3f3dbc Mon Sep 17 00:00:00 2001
-From: streaksu <assemblyislaw@gmail.com>
-Date: Mon, 6 Sep 2021 22:20:45 +0200
-Subject: [PATCH] Ironclad specific changes
-
----
- bfd/config.bfd              | 5 +++++
- config.sub                  | 2 +-
- gas/configure.tgt           | 1 +
- ld/configure.tgt            | 4 ++++
- ld/emulparams/elf_x86_64.sh | 2 +-
- libiberty/rust-demangle.c   | 4 ++++
- 6 files changed, 16 insertions(+), 2 deletions(-)
-
 diff --git a/bfd/config.bfd b/bfd/config.bfd
-index 30087e3b..9ca38637 100644
+index cfe58247..2e981a6f 100644
 --- a/bfd/config.bfd
 +++ b/bfd/config.bfd
-@@ -719,6 +719,11 @@ case "${targ}" in
+@@ -749,6 +749,11 @@ case "${targ}" in
+   i[3-7]86-*-haiku*)
      targ_defvec=i386_elf32_vec
-     targ_selvecs="iamcu_elf32_vec i386_pe_vec i386_pei_vec"
      ;;
 +  x86_64-*-ironclad*)
 +    targ_defvec=x86_64_elf64_vec
@@ -29,22 +15,22 @@ index 30087e3b..9ca38637 100644
      targ_defvec=i386_pei_vec
      targ_selvecs="i386_pe_vec"
 diff --git a/gas/configure.tgt b/gas/configure.tgt
-index 338892ad..06235798 100644
+index 62f806bd..ecb2cd24 100644
 --- a/gas/configure.tgt
 +++ b/gas/configure.tgt
-@@ -221,6 +221,7 @@ case ${generic_target} in
+@@ -225,6 +225,7 @@ case ${generic_target} in
    i386-*-beos*)				fmt=elf ;;
    i386-*-elfiamcu)			fmt=elf arch=iamcu ;;
    i386-*-elf*)				fmt=elf ;;
 +  i386-*-ironclad*)		   fmt=elf ;;
    i386-*-fuchsia*)			fmt=elf ;;
+   i386-*-haiku*)			fmt=elf em=haiku ;;
    i386-*-genode*)			fmt=elf ;;
-   i386-*-bsd*)				fmt=aout em=386bsd ;;
 diff --git a/ld/configure.tgt b/ld/configure.tgt
-index 6205d7c9..dba57026 100644
+index c7acf3f1..d64d1eeb 100644
 --- a/ld/configure.tgt
 +++ b/ld/configure.tgt
-@@ -318,6 +318,10 @@ i[3-7]86-*-bsd386)	targ_emul=i386bsd
+@@ -324,6 +324,10 @@ i[3-7]86-*-bsd386)	targ_emul=i386bsd
  i[3-7]86-*-bsdi*)	targ_emul=i386bsd
  			targ_extra_ofiles=
  			;;
@@ -56,10 +42,10 @@ index 6205d7c9..dba57026 100644
  			targ_extra_emuls="elf_iamcu"
  			targ64_extra_emuls="elf_x86_64 elf32_x86_64 elf_l1om elf_k1om"
 diff --git a/ld/emulparams/elf_x86_64.sh b/ld/emulparams/elf_x86_64.sh
-index 48d09747..8a6426fb 100644
+index 5f2743ed..7050d3a6 100644
 --- a/ld/emulparams/elf_x86_64.sh
 +++ b/ld/emulparams/elf_x86_64.sh
-@@ -42,7 +42,7 @@ fi
+@@ -43,7 +43,7 @@ fi
  # Linux/Solaris modify the default library search path to first include
  # a 64-bit specific directory.
  case "$target" in
@@ -68,6 +54,3 @@ index 48d09747..8a6426fb 100644
      case "$EMULATION_NAME" in
        *64*)
  	LIBPATH_SUFFIX=64
---
-2.33.0
-

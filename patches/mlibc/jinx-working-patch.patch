@@ -1,20 +1,53 @@
 diff --git mlibc-clean/abis/ironclad/abi.h mlibc-workdir/abis/ironclad/abi.h
-index d522358..cb4854d 100644
+index d522358..f1e1c81 100644
 --- mlibc-clean/abis/ironclad/abi.h
 +++ mlibc-workdir/abis/ironclad/abi.h
-@@ -21,6 +21,7 @@
+@@ -8,6 +8,7 @@
+ #define __MLIBC_O_RDWR   3
+ #define __MLIBC_O_SEARCH 4
+ #define __MLIBC_O_EXEC   7
++#define __MLIBC_O_CLOEXEC 16
+ 
+ // This flags are stubs.
+ #define __MLIBC_O_APPEND 0x00008
+@@ -21,7 +22,8 @@
  #define __MLIBC_O_DSYNC 0x00800
  #define __MLIBC_O_RSYNC 0x01000
  #define __MLIBC_O_SYNC 0x02000
+-#define __MLIBC_O_CLOEXEC 0x04000
 +#define __MLIBC_O_ASYNC 0x6969
- #define __MLIBC_O_CLOEXEC 0x04000
++
  #define __MLIBC_O_PATH 0x08000
  #define __MLIBC_O_LARGEFILE 0x10000
+ #define __MLIBC_O_NOATIME 0x20000
+diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
+index add6743..03dc437 100644
+--- mlibc-clean/options/posix/generic/unistd-stubs.cpp
++++ mlibc-workdir/options/posix/generic/unistd-stubs.cpp
+@@ -795,8 +795,8 @@ unsigned long sysconf(int number) {
+ 			return mlibc::page_size;
+ 		case _SC_OPEN_MAX:
+ 			// TODO: actually return a proper value for _SC_OPEN_MAX
+-			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 256\e[39m" << frg::endlog;
+-			return 256;
++			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 100\e[39m" << frg::endlog;
++			return 100;
+ 		case _SC_PHYS_PAGES:
+ 			// TODO: actually return a proper value for _SC_PHYS_PAGES
+ 			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..2e67e45 100644
+index 3b63ed3..1b2621c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -39,7 +39,7 @@ void sys_exit(int status) {
+@@ -10,6 +10,7 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <sys/syscall.h>
++#include <sys/ironclad.h>
+ 
+ namespace mlibc {
+ 
+@@ -39,7 +40,7 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -23,7 +56,24 @@ index 3b63ed3..2e67e45 100644
  	return errno;
  }
  
-@@ -181,9 +181,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
+@@ -136,12 +137,10 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+ }
+ 
+ int sys_fcntl(int fd, int request, va_list args, int *result) {
+-	(void)fd;
+-	(void)request;
+-	(void)args;
+-	(void)result;
+-	mlibc::infoLogger() << "fcntl() is a stub!" << frg::endlog;
+-	return 0;
++	int ret, errno;
++	SYSCALL3(SYSCALL_FCNTL, fd, request, va_arg(args, uint64_t));
++	*result = ret;
++	return errno;
+ }
+ 
+ int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
+@@ -181,9 +180,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
  }
  
  int sys_isatty(int fd) {
@@ -39,8 +89,49 @@ index 3b63ed3..2e67e45 100644
  }
  
  uid_t sys_getuid() {
+@@ -488,5 +490,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ 	__builtin_unreachable();
+ }
+ 
++// Syscalls for ironclad.h
++int get_thread_sched(void) {
++	int ret, errno;
++	SYSCALL0(SYSCALL_GET_THREAD_SCHED);
++	return ret;
++}
++
++int set_thread_sched(int flags) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_SET_THREAD_SCHED, flags);
++	return ret;
++}
++
+ #endif
+ } // namespace mlibc
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
+index 89a3851..437dc4a 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
+@@ -34,6 +34,17 @@ struct ironclad_mouse_data {
+ 	bool is_left;
+ 	bool is_right;
+ };
++
++// Syscalls declared on the documentation, but without libc equivalents.
++// Implemented in generic.cpp
++#define THREAD_RT     0b0001
++#define THREAD_MONO   0b0010
++#define THREAD_MLOCK  0b0100
++#define THREAD_BANNED 0b1000
++
++int get_thread_sched(void);
++int set_thread_sched(int flags);
++
+ #ifdef __cplusplus
+ }
+ #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..6f85c50 100644
+index 28d233e..5535a62 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -52,3 +143,12 @@ index 28d233e..6f85c50 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
+@@ -76,5 +76,8 @@
+ #define SYSCALL_DUP2              25
+ #define SYSCALL_DUP3              26
+ #define SYSCALL_ACCESS            27
++#define SYSCALL_GET_THREAD_SCHED  28
++#define SYSCALL_SET_THREAD_SCHED  29
++#define SYSCALL_FCNTL             30
+ 
+ #endif // _SYSCALL_H

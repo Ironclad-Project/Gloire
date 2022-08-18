@@ -35,19 +35,58 @@ index add6743..03dc437 100644
  		case _SC_PHYS_PAGES:
  			// TODO: actually return a proper value for _SC_PHYS_PAGES
  			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
+diff --git mlibc-clean/options/posix/include/sched.h mlibc-workdir/options/posix/include/sched.h
+index c69ff2a..41dbe73 100644
+--- mlibc-clean/options/posix/include/sched.h
++++ mlibc-workdir/options/posix/include/sched.h
+@@ -9,29 +9,10 @@
+ 
+ // MISSING: POSIX [PS], [SS] and [TSP] options
+ 
+-#define CLONE_VM 0x00000100
+-#define CLONE_FS 0x00000200
+-#define CLONE_FILES	0x00000400
+-#define CLONE_SIGHAND 0x00000800
+-#define CLONE_PTRACE 0x00002000
+-#define CLONE_VFORK 0x00004000
+-#define CLONE_PARENT 0x00008000
+-#define CLONE_THREAD 0x00010000
+-#define CLONE_NEWNS 0x00020000
+-#define CLONE_SYSVSEM 0x00040000
+-#define CLONE_SETTLS 0x00080000
+-#define CLONE_PARENT_SETTID 0x00100000
+-#define CLONE_CHILD_CLEARTID 0x00200000
+-#define CLONE_DETACHED 0x00400000
+-#define CLONE_UNTRACED 0x00800000
+-#define CLONE_CHILD_SETTID 0x01000000
+-#define CLONE_NEWCGROUP 0x02000000
+-#define CLONE_NEWUTS 0x04000000
+-#define CLONE_NEWIPC 0x08000000
+-#define CLONE_NEWUSER 0x10000000
+-#define CLONE_NEWPID 0x20000000
+-#define CLONE_NEWNET 0x40000000
+-#define CLONE_IO 0x80000000
++#define CLONE_VM                0b00001
++#define CLONE_VFORK             0b00010
++#define CLONE_CLEAR_FILES_NOSTD 0b00100
++#define CLONE_CLEAR_FILES       0b01000
+ 
+ #define CPU_SETSIZE 128
+ #define CPU_ISSET __mlibc_cpu_isset
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..1b2621c 100644
+index 3b63ed3..2812366 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,6 +10,7 @@
+@@ -10,6 +10,8 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
 +#include <sys/ironclad.h>
++#include <sched.h>
  
  namespace mlibc {
  
-@@ -39,7 +40,7 @@ void sys_exit(int status) {
+@@ -39,7 +41,7 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -56,7 +95,7 @@ index 3b63ed3..1b2621c 100644
  	return errno;
  }
  
-@@ -136,12 +137,10 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -136,12 +138,10 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  }
  
  int sys_fcntl(int fd, int request, va_list args, int *result) {
@@ -73,7 +112,7 @@ index 3b63ed3..1b2621c 100644
  }
  
  int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
-@@ -181,9 +180,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
+@@ -181,9 +181,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
  }
  
  int sys_isatty(int fd) {
@@ -89,7 +128,16 @@ index 3b63ed3..1b2621c 100644
  }
  
  uid_t sys_getuid() {
-@@ -488,5 +490,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -237,7 +240,7 @@ int sys_fork(pid_t *child) {
+     pid_t ret;
+     int errno;
+ 
+-    SYSCALL0(SYSCALL_FORK);
++    SYSCALL1(SYSCALL_CLONE, 0);
+ 
+     if (ret == -1) {
+         return errno;
+@@ -488,5 +491,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -131,7 +179,7 @@ index 89a3851..437dc4a 100644
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..5535a62 100644
+index 28d233e..c2a785b 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -143,6 +191,15 @@ index 28d233e..5535a62 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
+@@ -60,7 +60,7 @@
+ #define SYSCALL_GETPID             9
+ #define SYSCALL_GETPPID           10
+ #define SYSCALL_EXEC              11
+-#define SYSCALL_FORK              12
++#define SYSCALL_CLONE             12
+ #define SYSCALL_WAIT              13
+ #define SYSCALL_UNAME             14
+ #define SYSCALL_SETHOSTNAME       15
 @@ -76,5 +76,8 @@
  #define SYSCALL_DUP2              25
  #define SYSCALL_DUP3              26

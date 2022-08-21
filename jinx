@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 
 # Copyright (c) 2022, mintsuki
 
@@ -40,16 +40,24 @@ fi
 script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
+if [ -z "$JINX_CONFIG_FILE" ]; then
+    JINX_CONFIG_FILE_PATH="${base_dir}"/jinx-config
+else
+    JINX_CONFIG_FILE_PATH="${base_dir}"/"${JINX_CONFIG_FILE}"
+fi
+
+pacman_cache="$HOME/.cache/jinx/pacman"
+
 die() {
-    echo $1
+    echo "$1"
     exit 1
 }
 
 temp_collect=""
-trap 'rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
+trap '( chmod -R 777 $temp_collect 2>/dev/null || true ) ; rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
 
 make_temp() {
-    tmp="$(mktemp $1)"
+    tmp="$(mktemp $1 "$HOME/.cache/jinx/tmp.XXXXXXXX")"
     temp_collect="${temp_collect} ${tmp}"
 }
 
@@ -77,8 +85,8 @@ get_hostdeps_file_run() {
     deps_to_do=""
 
     for hostdep in ${hostrundeps}; do
-        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
+        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
@@ -90,8 +98,8 @@ get_hostdeps_file() {
     deps_to_do=""
 
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep ${hostdep} "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
+        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
@@ -103,13 +111,17 @@ get_deps_file() {
     deps_to_do=""
 
     for dep in ${deps}; do
-        grep ${dep} "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
-        grep ${dep} "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
+        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
+        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
     done
 
     for dep in ${deps_to_do}; do
         "${script}" internal-get-deps-file ${dep} "${deps_file}"
     done
+}
+
+update_base_image() {
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
 }
 
 prepare_container() {
@@ -130,90 +142,44 @@ prepare_container() {
     sysroot_dir="${tmp}"
 
     for hostdep in $(cat "${hostdeps_file}"); do
-        cp -r "${base_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
+        cp -Plrf "${base_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
     done
 
     for dep in $(cat "${deps_file}"); do
-        cp -r "${base_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
+        cp -Plrf "${base_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
-
-    rm -f "${hostdeps_file}" "${deps_file}"
-
-    imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
-
-    echo "* creating container..."
 
     make_temp -d
-    dockerfile_dir="${tmp}"
-    dockerfile="${dockerfile_dir}/Dockerfile"
-    cat >"${dockerfile}" <<EOF
-FROM archlinux:latest
+    imgroot="${tmp}"
+    cp -r "$HOME/.cache/jinx/image"/. "${imgroot}"/
 
-RUN pacman -Syu --noconfirm
-RUN pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
-ENV PATH "\$PATH:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+    [ -z "${imagedeps}" ] && return 0
 
-EOF
-
-    if ! [ -z "${imagedeps_aur}" ]; then
-        imagedeps_aur="$(echo "${imagedeps_aur}" | xargs -n1 | sort -u | xargs)"
-
-        echo "RUN pacman --needed --noconfirm -S git sudo fakeroot gcc binutils" >> "${dockerfile}"
-
-        echo "RUN useradd -m auruser" >> "${dockerfile}"
-        echo "RUN echo 'auruser:auruser' | chpasswd" >> "${dockerfile}"
-        echo "RUN groupadd sudo" >> "${dockerfile}"
-        echo "RUN usermod -aG sudo auruser" >> "${dockerfile}"
-        echo "RUN sed -i 's/# %sudo\tALL=(ALL:ALL) ALL/%sudo ALL=(ALL:ALL) NOPASSWD: ALL/g' /etc/sudoers" >> "${dockerfile}"
-
-        echo "USER auruser" >> "${dockerfile}"
-        echo "WORKDIR /home/auruser" >> "${dockerfile}"
-
-        echo "RUN git clone https://aur.archlinux.org/aura-bin.git" >> "${dockerfile}"
-        echo "RUN cd aura-bin && makepkg -si --noconfirm" >> "${dockerfile}"
-
-        for imagedep_aur in ${imagedeps_aur}; do
-            echo "RUN yes | sudo aura -Aax ${imagedep_aur}" >> "${dockerfile}"
-        done
-
-        echo "USER root" >> "${dockerfile}"
-
-        ( echo "${imagedeps_aur}" | grep aura-bin >/dev/null 2>&1 ) || \
-            echo "RUN pacman -Rs aura-bin --noconfirm || true" >> "${dockerfile}"
-
-        echo "RUN pacman -Rs git sudo fakeroot gcc binutils --noconfirm || true" >> "${dockerfile}"
-        echo "RUN pacman -Qdtq | pacman -Rs - --noconfirm || true" >> "${dockerfile}"
-
-        echo "RUN userdel -r auruser" >> "${dockerfile}"
+    if ! "$HOME/.cache/jinx/rbrt" --root "${imgroot}" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S ${imagedeps}; then
+        update_base_image
+        if ! "$HOME/.cache/jinx/rbrt" --root "${imgroot}" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S ${imagedeps}; then
+            die '* failed to install imagedeps'
+        fi
     fi
-
-    for imagedep in ${imagedeps}; do
-        echo "RUN pacman --needed --noconfirm -S ${imagedep}" >> "${dockerfile}"
-    done
-
-    echo 'CMD ["bash"]' >> "${dockerfile}"
 }
 
 run_in_container() {
-    image_id=$(docker build -q "${dockerfile_dir}" || echo "failed")
-    if [ "$image_id" = "failed" ]; then
-        echo "* cached image causing issues, trying clean..."
-        image_id=$(docker build -q --no-cache "${dockerfile_dir}")
-    fi
-
-    docker run -it --rm \
-        --user=$(id -u):$(id -g) \
-        -v "${container_pkgs}":/usr/local \
-        -v "${sysroot_dir}":/sysroot \
-        -v "${script_dir}":/jinx \
-        -v "${base_dir}":/base_dir \
-        -w /base_dir \
-        ${image_id} \
-        /jinx/${script_name} $1 $2 $3 $4 $5
+    "$HOME/.cache/jinx/rbrt" \
+        --root "${imgroot}" \
+        --uid $(id -u) \
+        --gid $(id -g) \
+        --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+        --mount "${container_pkgs}":/usr/local \
+        --mount "${sysroot_dir}":/sysroot \
+        --mount "${script_dir}":/jinx \
+        --mount "${base_dir}":/base_dir \
+        -- \
+        bash -c "cd /base_dir && /jinx/${script_name} $1 $2 $3 $4 $5"
 }
 
 destroy_container() {
-    rm -rf "${container_pkgs}" "${sysroot_dir}" "${dockerfile_dir}"
+    chmod -R 777 "${imgroot}"
+    rm -rf "${container_pkgs}" "${sysroot_dir}" "${imgroot}"
 }
 
 do_hg_fetch() {
@@ -241,7 +207,7 @@ do_tarball_fetch() {
     extract_dir="${tmp}"
     tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
-    curl -o "${tarball_path}" "${tarball_url}"
+    curl -L -o "${tarball_path}" "${tarball_url}"
 
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
@@ -283,8 +249,13 @@ do_fetch() {
     esac
 }
 
-do_patch() {
-    [ -f "${base_dir}"/sources/${name}.patched ] && return
+cont_patch() {
+    . "${base_dir}"/source-recipes/$1
+
+    get_real_source_dir
+
+    patch_trash="/tmp/patch_trash"
+    mkdir -p "$patch_trash"
 
     cd "${source_dir}"
 
@@ -292,15 +263,14 @@ do_patch() {
         for patch in "${base_dir}"/patches/${name}/*; do
             [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
             [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
-            git apply --no-index "${patch}"
+            patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
         done
     fi
-
 
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
-        git apply --no-index "${base_dir}"/patches/${name}/jinx-working-patch.patch
+        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
     fi
 
     cp -r "${source_dir}" "${base_dir}"/sources/${name}-workdir
@@ -317,7 +287,7 @@ do_regenerate() {
 
     [ -f "${base_dir}"/sources/${name}.regenerated ] && return
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${source_dir}"
     regenerate
@@ -333,7 +303,7 @@ do_configure_host() {
 
     mkdir -p "${base_dir}"/host-builds/${name}
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -343,7 +313,7 @@ do_configure_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/host-builds/${name}
     configure
@@ -357,7 +327,7 @@ do_build_host() {
 
     [ -f "${base_dir}"/host-builds/${name}.built ] && return
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -367,7 +337,7 @@ do_build_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/host-builds/${name}
     build
@@ -386,7 +356,7 @@ do_install_host() {
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -398,15 +368,15 @@ do_install_host() {
 
     mkdir -p "${dest_dir}${prefix}"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/host-builds/${name}
     install
     cd "${base_dir}"
 
     # Remove libtool files
-    for i in lib lib64 lib32 usr/lib usr/lib64 usr/lib32; do
-        rm -rvf "${dest_dir}${prefix}"/$i/*.la
+    for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
+        rm -rvf $i
     done
 
     touch "${base_dir}"/host-builds/${name}.installed
@@ -419,7 +389,7 @@ do_configure() {
 
     mkdir -p "${base_dir}"/builds/${name}
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -429,7 +399,7 @@ do_configure() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/builds/${name}
     configure
@@ -443,7 +413,7 @@ do_build() {
 
     [ -f "${base_dir}"/builds/${name}.built ] && return
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -453,7 +423,7 @@ do_build() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/builds/${name}
     build
@@ -472,7 +442,7 @@ do_install() {
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    eval $(grep source_dir < "${base_dir}"/source-recipes/${from_source})
+    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -484,18 +454,26 @@ do_install() {
 
     mkdir -p "${dest_dir}${prefix}"
 
-    [ -f "${base_dir}"/jinx-config ] && . "${base_dir}"/jinx-config
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${base_dir}"/builds/${name}
     install
     cd "${base_dir}"
 
     # Remove libtool files
-    for i in lib lib64 lib32 usr/lib usr/lib64 usr/lib32; do
-        rm -rvf "${dest_dir}${prefix}"/$i/*.la
+    for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
+        rm -rvf $i
     done
 
     touch "${base_dir}"/builds/${name}.installed
+}
+
+precont_patch() {
+    [ -f "${base_dir}"/sources/$1.patched ] && return
+
+    prepare_container
+    run_in_container internal-cont-patch $1
+    destroy_container
 }
 
 do_source() {
@@ -504,7 +482,8 @@ do_source() {
     get_real_source_dir
 
     do_fetch
-    do_patch
+
+    "${script}" internal-precont-patch $1
 
     prepare_container
     run_in_container internal-regenerate $1
@@ -512,15 +491,19 @@ do_source() {
 }
 
 do_cmd_rebuild() {
-    rm -rf "${base_dir}"/builds/"$1"*
-    rm -rf "${base_dir}"/pkgs/"$1"*
+    rm -rf "${base_dir}"/builds/"$1"
+    rm -rf "${base_dir}"/builds/"$1".*
+    rm -rf "${base_dir}"/pkgs/"$1"
+    rm -rf "${base_dir}"/pkgs/"$1".*
 
     do_pkg "$1"
 }
 
 do_cmd_host_rebuild() {
-    rm -rf "${base_dir}"/host-builds/"$1"*
-    rm -rf "${base_dir}"/host-pkgs/"$1"*
+    rm -rf "${base_dir}"/host-builds/"$1"
+    rm -rf "${base_dir}"/host-builds/"$1".*
+    rm -rf "${base_dir}"/host-pkgs/"$1"
+    rm -rf "${base_dir}"/host-pkgs/"$1".*
 
     do_host_pkg "$1"
 }
@@ -599,7 +582,7 @@ do_host_pkg() {
 
     echo "* building host package: $name"
 
-    eval $(grep from_source < "${base_dir}"/host-recipes/$1)
+    eval $(grep 'from_source=' < "${base_dir}"/host-recipes/$1)
     [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
         "${script}" internal-source "${from_source}"
 
@@ -619,7 +602,7 @@ do_pkg() {
 
     echo "* building package: $name"
 
-    eval $(grep from_source < "${base_dir}"/recipes/$1)
+    eval $(grep 'from_source=' < "${base_dir}"/recipes/$1)
     [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
         "${script}" internal-source "${from_source}"
 
@@ -677,18 +660,88 @@ cmd_clean() {
     rm -rf "${base_dir}"/sysroot
 }
 
-cmd_sysroot() {
-    rm -rf "${base_dir}"/sysroot
-    mkdir -p "${base_dir}"/sysroot
-    for pkg in "${base_dir}"/pkgs/*; do
-        echo "* copying $(basename ${pkg}) to sysroot..."
-        cp -r "${pkg}"/. "${base_dir}"/sysroot/
+cmd_install() {
+    sysroot="$1"
+    shift 1
+    mkdir -p "${sysroot}"
+
+    for ppkg in "$@"; do
+        if [ "${ppkg}" = '*' ]; then
+            for pkg in "${base_dir}"/pkgs/*; do
+                echo "* copying $(basename ${pkg}) to sysroot '${sysroot}'..."
+                cp -rf "${pkg}"/. "${sysroot}"/
+            done
+            return
+        fi
+
+        for pkg in $(eval echo pkgs/"${ppkg}"); do
+            deps="${deps} $(basename "${pkg}")"
+        done
+    done
+
+    make_temp
+    deps_file="${tmp}"
+
+    echo "* resolving dependencies..."
+
+    get_deps_file
+
+    for pkg in $(cat "${deps_file}"); do
+        echo "* installing ${pkg} to sysroot '${sysroot}'..."
+        cp -rf pkgs/"${pkg}"/. "${sysroot}"/
     done
 }
+
+if ! [ -d "/jinx" ] && ! [ -d "$HOME/.cache/jinx" ]; then
+    echo "* preparing jinx for first use..."
+    mkdir -p "$HOME/.cache/jinx"
+
+    mkdir -p "${pacman_cache}"
+
+    curl -L -o "$HOME/.cache/jinx/rbrt.c" https://raw.githubusercontent.com/mintsuki/jinx/trunk/rbrt.c
+    cc -O2 -pipe -Wall -Wextra "$HOME/.cache/jinx/rbrt.c" -o "$HOME/.cache/jinx/rbrt"
+
+    curl -L -o "$HOME/.cache/jinx/arch-root.tar.gz" https://mirror.netcologne.de/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+    ( cd "$HOME/.cache/jinx" && bsdtar -zxf arch-root.tar.gz )
+    mv "$HOME/.cache/jinx/root.x86_64" "$HOME/.cache/jinx/image"
+
+    ln -s /proc/self/fd/0 "$HOME/.cache/jinx/image/dev/stdin"
+    ln -s /proc/self/fd/1 "$HOME/.cache/jinx/image/dev/stdout"
+    ln -s /proc/self/fd/2 "$HOME/.cache/jinx/image/dev/stderr"
+    ln -s /proc/self/fd "$HOME/.cache/jinx/image/dev/fd"
+    touch "$HOME/.cache/jinx/image/dev/full"
+    touch "$HOME/.cache/jinx/image/dev/null"
+    touch "$HOME/.cache/jinx/image/dev/zero"
+    touch "$HOME/.cache/jinx/image/dev/tty"
+    touch "$HOME/.cache/jinx/image/dev/random"
+    touch "$HOME/.cache/jinx/image/dev/urandom"
+    mkdir "$HOME/.cache/jinx/image/dev/pts"
+    mkdir "$HOME/.cache/jinx/image/dev/shm"
+    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$HOME/.cache/jinx/image/etc/pacman.d/mirrorlist"
+    echo 'en_US.UTF-8 UTF-8' > "$HOME/.cache/jinx/image/etc/locale.gen"
+    mkdir "$HOME/.cache/jinx/image/etc/pacman.d/gnupg"
+    mkdir "$HOME/.cache/jinx/image/sysroot"
+    mkdir "$HOME/.cache/jinx/image/base_dir"
+    mkdir "$HOME/.cache/jinx/image/jinx"
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 -- locale-gen
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
+
+    echo "* done"
+fi
 
 case "$1" in
     internal-regenerate)
         do_regenerate "$2"
+        ;;
+    internal-precont-patch)
+        precont_patch "$2"
+        ;;
+    internal-cont-patch)
+        cont_patch "$2"
         ;;
     internal-configure-host)
         do_configure_host "$2"
@@ -759,8 +812,12 @@ case "$1" in
         shift 1
         cmd_rebuild "$@"
         ;;
+    install)
+        shift 1
+        cmd_install "$@"
+        ;;
     sysroot)
-        cmd_sysroot
+        cmd_install sysroot '*'
         ;;
     clean)
         cmd_clean

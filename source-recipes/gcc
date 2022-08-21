@@ -1,8 +1,7 @@
 name=gcc
-version=12.1.0
-source_method=git
-clone_url="https://gcc.gnu.org/git/gcc.git"
-tag="releases/gcc-${version}"
+version=12.2.0
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 hostdeps="automake autoconf"
 
 regenerate() {

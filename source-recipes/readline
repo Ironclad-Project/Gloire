@@ -1,8 +1,7 @@
 name=readline
-version=8.1
-source_method=git
-clone_url="https://git.savannah.gnu.org/git/readline.git"
-tag="readline-${version}"
+version=8.1.2
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/readline/readline-${version}.tar.gz"
 hostdeps="automake autoconf"
 
 regenerate() {

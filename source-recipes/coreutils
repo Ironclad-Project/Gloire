@@ -1,12 +1,9 @@
 name=coreutils
 version=9.1
-source_method=git
-clone_url="https://git.savannah.gnu.org/git/coreutils.git"
-tag="v9.1"
-hostdeps="automake autoconf"
-imagedeps="flex bison gperf git rsync wget"
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
+hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {
-    ./bootstrap
-    cp /usr/local/share/automake-1.16/config.sub build-aux/
+    autoreconf -fvi
 }

@@ -1,10 +1,10 @@
 name=binutils
-version=2.38
-source_method=git
-clone_url="https://sourceware.org/git/binutils-gdb.git"
-tag="binutils-2_38"
-hostdeps="automake"
+version=2.39
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
+hostdeps="autoconf automake libtool pkg-config"
 
 regenerate() {
+    autoreconf -fvi
     cp /usr/local/share/automake-1.16/config.sub ./
 }

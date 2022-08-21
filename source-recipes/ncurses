@@ -1,9 +1,8 @@
 name=ncurses
-version=6.3.20220507
-source_method=git
-clone_url="https://github.com/ThomasDickey/ncurses-snapshots.git"
-tag="v6_3_20220507"
-hostdeps="automake"
+version=6.3
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/ncurses/ncurses-${version}.tar.gz"
+hostdeps="autoconf automake"
 
 regenerate() {
     cp /usr/local/share/automake-1.16/config.sub ./

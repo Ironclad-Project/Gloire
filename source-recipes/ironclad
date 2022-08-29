@@ -3,6 +3,7 @@ version=0.0.1
 source_method=git
 clone_url="https://git.savannah.nongnu.org/git/ironclad.git"
 tag="main"
+commit="97576a7379f2c2bd93a7f74c95e20b503dbb7dbd"
 
 regenerate() {
     true

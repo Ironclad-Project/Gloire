@@ -25,6 +25,8 @@
 
 set -e
 
+jinx_version="0.0.16"
+
 parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
 
 base_dir="$(pwd -P)"
@@ -49,12 +51,12 @@ fi
 pacman_cache="$HOME/.cache/jinx/pacman"
 
 die() {
-    echo "$1"
+    echo $1
     exit 1
 }
 
 temp_collect=""
-trap '( chmod -R 777 $temp_collect 2>/dev/null || true ) ; rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
+trap 'rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
 
 make_temp() {
     tmp="$(mktemp $1 "$HOME/.cache/jinx/tmp.XXXXXXXX")"
@@ -120,10 +122,6 @@ get_deps_file() {
     done
 }
 
-update_base_image() {
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
-}
-
 prepare_container() {
     make_temp
     hostdeps_file="${tmp}"
@@ -149,18 +147,25 @@ prepare_container() {
         cp -Plrf "${base_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
-    make_temp -d
-    imgroot="${tmp}"
-    cp -r "$HOME/.cache/jinx/image"/. "${imgroot}"/
+    imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
 
-    [ -z "${imagedeps}" ] && return 0
+    pkgset=""
+    for pkg in ${imagedeps}; do
+        pkgset="${pkgset}${pkg}/"
 
-    if ! "$HOME/.cache/jinx/rbrt" --root "${imgroot}" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S ${imagedeps}; then
-        update_base_image
-        if ! "$HOME/.cache/jinx/rbrt" --root "${imgroot}" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S ${imagedeps}; then
-            die '* failed to install imagedeps'
+        if [ -d "$HOME/.cache/jinx/sets/${pkgset}.image" ]; then
+            continue
         fi
-    fi
+
+        mkdir -p "$HOME/.cache/jinx/sets/${pkgset}"
+
+        cp -Plrf "$HOME/.cache/jinx/sets/${pkgset}../.image" "$HOME/.cache/jinx/sets/${pkgset}.image"
+        "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/${pkgset}.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
+
+        "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/${pkgset}.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S "${pkg}"
+    done
+
+    imgroot="$HOME/.cache/jinx/sets/${pkgset}.image"
 }
 
 run_in_container() {
@@ -178,8 +183,7 @@ run_in_container() {
 }
 
 destroy_container() {
-    chmod -R 777 "${imgroot}"
-    rm -rf "${container_pkgs}" "${sysroot_dir}" "${imgroot}"
+    rm -rf "${container_pkgs}" "${sysroot_dir}"
 }
 
 do_hg_fetch() {
@@ -692,7 +696,7 @@ cmd_install() {
     done
 }
 
-if ! [ -d "/jinx" ] && ! [ -d "$HOME/.cache/jinx" ]; then
+first_use() {
     echo "* preparing jinx for first use..."
     mkdir -p "$HOME/.cache/jinx"
 
@@ -703,34 +707,49 @@ if ! [ -d "/jinx" ] && ! [ -d "$HOME/.cache/jinx" ]; then
 
     curl -L -o "$HOME/.cache/jinx/arch-root.tar.gz" https://mirror.netcologne.de/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
     ( cd "$HOME/.cache/jinx" && bsdtar -zxf arch-root.tar.gz )
-    mv "$HOME/.cache/jinx/root.x86_64" "$HOME/.cache/jinx/image"
+    mkdir -p "$HOME/.cache/jinx/sets"
+    mv "$HOME/.cache/jinx/root.x86_64" "$HOME/.cache/jinx/sets/.image"
 
-    ln -s /proc/self/fd/0 "$HOME/.cache/jinx/image/dev/stdin"
-    ln -s /proc/self/fd/1 "$HOME/.cache/jinx/image/dev/stdout"
-    ln -s /proc/self/fd/2 "$HOME/.cache/jinx/image/dev/stderr"
-    ln -s /proc/self/fd "$HOME/.cache/jinx/image/dev/fd"
-    touch "$HOME/.cache/jinx/image/dev/full"
-    touch "$HOME/.cache/jinx/image/dev/null"
-    touch "$HOME/.cache/jinx/image/dev/zero"
-    touch "$HOME/.cache/jinx/image/dev/tty"
-    touch "$HOME/.cache/jinx/image/dev/random"
-    touch "$HOME/.cache/jinx/image/dev/urandom"
-    mkdir "$HOME/.cache/jinx/image/dev/pts"
-    mkdir "$HOME/.cache/jinx/image/dev/shm"
-    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$HOME/.cache/jinx/image/etc/pacman.d/mirrorlist"
-    echo 'en_US.UTF-8 UTF-8' > "$HOME/.cache/jinx/image/etc/locale.gen"
-    mkdir "$HOME/.cache/jinx/image/etc/pacman.d/gnupg"
-    mkdir "$HOME/.cache/jinx/image/sysroot"
-    mkdir "$HOME/.cache/jinx/image/base_dir"
-    mkdir "$HOME/.cache/jinx/image/jinx"
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 -- locale-gen
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
+    ln -s /proc/self/fd/0 "$HOME/.cache/jinx/sets/.image/dev/stdin"
+    ln -s /proc/self/fd/1 "$HOME/.cache/jinx/sets/.image/dev/stdout"
+    ln -s /proc/self/fd/2 "$HOME/.cache/jinx/sets/.image/dev/stderr"
+    ln -s /proc/self/fd "$HOME/.cache/jinx/sets/.image/dev/fd"
+    touch "$HOME/.cache/jinx/sets/.image/dev/full"
+    touch "$HOME/.cache/jinx/sets/.image/dev/null"
+    touch "$HOME/.cache/jinx/sets/.image/dev/zero"
+    touch "$HOME/.cache/jinx/sets/.image/dev/tty"
+    touch "$HOME/.cache/jinx/sets/.image/dev/random"
+    touch "$HOME/.cache/jinx/sets/.image/dev/urandom"
+    mkdir "$HOME/.cache/jinx/sets/.image/dev/pts"
+    mkdir "$HOME/.cache/jinx/sets/.image/dev/shm"
+    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$HOME/.cache/jinx/sets/.image/etc/pacman.d/mirrorlist"
+    echo 'en_US.UTF-8 UTF-8' > "$HOME/.cache/jinx/sets/.image/etc/locale.gen"
+    mkdir "$HOME/.cache/jinx/sets/.image/etc/pacman.d/gnupg"
+    mkdir "$HOME/.cache/jinx/sets/.image/sysroot"
+    mkdir "$HOME/.cache/jinx/sets/.image/base_dir"
+    mkdir "$HOME/.cache/jinx/sets/.image/jinx"
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 -- locale-gen
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
+
+    echo "$jinx_version" > "$HOME/.cache/jinx/version"
 
     echo "* done"
+}
+
+if ! [ -d "/jinx" ]; then
+    if ! [ -d "$HOME/.cache/jinx" ]; then
+        first_use
+    fi
+
+    if ! [ -f "$HOME/.cache/jinx/version" ] || ! [ "$(cat "$HOME/.cache/jinx/version")" = "$jinx_version" ]; then
+        chmod -R 777 "$HOME/.cache/jinx" || true
+        rm -rf "$HOME/.cache/jinx"
+        first_use
+    fi
 fi
 
 case "$1" in

@@ -1,7 +1,7 @@
 name=limine
-version=3.8
+version=3.20
 source_method=tarball
-tarball_url="https://limine-bootloader.org/files/limine/limine-v${version}.tar.gz"
+tarball_url="https://limine-bootloader.org/files/limine/limine-${version}.tar.gz"
 
 regenerate() {
     true

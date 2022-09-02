@@ -7,5 +7,9 @@ sysroot
 initramfs.tar
 gwm/**/*.o
 gwm/gwm
+init/**/*.o
+init/init
 gloire.iso
 iso_root
+bochsout.txt
+bx_enh_dbg.ini

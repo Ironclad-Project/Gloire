@@ -1,0 +1,17 @@
+cpu: count=1, reset_on_triple_fault=0
+
+display_library: x, options="gui_debug"
+
+megs: 1024
+
+clock: sync=realtime, time0=local
+
+ata0-master: type=disk, path="gloire.iso", mode=flat
+
+boot: c
+
+log: ./bochsout.txt
+
+mouse: enabled=0
+
+magic_break: enabled=1

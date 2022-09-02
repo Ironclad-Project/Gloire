@@ -74,7 +74,7 @@ index c69ff2a..41dbe73 100644
  #define CPU_SETSIZE 128
  #define CPU_ISSET __mlibc_cpu_isset
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..2812366 100644
+index 3b63ed3..02e3e3d 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,6 +10,8 @@
@@ -128,19 +128,24 @@ index 3b63ed3..2812366 100644
  }
  
  uid_t sys_getuid() {
-@@ -237,7 +240,7 @@ int sys_fork(pid_t *child) {
-     pid_t ret;
-     int errno;
- 
--    SYSCALL0(SYSCALL_FORK);
-+    SYSCALL1(SYSCALL_CLONE, 0);
- 
-     if (ret == -1) {
+@@ -243,7 +246,9 @@ int sys_fork(pid_t *child) {
          return errno;
-@@ -488,5 +491,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
- 	__builtin_unreachable();
+     }
+ 
+-    *child = ret;
++    if (child != NULL) {
++        *child = ret;
++    }
+     return 0;
  }
  
+@@ -490,3 +495,27 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ 
+ #endif
+ } // namespace mlibc
++
++extern "C" {
++
 +// Syscalls for ironclad.h
 +int get_thread_sched(void) {
 +	int ret, errno;
@@ -154,13 +159,27 @@ index 3b63ed3..2812366 100644
 +	return ret;
 +}
 +
- #endif
- } // namespace mlibc
++pid_t program_spawn(const char *path, char *const argv[], char *const envp[]) {
++	pid_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_SPAWN, path, argv, envp);
++	return ret;
++}
++
++}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..437dc4a 100644
+index 89a3851..e046507 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-@@ -34,6 +34,17 @@ struct ironclad_mouse_data {
+@@ -3,6 +3,7 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
++#include <sys/types.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -34,6 +35,18 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -174,12 +193,13 @@ index 89a3851..437dc4a 100644
 +
 +int get_thread_sched(void);
 +int set_thread_sched(int flags);
++pid_t program_spawn(const char *path, char *const argv[], char *const envp[]);
 +
  #ifdef __cplusplus
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..c2a785b 100644
+index 28d233e..1b6c659 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -191,21 +211,13 @@ index 28d233e..c2a785b 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -60,7 +60,7 @@
- #define SYSCALL_GETPID             9
- #define SYSCALL_GETPPID           10
- #define SYSCALL_EXEC              11
--#define SYSCALL_FORK              12
-+#define SYSCALL_CLONE             12
- #define SYSCALL_WAIT              13
- #define SYSCALL_UNAME             14
- #define SYSCALL_SETHOSTNAME       15
-@@ -76,5 +76,8 @@
+@@ -76,5 +76,9 @@
  #define SYSCALL_DUP2              25
  #define SYSCALL_DUP3              26
  #define SYSCALL_ACCESS            27
 +#define SYSCALL_GET_THREAD_SCHED  28
 +#define SYSCALL_SET_THREAD_SCHED  29
 +#define SYSCALL_FCNTL             30
++#define SYSCALL_SPAWN             31
  
  #endif // _SYSCALL_H

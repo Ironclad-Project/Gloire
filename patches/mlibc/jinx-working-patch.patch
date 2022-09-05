@@ -20,6 +20,19 @@ index d522358..f1e1c81 100644
  #define __MLIBC_O_PATH 0x08000
  #define __MLIBC_O_LARGEFILE 0x10000
  #define __MLIBC_O_NOATIME 0x20000
+diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
+index 0eb362a..bba6647 100644
+--- mlibc-clean/meson.build
++++ mlibc-workdir/meson.build
+@@ -121,7 +121,7 @@ elif host_machine.system() == 'qword'
+ 	libc_include_dirs += include_directories('sysdeps/qword/include')
+ 	subdir('sysdeps/qword')
+ elif host_machine.system() == 'ironclad'
+-	# disable_linux_option = true
++	#disable_linux_option = true
+ 	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	subdir('sysdeps/ironclad')
 diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
 index add6743..03dc437 100644
 --- mlibc-clean/options/posix/generic/unistd-stubs.cpp
@@ -35,44 +48,6 @@ index add6743..03dc437 100644
  		case _SC_PHYS_PAGES:
  			// TODO: actually return a proper value for _SC_PHYS_PAGES
  			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
-diff --git mlibc-clean/options/posix/include/sched.h mlibc-workdir/options/posix/include/sched.h
-index c69ff2a..41dbe73 100644
---- mlibc-clean/options/posix/include/sched.h
-+++ mlibc-workdir/options/posix/include/sched.h
-@@ -9,29 +9,10 @@
- 
- // MISSING: POSIX [PS], [SS] and [TSP] options
- 
--#define CLONE_VM 0x00000100
--#define CLONE_FS 0x00000200
--#define CLONE_FILES	0x00000400
--#define CLONE_SIGHAND 0x00000800
--#define CLONE_PTRACE 0x00002000
--#define CLONE_VFORK 0x00004000
--#define CLONE_PARENT 0x00008000
--#define CLONE_THREAD 0x00010000
--#define CLONE_NEWNS 0x00020000
--#define CLONE_SYSVSEM 0x00040000
--#define CLONE_SETTLS 0x00080000
--#define CLONE_PARENT_SETTID 0x00100000
--#define CLONE_CHILD_CLEARTID 0x00200000
--#define CLONE_DETACHED 0x00400000
--#define CLONE_UNTRACED 0x00800000
--#define CLONE_CHILD_SETTID 0x01000000
--#define CLONE_NEWCGROUP 0x02000000
--#define CLONE_NEWUTS 0x04000000
--#define CLONE_NEWIPC 0x08000000
--#define CLONE_NEWUSER 0x10000000
--#define CLONE_NEWPID 0x20000000
--#define CLONE_NEWNET 0x40000000
--#define CLONE_IO 0x80000000
-+#define CLONE_VM                0b00001
-+#define CLONE_VFORK             0b00010
-+#define CLONE_CLEAR_FILES_NOSTD 0b00100
-+#define CLONE_CLEAR_FILES       0b01000
- 
- #define CPU_SETSIZE 128
- #define CPU_ISSET __mlibc_cpu_isset
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 index 3b63ed3..02e3e3d 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp

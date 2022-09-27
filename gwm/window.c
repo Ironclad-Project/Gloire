@@ -32,21 +32,15 @@ void add_child(struct window *win, struct widget *wid) {
     }
 }
 
-int pixel_is_in_window_bar(struct window *win, int x, int y) {
+enum window_click_action click_window(struct window *win, int x, int y) {
     if (x >= win->top_corner_x && x <= win->top_corner_x + win->length_x &&
         y >= win->top_corner_y - FONT_HEIGHT && y <= win->top_corner_y) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-int pixel_is_in_window(struct window *win, int x, int y) {
-    if (x >= win->top_corner_x && x <= win->top_corner_x + win->length_x &&
+        return WINDOW_BAR_CLICK;
+    } else if (x >= win->top_corner_x && x <= win->top_corner_x + win->length_x &&
         y >= win->top_corner_y - FONT_HEIGHT && y <= win->top_corner_y + win->length_y) {
-        return 1;
+        return WINDOW_CONTENT_CLICK;
     } else {
-        return 0;
+        return WINDOW_NOT_TOUCHED;
     }
 }
 

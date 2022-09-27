@@ -7,8 +7,8 @@ sysroot
 initramfs.tar
 gwm/**/*.o
 gwm/gwm
-init/**/*.o
-init/init
+serial_shim/**/*.o
+serial_shim/serial_shim
 gloire.iso
 iso_root
 bochsout.txt

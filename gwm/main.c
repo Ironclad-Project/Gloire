@@ -34,7 +34,14 @@ struct window *add_window(const char *name) {
    return NULL;
 }
 
-void refresh() {
+static void focus_and_bring_to_the_top(int source) {
+    focus_window(win_array[source]);
+    struct window *intermediate = win_array[0];
+    win_array[0] = win_array[source];
+    win_array[source] = intermediate;
+}
+
+static void refresh() {
     // Clear the background.
     draw_background(main_fb);
 
@@ -58,9 +65,15 @@ void refresh() {
 }
 
 int main() {
-    // Clear the screen and disable the cursor.
-    printf("\e[2J\e[H\e[?25l");
-    fflush(stdout);
+    // Set environment.
+    setenv("HOME", "/root", 1);
+    setenv("TERM", "linux", 1);
+    setenv("PATH", "/usr/bin", 1);
+    setenv("USER", "root", 1);
+    setenv("LOGNAME", "root", 1);
+    setenv("SHELL", "/bin/bash", 1);
+    setenv("MAIL", "/var/mail", 1);
+    setenv("XDG_RUNTIME_DIR", "/run", 1);
 
     // Open the framebuffer.
     int fb = open("/dev/bootfb", O_RDWR);
@@ -128,56 +141,35 @@ int main() {
         size_t old_cursor_x = cursor->x_position;
         size_t old_cursor_y = cursor->y_position;
         update_cursor(cursor, main_fb, data.x_variation, data.y_variation);
-
-        // If left-clicking, check if we are clicking any window bars and move.
-        // We use the old cursor data because the new one will make it so
-        // sometimes the user moves the cursor out when trying to move.
-        if (data.is_left) {
-            for (int i = 0; i < 20; i++) {
-                if (win_array[i] != NULL) {
-                    if (pixel_is_in_window(win_array[i], old_cursor_x, old_cursor_y)) {
-                        focus_window(win_array[i]);
-
-                        struct window *intermediate = win_array[0];
-                        win_array[0] = win_array[i];
-                        win_array[i] = intermediate;
-
-                        if (pixel_is_in_window_bar(win_array[0], old_cursor_x, old_cursor_y)) {
-                            // FIXME: This hardcodes the thickness of the bar.
-                            int start_y = 0;
-                            int final_y = main_fb->pixel_height - FONT_HEIGHT;
-                            if (taskbar->is_top) {
-                                start_y = FONT_HEIGHT;
-                                final_y = main_fb->pixel_height;
-                            }
-                            move_window(win_array[0], data.x_variation, data.y_variation, 0, start_y, main_fb->pixel_width, final_y);
-                        }
-                        break;
-                    } else {
-                        unfocus_window(win_array[i]);
-                    }
-                }
-            }
+        if (!data.is_left && !data.is_right) {
+            continue;
         }
 
-        // If right-clicking, remove the window if we are in the bar.
-        if (data.is_right) {
-            for (int i = 0; i < 20; i++) {
-                if (win_array[i] != NULL) {
-                    if (pixel_is_in_window_bar(win_array[i], cursor->x_position, cursor->y_position)) {
-                        destroy_window(win_array[i]);
-                        win_array[i] = NULL;
-                        goto done;
-                    }
-                }
+        struct window *intermediate;
+        for (int i = 0; i < 20; i++) {
+            if (win_array[i] == NULL) {
+                continue;
             }
-
-            struct window *new_window = add_window("Look at this cool cat");
-            new_window->length_y = 700;
-            new_window->top_corner_x = cursor->x_position;
-            new_window->top_corner_y = cursor->y_position;
-            add_child(new_window, create_image("/etc/gwm-jinx.bmp"));
+            switch (click_window(win_array[i], old_cursor_x, old_cursor_y)) {
+                case WINDOW_PLEASE_CLOSE:
+                    destroy_window(win_array[i]);
+                    win_array[i] = NULL;
+                    goto DONE;
+                case WINDOW_BAR_CLICK:
+                    focus_and_bring_to_the_top(i);
+                    move_window(win_array[0], data.x_variation,
+                        data.y_variation, 0, 0, main_fb->pixel_width,
+                        main_fb->pixel_height
+                    );
+                    goto DONE;
+                case WINDOW_CONTENT_CLICK:
+                    focus_and_bring_to_the_top(i);
+                    goto DONE;
+                case WINDOW_NOT_TOUCHED:
+                    unfocus_window(win_array[i]);
+                    break;
+            }
         }
-done:
+DONE:
     }
 }

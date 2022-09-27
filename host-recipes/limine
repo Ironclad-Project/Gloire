@@ -5,7 +5,12 @@ hostdeps="gcc"
 imagedeps="nasm gcc mtools"
 
 configure() {
-    "${source_dir}"/configure --enable-all CFLAGS="${common_cflags}" CXXFLAGS="${common_cflags}" LDFLAGS="-static" --prefix="${prefix}" TOOLCHAIN=x86_64-ironclad
+    "${source_dir}"/configure \
+        --prefix="${prefix}" \
+        CROSS_TOOLCHAIN=x86_64-ironclad \
+        LDFLAGS="-static" \
+        --enable-all \
+        --disable-uefi-aarch64
 }
 
 build() {

@@ -5,7 +5,7 @@ CFLAGS  ?= -O2 -pipe -g
 PREFIX  ?= /usr/local
 
 # Targets and their rules.
-override TARGET  := init
+override TARGET  := serial_shim
 override CSOURCE := $(shell find ./ -type f -name '*.c')
 override OBJ     := $(CSOURCE:.c=.o)
 

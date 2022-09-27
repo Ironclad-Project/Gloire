@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <stdio.h>
+#include <string.h>
 
 static int bittest(int var, int index) {
     return (var >> index) & 1U;
@@ -23,7 +25,9 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
     size_t linear_size = pixel_size * sizeof(uint32_t);
 
     // Mmap the framebuffer into our mem_window.
-    uint32_t *mem_window = mmap(NULL, linear_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    size_t aligned_size = (linear_size + 0x1000 - 1) & ~(0x1000 - 1);
+    uint32_t *mem_window = mmap(NULL, aligned_size, PROT_READ | PROT_WRITE,
+       MAP_SHARED, fd, 0);
     if (mem_window == NULL) {
         return NULL;
     }
@@ -32,21 +36,18 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
     // background purposes.
     uint32_t *antibuffer  = malloc(linear_size);
     uint32_t *frontbuffer = malloc(linear_size);
-    uint32_t *current_fb  = malloc(linear_size);
-    if (antibuffer == NULL || frontbuffer == NULL || current_fb == NULL) {
+    uint32_t *background  = malloc(linear_size);
+    if (antibuffer == NULL || frontbuffer == NULL || background == NULL) {
         return NULL;
     }
 
-    // Read the limine background.
+    // Load a background and put it in the buffers.
     for (size_t i = 0; i < pixel_size; i++) {
-        current_fb[i] = mem_window[i];
+        background[i] = i % 7 == 0 ? 0x605885 : 0xC0C0C0;
     }
-
-    // Copy from the background to the frontbuffer and antibuffer.
-    for (size_t i = 0; i < pixel_size; i++) {
-        antibuffer[i]  = current_fb[i];
-        frontbuffer[i] = current_fb[i];
-    }
+    memcpy(mem_window,  background, pixel_size * sizeof(uint32_t));
+    memcpy(antibuffer,  background, pixel_size * sizeof(uint32_t));
+    memcpy(frontbuffer, background, pixel_size * sizeof(uint32_t));
 
     // Allocate the final object and return it.
     struct framebuffer *ret = malloc(sizeof(struct framebuffer));
@@ -54,7 +55,7 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
         return NULL;
     }
     ret->backing_fd    = fd;
-    ret->background    = current_fb;
+    ret->background    = background;
     ret->antibuffer    = antibuffer;
     ret->frontbuffer   = frontbuffer;
     ret->memory_window = mem_window;
@@ -77,9 +78,7 @@ void refresh_to_backend(struct framebuffer *fb) {
 }
 
 void draw_background(struct framebuffer *fb) {
-    for (uint64_t i = 0; i < fb->pixel_size; i++) {
-        fb->antibuffer[i] = fb->background[i];
-    }
+    memcpy(fb->antibuffer, fb->background, fb->pixel_size * sizeof(uint32_t));
 }
 
 void draw_pixel(struct framebuffer *fb, int x, int y, uint32_t color) {

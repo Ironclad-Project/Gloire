@@ -49,7 +49,7 @@ index add6743..03dc437 100644
  			// TODO: actually return a proper value for _SC_PHYS_PAGES
  			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..02e3e3d 100644
+index 3b63ed3..0c851bd 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,6 +10,8 @@
@@ -114,7 +114,26 @@ index 3b63ed3..02e3e3d 100644
      return 0;
  }
  
-@@ -490,3 +495,27 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -433,6 +438,18 @@ int sys_setpriority(int which, id_t who, int prio) {
+    }
+ }
+ 
++int sys_pipe(int *pipefd, int flags) {
++	int ret, errno;
++
++	SYSCALL2(SYSCALL_PIPE, pipefd, flags);
++
++	if (ret == -1) {
++        return errno;
++	}
++
++	return 0;
++}
++
+ int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
+ 	(void)pointer;
+ 	(void)expected;
+@@ -490,3 +507,27 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  
  #endif
  } // namespace mlibc
@@ -143,7 +162,7 @@ index 3b63ed3..02e3e3d 100644
 +
 +}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..e046507 100644
+index 89a3851..d3390de 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
 @@ -3,6 +3,7 @@
@@ -154,7 +173,28 @@ index 89a3851..e046507 100644
  
  #ifdef __cplusplus
  extern "C" {
-@@ -34,6 +35,18 @@ struct ironclad_mouse_data {
+@@ -11,16 +12,10 @@ extern "C" {
+ #define FB_DIMENSIONS 1
+ 
+ struct ironclad_fb_dimensions {
+-	uint16_t width;
+-	uint16_t height;
+-	uint16_t pitch;
+-	uint16_t bpp;
+-	uint8_t  red_mask_size;
+-	uint8_t  red_mask_shift;
+-	uint8_t  green_mask_size;
+-	uint8_t  green_mask_shift;
+-	uint8_t  blue_mask_size;
+-	uint8_t  blue_mask_shift;
++	uint32_t width;
++	uint32_t height;
++	uint32_t pitch;
++	uint8_t  bpp;
+ };
+ 
+ #define PS2MOUSE_2_1_SCALING     1
+@@ -34,6 +29,18 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -174,7 +214,7 @@ index 89a3851..e046507 100644
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..1b6c659 100644
+index 28d233e..28990f8 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -186,7 +226,7 @@ index 28d233e..1b6c659 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -76,5 +76,9 @@
+@@ -76,5 +76,10 @@
  #define SYSCALL_DUP2              25
  #define SYSCALL_DUP3              26
  #define SYSCALL_ACCESS            27
@@ -194,5 +234,6 @@ index 28d233e..1b6c659 100644
 +#define SYSCALL_SET_THREAD_SCHED  29
 +#define SYSCALL_FCNTL             30
 +#define SYSCALL_SPAWN             31
++#define SYSCALL_PIPE              32
  
  #endif // _SYSCALL_H

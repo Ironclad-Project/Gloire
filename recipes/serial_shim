@@ -1,5 +1,5 @@
-name=init
-from_source=init
+name=serial_shim
+from_source=serial_shim
 revision=1
 hostdeps="gcc binutils"
 deps="mlibc"

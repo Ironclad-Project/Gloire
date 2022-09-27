@@ -20,8 +20,16 @@ struct window {
 
 struct window *create_window(const char *name);
 void add_child(struct window *win, struct widget *wid);
-int pixel_is_in_window_bar(struct window *win, int x, int y);
-int pixel_is_in_window(struct window *win, int x, int y);
+
+enum window_click_action {
+    WINDOW_NOT_TOUCHED,   // The click didnt land in the window.
+    WINDOW_CONTENT_CLICK, // The click landed inside the window.
+    WINDOW_BAR_CLICK,     // The click landed on the window bar.
+    WINDOW_PLEASE_CLOSE   // The click told the window to be closed.
+};
+
+enum window_click_action click_window(struct window *win, int x, int y);
+
 void move_window(struct window *win, int x_variation, int y_variation, int start_x, int start_y, int max_x, int max_y);
 void pack_window(struct window *win);
 void focus_window(struct window *win);

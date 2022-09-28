@@ -115,21 +115,15 @@ int main() {
     }
 
     struct window *win = add_window("Welcome!");
-    add_child(win, create_image("/etc/gwm-gloire.bmp"));
+    add_child(win, create_image("/etc/gwm-gloire.bmp", 1));
     add_child(win, create_textbox(
-        "Gloire is an Ironclad distribution using mlibc and several GNU tools.\n"
+        "Gloire\n"
+        "An Ironclad distribution using mlibc and\n"
+        "several GNU tools. Made with love <3\n"
         "\n"
-        "To find command-line arguments and syscall documentation, there is\n"
-        "documentation in Info and PDF formats in /usr/share/info and\n"
-        "/usr/share/docs/ironclad\n"
-        "\n"
-        "Ironclad: https://github.com/streaksu/Ironclad\n"
-        "Gloire:   https://github.com/streaksu/Gloire\n"
-        "Mlibc:    https://github.com/managarm/mlibc\n"
-        "\n"
-        "Have a nice time around!"
+        "Copyright (C) 2022 streaksu\n"
+        "Have a nice time around!", 1
     ));
-    pack_window(win);
 
     // Initial refresh and loop waiting for mouse.
     for (;;) {

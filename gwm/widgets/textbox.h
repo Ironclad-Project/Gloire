@@ -7,5 +7,6 @@ struct textbox {
 };
 
 struct textbox *init_textbox(const char *text);
-void draw_textbox(struct textbox *tx, struct framebuffer *fb, int start_x, int start_y, int width_x, int width_y);
+void draw_textbox(struct textbox *tx, struct framebuffer *fb, int start_x,
+    int start_y, int width_x, int width_y, int center);
 void destroy_textbox(struct textbox *tx);

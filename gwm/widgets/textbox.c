@@ -12,7 +12,9 @@ struct textbox *init_textbox(const char *text) {
     return ret;
 }
 
-void draw_textbox(struct textbox *tx, struct framebuffer *fb, int start_x, int start_y, int width_x, int width_y) {
+void draw_textbox(struct textbox *tx, struct framebuffer *fb, int start_x,
+    int start_y, int width_x, int width_y, int center)
+{
     const size_t char_count    = strlen(tx->text);
     const size_t char_per_line = width_x / FONT_WIDTH;
     const size_t line_count    = width_y / FONT_HEIGHT;
@@ -38,14 +40,28 @@ void draw_textbox(struct textbox *tx, struct framebuffer *fb, int start_x, int s
             current_line += 1;
             last_start = i + 1;
         } else if (tx->text[i] == '\n') {
-            draw_string(fb, start_x, start_y + (current_line * FONT_HEIGHT), tx->text + last_start, i - last_start, TITLEBAR_FONT_COLOR, WINDOW_BACKGROUND_COLOR);
+            size_t line_start_x;
+            if (center) {
+                line_start_x = (width_x / 2) - (((i - last_start) / 2) * FONT_WIDTH);
+            } else {
+                line_start_x = 0;
+            }
+            line_start_x += start_x;
+            draw_string(fb, line_start_x, start_y + (current_line * FONT_HEIGHT), tx->text + last_start, i - last_start, TITLEBAR_FONT_COLOR, WINDOW_BACKGROUND_COLOR);
             current_line_char = 0;
             current_line += 1;
             last_start = i + 1;
         }
     }
 
-    draw_string(fb, start_x, start_y + (current_line * FONT_HEIGHT), tx->text + last_start, char_count - last_start, TITLEBAR_FONT_COLOR, WINDOW_BACKGROUND_COLOR);
+    size_t line_start_x;
+    if (center) {
+        line_start_x = (width_x / 2) - (((char_count - last_start) / 2) * FONT_WIDTH);
+    } else {
+        line_start_x = 0;
+    }
+    line_start_x += start_x;
+    draw_string(fb, line_start_x, start_y + (current_line * FONT_HEIGHT), tx->text + last_start, char_count - last_start, TITLEBAR_FONT_COLOR, WINDOW_BACKGROUND_COLOR);
 }
 
 void destroy_textbox(struct textbox *tx) {

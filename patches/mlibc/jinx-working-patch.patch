@@ -1,43 +1,28 @@
-diff --git mlibc-clean/abis/ironclad/abi.h mlibc-workdir/abis/ironclad/abi.h
-index d522358..f1e1c81 100644
---- mlibc-clean/abis/ironclad/abi.h
-+++ mlibc-workdir/abis/ironclad/abi.h
+diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
+index d1e9f02..0e60dd2 100644
+--- mlibc-clean/abis/ironclad/fcntl.h
++++ mlibc-workdir/abis/ironclad/fcntl.h
 @@ -8,6 +8,7 @@
- #define __MLIBC_O_RDWR   3
- #define __MLIBC_O_SEARCH 4
- #define __MLIBC_O_EXEC   7
-+#define __MLIBC_O_CLOEXEC 16
+ #define O_RDWR   3
+ #define O_SEARCH 4
+ #define O_EXEC   7
++#define O_CLOEXEC 16
  
  // This flags are stubs.
- #define __MLIBC_O_APPEND 0x00008
-@@ -21,7 +22,8 @@
- #define __MLIBC_O_DSYNC 0x00800
- #define __MLIBC_O_RSYNC 0x01000
- #define __MLIBC_O_SYNC 0x02000
--#define __MLIBC_O_CLOEXEC 0x04000
-+#define __MLIBC_O_ASYNC 0x6969
-+
- #define __MLIBC_O_PATH 0x08000
- #define __MLIBC_O_LARGEFILE 0x10000
- #define __MLIBC_O_NOATIME 0x20000
-diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 0eb362a..bba6647 100644
---- mlibc-clean/meson.build
-+++ mlibc-workdir/meson.build
-@@ -121,7 +121,7 @@ elif host_machine.system() == 'qword'
- 	libc_include_dirs += include_directories('sysdeps/qword/include')
- 	subdir('sysdeps/qword')
- elif host_machine.system() == 'ironclad'
--	# disable_linux_option = true
-+	#disable_linux_option = true
- 	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
- 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
- 	subdir('sysdeps/ironclad')
+ #define O_APPEND 0x00008
+@@ -21,7 +22,6 @@
+ #define O_DSYNC 0x00800
+ #define O_RSYNC 0x01000
+ #define O_SYNC 0x02000
+-#define O_CLOEXEC 0x04000
+ #define O_PATH 0x08000
+ #define O_LARGEFILE 0x10000
+ #define O_NOATIME 0x20000
 diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-index add6743..03dc437 100644
+index 96feaa2..09ec4ee 100644
 --- mlibc-clean/options/posix/generic/unistd-stubs.cpp
 +++ mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-@@ -795,8 +795,8 @@ unsigned long sysconf(int number) {
+@@ -684,8 +684,8 @@ unsigned long sysconf(int number) {
  			return mlibc::page_size;
  		case _SC_OPEN_MAX:
  			// TODO: actually return a proper value for _SC_OPEN_MAX
@@ -49,7 +34,7 @@ index add6743..03dc437 100644
  			// TODO: actually return a proper value for _SC_PHYS_PAGES
  			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 3b63ed3..0c851bd 100644
+index d6dbca3..ecdaf01 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,6 +10,8 @@
@@ -103,43 +88,40 @@ index 3b63ed3..0c851bd 100644
  }
  
  uid_t sys_getuid() {
-@@ -243,7 +246,9 @@ int sys_fork(pid_t *child) {
-         return errno;
-     }
+@@ -234,17 +237,19 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+ }
+ 
+ int sys_fork(pid_t *child) {
+-    pid_t ret;
+-    int errno;
++	pid_t ret;
++	int errno;
+ 
+-    SYSCALL0(SYSCALL_FORK);
++	SYSCALL0(SYSCALL_FORK);
+ 
+-    if (ret == -1) {
+-        return errno;
+-    }
++	if (ret == -1) {
++		return errno;
++	}
  
 -    *child = ret;
-+    if (child != NULL) {
-+        *child = ret;
-+    }
-     return 0;
- }
- 
-@@ -433,6 +438,18 @@ int sys_setpriority(int which, id_t who, int prio) {
-    }
- }
- 
-+int sys_pipe(int *pipefd, int flags) {
-+	int ret, errno;
-+
-+	SYSCALL2(SYSCALL_PIPE, pipefd, flags);
-+
-+	if (ret == -1) {
-+        return errno;
+-    return 0;
++	if (child != NULL) {
++		*child = ret;
 +	}
-+
 +	return 0;
-+}
-+
- int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
- 	(void)pointer;
- 	(void)expected;
-@@ -490,3 +507,27 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ }
+ 
+ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
+@@ -495,3 +500,25 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  
  #endif
  } // namespace mlibc
 +
 +extern "C" {
-+
 +// Syscalls for ironclad.h
 +int get_thread_sched(void) {
 +	int ret, errno;
@@ -159,21 +141,12 @@ index 3b63ed3..0c851bd 100644
 +	SYSCALL3(SYSCALL_SPAWN, path, argv, envp);
 +	return ret;
 +}
-+
 +}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..d3390de 100644
+index 89a3851..96a8589 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-@@ -3,6 +3,7 @@
- 
- #include <stdint.h>
- #include <stdbool.h>
-+#include <sys/types.h>
- 
- #ifdef __cplusplus
- extern "C" {
-@@ -11,16 +12,10 @@ extern "C" {
+@@ -11,16 +11,10 @@ extern "C" {
  #define FB_DIMENSIONS 1
  
  struct ironclad_fb_dimensions {
@@ -194,7 +167,7 @@ index 89a3851..d3390de 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,18 @@ struct ironclad_mouse_data {
+@@ -34,6 +28,18 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -205,16 +178,16 @@ index 89a3851..d3390de 100644
 +#define THREAD_MONO   0b0010
 +#define THREAD_MLOCK  0b0100
 +#define THREAD_BANNED 0b1000
-+
 +int get_thread_sched(void);
 +int set_thread_sched(int flags);
++
 +pid_t program_spawn(const char *path, char *const argv[], char *const envp[]);
 +
  #ifdef __cplusplus
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..28990f8 100644
+index 28d233e..1b6c659 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -226,7 +199,7 @@ index 28d233e..28990f8 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -76,5 +76,10 @@
+@@ -76,5 +76,9 @@
  #define SYSCALL_DUP2              25
  #define SYSCALL_DUP3              26
  #define SYSCALL_ACCESS            27
@@ -234,6 +207,5 @@ index 28d233e..28990f8 100644
 +#define SYSCALL_SET_THREAD_SCHED  29
 +#define SYSCALL_FCNTL             30
 +#define SYSCALL_SPAWN             31
-+#define SYSCALL_PIPE              32
  
  #endif // _SYSCALL_H

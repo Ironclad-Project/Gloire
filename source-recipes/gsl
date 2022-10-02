@@ -1,0 +1,9 @@
+name=gsl
+version=2.7
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/gsl/gsl-${version}.tar.gz"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    autoreconf -fvi
+}

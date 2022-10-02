@@ -1,0 +1,35 @@
+name=dieharder
+from_source=dieharder
+revision=1
+imagedeps="gcc gsl"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="mlibc gsl"
+
+configure() {
+    rm -f ${source_dir}/config.status
+    rm -f ${source_dir}/dieharder/config.status
+    rm -f ${source_dir}/libdieharder/config.status
+    ${source_dir}/configure    \
+        --host=x86_64-ironclad \
+        --prefix=${prefix}     \
+        --with-sysroot=${sysroot_dir} \
+        --disable-static
+    sed -i 's|-I${prefix}/include||g' dieharder/Makefile
+}
+
+build() {
+    make -j1
+}
+
+install() {
+    make install-strip DESTDIR="${dest_dir}"
+
+    # Fix a bug regarding symlinks on libraries.
+    rm "${dest_dir}"/usr/lib/libdieharder.so.3
+    cp "${dest_dir}"/usr/lib/libdieharder.so.3.31.2 "${dest_dir}"/usr/lib/libdieharder.so.3
+
+    mkdir -p "${licenses_dir}"/dieharder
+    cp "${source_dir}"/COPYING "${licenses_dir}"/dieharder/
+    cp "${source_dir}"/AUTHORS "${licenses_dir}"/dieharder/
+    cp "${source_dir}"/README  "${licenses_dir}"/dieharder/
+}

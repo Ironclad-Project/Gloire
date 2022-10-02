@@ -1,11 +1,11 @@
 name=libtool
 version=2.4.7
-source_method=git
-clone_url="https://git.savannah.gnu.org/git/libtool.git"
-tag="v${version}"
-hostdeps="autoconf automake"
-imagedeps="git help2man"
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/libtool/libtool-${version}.tar.gz"
+hostdeps="autoconf automake gnulib"
+imagedeps="help2man"
 
 regenerate() {
-    ./bootstrap
+    cp -r ${base_dir}/sources/gnulib ./
+    ./bootstrap --force --skip-git --skip-po --gnulib-srcdir=`pwd`/gnulib
 }

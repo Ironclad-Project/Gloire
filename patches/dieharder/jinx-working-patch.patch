@@ -1,0 +1,101 @@
+diff --git dieharder-clean/configure.ac dieharder-workdir/configure.ac
+index a17e757..88d15b9 100644
+--- dieharder-clean/configure.ac
++++ dieharder-workdir/configure.ac
+@@ -128,17 +128,7 @@ AC_CHECK_LIB([gsl],[gsl_sf_gamma])
+ AC_DEFUN([AC_C_ENDIAN],
+ [AC_CACHE_CHECK(for endianness, ac_cv_c_endian,
+ [
+-  AC_RUN_IFELSE(
+-    [AC_LANG_PROGRAM([], [dnl
+-        long val = 1;
+-        char *c = (char *) &val;
+-        exit(*c == 1);
+-    ])
+-  ],[
+-    ac_cv_c_endian=big
+-  ],[
+-    ac_cv_c_endian=little
+-  ])
++  ac_cv_c_endian=little
+ ])
+ if test $ac_cv_c_endian = big; then
+   AC_SUBST(LITTLE_ENDIAN,0) 
+diff --git dieharder-clean/dieharder/Makefile.am dieharder-workdir/dieharder/Makefile.am
+index 1409035..1c605fc 100644
+--- dieharder-clean/dieharder/Makefile.am
++++ dieharder-workdir/dieharder/Makefile.am
+@@ -65,7 +65,7 @@ DEFINES = -DVERSION=$(VERSION)
+ # CC = gcc
+ 
+ # Compile flags (use fairly standard -O3 as default)
+-AM_CPPFLAGS = -I ${top_srcdir}/include $(DEFINES) -I ${includedir}
++AM_CPPFLAGS = -I ${top_srcdir}/include $(DEFINES)
+ AM_CFLAGS = -O3
+ 
+ # Load flags (optional)
+diff --git dieharder-clean/dieharder/Makefile.in dieharder-workdir/dieharder/Makefile.in
+index 1bfb29f..3fbe692 100644
+--- dieharder-clean/dieharder/Makefile.in
++++ dieharder-workdir/dieharder/Makefile.in
+@@ -422,7 +422,7 @@ DEFINES = -DVERSION=$(VERSION)
+ # CC = gcc
+ 
+ # Compile flags (use fairly standard -O3 as default)
+-AM_CPPFLAGS = -I ${top_srcdir}/include $(DEFINES) -I ${includedir}
++AM_CPPFLAGS = -I ${top_srcdir}/include $(DEFINES)
+ AM_CFLAGS = -O3
+ 
+ # Load flags (optional)
+diff --git dieharder-clean/include/dieharder/libdieharder.h dieharder-workdir/include/dieharder/libdieharder.h
+index 4e1b38b..39bf1fc 100644
+--- dieharder-clean/include/dieharder/libdieharder.h
++++ dieharder-workdir/include/dieharder/libdieharder.h
+@@ -6,6 +6,8 @@
+ #if !defined(_LIBDIEHARDER_H)
+ #define _LIBDIEHARDER_H
+ 
++#pragma once
++
+ #include "copyright.h"
+ 
+ /* To enable large file support */
+diff --git dieharder-clean/libdieharder/Makefile.am dieharder-workdir/libdieharder/Makefile.am
+index 5cd6c57..f3f465b 100644
+--- dieharder-clean/libdieharder/Makefile.am
++++ dieharder-workdir/libdieharder/Makefile.am
+@@ -115,7 +115,7 @@ DEFINES = -DVERSION=$(VERSION) -DLITTLE_ENDIAN=$(LITTLE_ENDIAN)
+ # CC = gcc
+ 
+ # Compile flags (use fairly standard -O3 as default)
+-AM_CPPFLAGS = $(DEFINES) -I ${top_srcdir}/include -I ${includedir}
++AM_CPPFLAGS = $(DEFINES) -I ${top_srcdir}/include
+ AM_CFLAGS = -O3 -Wall -pedantic -Wno-unused-variable 
+ 
+ #========================================================================
+diff --git dieharder-clean/libdieharder/Makefile.in dieharder-workdir/libdieharder/Makefile.in
+index 558869f..7868385 100644
+--- dieharder-clean/libdieharder/Makefile.in
++++ dieharder-workdir/libdieharder/Makefile.in
+@@ -579,7 +579,7 @@ DEFINES = -DVERSION=$(VERSION) -DLITTLE_ENDIAN=$(LITTLE_ENDIAN)
+ # CC = gcc
+ 
+ # Compile flags (use fairly standard -O3 as default)
+-AM_CPPFLAGS = $(DEFINES) -I ${top_srcdir}/include -I ${includedir}
++AM_CPPFLAGS = $(DEFINES) -I ${top_srcdir}/include
+ AM_CFLAGS = -O3 -Wall -pedantic -Wno-unused-variable 
+ 
+ #========================================================================
+diff --git dieharder-clean/libdieharder/globals.c dieharder-workdir/libdieharder/globals.c
+index df91766..a6b9e3c 100644
+--- dieharder-clean/libdieharder/globals.c
++++ dieharder-workdir/libdieharder/globals.c
+@@ -4,7 +4,7 @@
+  *========================================================================
+  */
+ 
+-#include <dieharder/dieharder.h>
++#include "../dieharder/dieharder.h"
+ 
+  /* #define GSL_VAR */
+  /* List new rng types to be added. */

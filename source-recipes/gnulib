@@ -1,0 +1,8 @@
+name=gnulib
+version=4b17a1ae49e69df1ac5dc35a4f60b20ab958baf2
+source_method=tarball
+tarball_url="https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-${version}.tar.gz"
+
+regenerate() {
+    true
+}

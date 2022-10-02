@@ -1,0 +1,12 @@
+name=dieharder
+version=3.31.2
+source_method=tarball
+tarball_url="https://github.com/christopherkobayashi/dieharder/archive/refs/tags/${version}.tar.gz"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    autoreconf -fvi && libtoolize -cfvi
+    (cd libdieharder && autoreconf -fvi && libtoolize -cfvi)
+    (cd dieharder    && autoreconf -fvi && libtoolize -cfvi)
+    (cd manual       && autoreconf -fvi && libtoolize -cfvi)
+}

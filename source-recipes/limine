@@ -1,5 +1,5 @@
 name=limine
-version=4.20220927.0
+version=4.20221016.0
 source_method=tarball
 tarball_url="https://limine-bootloader.org/files/limine/limine-${version}.tar.gz"
 

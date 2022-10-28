@@ -75,6 +75,10 @@ int main() {
     setenv("MAIL", "/var/mail", 1);
     setenv("XDG_RUNTIME_DIR", "/run", 1);
 
+    // Disable MAC by giving all rights.
+    set_mac((unsigned long)-1);
+    lock_mac();
+
     // Open the framebuffer.
     int fb = open("/dev/bootfb", O_RDWR);
     if (fb == -1) {

@@ -2,7 +2,7 @@ name=mlibc
 version=0.0
 source_method=git
 clone_url="https://github.com/managarm/mlibc.git"
-tag="3.0.0-rc1"
+tag="3.0.0-rc2"
 
 regenerate() {
     true

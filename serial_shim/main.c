@@ -24,6 +24,10 @@ int main(void) {
     setenv("MAIL", "/var/mail", 1);
     setenv("XDG_RUNTIME_DIR", "/run", 1);
 
+    // Disable MAC by giving all rights.
+    set_mac((unsigned long)-1);
+    lock_mac();
+
     printf("serial_shim: Executing %s\n", shell);
     char * const args[] = {shell, NULL};
     pid_t spawned = program_spawn(shell, &args[0], environ);

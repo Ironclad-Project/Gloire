@@ -325,10 +325,18 @@ index d6dbca3..40e38b8 100644
 +}
 +#endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..45e9e49 100644
+index 89a3851..8b61b84 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-@@ -11,16 +11,10 @@ extern "C" {
+@@ -3,6 +3,7 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
++#include <sys/types.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -11,16 +12,10 @@ extern "C" {
  #define FB_DIMENSIONS 1
  
  struct ironclad_fb_dimensions {
@@ -349,7 +357,7 @@ index 89a3851..45e9e49 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +28,36 @@ struct ironclad_mouse_data {
+@@ -34,6 +29,36 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };

@@ -76,7 +76,12 @@ int main() {
     setenv("XDG_RUNTIME_DIR", "/run", 1);
 
     // Disable MAC by giving all rights.
-    set_mac((unsigned long)-1);
+    struct mac_filter filt;
+    strcpy(filt.path, "/");
+    filt.length = strlen(filt.path);
+    filt.perms  = (uint8_t)-1;
+    set_mac_capabilities((unsigned long)-1);
+    add_mac_filter(&filt);
     lock_mac();
 
     // Open the framebuffer.

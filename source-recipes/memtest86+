@@ -1,0 +1,9 @@
+name=memtest86+
+version=6.00
+source_method=git
+clone_url="https://github.com/memtest86plus/memtest86plus.git"
+tag="v6.00"
+
+regenerate() {
+    true
+}

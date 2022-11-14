@@ -1,0 +1,9 @@
+name=epoch
+version=1.3
+source_method=git
+clone_url="https://github.com/Subsentient/epoch"
+tag="1.3"
+
+regenerate() {
+    true
+}

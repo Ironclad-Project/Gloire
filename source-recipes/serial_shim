@@ -1,7 +1,0 @@
-name=gwm
-version=0.0
-source_dir="serial_shim"
-
-regenerate() {
-    true
-}

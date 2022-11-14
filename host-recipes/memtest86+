@@ -1,0 +1,21 @@
+name=memtest86+
+from_source=memtest86+
+revision=1
+hostdeps="gcc"
+imagedeps="nasm gcc mtools dosfstools xorriso git"
+
+configure() {
+    true
+}
+
+build() {
+    cd "${source_dir}"/build64
+    make -j${parallelism}
+}
+
+install() {
+    cd "${source_dir}"/build64
+    mkdir -p "${dest_dir}"/boot
+    cp memtest.bin "${dest_dir}"/boot/
+    cp memtest.efi "${dest_dir}"/boot/
+}

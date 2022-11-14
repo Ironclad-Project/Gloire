@@ -2,10 +2,11 @@
 
 set -ex
 
-# Build the sysroot with jinx and build limine.
+# Build the sysroot with jinx, build limine and memtest86+
 rm -rf sysroot
 ./jinx sysroot
 ./jinx host-build limine
+./jinx host-build memtest86+
 
 # Make an initramfs with the sysroot.
 (cd sysroot && tar cvf ../initramfs.tar *)
@@ -18,10 +19,11 @@ cp -r artwork/background.bmp iso_root/boot/
 cp -r initramfs.tar iso_root/boot/
 cp -r base-files/boot/* iso_root/boot/
 
-# Install the limine binaries.
+# Install the limine and memtest86+ binaries.
 cp -r host-pkgs/limine/usr/local/share/limine/limine.sys        iso_root/boot/
 cp -r host-pkgs/limine/usr/local/share/limine/limine-cd.bin     iso_root/boot/
 cp -r host-pkgs/limine/usr/local/share/limine/limine-cd-efi.bin iso_root/boot/
+cp -r host-pkgs/memtest86+/boot/memtest.bin                     iso_root/boot/
 
 # Create the disk image.
 xorriso -as mkisofs -b boot/limine-cd.bin -no-emul-boot -boot-load-size 4 \

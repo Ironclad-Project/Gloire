@@ -1,0 +1,84 @@
+diff --git epoch-clean/buildepoch.sh epoch-workdir/buildepoch.sh
+index 7a6fdfd..96d18ff 100755
+--- epoch-clean/buildepoch.sh
++++ epoch-workdir/buildepoch.sh
+@@ -54,7 +54,7 @@ ShowHelp()
+ 	printf $Green"--cc value"$EndGreen":\n\tSets \$CC to be the compiler for Epoch.\n"
+ }
+ 
+-NEED_EMPTY_CFLAGS="0"
++NEED_EMPTY_CFLAGS="1"
+ outdir="../built"
+ 
+ if [ "$CC" = "" ]; then
+@@ -141,7 +141,7 @@ if [ "$NEED_EMPTY_CFLAGS" = "0" ]; then
+ fi
+ 
+ if [ "$LDFLAGS" = "" ]; then
+-	LDFLAGS="-rdynamic"
++	LDFLAGS=""
+ fi
+ 
+ printf "\nBuilding object files.\n\n"
+diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
+index 92c56e2..acaea50 100644
+--- epoch-clean/src/actions.c
++++ epoch-workdir/src/actions.c
+@@ -669,11 +669,11 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+ 	sync();
+ 
+ 	/*pivot_root now.*/
+-	if (syscall(SYS_pivot_root, NewRoot, OldRootDir) != 0)
+-	{
+-		SpitError("Failed to pivot_root()!");
+-		EmergencyShell();
+-	}
++	// if (syscall(SYS_pivot_root, NewRoot, OldRootDir) != 0)
++	// {
++	// 	SpitError("Failed to pivot_root()!");
++	// 	EmergencyShell();
++	// }
+ 
+ 	chdir("/"); /*Reset working directory*/
+ }
+@@ -711,7 +711,7 @@ void FinaliseLogStartup(Bool BlankLog)
+ void LaunchBootup(void)
+ { /*Handles what would happen if we were PID 1.*/
+ 	
+-	setsid();
++	// setsid();
+ 	
+ 	/*Print our version to the console*/
+ 	puts(CONSOLE_COLOR_CYAN VERSIONSTRING CONSOLE_ENDCOLOR);
+diff --git epoch-clean/src/parse.c epoch-workdir/src/parse.c
+index 84d97b9..90ff438 100644
+--- epoch-clean/src/parse.c
++++ epoch-workdir/src/parse.c
+@@ -164,7 +164,7 @@ static ReturnCode ExecuteConfigObject(ObjTable *InObj, const char *CurCmd)
+ 	
+ 	for (; Inc < NSIG; ++Inc)
+ 	{
+-		sigaddset(&SigMaker[0], Inc);
++		// sigaddset(&SigMaker[0], Inc);
+ 	}
+ 	SigMaker[1] = SigMaker[0];
+ 	
+@@ -199,15 +199,15 @@ static ReturnCode ExecuteConfigObject(ObjTable *InObj, const char *CurCmd)
+ 		
+ 		for (; Inc < NSIG; ++Inc)
+ 		{
+-			sigaddset(&Sig2, Inc);
+-			signal(Inc, SIG_DFL); /*Set all the signal handlers to default while we're at it.*/
++			// sigaddset(&Sig2, Inc);
++			// signal(Inc, SIG_DFL); /*Set all the signal handlers to default while we're at it.*/
+ 		}
+ 		
+ 		sigprocmask(SIG_UNBLOCK, &Sig2, NULL); /*Unblock signals.*/
+ 		
+ 		
+ 		/*Change our session id.*/
+-		setsid();
++		// setsid();
+ 		
+ #ifndef NOMMU /*Can't do this because vfork() blocks the parent.*/
+ 		/*If we are supposed to spawn off as a daemon, do this.*/

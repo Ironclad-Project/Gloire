@@ -11,6 +11,7 @@
 #include <widgets/widget.h>
 #include <sys/ironclad.h>
 #include <sys/ioctl.h>
+#include <string.h>
 
 #define BACKGROUND_COLOR 0xaaaaaa
 
@@ -64,7 +65,7 @@ static void refresh() {
     refresh_to_backend(main_fb);
 }
 
-int main() {
+int main(void) {
     // Set environment.
     setenv("HOME", "/root", 1);
     setenv("TERM", "linux", 1);
@@ -75,13 +76,29 @@ int main() {
     setenv("MAIL", "/var/mail", 1);
     setenv("XDG_RUNTIME_DIR", "/run", 1);
 
-    // Disable MAC by giving all rights.
-    struct mac_filter filt;
-    strcpy(filt.path, "/");
-    filt.length = strlen(filt.path);
-    filt.perms  = (uint8_t)-1;
+    // Setting up MAC for the WM.
+    struct mac_filter filt1;
+    strncpy(filt1.path, "/dev/bootfb", sizeof(filt1.path));
+    filt1.length = strlen(filt1.path);
+    filt1.perms  = MAC_FILTER_R | MAC_FILTER_W;
+    struct mac_filter filt2;
+    strncpy(filt2.path, "/dev/ps2mouse", sizeof(filt2.path));
+    filt2.length = strlen(filt2.path);
+    filt2.perms  = MAC_FILTER_R;
+    struct mac_filter filt3;
+    strncpy(filt3.path, "/dev/random", sizeof(filt3.path));
+    filt3.length = strlen(filt3.path);
+    filt3.perms  = MAC_FILTER_R;
+    struct mac_filter filt4;
+    strncpy(filt4.path, "/etc", sizeof(filt4.path));
+    filt4.length = strlen(filt4.path);
+    filt4.perms  = MAC_FILTER_R | MAC_FILTER_INC_FILES;
+
     set_mac_capabilities((unsigned long)-1);
-    add_mac_filter(&filt);
+    add_mac_filter(&filt1);
+    add_mac_filter(&filt2);
+    add_mac_filter(&filt3);
+    add_mac_filter(&filt4);
     lock_mac();
 
     // Open the framebuffer.

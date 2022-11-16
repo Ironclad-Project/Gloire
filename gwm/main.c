@@ -66,41 +66,6 @@ static void refresh() {
 }
 
 int main(void) {
-    // Set environment.
-    setenv("HOME", "/root", 1);
-    setenv("TERM", "linux", 1);
-    setenv("PATH", "/usr/bin", 1);
-    setenv("USER", "root", 1);
-    setenv("LOGNAME", "root", 1);
-    setenv("SHELL", "/bin/bash", 1);
-    setenv("MAIL", "/var/mail", 1);
-    setenv("XDG_RUNTIME_DIR", "/run", 1);
-
-    // Setting up MAC for the WM.
-    struct mac_filter filt1;
-    strncpy(filt1.path, "/dev/bootfb", sizeof(filt1.path));
-    filt1.length = strlen(filt1.path);
-    filt1.perms  = MAC_FILTER_R | MAC_FILTER_W;
-    struct mac_filter filt2;
-    strncpy(filt2.path, "/dev/ps2mouse", sizeof(filt2.path));
-    filt2.length = strlen(filt2.path);
-    filt2.perms  = MAC_FILTER_R;
-    struct mac_filter filt3;
-    strncpy(filt3.path, "/dev/random", sizeof(filt3.path));
-    filt3.length = strlen(filt3.path);
-    filt3.perms  = MAC_FILTER_R;
-    struct mac_filter filt4;
-    strncpy(filt4.path, "/etc", sizeof(filt4.path));
-    filt4.length = strlen(filt4.path);
-    filt4.perms  = MAC_FILTER_R | MAC_FILTER_INC_FILES;
-
-    set_mac_capabilities((unsigned long)-1);
-    add_mac_filter(&filt1);
-    add_mac_filter(&filt2);
-    add_mac_filter(&filt3);
-    add_mac_filter(&filt4);
-    lock_mac();
-
     // Open the framebuffer.
     int fb = open("/dev/bootfb", O_RDWR);
     if (fb == -1) {

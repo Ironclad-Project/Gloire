@@ -66,7 +66,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..a9ed8fd 100644
+index d6dbca3..ad27735 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,18 +10,16 @@
@@ -116,7 +116,7 @@ index d6dbca3..a9ed8fd 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,84 +139,57 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,96 +139,61 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -218,16 +218,19 @@ index d6dbca3..a9ed8fd 100644
  	*pgid = 0;
  	return 0;
  }
-@@ -217,7 +198,7 @@ int sys_clock_get(int clock, time_t *secs, long *nanos) {
- 	(void)clock;
- 	(void)secs;
- 	(void)nanos;
--	mlibc::infoLogger() << "clock_get() is a stub" << frg::endlog;
-+	// FIXME: Stub needed by mlibc.
- 	return 0;
- }
  
-@@ -234,17 +215,19 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+-int sys_clock_get(int clock, time_t *secs, long *nanos) {
+-	(void)clock;
+-	(void)secs;
+-	(void)nanos;
+-	mlibc::infoLogger() << "clock_get() is a stub" << frg::endlog;
+-	return 0;
+-}
+-
+ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+ 	int ret, errno;
+ 
+@@ -234,17 +207,19 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -255,7 +258,7 @@ index d6dbca3..a9ed8fd 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -452,6 +435,13 @@ int sys_futex_wake(int *pointer) {
+@@ -452,8 +427,49 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -268,8 +271,44 @@ index d6dbca3..a9ed8fd 100644
 +
  #ifndef MLIBC_BUILDING_RTDL
  
++int sys_clock_get(int clock, time_t *secs, long *nanos) {
++	switch (clock) {
++		case CLOCK_REALTIME: {
++			// Use the RTC interface, there is no native kernel entity.
++			// RTC gives true month and year, substract to make epoch.
++			int fd, ret;
++			struct rtc_time rtc;
++			struct tm tm;
++			if (sys_open("/dev/rtc", O_RDONLY, 0, &fd) ||
++				 sys_ioctl(fd, RTC_RD_TIME, &rtc, &ret))
++			{
++				return -1;
++			}
++			tm = {
++				.tm_sec  = rtc.tm_sec,
++				.tm_min  = rtc.tm_min,
++				.tm_hour = rtc.tm_hour,
++				.tm_mday = rtc.tm_mday,
++				.tm_mon  = rtc.tm_mon  - 1,
++				.tm_year = rtc.tm_year - 1900,
++				.tm_wday = rtc.tm_wday,
++				.tm_yday = rtc.tm_yday,
++				.tm_isdst = rtc.tm_isdst
++			};
++			*nanos = 0;
++			*secs  = mktime(&tm);
++			sys_close (fd);
++			return 0;
++		}
++		default:
++			return -1;
++	}
++}
++
  int sys_gethostname(char *buffer, size_t bufsize) {
-@@ -495,3 +485,70 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ 	struct utsname buf;
+ 	if (uname(&buf)) {
+@@ -495,3 +511,70 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  
  #endif
  } // namespace mlibc
@@ -341,7 +380,7 @@ index d6dbca3..a9ed8fd 100644
 +}
 +#endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..9d022fe 100644
+index 89a3851..086c244 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
 @@ -3,6 +3,7 @@
@@ -373,10 +412,25 @@ index 89a3851..9d022fe 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,59 @@ struct ironclad_mouse_data {
+@@ -34,6 +29,74 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
++
++#define RTC_RD_TIME  1
++#define RTC_SET_TIME 2
++
++struct rtc_time {
++	int tm_sec;
++	int tm_min;
++	int tm_hour;
++	int tm_mday;
++	int tm_mon;
++	int tm_year;
++	int tm_wday;     /* unused */
++	int tm_yday;     /* unused */
++	int tm_isdst;    /* unused */
++};
 +
 +// Syscalls declared on the documentation, but without libc equivalents.
 +// Implemented in generic.cpp

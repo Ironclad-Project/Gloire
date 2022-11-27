@@ -67,7 +67,7 @@ static void refresh() {
 
 int main(void) {
     // Open the framebuffer.
-    int fb = open("/dev/bootfb", O_RDWR);
+    int fb = open("/dev/fb0", O_RDWR);
     if (fb == -1) {
         perror("Could not open the framebuffer");
         exit(1);

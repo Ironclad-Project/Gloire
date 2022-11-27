@@ -4,6 +4,7 @@ revision=1
 imagedeps="meson ninja git base-devel"
 hostdeps="gcc-compiler"
 deps="mlibc-headers"
+allow_network="yes"
 
 configure() {
     meson \

@@ -4,6 +4,7 @@ source_method=git
 clone_url="https://github.com/AdaCore/gprbuild.git"
 tag="v${version}"
 imagedeps="git"
+allow_network="yes"
 
 regenerate() {
     git clone https://github.com/AdaCore/xmlada.git --branch=v${version} --depth=1

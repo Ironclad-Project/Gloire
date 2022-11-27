@@ -25,11 +25,17 @@
 
 set -e
 
-jinx_version="0.0.16"
+jinx_version="0.0.20"
 
 parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
+build_dir="$(pwd -P)"
 
-base_dir="$(pwd -P)"
+if [ -z "$JINX_SOURCE_DIR" ]; then
+    base_dir="$build_dir"
+else
+    base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
+fi
+
 script_name="$(basename "$0")"
 script_dir="$(dirname "$0")"
 if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
@@ -51,7 +57,7 @@ fi
 pacman_cache="$HOME/.cache/jinx/pacman"
 
 die() {
-    echo $1
+    echo "$1"
     exit 1
 }
 
@@ -67,17 +73,17 @@ build_hostdeps() {
     for hostdep in ${hostdeps} ${hostrundeps}; do
         [ -f "${base_dir}"/host-recipes/${hostdep} ] || die "missing host dependency '${hostdep}' for recipe '${name}'"
 
-        [ -f "${base_dir}"/host-builds/${hostdep}.installed ] && continue
+        [ -f "${build_dir}"/host-builds/${hostdep}.installed ] && continue
 
         "${script}" host-build ${hostdep}
     done
 }
 
 build_deps() {
-    for dep in ${deps}; do
+    for dep in ${deps} ${builddeps}; do
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
-        [ -f "${base_dir}"/builds/${dep}.installed ] && continue
+        [ -f "${build_dir}"/builds/${dep}.installed ] && continue
 
         "${script}" build ${dep}
     done
@@ -109,6 +115,19 @@ get_hostdeps_file() {
     done
 }
 
+get_builddeps_file() {
+    deps_to_do=""
+
+    for dep in ${deps} ${builddeps}; do
+        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
+        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
+    done
+
+    for dep in ${deps_to_do}; do
+        "${script}" internal-get-deps-file ${dep} "${deps_file}"
+    done
+}
+
 get_deps_file() {
     deps_to_do=""
 
@@ -123,6 +142,8 @@ get_deps_file() {
 }
 
 prepare_container() {
+    cd "${build_dir}"
+
     make_temp
     hostdeps_file="${tmp}"
     make_temp
@@ -132,7 +153,7 @@ prepare_container() {
     build_deps
 
     get_hostdeps_file
-    get_deps_file
+    get_builddeps_file
 
     make_temp -d
     container_pkgs="${tmp}"
@@ -140,11 +161,11 @@ prepare_container() {
     sysroot_dir="${tmp}"
 
     for hostdep in $(cat "${hostdeps_file}"); do
-        cp -Plrf "${base_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
+        cp -Plrf "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
     done
 
     for dep in $(cat "${deps_file}"); do
-        cp -Plrf "${base_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
+        cp -Plrf "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
     imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
@@ -169,6 +190,12 @@ prepare_container() {
 }
 
 run_in_container() {
+    if [ "${allow_network}" = "yes" ]; then
+        unshare_net_flag=""
+    else
+        unshare_net_flag="-n"
+    fi
+
     "$HOME/.cache/jinx/rbrt" \
         --root "${imgroot}" \
         --uid $(id -u) \
@@ -178,8 +205,10 @@ run_in_container() {
         --mount "${sysroot_dir}":/sysroot \
         --mount "${script_dir}":/jinx \
         --mount "${base_dir}":/base_dir \
+        --mount "${build_dir}":/build_dir \
+        ${unshare_net_flag} \
         -- \
-        bash -c "cd /base_dir && /jinx/${script_name} $1 $2 $3 $4 $5"
+        bash -c "cd /build_dir && JINX_SOURCE_DIR=/base_dir /jinx/${script_name} $1 $2 $3 $4 $5"
 }
 
 destroy_container() {
@@ -212,6 +241,31 @@ do_tarball_fetch() {
     tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
     curl -L -o "${tarball_path}" "${tarball_url}"
+
+    checksum_verified=no
+
+    if ! [ -z "${tarball_sha256}" ]; then
+        if ! sha256sum "${tarball_path}" | grep "${tarball_sha256}" >/dev/null 2>&1; then
+            die "* error: Failed to verify SHA256 for ${name}!"
+        fi
+        checksum_verified=yes
+    fi
+    if ! [ -z "${tarball_sha512}" ]; then
+        if ! sha512sum "${tarball_path}" | grep "${tarball_sha512}" >/dev/null 2>&1; then
+            die "* error: Failed to verify SHA512 for ${name}!"
+        fi
+        checksum_verified=yes
+    fi
+    if ! [ -z "${tarball_blake2b}" ]; then
+        if ! b2sum "${tarball_path}" | grep "${tarball_blake2b}" >/dev/null 2>&1; then
+            die "* error: Failed to verify BLAKE2B for ${name}!"
+        fi
+        checksum_verified=yes
+    fi
+
+    if [ "${checksum_verified}" = "no" ]; then
+        die "* error: No checksum method specified for ${name}"
+    fi
 
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
@@ -303,9 +357,9 @@ do_regenerate() {
 do_configure_host() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${base_dir}"/host-builds/${name}.configured ] && return
+    [ -f "${build_dir}"/host-builds/${name}.configured ] && return
 
-    mkdir -p "${base_dir}"/host-builds/${name}
+    mkdir -p "${build_dir}"/host-builds/${name}
 
     eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -319,17 +373,17 @@ do_configure_host() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/host-builds/${name}
+    cd "${build_dir}"/host-builds/${name}
     configure
     cd "${base_dir}"
 
-    touch "${base_dir}"/host-builds/${name}.configured
+    touch "${build_dir}"/host-builds/${name}.configured
 }
 
 do_build_host() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${base_dir}"/host-builds/${name}.built ] && return
+    [ -f "${build_dir}"/host-builds/${name}.built ] && return
 
     eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -343,19 +397,19 @@ do_build_host() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/host-builds/${name}
+    cd "${build_dir}"/host-builds/${name}
     build
     cd "${base_dir}"
 
-    touch "${base_dir}"/host-builds/${name}.built
+    touch "${build_dir}"/host-builds/${name}.built
 }
 
 do_install_host() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${base_dir}"/host-builds/${name}.installed ] && return
+    [ -f "${build_dir}"/host-builds/${name}.installed ] && return
 
-    dest_dir="${base_dir}"/host-pkgs/${name}
+    dest_dir="${build_dir}"/host-pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
@@ -374,7 +428,7 @@ do_install_host() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/host-builds/${name}
+    cd "${build_dir}"/host-builds/${name}
     install
     cd "${base_dir}"
 
@@ -383,15 +437,15 @@ do_install_host() {
         rm -rvf $i
     done
 
-    touch "${base_dir}"/host-builds/${name}.installed
+    touch "${build_dir}"/host-builds/${name}.installed
 }
 
 do_configure() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${base_dir}"/builds/${name}.configured ] && return
+    [ -f "${build_dir}"/builds/${name}.configured ] && return
 
-    mkdir -p "${base_dir}"/builds/${name}
+    mkdir -p "${build_dir}"/builds/${name}
 
     eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -405,17 +459,17 @@ do_configure() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/builds/${name}
+    cd "${build_dir}"/builds/${name}
     configure
     cd "${base_dir}"
 
-    touch "${base_dir}"/builds/${name}.configured
+    touch "${build_dir}"/builds/${name}.configured
 }
 
 do_build() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${base_dir}"/builds/${name}.built ] && return
+    [ -f "${build_dir}"/builds/${name}.built ] && return
 
     eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
     if [ -z "${source_dir}" ]; then
@@ -429,19 +483,19 @@ do_build() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/builds/${name}
+    cd "${build_dir}"/builds/${name}
     build
     cd "${base_dir}"
 
-    touch "${base_dir}"/builds/${name}.built
+    touch "${build_dir}"/builds/${name}.built
 }
 
 do_install() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${base_dir}"/builds/${name}.installed ] && return
+    [ -f "${build_dir}"/builds/${name}.installed ] && return
 
-    dest_dir="${base_dir}"/pkgs/${name}
+    dest_dir="${build_dir}"/pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
@@ -460,7 +514,7 @@ do_install() {
 
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
-    cd "${base_dir}"/builds/${name}
+    cd "${build_dir}"/builds/${name}
     install
     cd "${base_dir}"
 
@@ -469,7 +523,7 @@ do_install() {
         rm -rvf $i
     done
 
-    touch "${base_dir}"/builds/${name}.installed
+    touch "${build_dir}"/builds/${name}.installed
 }
 
 precont_patch() {
@@ -495,19 +549,19 @@ do_source() {
 }
 
 do_cmd_rebuild() {
-    rm -rf "${base_dir}"/builds/"$1"
-    rm -rf "${base_dir}"/builds/"$1".*
-    rm -rf "${base_dir}"/pkgs/"$1"
-    rm -rf "${base_dir}"/pkgs/"$1".*
+    rm -rf "${build_dir}"/builds/"$1"
+    rm -rf "${build_dir}"/builds/"$1".*
+    rm -rf "${build_dir}"/pkgs/"$1"
+    rm -rf "${build_dir}"/pkgs/"$1".*
 
     do_pkg "$1"
 }
 
 do_cmd_host_rebuild() {
-    rm -rf "${base_dir}"/host-builds/"$1"
-    rm -rf "${base_dir}"/host-builds/"$1".*
-    rm -rf "${base_dir}"/host-pkgs/"$1"
-    rm -rf "${base_dir}"/host-pkgs/"$1".*
+    rm -rf "${build_dir}"/host-builds/"$1"
+    rm -rf "${build_dir}"/host-builds/"$1".*
+    rm -rf "${build_dir}"/host-pkgs/"$1"
+    rm -rf "${build_dir}"/host-pkgs/"$1".*
 
     do_host_pkg "$1"
 }
@@ -582,7 +636,7 @@ do_cmd_regenerate() {
 do_host_pkg() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${base_dir}"/host-builds/${name}.installed ] && return
+    [ -f "${build_dir}"/host-builds/${name}.installed ] && return
 
     echo "* building host package: $name"
 
@@ -602,7 +656,7 @@ do_host_pkg() {
 do_pkg() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${base_dir}"/builds/${name}.installed ] && return
+    [ -f "${build_dir}"/builds/${name}.installed ] && return
 
     echo "* building package: $name"
 
@@ -656,12 +710,12 @@ cmd_rebuild() {
 }
 
 cmd_clean() {
-    rm -rf "${base_dir}"/builds
-    rm -rf "${base_dir}"/host-builds
-    rm -rf "${base_dir}"/pkgs
-    rm -rf "${base_dir}"/host-pkgs
+    rm -rf "${build_dir}"/builds
+    rm -rf "${build_dir}"/host-builds
+    rm -rf "${build_dir}"/pkgs
+    rm -rf "${build_dir}"/host-pkgs
     rm -rf "${base_dir}"/sources
-    rm -rf "${base_dir}"/sysroot
+    rm -rf "${build_dir}"/sysroot
 }
 
 cmd_install() {
@@ -671,7 +725,13 @@ cmd_install() {
 
     for ppkg in "$@"; do
         if [ "${ppkg}" = '*' ]; then
-            for pkg in "${base_dir}"/pkgs/*; do
+            for pkg in "${build_dir}"/pkgs/*; do
+                add_to_sysroot=""
+                eval $(grep 'add_to_sysroot=' < "${base_dir}"/recipes/$(basename ${pkg}))
+                if [ "${add_to_sysroot}" = "no" ]; then
+                    continue
+                fi
+
                 echo "* copying $(basename ${pkg}) to sysroot '${sysroot}'..."
                 cp -rf "${pkg}"/. "${sysroot}"/
             done
@@ -702,7 +762,396 @@ first_use() {
 
     mkdir -p "${pacman_cache}"
 
-    curl -L -o "$HOME/.cache/jinx/rbrt.c" https://raw.githubusercontent.com/mintsuki/jinx/trunk/rbrt.c
+    cat <<'EOF' >"$HOME/.cache/jinx/rbrt.c"
+// Written by czapek1337 (czapek1337@gmail.com)
+// Inspired heavily by https://github.com/managarm/cbuildrt/
+
+#define _GNU_SOURCE
+
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/wait.h>
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+int main(int argc, char *argv[]) {
+    int ok = 1;
+    const char *err_msg = "";
+
+    char *rootfs = NULL;
+    char **mounts = NULL;
+    char **envs = NULL;
+    char **process_args = NULL;
+
+    int mount_count = 0;
+    int mounts_size = 0;
+
+    int env_count = 0;
+    int envs_size = 0;
+
+    bool rw_root = false;
+    bool unshare_net = false;
+
+    int uid = -1, gid = -1;
+    int euid = geteuid();
+    int egid = getegid();
+
+    int setgroups_fd = -1;
+    int uid_map_fd = -1;
+    int gid_map_fd = -1;
+
+    for (int i = 1; i < argc; ) {
+        if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--root") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
+                goto cleanup;
+            }
+
+            rootfs = argv[i + 1];
+            i += 2;
+
+            if (i < argc - 1 && strcmp(argv[i], "rw") == 0) {
+                rw_root = true;
+                i++;
+            }
+        } else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--uid") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
+                goto cleanup;
+            }
+
+            if (sscanf(argv[i + 1], "%d", &uid) != 1) {
+                fprintf(stderr, "%s: '%s' is not a valid user ID\n", argv[0], argv[i + 1]);
+                goto cleanup;
+            }
+
+            i += 2;
+        } else if (strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gid") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
+                goto cleanup;
+            }
+
+            if (sscanf(argv[i + 1], "%d", &gid) != 1) {
+                fprintf(stderr, "%s: '%s' is not a valid group ID\n", argv[0], argv[i + 1]);
+                goto cleanup;
+            }
+
+            i += 2;
+        } else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mount") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
+                goto cleanup;
+            }
+
+            if (mount_count == mounts_size) {
+                mounts_size = mounts_size == 0 ? 16 : mounts_size * 2;
+                char **tmp_mounts = realloc(mounts, sizeof(char *) * mounts_size);
+                if (tmp_mounts == NULL) {
+                    fprintf(stderr, "%s: failed to allocate mounts array\n", argv[0]);
+                    goto cleanup;
+                }
+                mounts = tmp_mounts;
+            }
+
+            char *target = argv[i + 1];
+            while (*target && *target != ':') {
+                target++;
+            }
+
+            if (!*target) {
+                fprintf(stderr, "%s: mount points need to be provided in the 'source:target' format\n", argv[0]);
+                goto cleanup;
+            }
+
+            mounts[mount_count++] = argv[i + 1];
+            i += 2;
+        } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--env") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
+                goto cleanup;
+            }
+
+            if (env_count == envs_size) {
+                envs_size = envs_size == 0 ? 16 : envs_size * 2;
+                char **tmp_envs = realloc(envs, sizeof(char *) * envs_size);
+                if (tmp_envs == NULL) {
+                    fprintf(stderr, "%s: failed to allocate environment variables array\n", argv[0]);
+                    goto cleanup;
+                }
+                envs = tmp_envs;
+            }
+
+            char *value = argv[i + 1];
+            while (*value && *value != '=') {
+                value++;
+            }
+
+            if (!*value) {
+                fprintf(stderr, "%s: environment variables need to be provided in the 'key=value' format\n", argv[0]);
+                goto cleanup;
+            }
+
+            envs[env_count++] = argv[i + 1];
+            i += 2;
+        } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--net") == 0) {
+            unshare_net = true;
+            i += 1;
+        } else if (strcmp(argv[i], "--") == 0) {
+            if (i == argc - 1) {
+                fprintf(stderr, "%s: at least one trailing argument is required\n", argv[0]);
+                goto cleanup;
+            }
+
+            process_args = &argv[i + 1];
+            break;
+        } else {
+            fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], argv[i]);
+            goto cleanup;
+        }
+    }
+
+    if (rootfs == NULL) {
+        fprintf(stderr, "%s: root file system path is required\n", argv[0]);
+        goto cleanup;
+    }
+
+    if (process_args == NULL) {
+        fprintf(stderr, "%s: process arguments are requires\n", argv[0]);
+        goto cleanup;
+    }
+
+    if (uid == -1 || gid == -1) {
+        fprintf(stderr, "%s: user and group IDs are both required\n", argv[0]);
+        goto cleanup;
+    }
+
+    if (unshare(CLONE_NEWUSER | CLONE_NEWPID) < 0) {
+        err_msg = "unshare() failure at line " TOSTRING(__LINE__);
+        goto errno_error;
+    }
+
+    char uid_map[64], gid_map[64];
+
+    int uid_map_len = snprintf(uid_map, 64, "%d %d 1", uid, euid);
+    int gid_map_len = snprintf(gid_map, 64, "%d %d 1", gid, egid);
+
+    setgroups_fd = open("/proc/self/setgroups", O_RDWR);
+    if (setgroups_fd < 0 || write(setgroups_fd, "deny", 4) < 0) {
+        err_msg = "failed to open or write to /proc/self/setgroups at line " TOSTRING(__LINE__);
+        goto errno_error;
+    }
+    close(setgroups_fd);
+    setgroups_fd = -1;
+
+    uid_map_fd = open("/proc/self/uid_map", O_RDWR);
+    if (uid_map_fd < 0 || write(uid_map_fd, uid_map, uid_map_len) < 0) {
+        err_msg = "failed to open or write to /proc/self/uid_map at line " TOSTRING(__LINE__);
+        goto errno_error;
+    }
+    close(uid_map_fd);
+    uid_map_fd = -1;
+
+    gid_map_fd = open("/proc/self/gid_map", O_RDWR);
+    if (gid_map_fd < 0 || write(gid_map_fd, gid_map, gid_map_len) < 0) {
+        err_msg = "failed to open or write to /proc/self/gid_map at line " TOSTRING(__LINE__);
+        goto errno_error;
+    }
+    close(gid_map_fd);
+    gid_map_fd = -1;
+
+    if (setuid(uid) < 0 || setgid(gid) < 0) {
+        err_msg = "setuid()/setgid() failure at line " TOSTRING(__LINE__);
+        goto errno_error;
+    }
+
+    int child_pid = fork();
+    if (child_pid == 0) {
+        if (unshare(CLONE_NEWNS) < 0) {
+            err_msg = "unshare() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        if (mount(rootfs, rootfs, NULL, MS_BIND, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        int root_flags = MS_REMOUNT | MS_BIND | MS_NOSUID | MS_NODEV;
+
+        if (!rw_root) {
+            root_flags |= MS_RDONLY;
+        }
+
+        if (mount(rootfs, rootfs, NULL, root_flags, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        char *dev_overlays[] = { "tty", "null", "zero", "full", "random", "urandom" };
+        char target_path[PATH_MAX];
+
+        for (size_t i = 0; i < sizeof(dev_overlays) / sizeof(char *); i++) {
+            char source_path[PATH_MAX];
+
+            snprintf(source_path, PATH_MAX, "/dev/%s", dev_overlays[i]);
+            snprintf(target_path, PATH_MAX, "%s/dev/%s", rootfs, dev_overlays[i]);
+
+            if (mount(source_path, target_path, NULL, MS_BIND, NULL) < 0) {
+                int tmp_errno = errno;
+                fprintf(stderr, "(source: %s, target: %s) ", source_path, target_path);
+                errno = tmp_errno;
+                err_msg = "mount() failure at line " TOSTRING(__LINE__);
+                goto errno_error;
+            }
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/etc/resolv.conf", rootfs);
+        if (mount("/etc/resolv.conf", target_path, NULL, MS_BIND, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/dev/pts", rootfs);
+        if (mount(NULL, target_path, "devpts", 0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/dev/shm", rootfs);
+        if (mount(NULL, target_path, "tmpfs",  0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/run", rootfs);
+        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/tmp", rootfs);
+        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        snprintf(target_path, PATH_MAX, "%s/proc", rootfs);
+        if (mount(NULL, target_path, "proc", 0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        for (int i = 0; i < mount_count; i++) {
+            char *source = mounts[i];
+            char *target = source;
+
+            while (*target && *target != ':') {
+                target++;
+            }
+
+            *target++ = 0;
+
+            snprintf(target_path, PATH_MAX, "%s/%s", rootfs, target);
+            if (mount(source, target_path, NULL, MS_BIND | MS_REC, NULL) < 0) {
+                err_msg = "mount() failure at line " TOSTRING(__LINE__);
+                goto errno_error;
+            }
+        }
+
+        if (unshare_net && unshare(CLONE_NEWNET) < 0) {
+            err_msg = "unshare() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        if (chroot(rootfs) < 0) {
+            err_msg = "chroot() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        if (chdir("/") < 0) {
+            err_msg = "chdir() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        int child = fork();
+        if (child == 0) {
+            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl", 1);
+
+            for (int i = 0; i < env_count; i++) {
+                char *key = envs[i];
+                char *value = key;
+
+                while (*value && *value != '=') {
+                    value++;
+                }
+
+                *value++ = 0;
+                setenv(key, value, 1);
+            }
+
+            if (execvp(process_args[0], process_args) < 0) {
+                err_msg = "execvp() failure at line " TOSTRING(__LINE__);
+                goto errno_error;
+            }
+
+            __builtin_unreachable();
+        } else {
+            int exit_code = -1;
+            if (waitpid(child, &exit_code, 0) < 0) {
+                err_msg = "waitpid() failure at line " TOSTRING(__LINE__);
+                goto errno_error;
+            }
+
+            ok = WEXITSTATUS(exit_code);
+            goto cleanup;
+        }
+
+        __builtin_unreachable();
+    } else {
+        int exit_code = -1;
+        if (waitpid(child_pid, &exit_code, 0) < 0) {
+            err_msg = "waitpid() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
+        ok = WEXITSTATUS(exit_code);
+        goto cleanup;
+    }
+
+errno_error:
+    fprintf(stderr, "%s: %s: %s\n", argv[0], err_msg, strerror(errno));
+
+cleanup:
+    if (mounts != NULL) {
+        free(mounts);
+    }
+    if (envs != NULL) {
+        free(envs);
+    }
+    if (setgroups_fd >= 0) {
+        close(setgroups_fd);
+    }
+    if (uid_map_fd >= 0) {
+        close(uid_map_fd);
+    }
+    if (gid_map_fd >= 0) {
+        close(gid_map_fd);
+    }
+
+    return ok;
+}
+EOF
     cc -O2 -pipe -Wall -Wextra "$HOME/.cache/jinx/rbrt.c" -o "$HOME/.cache/jinx/rbrt"
 
     curl -L -o "$HOME/.cache/jinx/arch-root.tar.gz" https://mirror.netcologne.de/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
@@ -727,13 +1176,14 @@ first_use() {
     mkdir "$HOME/.cache/jinx/sets/.image/etc/pacman.d/gnupg"
     mkdir "$HOME/.cache/jinx/sets/.image/sysroot"
     mkdir "$HOME/.cache/jinx/sets/.image/base_dir"
+    mkdir "$HOME/.cache/jinx/sets/.image/build_dir"
     mkdir "$HOME/.cache/jinx/sets/.image/jinx"
     "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 -- locale-gen
     "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
     "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
     "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
     "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
-    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext libtool m4 make patch perl texinfo which
+    "$HOME/.cache/jinx/rbrt" --root "$HOME/.cache/jinx/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl texinfo which
 
     echo "$jinx_version" > "$HOME/.cache/jinx/version"
 

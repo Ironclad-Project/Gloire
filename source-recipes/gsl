@@ -2,6 +2,7 @@ name=gsl
 version=2.7
 source_method=tarball
 tarball_url="https://ftp.gnu.org/gnu/gsl/gsl-${version}.tar.gz"
+tarball_blake2b="a9da4df40ea57374880026a0586f2f218dbb0c9154cc661b3e7f5cd414311b95300e60faa2d7f4d3c6cdae5cfdf77cb8052075b56f51564aec2649cc4ad5f7f9"
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {

@@ -1,6 +1,6 @@
 #include <fb.h>
 #include <font.h>
-#include <sys/ironclad.h>
+#include <linux/fb.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -14,14 +14,18 @@ static int bittest(int var, int index) {
 }
 
 struct framebuffer *create_framebuffer_from_fd(int fd) {
-    // Fetch the dimensions.
-    struct ironclad_fb_dimensions dimensions;
-    if (ioctl(fd, FB_DIMENSIONS, &dimensions) == -1) {
+    // Fetch fb info.
+    struct fb_var_screeninfo var_info;
+    struct fb_fix_screeninfo fix_info;
+    if (ioctl(fd, FBIOGET_VSCREENINFO, &var_info) == -1) {
+        return NULL;
+    }
+    if (ioctl(fd, FBIOGET_FSCREENINFO, &fix_info) == -1) {
         return NULL;
     }
 
     // Get dimensions.
-    size_t pixel_size  = dimensions.height * (dimensions.pitch / sizeof(uint32_t));
+    size_t pixel_size  = fix_info.smem_len / sizeof(uint32_t);
     size_t linear_size = pixel_size * sizeof(uint32_t);
 
     // Mmap the framebuffer into our mem_window.
@@ -45,9 +49,9 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
     for (size_t i = 0; i < pixel_size; i++) {
         background[i] = i % 7 == 0 ? 0x605885 : 0xC0C0C0;
     }
-    memcpy(mem_window,  background, pixel_size * sizeof(uint32_t));
-    memcpy(antibuffer,  background, pixel_size * sizeof(uint32_t));
-    memcpy(frontbuffer, background, pixel_size * sizeof(uint32_t));
+    memcpy(mem_window,  background, linear_size);
+    memcpy(antibuffer,  background, linear_size);
+    memcpy(frontbuffer, background, linear_size);
 
     // Allocate the final object and return it.
     struct framebuffer *ret = malloc(sizeof(struct framebuffer));
@@ -59,9 +63,9 @@ struct framebuffer *create_framebuffer_from_fd(int fd) {
     ret->antibuffer    = antibuffer;
     ret->frontbuffer   = frontbuffer;
     ret->memory_window = mem_window;
-    ret->pixel_width   = dimensions.width;
-    ret->pixel_height  = dimensions.height;
-    ret->pitch         = dimensions.pitch;
+    ret->pixel_width   = var_info.xres;
+    ret->pixel_height  = var_info.yres;
+    ret->pitch         = fix_info.smem_len / var_info.yres;
     ret->pixel_size    = pixel_size;
     ret->linear_size   = linear_size;
     return ret;

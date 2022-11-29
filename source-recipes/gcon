@@ -1,0 +1,7 @@
+name=gcon
+version=0.0
+source_dir="gcon"
+
+regenerate() {
+    true
+}

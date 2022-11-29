@@ -7,6 +7,10 @@ sysroot
 initramfs.tar
 gwm/**/*.o
 gwm/gwm
+gcon/**/*.o
+gcon/gcon
+gwm-bootstrap/**/*.o
+gwm/gwmbootstrap
 serial_shim/**/*.o
 serial_shim/serial_shim
 gloire.iso

@@ -74,9 +74,15 @@ int main(void) {
     }
 
     // Create a pipe for stdout/stderr.
-    int stdout_pipes[2];
-    if (pipe(stdout_pipes) != 0) {
-        perror("Could not create pipes");
+    int master_pty;
+    int pty_spawner = open("/dev/ptmx", O_RDWR);
+    if (pty_spawner == -1) {
+      perror("Could not open ptmx");
+      return 1;
+    }
+
+    if (ioctl(pty_spawner, 0, &master_pty) != 0) {
+        perror("Could not create pty");
         return 1;
     }
 
@@ -87,22 +93,42 @@ int main(void) {
     int child = fork();
     if (child == 0) {
         // Replace std streams.
-        close(stdout_pipes[0]);
-        dup2(kb,           0);
-        dup2(stdout_pipes[1], 1);
-        dup2(stdout_pipes[1], 2);
+        int slave_pty;
+        if (ioctl(master_pty, 0, &slave_pty) != 0) {
+            perror("Could not create pty");
+            return 1;
+        }
+
+        dup2(slave_pty, 0);
+        dup2(slave_pty, 1);
+        dup2(slave_pty, 2);
         execvp(start_path, args);
         perror("Could not start");
         return 1;
     }
 
-    // Catch what the child says.
-    close(stdout_pipes[1]);
-    for (;;) {
-        char res[512];
-        ssize_t count = read(stdout_pipes[0], &res, 512);
-        if (count != -1) {
-            term_write(term, res, count);
+    // Boot an input process.
+    int input_child = fork();
+    if (input_child == 0) {
+        for (;;) {
+            char input;
+            read(kb, &input, 1);
+            write(master_pty, &input, 1);
+            sched_yield();
         }
+    }
+
+    // Catch what the child says.
+    for (;;) {
+        char output[512];
+        ssize_t count = read(master_pty, &output, 512);
+        for (ssize_t i = 0; i < count; i++) {
+            if (output[i] == '\b') {
+                term_write(term, "\b \b", 3);
+            } else {
+                term_write(term, &output[i], 1);
+            }
+        }
+        sched_yield();
     }
 }

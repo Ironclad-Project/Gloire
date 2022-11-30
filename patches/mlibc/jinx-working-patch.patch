@@ -137,7 +137,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..842659f 100644
+index d6dbca3..2ff9502 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,18 +10,16 @@
@@ -329,10 +329,40 @@ index d6dbca3..842659f 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -413,31 +388,6 @@ int sys_access(const char *path, int mode) {
-    }
+@@ -328,16 +303,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+ 	return 0;
  }
  
+-int sys_sched_yield(void) {
++void sys_yield(void) {
+ 	int ret, errno;
+-
+ 	SYSCALL0(SYSCALL_SCHED_YIELD);
+-
+-	if (ret == -1) {
+-		return errno;
+-	}
+-
+-	return 0;
+ }
+ 
+ int sys_dup(int fd, int flags, int *newfd) {
+@@ -401,35 +369,16 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+     return 0;
+ }
+ 
+-int sys_access(const char *path, int mode) {
+-	int ret, errno;
+-
+-	SYSCALL2(SYSCALL_ACCESS, path, mode);
+-
+-	if (ret == -1) {
+-        return errno;
+-	} else {
+-        return 0;
+-   }
+-}
+-
 -int sys_getpriority(int which, id_t who, int *value) {
 -	int ret, errno;
 -
@@ -344,24 +374,22 @@ index d6dbca3..842659f 100644
 -			*value = ret;
 -        return 0;
 -   }
--}
--
++int sys_pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
++                const struct timespec *timeout, const sigset_t *sigmask,
++                int *num_events) {
++    return 0;
+ }
+ 
 -int sys_setpriority(int which, id_t who, int prio) {
--	int ret, errno;
--
++int sys_access(const char *path, int mode) {
+ 	int ret, errno;
+ 
 -	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
--
--	if (ret == -1) {
--        return errno;
--	} else {
--        return 0;
--   }
--}
--
- int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
- 	(void)pointer;
- 	(void)expected;
-@@ -452,8 +402,55 @@ int sys_futex_wake(int *pointer) {
++	SYSCALL2(SYSCALL_ACCESS, path, mode);
+ 
+ 	if (ret == -1) {
+         return errno;
+@@ -452,8 +401,55 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -417,7 +445,7 @@ index d6dbca3..842659f 100644
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
  	if (uname(&buf)) {
-@@ -495,3 +492,78 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -495,3 +491,86 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  
  #endif
  } // namespace mlibc
@@ -494,10 +522,18 @@ index d6dbca3..842659f 100644
 +	errno = errn;
 +	return ret;
 +}
++
++int open_tty(void) {
++	int ret;
++	int errn;
++	SYSCALL0(SYSCALL_OPEN_TTY);
++	errno = errn;
++	return ret;
++}
 +}
 +#endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..d26b7e9 100644
+index 89a3851..a47cbb8 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
 @@ -3,6 +3,7 @@
@@ -529,7 +565,7 @@ index 89a3851..d26b7e9 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,76 @@ struct ironclad_mouse_data {
+@@ -34,6 +29,78 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -603,11 +639,13 @@ index 89a3851..d26b7e9 100644
 +
 +int set_deadlines(int runtime, int period);
 +
++int open_tty(void);
++
  #ifdef __cplusplus
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..45ebd45 100644
+index 28d233e..6f8567b 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -619,7 +657,7 @@ index 28d233e..45ebd45 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -70,11 +70,22 @@
+@@ -70,11 +70,23 @@
  #define SYSCALL_CHDIR             19
  #define SYSCALL_IOCTL             20
  #define SYSCALL_SCHED_YIELD       21
@@ -642,6 +680,7 @@ index 28d233e..45ebd45 100644
 +#define SYSCALL_LOCK_MAC             36
 +#define SYSCALL_ADD_MAC_FILTER       37
 +#define SYSCALL_SET_MAC_ENFORCEMENT  38
++#define SYSCALL_OPEN_TTY  39
  
  #endif // _SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build

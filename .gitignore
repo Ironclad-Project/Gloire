@@ -10,7 +10,7 @@ gwm/gwm
 gcon/**/*.o
 gcon/gcon
 gwm-bootstrap/**/*.o
-gwm/gwmbootstrap
+gwm-bootstrap/gwmbootstrap
 serial_shim/**/*.o
 serial_shim/serial_shim
 gloire.iso

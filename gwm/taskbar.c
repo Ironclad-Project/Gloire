@@ -52,16 +52,6 @@ struct taskbar *create_taskbar(void) {
     uint32_t *logo_arr = open_bmp_to_array("/etc/gwm-logo.bmp", &logo_len,
                                            &logo_width, &logo_height);
 
-    // Get the user string.
-    const char *name = getenv("USER");
-    char host[1024];
-    host[1023] = '\0';
-    gethostname(host, 1023);
-    size_t len = snprintf(NULL, 0, "%s@%s#", name, &host[0]) + 1;
-    char *user_string = malloc(len);
-    sprintf(user_string, "%s@%s#", name, &host[0]);
-
-    int getlogin_r(char *buf, size_t bufsize);
     // Create the taskbar.
     struct taskbar *ret = malloc(sizeof(struct taskbar));
     ret->refresh_counter = 0;
@@ -71,17 +61,12 @@ struct taskbar *create_taskbar(void) {
     ret->logo_len    = logo_len;
     ret->logo_width  = logo_width;
     ret->logo_height = logo_height;
-    ret->user_string = user_string;
     choose_quote(ret);
     return ret;
 }
 
 void draw_taskbar(struct taskbar *bar, struct framebuffer *fb) {
     draw_rectangle(fb, 0, 0, fb->pixel_width, TASKBAR_HEIGHT, TASKBAR_COLOR);
-
-    // Draw application menu.
-    draw_string(fb, 0, 0, bar->user_string, strlen(bar->user_string),
-        TASKBAR_TEXT, TASKBAR_COLOR);
 
     // Choose a quote if needed.
     if (bar->refresh_counter > TASKBAR_QUOTE_REFRESH_COUNT) {

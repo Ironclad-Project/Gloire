@@ -11,7 +11,6 @@ struct taskbar {
     size_t      logo_len;
     size_t      logo_width;
     size_t      logo_height;
-    const char *user_string;
 };
 
 struct taskbar *create_taskbar(void);

@@ -1,0 +1,9 @@
+NAME="Gloire"
+PRETTY_NAME="Gloire"
+ID=gloire
+BUILD_ID=rolling
+ANSI_COLOR="38;2;255;0;255"
+HOME_URL="https://github.com/streaksu/Gloire"
+DOCUMENTATION_URL="https://github.com/streaksu/Gloire"
+SUPPORT_URL="https://github.com/streaksu/Gloire/issues"
+BUG_REPORT_URL="https://github.com/streaksu/Gloire/issues"

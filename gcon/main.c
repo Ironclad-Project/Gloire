@@ -6,9 +6,15 @@
 #include <backends/framebuffer.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/wait.h>
 
 char *const start_path = "/sbin/epoch";
 char *const args[] = {start_path, "--init", NULL};
+
+// Font stuffs
+#define FONT_WIDTH   7
+#define FONT_HEIGHT 13
+extern char __font_bitmap__[];
 
 int main(void) {
     // Initialize the tty.
@@ -46,6 +52,28 @@ int main(void) {
     }
 
     // Initialize the terminal.
+    uint32_t background = 0xFFFFFF;
+    uint32_t foreground = 0x171421;
+    uint32_t dark_palette[] = {
+        0x171421,
+        0xC01C28,
+        0x26A269,
+        0xA2734C,
+        0x12488B,
+        0xA347BA,
+        0x2AA1B3,
+        0xD0CFCC
+    };
+    uint32_t bright_palette[] = {
+        0x5E5C64,
+        0xF66151,
+        0x33D17A,
+        0xE9AD0C,
+        0x2A7BDE,
+        0xC061CB,
+        0x33C7DE,
+        0xFFFFFF
+    };
     struct term_context *term = fbterm_init(
         malloc,
         mem_window,
@@ -53,18 +81,19 @@ int main(void) {
         var_info.yres,
         fix_info.smem_len / var_info.yres,
         NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        69,
-        420,
-        1,
+        dark_palette,
+        bright_palette,
+        &background,
+        &foreground,
+        __font_bitmap__,
+        FONT_WIDTH,
+        FONT_HEIGHT,
+        0,
         1,
         1,
         0
    );
+    term->full_refresh(term);
 
     // Open the ps2 keyboard for use as new stdin.
     int kb = open("/dev/ps2keyboard", O_RDONLY);

@@ -36,12 +36,12 @@ fi
 # Unload our profile API functions
 unset -f append_path
 
-# Source global bash config, when interactive but not posix or sh mode
+# Source global bash config.
 if test "$BASH" &&\
    test "$PS1" &&\
    test -z "$POSIXLY_CORRECT" &&\
    test "${0#-}" != sh &&\
-   test -r /etc/bash/bashrc
+   test -f /etc/bash/bashrc
 then
     . /etc/bash/bashrc
 fi

@@ -38,6 +38,8 @@ struct term_context {
     bool reverse_video;
     bool dec_private;
     bool insert_mode;
+    uint64_t code_point;
+    size_t unicode_remaining;
     uint8_t g_select;
     uint8_t charsets[2];
     size_t current_charset;

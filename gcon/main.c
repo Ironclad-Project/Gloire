@@ -7,14 +7,12 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <font.h>
 
 char *const start_path = "/sbin/epoch";
 char *const args[] = {start_path, "--init", NULL};
-
-// Font stuffs
-#define FONT_WIDTH   7
-#define FONT_HEIGHT 13
-extern char __font_bitmap__[];
 
 int main(void) {
     // Initialize the tty.
@@ -85,7 +83,7 @@ int main(void) {
         bright_palette,
         &background,
         &foreground,
-        __font_bitmap__,
+        unifont_arr,
         FONT_WIDTH,
         FONT_HEIGHT,
         0,
@@ -112,6 +110,17 @@ int main(void) {
 
     if (ioctl(pty_spawner, 0, &master_pty) != 0) {
         perror("Could not create pty");
+        return 1;
+    }
+
+    struct winsize win_size = {
+        .ws_row = var_info.yres / FONT_HEIGHT,
+        .ws_col = var_info.xres / FONT_WIDTH,
+        .ws_xpixel = var_info.xres,
+        .ws_ypixel = var_info.yres
+    };
+    if (ioctl(master_pty, TIOCSWINSZ, &win_size) == -1) {
+        perror("Could not set pty size");
         return 1;
     }
 

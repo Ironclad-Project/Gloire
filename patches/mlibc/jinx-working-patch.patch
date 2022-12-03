@@ -137,10 +137,10 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..2ff9502 100644
+index d6dbca3..9351a22 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,18 +10,16 @@
+@@ -10,24 +10,22 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
@@ -153,14 +153,23 @@ index d6dbca3..2ff9502 100644
 -	/*
  	ssize_t unused;
  	char new_line = '\n';
- 	sys_write(1, message, strlen(message), &unused);
- 	sys_write(1, &new_line, 1, &unused);
+-	sys_write(1, message, strlen(message), &unused);
+-	sys_write(1, &new_line, 1, &unused);
 -	*/
 -	(void)message;
 -	return;
++	sys_write(2, message, strlen(message), &unused);
++	sys_write(2, &new_line, 1, &unused);
  }
  
  void sys_libc_panic() {
+ 	ssize_t unused;
+ 	char const *message = "mlibc panicked unrecoverably\n";
+-	sys_write(1, message, strlen(message), &unused);
++	sys_write(2, message, strlen(message), &unused);
+ 	sys_exit(1);
+ }
+ 
 @@ -39,7 +37,7 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {

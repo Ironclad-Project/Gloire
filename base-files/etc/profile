@@ -3,9 +3,6 @@
 # This file was lifted straight from my Artix Linux host system.
 # Credits to them :)
 
-# Set our umask
-umask 022
-
 # Append "$1" to $PATH when not already in.
 # This function API is accessible to scripts in /etc/profile.d
 append_path () {

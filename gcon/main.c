@@ -152,7 +152,7 @@ int main(void) {
             char input;
             read(kb, &input, 1);
             write(master_pty, &input, 1);
-            sched_yield();
+            // sched_yield();
         }
     }
 
@@ -167,6 +167,6 @@ int main(void) {
                 term_write(term, &output[i], 1);
             }
         }
-        sched_yield();
+        // sched_yield();
     }
 }

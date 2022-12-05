@@ -1,0 +1,20 @@
+name=xorg-util-macros
+from_source=xorg-util-macros
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config host-xorg-util-macros"
+deps="mlibc"
+
+configure() {
+    ${source_dir}/configure \
+        --host=x86_64-lyre \
+        --prefix=${prefix}  \
+        --sysconfdir=/etc
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

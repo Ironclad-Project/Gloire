@@ -1,0 +1,21 @@
+name=zlib
+from_source=zlib
+revision=1
+hostdeps="gcc pkg-config"
+deps="mlibc"
+
+configure() {
+        prefix="${prefix}" \
+        CHOST="x86_64-ironclad" \
+    ${source_dir}/configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install
+    # Remove static libraries
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+}

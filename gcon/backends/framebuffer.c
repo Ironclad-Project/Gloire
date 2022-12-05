@@ -467,7 +467,8 @@ static void push_to_queue(struct term_context *_ctx, struct fbterm_char *c, size
 static void fbterm_revscroll(struct term_context *_ctx) {
     struct fbterm_context *ctx = (void *)_ctx;
 
-    for (size_t i = (_ctx->scroll_bottom_margin - 1) * _ctx->cols - 1; ; i--) {
+    for (size_t i = (_ctx->scroll_bottom_margin - 1) * _ctx->cols - 1;
+         i > (_ctx->scroll_top_margin + 1) * _ctx->cols; i--) {
         struct fbterm_char *c;
         struct fbterm_queue_item *q = ctx->map[i];
         if (q != NULL) {
@@ -476,9 +477,6 @@ static void fbterm_revscroll(struct term_context *_ctx) {
             c = &ctx->grid[i];
         }
         push_to_queue(_ctx, c, (i + _ctx->cols) % _ctx->cols, (i + _ctx->cols) / _ctx->cols);
-        if (i == _ctx->scroll_top_margin * _ctx->cols) {
-            break;
-        }
     }
 
     // Clear the first line of the screen.
@@ -573,8 +571,8 @@ static void fbterm_set_cursor_pos(struct term_context *_ctx, size_t x, size_t y)
 static void fbterm_get_cursor_pos(struct term_context *_ctx, size_t *x, size_t *y) {
     struct fbterm_context *ctx = (void *)_ctx;
 
-    *x = ctx->cursor_x;
-    *y = ctx->cursor_y;
+    *x = ctx->cursor_x >= _ctx->cols ? _ctx->cols - 1 : ctx->cursor_x;
+    *y = ctx->cursor_y >= _ctx->rows ? _ctx->rows - 1 : ctx->cursor_y;
 }
 
 static void fbterm_move_character(struct term_context *_ctx, size_t new_x, size_t new_y, size_t old_x, size_t old_y) {
@@ -649,7 +647,12 @@ static void fbterm_set_text_bg_default(struct term_context *_ctx) {
 static void draw_cursor(struct term_context *_ctx) {
     struct fbterm_context *ctx = (void *)_ctx;
 
+    if (ctx->cursor_x >= _ctx->cols || ctx->cursor_y >= _ctx->rows) {
+        return;
+    }
+
     size_t i = ctx->cursor_x + ctx->cursor_y * _ctx->cols;
+
     struct fbterm_char c;
     struct fbterm_queue_item *q = ctx->map[i];
     if (q != NULL) {
@@ -691,7 +694,9 @@ static void fbterm_double_buffer_flush(struct term_context *_ctx) {
     }
 
     if ((ctx->old_cursor_x != ctx->cursor_x || ctx->old_cursor_y != ctx->cursor_y) || ctx->cursor_status == false) {
-        plot_char(_ctx, &ctx->grid[ctx->old_cursor_x + ctx->old_cursor_y * _ctx->cols], ctx->old_cursor_x, ctx->old_cursor_y);
+        if (ctx->old_cursor_x < _ctx->cols && ctx->old_cursor_y < _ctx->rows) {
+            plot_char(_ctx, &ctx->grid[ctx->old_cursor_x + ctx->old_cursor_y * _ctx->cols], ctx->old_cursor_x, ctx->old_cursor_y);
+        }
     }
 
     ctx->old_cursor_x = ctx->cursor_x;
@@ -703,12 +708,12 @@ static void fbterm_double_buffer_flush(struct term_context *_ctx) {
 static void fbterm_raw_putchar(struct term_context *_ctx, uint8_t c) {
     struct fbterm_context *ctx = (void *)_ctx;
 
-    if (ctx->cursor_x == _ctx->cols && (ctx->cursor_y < _ctx->scroll_bottom_margin - 1 || _ctx->scroll_enabled)) {
+    if (ctx->cursor_x >= _ctx->cols && (ctx->cursor_y < _ctx->scroll_bottom_margin - 1 || _ctx->scroll_enabled)) {
         ctx->cursor_x = 0;
         ctx->cursor_y++;
     }
-    if (ctx->cursor_y == _ctx->scroll_bottom_margin) {
-        ctx->cursor_y--;
+    if (ctx->cursor_y >= _ctx->scroll_bottom_margin) {
+        ctx->cursor_y = _ctx->scroll_bottom_margin - 1;
         fbterm_scroll(_ctx);
     }
 

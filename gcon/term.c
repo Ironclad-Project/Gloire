@@ -938,7 +938,7 @@ int mk_wcwidth(wchar_t ucs) {
   if (ucs == 0)
     return 0;
   if (ucs < 32 || (ucs >= 0x7f && ucs < 0xa0))
-    return -1;
+    return 1;
 
   /* binary search in table of non-spacing characters */
   if (bisearch(ucs, combining,
@@ -1146,6 +1146,11 @@ static void term_putchar(struct term_context *ctx, uint8_t c) {
     }
 
     if (ctx->unicode_remaining != 0) {
+        if ((c & 0xc0) != 0x80) {
+            ctx->unicode_remaining = 0;
+            goto unicode_error;
+        }
+
         ctx->unicode_remaining--;
         ctx->code_point |= (c & 0x3f) << (6 * ctx->unicode_remaining);
         if (ctx->unicode_remaining != 0) {
@@ -1165,7 +1170,8 @@ static void term_putchar(struct term_context *ctx, uint8_t c) {
         return;
     }
 
-    if (c > 0x7f && ctx->in_bootloader == false) {
+unicode_error:
+    if (c >= 0xc0 && c <= 0xf7 && ctx->in_bootloader == false) {
         if (c >= 0xc0 && c <= 0xdf) {
             ctx->unicode_remaining = 1;
             ctx->code_point = (c & 0x1f) << 6;

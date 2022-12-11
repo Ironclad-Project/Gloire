@@ -1,0 +1,131 @@
+diff --git ironclad-workdir/ironclad.gpr ironclad-workdir/ironclad.gpr
+new file mode 100644
+index 0000000..073a1cb
+--- /dev/null
++++ ironclad-workdir/ironclad.gpr
+@@ -0,0 +1,125 @@
++--  ironclad.gpr.in: Project's building script.
++--  Copyright (C) 2021 streaksu
++--
++--  This program is free software: you can redistribute it and/or modify
++--  it under the terms of the GNU General Public License as published by
++--  the Free Software Foundation, either version 3 of the License, or
++--  (at your option) any later version.
++--
++--  This program is distributed in the hope that it will be useful,
++--  but WITHOUT ANY WARRANTY; without even the implied warranty of
++--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++--  GNU General Public License for more details.
++--
++--  You should have received a copy of the GNU General Public License
++--  along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++project Ironclad is
++   --  Compilation flags.
++   Ada_Flags    := External ("ADAFLAGS", "-O2 -g -gnaty -Wall -flto=auto");
++   Asm_Flags    := External ("ASMFLAGS", "-O2 -g -Wall");
++   Linker_Flags := External ("LDFLAGS",  "-O2 -g -Wall -flto=auto");
++
++   --  Command line/configure options.
++   type Arch_Name is ("aarch64-stivale2", "sparc-leon3", "x86_64-multiboot2");
++   Arch : Arch_Name := "x86_64-multiboot2";
++   X86_64_BOOTFB    := "True";
++   X86_64_PS2       := "True";
++   X86_64_RTC       := "True";
++   X86_64_SERIAL    := "True";
++   DEVICES_STREAMS  := "True";
++   DEVICES_RNG      := "True";
++   DEVICES_PTY      := "True";
++   MEMORY_ALLOCONLY := "standard";
++
++   --  Set directories and files.
++   for Source_Dirs use (
++      "source/arch/" & Arch,
++      "source/arch",
++      "source/cryptography",
++      "source/devices",
++      "source/ipc",
++      "source/lib",
++      "source/memory/" & MEMORY_ALLOCONLY,
++      "source/memory",
++      "source/networking",
++      "source/userland",
++      "source/vfs",
++      "source"
++   );
++   for Object_Dir use "obj";
++   for Exec_Dir use ".";
++   for Main use ("main.adb");
++   for Languages use ("Ada", "Asm_Cpp");
++   for Create_Missing_Dirs use "True";
++
++   package Builder is
++      for Executable ("main.adb") use "ironclad";
++   end Builder;
++
++   package Compiler is
++      Base_Ada_Switches := Split (Ada_Flags, " ") & (
++         "-fno-stack-protector", "-fno-stack-check",
++         "-gnateDArchName=""" & Arch & """",
++         "-gnateDX86_64_BOOTFB="   & X86_64_BOOTFB,
++         "-gnateDX86_64_PS2="      & X86_64_PS2,
++         "-gnateDX86_64_RTC="      & X86_64_RTC,
++         "-gnateDX86_64_SERIAL="   & X86_64_SERIAL,
++         "-gnateDDEVICES_STREAMS=" & DEVICES_STREAMS,
++         "-gnateDDEVICES_RNG="     & DEVICES_RNG,
++         "-gnateDDEVICES_PTY="     & DEVICES_PTY
++      );
++      Base_Asm_Switches := Split (Asm_Flags, " ") & (
++         "-DX86_64_BOOTFB=" & X86_64_BOOTFB
++      );
++
++      case Arch is
++         when "aarch64-stivale2" =>
++            for Switches ("Ada") use Base_Ada_Switches & (
++               "-static", "-fno-pie", "-fno-pic", "-mgeneral-regs-only",
++               "-march=armv8-a"
++            );
++            for Switches ("Asm_Cpp") use Base_Asm_Switches;
++         when "sparc-leon3" =>
++            for Switches ("Ada") use Base_Ada_Switches & (
++               "-mcpu=leon3", "-static", "-fno-pie", "-fno-pic"
++            );
++            for Switches ("Asm_Cpp") use Base_Asm_Switches & ("-mcpu=leon3");
++         when "x86_64-multiboot2" =>
++            for Switches ("Ada") use Base_Ada_Switches & (
++               "-fno-pie", "-fno-pic", "-mgeneral-regs-only", "-mno-red-zone",
++               "-mcmodel=kernel"
++            );
++            for Switches ("Asm_Cpp") use Base_Asm_Switches & (
++               "-fno-pie", "-fno-pic", "-mno-red-zone", "-mcmodel=kernel"
++            );
++      end case;
++
++      for Local_Configuration_Pragmas use "source/pragmas.adc";
++   end Compiler;
++
++   package Linker is
++      Base_Link_Switches := Split (Linker_Flags, " ") & (
++         "-T../source/arch/" & Arch & "/linker.ld", "-nostdlib", "-lgcc",
++         "-znoexecstack"
++      );
++
++      case Arch is
++         when "aarch64-stivale2" =>
++            for Switches ("Ada") use Base_Link_Switches & (
++               "-zmax-page-size=0x1000", "-static", "-Wl,-zmuldefs",
++               "-fno-pie", "-fno-pic"
++            );
++         when "sparc-leon3" =>
++            for Switches ("Ada") use Base_Link_Switches & (
++               "-zmax-page-size=0x1000", "-static", "-Wl,-zmuldefs",
++               "-fno-pie", "-fno-pic"
++            );
++         when "x86_64-multiboot2" =>
++            for Switches ("Ada") use Base_Link_Switches & (
++               "-static", "-zmax-page-size=0x1000",
++               "-Wl,--undefined=multiboot2,-zmuldefs"
++            );
++      end case;
++   end Linker;
++end Ironclad;

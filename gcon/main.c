@@ -90,7 +90,7 @@ int main(void) {
         1,
         1,
         0
-   );
+    );
     term->full_refresh(term);
 
     // Open the ps2 keyboard for use as new stdin.
@@ -152,7 +152,6 @@ int main(void) {
             char input;
             read(kb, &input, 1);
             write(master_pty, &input, 1);
-            // sched_yield();
         }
     }
 
@@ -167,6 +166,5 @@ int main(void) {
                 term_write(term, &output[i], 1);
             }
         }
-        // sched_yield();
     }
 }

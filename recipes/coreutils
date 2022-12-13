@@ -26,9 +26,4 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" make install-strip
-
-    mkdir -p "${licenses_dir}"/coreutils
-    cp "${source_dir}"/COPYING "${licenses_dir}"/coreutils/
-    cp "${source_dir}"/AUTHORS "${licenses_dir}"/coreutils/
-    cp "${source_dir}"/README  "${licenses_dir}"/coreutils/
 }

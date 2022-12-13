@@ -14,8 +14,4 @@ build() {
 
 install() {
     make install DESTDIR="${dest_dir}"
-    mkdir -p "${dest_dir}"/licenses/less
-    cp "${source_dir}"/COPYING "${dest_dir}"/licenses/less/
-    cp "${source_dir}"/LICENSE "${dest_dir}"/licenses/less/
-    cp "${source_dir}"/README  "${dest_dir}"/licenses/less/
 }

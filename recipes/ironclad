@@ -16,8 +16,4 @@ build() {
 install() {
     cd ${source_dir}
     PREFIX="${prefix}" DESTDIR="${dest_dir}" ./install.sh
-
-    mkdir -p "${licenses_dir}"/ironclad
-    cp "${source_dir}"/COPYING "${licenses_dir}"/ironclad/
-    cp "${source_dir}"/README  "${licenses_dir}"/ironclad/
 }

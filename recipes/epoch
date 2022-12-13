@@ -14,7 +14,4 @@ build() {
 
 install() {
     cp -r ${source_dir}/built/* "${dest_dir}"
-    mkdir -p "${licenses_dir}"/epoch
-    cp "${source_dir}"/README        "${licenses_dir}"/epoch/
-    cp "${source_dir}"/UNLICENSE.TXT "${licenses_dir}"/epoch/
 }

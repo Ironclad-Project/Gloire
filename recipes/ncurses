@@ -27,9 +27,4 @@ build() {
 
 install() {
     make install DESTDIR="${dest_dir}" PKG_CONFIG_LIBDIR=/usr/share/pkgconfig
-
-    mkdir -p "${licenses_dir}"/ncurses
-    cp "${source_dir}"/COPYING "${licenses_dir}"/ncurses/
-    cp "${source_dir}"/AUTHORS "${licenses_dir}"/ncurses/
-    cp "${source_dir}"/README  "${licenses_dir}"/ncurses/
 }

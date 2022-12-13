@@ -24,8 +24,4 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" ninja install
-
-    mkdir -p "${licenses_dir}"/mlibc
-    cp "${source_dir}"/LICENSE   "${licenses_dir}"/mlibc/
-    cp "${source_dir}"/README.md "${licenses_dir}"/mlibc/
 }

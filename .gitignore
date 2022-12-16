@@ -7,8 +7,6 @@ sysroot
 initramfs.tar
 gwm/**/*.o
 gwm/gwm
-gcon/**/*.o
-gcon/gcon
 gwm-bootstrap/**/*.o
 gwm-bootstrap/gwmbootstrap
 serial_shim/**/*.o

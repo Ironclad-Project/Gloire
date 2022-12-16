@@ -3,7 +3,8 @@ from_source=gcon
 revision=1
 hostdeps="gcc binutils"
 deps="mlibc"
-imagedeps="binutils"
+imagedeps="binutils git"
+allow_network="yes"
 
 configure() {
     true

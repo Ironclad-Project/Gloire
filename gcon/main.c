@@ -83,6 +83,8 @@ int main(void) {
         bright_palette,
         &background,
         &foreground,
+        &background,
+        &foreground,
         unifont_arr,
         FONT_WIDTH,
         FONT_HEIGHT,

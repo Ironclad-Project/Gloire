@@ -137,7 +137,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..9351a22 100644
+index d6dbca3..38f5473 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,22 @@
@@ -398,7 +398,7 @@ index d6dbca3..9351a22 100644
  
  	if (ret == -1) {
          return errno;
-@@ -452,8 +401,55 @@ int sys_futex_wake(int *pointer) {
+@@ -452,8 +401,64 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -413,6 +413,15 @@ index d6dbca3..9351a22 100644
 +	int errno;
 +	SYSCALL2(SYSCALL_GETRANDOM, buffer, length);
 +	return errno;
++}
++
++int sys_mount(const char *source, const char *target,
++	const char *fstype, unsigned long flags, const void *data) {
++	(void)data;
++	int ret;
++	int errno;
++	SYSCALL4(SYSCALL_MOUNT, source, target, fstype, flags);
++   return errno;
 +}
 +
  #ifndef MLIBC_BUILDING_RTDL
@@ -454,8 +463,22 @@ index d6dbca3..9351a22 100644
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
  	if (uname(&buf)) {
-@@ -495,3 +491,86 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +498,92 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ 	__builtin_unreachable();
+ }
  
++int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
++	ssize_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_READLINK, path, buffer, max_size);
++	if (ret == -1) {
++		return errno;
++	} else {
++		*length = ret;
++		return 0;
++	}
++}
++
  #endif
  } // namespace mlibc
 +
@@ -531,18 +554,10 @@ index d6dbca3..9351a22 100644
 +	errno = errn;
 +	return ret;
 +}
-+
-+int open_tty(void) {
-+	int ret;
-+	int errn;
-+	SYSCALL0(SYSCALL_OPEN_TTY);
-+	errno = errn;
-+	return ret;
-+}
 +}
 +#endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..a47cbb8 100644
+index 89a3851..d26b7e9 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
 @@ -3,6 +3,7 @@
@@ -574,7 +589,7 @@ index 89a3851..a47cbb8 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,78 @@ struct ironclad_mouse_data {
+@@ -34,6 +29,76 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -648,13 +663,11 @@ index 89a3851..a47cbb8 100644
 +
 +int set_deadlines(int runtime, int period);
 +
-+int open_tty(void);
-+
  #ifdef __cplusplus
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..6f8567b 100644
+index 28d233e..111d6df 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -666,7 +679,7 @@ index 28d233e..6f8567b 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -70,11 +70,23 @@
+@@ -70,11 +70,25 @@
  #define SYSCALL_CHDIR             19
  #define SYSCALL_IOCTL             20
  #define SYSCALL_SCHED_YIELD       21
@@ -689,7 +702,9 @@ index 28d233e..6f8567b 100644
 +#define SYSCALL_LOCK_MAC             36
 +#define SYSCALL_ADD_MAC_FILTER       37
 +#define SYSCALL_SET_MAC_ENFORCEMENT  38
-+#define SYSCALL_OPEN_TTY  39
++#define SYSCALL_MOUNT  39
++#define SYSCALL_UMOUNT 40
++#define SYSCALL_READLINK 41
  
  #endif // _SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build

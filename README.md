@@ -14,6 +14,10 @@ OS from the ground up.
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
 
+## Downloading
+
+One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/releases).
+
 ## Building
 
 The project uses `jinx` as its build system, which is included in the tree.

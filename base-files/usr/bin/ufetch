@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Source /etc/os-release for some variables.
+source /etc/os-release
+
+lm="\e[${ANSI_COLOR}m"
+rt='\e[0m'
+
+kernel=$(uname -srm)
+packages="69 (jinx)"
+
+printf "                                         \n"
+printf "                  &#BGPPPPPG#&           \n"
+printf "               B5?77!!?YJJ7!7YBB&        \n"
+printf "            &G5YJ77!7JYYYYYBPJ&PY#       $lm $USER$rt@$lm$HOSTNAME$rt\n"
+printf "          #PYYYYYY?!?YYYYY7?7JP5JJ       $lm OS$rt:       $PRETTY_NAME\n"
+printf "         B?YYYYYY7!!7JYYYYJ!!?JJJ5       $lm Kernel$rt:   $kernel\n"
+printf "  &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG& $lm Packages$rt: $packages\n"
+printf " G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG& $lm Shell$rt:    $BASH $BASH_VERSION\n"
+printf " J777JB?!7JJ???!!!7?JYYYYYPJ!7JB         \n"
+printf " GYYG #JJJJJ??7!!!JYYY5PGB&GB&           \n"
+printf "    #Y!?GB5YYJY5PG###&                   \n"
+printf "    GJJP                                 \n"
+printf "                                         \n"

@@ -9,7 +9,7 @@ configure() {
 }
 
 build() {
-    make -C ${source_dir} CC=x86_64-ironclad-gcc CFLAGS="${common_cflags}"
+    make -C ${source_dir} CC=x86_64-ironclad-gcc CFLAGS="-DNO_EXECINFO ${common_cflags}"
 }
 
 install() {

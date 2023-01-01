@@ -6,7 +6,7 @@ deps="mlibc"
 
 configure() {
     ${source_dir}/configure \
-        --host=x86_64-lyre \
+        --host=x86_64-ironclad \
         --prefix=${prefix}  \
         --sysconfdir=/etc
 }

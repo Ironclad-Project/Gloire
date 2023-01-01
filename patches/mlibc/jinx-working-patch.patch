@@ -89,6 +89,23 @@ index d1e9f02..8f73184 100644
  #define AT_FDCWD -100
  
  #endif // _ABIBITS_FCNTL_H
+diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
+index 3474615..6e87ed8 100644
+--- mlibc-clean/options/glibc/generic/execinfo.cpp
++++ mlibc-workdir/options/glibc/generic/execinfo.cpp
+@@ -1,6 +1,7 @@
+ #include <execinfo.h>
+ #include <bits/ensure.h>
+ 
++/*
+ int backtrace(void **, int) {
+ 	__ensure(!"Not implemented");
+ 	__builtin_unreachable();
+@@ -15,3 +16,4 @@ void backtrace_symbols_fd(void *const *, int, int) {
+ 	__ensure(!"Not implemented");
+ 	__builtin_unreachable();
+ }
++*/
 diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
 index e2c40ce..0a170e5 100644
 --- mlibc-clean/options/posix/generic/unistd-stubs.cpp

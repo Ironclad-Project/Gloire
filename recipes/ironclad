@@ -5,15 +5,14 @@ imagedeps="gcc-ada texinfo texlive-bin texlive-core"
 hostdeps="gprbuild"
 
 configure() {
-    true
+    "${source_dir}"/configure.sh --skip-menu
 }
 
 build() {
-    cd ${source_dir}
-    gprbuild -p -r ironclad.gpr -j${parallelism}
+    gprbuild -j${parallelism}
 }
 
 install() {
-    cd ${source_dir}
-    PREFIX="${prefix}" DESTDIR="${dest_dir}" ./install.sh
+    mkdir -pv "${dest_dir}"/usr/share/ironclad
+    cp ironclad "${dest_dir}"/usr/share/ironclad/
 }

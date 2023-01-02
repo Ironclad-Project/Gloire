@@ -17,9 +17,4 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" make install-strip
-
-    # Fix a bug regarding symlinks on libraries.
-    rm "${dest_dir}"/usr/lib/libgsl.so.25 "${dest_dir}"/usr/lib/libgslcblas.so.0
-    cp "${dest_dir}"/usr/lib/libgsl.so.25.1.0 "${dest_dir}"/usr/lib/libgsl.so.25
-    cp "${dest_dir}"/usr/lib/libgslcblas.so.0.0.0 "${dest_dir}"/usr/lib/libgslcblas.so.0
 }

@@ -154,7 +154,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..38f5473 100644
+index d6dbca3..6bb6d9c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,22 @@
@@ -415,7 +415,7 @@ index d6dbca3..38f5473 100644
  
  	if (ret == -1) {
          return errno;
-@@ -452,8 +401,64 @@ int sys_futex_wake(int *pointer) {
+@@ -452,8 +401,70 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -477,10 +477,16 @@ index d6dbca3..38f5473 100644
 +	}
 +}
 +
++int sys_sleep(time_t *secs, long *nanos) {
++	*secs  = 0;
++	*nanos = 0;
++	return 0;
++}
++
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
  	if (uname(&buf)) {
-@@ -493,5 +498,92 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +504,92 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  

@@ -2,7 +2,7 @@ name=tzdata
 from_source=tzdata
 revision=1
 hostdeps="gcc binutils"
-imagedeps="flex bison tzdata"
+imagedeps="flex bison tzdata-utils"
 deps="mlibc"
 
 configure() {

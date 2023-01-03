@@ -3,7 +3,7 @@ from_source=xcb-proto
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="mlibc xorg-util-macros xorg-proto libxau libxdmcp"
-imagedeps="python"
+imagedeps="python3"
 
 configure() {
     ${source_dir}/configure           \

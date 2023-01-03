@@ -1,22 +1,20 @@
 name=ncurses
 from_source=ncurses
 revision=1
-imagedeps="gcc bison flex"
-hostdeps="gcc automake autoconf pkg-config"
+imagedeps="gcc ncurses"
+hostdeps="gcc automake autoconf libtool pkg-config"
 deps="mlibc"
 
 configure() {
         cf_cv_func_nanosleep=yes \
-        PKG_CONFIG_SYSROOT_DIR="${sysroot_dir}" \
-        PKG_CONFIG_LIBDIR="${sysroot_dir}/usr/lib/pkgconfig:${sysroot_dir}/usr/share/pkgconfig" \
     "${source_dir}"/configure \
         --host=x86_64-ironclad \
         --prefix="${prefix}" \
-        --without-ada \
         --enable-pc-files \
         --with-shared \
         --without-normal \
         --with-manpage-format=normal \
+        --with-pkg-config-libdir=/usr/lib/pkgconfig \
         --with-termlib \
         --enable-widec
 }
@@ -26,5 +24,17 @@ build() {
 }
 
 install() {
-    make install DESTDIR="${dest_dir}" PKG_CONFIG_LIBDIR=/usr/share/pkgconfig
+    make install DESTDIR="${dest_dir}"
+    # As we build ncurses with wide character support, make some compatibility links
+    for lib in ncurses form panel menu tinfo ; do
+       rm -vf                    "${dest_dir}${prefix}"/lib/lib${lib}.so
+       echo "INPUT(-l${lib}w)" > "${dest_dir}${prefix}"/lib/lib${lib}.so
+       ln -sfv ${lib}w.pc        "${dest_dir}${prefix}"/lib/pkgconfig/${lib}.pc
+    done
+    rm -vf                     "${dest_dir}${prefix}"/lib/libcursesw.so
+    echo "INPUT(-lncursesw)" > "${dest_dir}${prefix}"/lib/libcursesw.so
+    ln -sfv libncurses.so      "${dest_dir}${prefix}"/lib/libcurses.so
+
+    # Remove static libraries
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
 }

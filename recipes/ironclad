@@ -1,8 +1,7 @@
 name=ironclad
 from_source=ironclad
 revision=1
-imagedeps="gcc-ada texinfo texlive-bin texlive-core"
-hostdeps="gprbuild"
+imagedeps="gcc-gnat gprbuild"
 
 configure() {
     "${source_dir}"/configure.sh --skip-menu

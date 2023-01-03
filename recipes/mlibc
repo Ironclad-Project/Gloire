@@ -1,7 +1,7 @@
 name=mlibc
 from_source=mlibc
 revision=1
-imagedeps="meson ninja git base-devel"
+imagedeps="meson ninja git build-base"
 hostdeps="gcc-compiler"
 deps="mlibc-headers"
 allow_network="yes"

@@ -1,7 +1,7 @@
 name=gcc-compiler
 from_source=gcc
 revision=1
-imagedeps="gcc flex bison"
+imagedeps="gcc flex bison g++"
 hostdeps="automake autoconf"
 hostrundeps="binutils"
 deps="mlibc-headers"

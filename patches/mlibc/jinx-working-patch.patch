@@ -154,7 +154,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..6bb6d9c 100644
+index d6dbca3..804fd82 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,22 @@
@@ -373,7 +373,29 @@ index d6dbca3..6bb6d9c 100644
  }
  
  int sys_dup(int fd, int flags, int *newfd) {
-@@ -401,35 +369,16 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -357,16 +325,14 @@ int sys_dup(int fd, int flags, int *newfd) {
+ int sys_dup2(int fd, int flags, int newfd) {
+ 	int ret, errno;
+ 
+-	if (flags) {
+-		SYSCALL3(SYSCALL_DUP3, fd, newfd, flags);
+-	} else {
+-		SYSCALL2(SYSCALL_DUP2, fd, newfd);
+-	}
+-
++   SYSCALL2(SYSCALL_DUP2, fd, newfd);
+ 	if (ret == -1) {
+         return errno;
+ 	} else {
+-		return 0;
++		if (flags) {
++		   SYSCALL3(SYSCALL_FCNTL, fd, F_SETFL, flags);
++	   }
++	   return 0;
+ 	}
+ }
+ 
+@@ -401,35 +367,16 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -415,7 +437,7 @@ index d6dbca3..6bb6d9c 100644
  
  	if (ret == -1) {
          return errno;
-@@ -452,8 +401,70 @@ int sys_futex_wake(int *pointer) {
+@@ -452,8 +399,70 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -486,7 +508,7 @@ index d6dbca3..6bb6d9c 100644
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
  	if (uname(&buf)) {
-@@ -493,5 +504,92 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +502,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -526,14 +548,6 @@ index d6dbca3..6bb6d9c 100644
 +	pid_t ret;
 +	int errn;
 +	SYSCALL3(SYSCALL_SPAWN, path, argv, envp);
-+	errno = errn;
-+	return ret;
-+}
-+
-+int crypto_request(unsigned long request, void *argument) {
-+	int ret;
-+	int errn;
-+	SYSCALL2(SYSCALL_CRYPTO_REQUEST, request, argument);
 +	errno = errn;
 +	return ret;
 +}
@@ -580,7 +594,7 @@ index d6dbca3..6bb6d9c 100644
 +}
 +#endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..d26b7e9 100644
+index 89a3851..dc09659 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
 @@ -3,6 +3,7 @@
@@ -612,7 +626,7 @@ index 89a3851..d26b7e9 100644
  };
  
  #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,76 @@ struct ironclad_mouse_data {
+@@ -34,6 +29,61 @@ struct ironclad_mouse_data {
  	bool is_left;
  	bool is_right;
  };
@@ -642,21 +656,6 @@ index 89a3851..d26b7e9 100644
 +int set_thread_sched(int flags);
 +
 +pid_t program_spawn(const char *path, char *const argv[], char *const envp[]);
-+
-+
-+#define CRYPTO_AES128_ECB_ENCRYPT 0
-+#define CRYPTO_AES128_ECB_DECRYPT 1
-+#define CRYPTO_AES128_CBC_ENCRYPT 2
-+#define CRYPTO_AES128_CBC_DECRYPT 3
-+
-+struct aes_data {
-+   __int128 key;
-+   __int128 iv;
-+   void *data;
-+   int length;
-+};
-+
-+int crypto_request(unsigned long request, void *argument);
 +
 +#define MAC_EXIT_ITSELF   0b000001
 +#define MAC_CREATE_OTHERS 0b000010
@@ -690,7 +689,7 @@ index 89a3851..d26b7e9 100644
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..111d6df 100644
+index 28d233e..419d475 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -702,7 +701,7 @@ index 28d233e..111d6df 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -70,11 +70,25 @@
+@@ -70,11 +70,24 @@
  #define SYSCALL_CHDIR             19
  #define SYSCALL_IOCTL             20
  #define SYSCALL_SCHED_YIELD       21
@@ -712,7 +711,8 @@ index 28d233e..111d6df 100644
 +#define SYSCALL_PIPE              23
  #define SYSCALL_DUP               24
  #define SYSCALL_DUP2              25
- #define SYSCALL_DUP3              26
+-#define SYSCALL_DUP3              26
++#define SYSCALL_SYSCONF           26
  #define SYSCALL_ACCESS            27
 +#define SYSCALL_GET_THREAD_SCHED  28
 +#define SYSCALL_SET_THREAD_SCHED  29
@@ -720,7 +720,6 @@ index 28d233e..111d6df 100644
 +#define SYSCALL_SPAWN             31
 +#define SYSCALL_GETRANDOM         32
 +#define SYSCALL_MPROTECT          33
-+#define SYSCALL_CRYPTO_REQUEST    34
 +#define SYSCALL_SET_MAC_CAPABILITIES 35
 +#define SYSCALL_LOCK_MAC             36
 +#define SYSCALL_ADD_MAC_FILTER       37

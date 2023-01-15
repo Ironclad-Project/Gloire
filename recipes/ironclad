@@ -1,7 +1,7 @@
 name=ironclad
 from_source=ironclad
 revision=1
-imagedeps="gcc-gnat gprbuild"
+imagedeps="gcc-gnat gprbuild texinfo"
 
 configure() {
     "${source_dir}"/configure.sh --skip-menu
@@ -9,9 +9,11 @@ configure() {
 
 build() {
     gprbuild -j${parallelism}
+    makeinfo "${source_dir}"/docs/ironclad.texi
 }
 
 install() {
     mkdir -pv "${dest_dir}"/usr/share/ironclad
-    cp ironclad "${dest_dir}"/usr/share/ironclad/
+    cp ironclad      "${dest_dir}"/usr/share/ironclad/
+    cp ironclad.info "${dest_dir}"/usr/share/ironclad/
 }

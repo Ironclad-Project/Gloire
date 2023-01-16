@@ -1,0 +1,18 @@
+name=ed
+from_source=ed
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="mlibc"
+
+configure() {
+    ${source_dir}/configure CC=x86_64-ironclad-gcc --prefix=${prefix}
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip \
+    INSTALL_PROGRAM="install --strip-program=x86_64-ironclad-strip -m 755"
+}

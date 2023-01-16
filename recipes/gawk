@@ -1,0 +1,22 @@
+name=gawk
+from_source=gawk
+revision=1
+imagedeps="gcc"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="mlibc"
+
+configure() {
+    sed -i 's/extras//' ${source_dir}/Makefile.in
+    ${source_dir}/configure           \
+        --host=x86_64-ironclad        \
+        --prefix=${prefix}            \
+        --build=$(build-aux/config.guess)
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

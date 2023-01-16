@@ -1,0 +1,10 @@
+name=gawk
+version=5.2.1
+source_method=tarball
+tarball_url="https://ftp.gnu.org/gnu/gawk/gawk-${version}.tar.xz"
+tarball_blake2b="5dbbfe92ed4c11a38b2f995e9267dd2e392a9f393af1c63aaf3c5dd6d1681c01db900e05a118831125f914fcffe2218de7f30891ccc6f64abc5f572aef5feeff"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    autoreconf -fvi
+}

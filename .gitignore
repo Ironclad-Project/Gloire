@@ -7,10 +7,6 @@ sysroot
 initramfs.tar
 gwm/**/*.o
 gwm/gwm
-gwm-bootstrap/**/*.o
-gwm-bootstrap/gwmbootstrap
-serial_shim/**/*.o
-serial_shim/serial_shim
 gloire.iso
 iso_root
 bochsout.txt

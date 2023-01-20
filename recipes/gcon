@@ -3,19 +3,15 @@ from_source=gcon
 revision=1
 hostdeps="gcc binutils"
 deps="mlibc"
-imagedeps="binutils git"
-allow_network="yes"
 
 configure() {
-    true
+    "${source_dir}"/configure --prefix="${prefix}" --host=x86_64-ironclad
 }
 
 build() {
-    cd ${source_dir}
-    make -j${parallelism} CC=x86_64-ironclad-gcc
+    make -j${parallelism}
 }
 
 install() {
-    cd ${source_dir}
-    make install PREFIX="${prefix}" DESTDIR="${dest_dir}"
+    make install DESTDIR="${dest_dir}"
 }

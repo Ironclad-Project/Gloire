@@ -1,7 +1,11 @@
 name=gcon
 version=0.0
-source_dir="gcon"
+source_method=git
+clone_url="https://github.com/streaksu/gcon"
+tag="main"
+hostdeps="automake autoconf libtool pkg-config"
+allow_network="yes"
 
 regenerate() {
-    true
+    ./bootstrap
 }

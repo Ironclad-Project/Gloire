@@ -14,10 +14,10 @@ rm -rf sysroot
 # Prepare the iso and boot directories.
 rm -rf iso_root
 mkdir -pv iso_root/boot
-cp -r sysroot/usr/share/ironclad/ironclad iso_root/boot/
+cp -r sysroot/boot/ironclad  iso_root/boot/
 cp -r artwork/background.bmp iso_root/boot/
-cp -r initramfs.tar iso_root/boot/
-cp -r base-files/boot/* iso_root/boot/
+cp -r initramfs.tar          iso_root/boot/
+cp -r base-files/boot/*      iso_root/boot/
 
 # Install the limine and memtest86+ binaries.
 cp -r host-pkgs/limine/usr/local/share/limine/limine.sys        iso_root/boot/

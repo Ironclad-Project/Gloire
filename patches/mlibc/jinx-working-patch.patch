@@ -106,6 +106,29 @@ index 3474615..6e87ed8 100644
  	__builtin_unreachable();
  }
 +*/
+diff --git mlibc-clean/options/posix/generic/dirent-stubs.cpp mlibc-workdir/options/posix/generic/dirent-stubs.cpp
+index 1352585..f6a0975 100644
+--- mlibc-clean/options/posix/generic/dirent-stubs.cpp
++++ mlibc-workdir/options/posix/generic/dirent-stubs.cpp
+@@ -66,14 +66,14 @@ DIR *opendir(const char *path) {
+ }
+ struct dirent *readdir(DIR *dir) {
+ 	__ensure(dir->__ent_next <= dir->__ent_limit);
+-	if(dir->__ent_next == dir->__ent_limit) {
++	if(dir->__ent_next == 0 && dir->__ent_limit == 0) {
+ 		MLIBC_CHECK_OR_ENOSYS(mlibc::sys_read_entries, nullptr);
+ 		if(int e = mlibc::sys_read_entries(dir->__handle, dir->__ent_buffer, 2048, &dir->__ent_limit); e)
+ 			__ensure(!"mlibc::sys_read_entries() failed");
+ 		dir->__ent_next = 0;
+-		if(!dir->__ent_limit)
+-			return nullptr;
+-	}
++	} else if (dir->__ent_next == dir->__ent_limit) {
++	   return nullptr;
++   }
+ 
+ 	auto entp = reinterpret_cast<struct dirent *>(dir->__ent_buffer + dir->__ent_next);
+ 	// We only copy as many bytes as we need to avoid buffer-overflows.
 diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
 index e2c40ce..0a170e5 100644
 --- mlibc-clean/options/posix/generic/unistd-stubs.cpp
@@ -154,7 +177,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..804fd82 100644
+index d6dbca3..a855640 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,22 @@
@@ -196,7 +219,26 @@ index d6dbca3..804fd82 100644
  	return errno;
  }
  
-@@ -113,6 +111,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -56,6 +54,18 @@ int sys_open_dir(const char *path, int *handle) {
+ 	return sys_open(path, O_RDONLY, 0660, handle);
+ }
+ 
++int sys_read_entries(int handle, void *buffer, size_t max_size, size_t *bytes_read) {
++	size_t ret;
++	int errno;
++	SYSCALL3(SYSCALL_GETDENTS, handle, buffer, max_size);
++	if (errno != 0) {
++		return errno;
++	} else {
++		*bytes_read = ret;
++		return 0;
++	}
++}
++
+ int sys_close(int fd) {
+ 	int ret, errno;
+ 	SYSCALL1(SYSCALL_CLOSE, fd);
+@@ -113,6 +123,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -213,7 +255,7 @@ index d6dbca3..804fd82 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,96 +139,61 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,96 +151,61 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -240,18 +282,18 @@ index d6dbca3..804fd82 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -327,7 +369,7 @@ index d6dbca3..804fd82 100644
  int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  	int ret, errno;
  
-@@ -234,17 +207,19 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +219,19 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -355,7 +397,7 @@ index d6dbca3..804fd82 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -328,16 +303,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,16 +315,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -373,7 +415,7 @@ index d6dbca3..804fd82 100644
  }
  
  int sys_dup(int fd, int flags, int *newfd) {
-@@ -357,16 +325,14 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -357,16 +337,14 @@ int sys_dup(int fd, int flags, int *newfd) {
  int sys_dup2(int fd, int flags, int newfd) {
  	int ret, errno;
  
@@ -395,7 +437,7 @@ index d6dbca3..804fd82 100644
  	}
  }
  
-@@ -401,35 +367,16 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,35 +379,16 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -437,7 +479,7 @@ index d6dbca3..804fd82 100644
  
  	if (ret == -1) {
          return errno;
-@@ -452,8 +399,70 @@ int sys_futex_wake(int *pointer) {
+@@ -452,8 +411,70 @@ int sys_futex_wake(int *pointer) {
  	__builtin_unreachable();
  }
  
@@ -508,7 +550,7 @@ index d6dbca3..804fd82 100644
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
  	if (uname(&buf)) {
-@@ -493,5 +502,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +514,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -689,7 +731,7 @@ index 89a3851..dc09659 100644
  }
  #endif
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..419d475 100644
+index 28d233e..641032b 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -49,7 +49,7 @@
@@ -701,7 +743,7 @@ index 28d233e..419d475 100644
  #define SYSCALL_OPEN               2
  #define SYSCALL_CLOSE              3
  #define SYSCALL_READ               4
-@@ -70,11 +70,24 @@
+@@ -70,11 +70,25 @@
  #define SYSCALL_CHDIR             19
  #define SYSCALL_IOCTL             20
  #define SYSCALL_SCHED_YIELD       21
@@ -727,6 +769,7 @@ index 28d233e..419d475 100644
 +#define SYSCALL_MOUNT  39
 +#define SYSCALL_UMOUNT 40
 +#define SYSCALL_READLINK 41
++#define SYSCALL_GETDENTS 42
  
  #endif // _SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build

@@ -9,15 +9,8 @@ configure() {
 
 build() {
     gprbuild -j${parallelism}
-    makeinfo "${source_dir}"/docs/ironclad.texi
 }
 
 install() {
-    mkdir -pv "${dest_dir}"/boot
-    mkdir -pv "${dest_dir}"/usr/share/info/
-    mkdir -pv "${dest_dir}"/usr/share/doc/ironclad
-    cp ironclad                "${dest_dir}"/boot/
-    cp ironclad.info           "${dest_dir}"/usr/share/info/
-    cp "${source_dir}"/README  "${dest_dir}"/usr/share/doc/ironclad/
-    cp "${source_dir}"/COPYING "${dest_dir}"/usr/share/doc/ironclad/
+    PREFIX=${prefix} DESTDIR=${dest_dir} ./install.sh
 }

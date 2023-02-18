@@ -11,6 +11,17 @@ rm -rf sysroot
 # Make an initramfs with the sysroot.
 (cd sysroot && tar cvf ../initramfs.tar *)
 
+# TODO: Once ready, move to ext4 like this.
+# rm -rf initramfs mount_contents
+# mkdir mount_contents
+# fallocate -l 400M initramfs
+# sudo mkfs.ext4 initramfs
+# sudo losetup /dev/loop9 initramfs
+# sudo mount /dev/loop9 mount_contents
+# sudo cp -r sysroot/* mount_contents/
+# sudo umount mount_contents
+# sudo losetup -D /dev/loop9
+
 # Prepare the iso and boot directories.
 rm -rf iso_root
 mkdir -pv iso_root/boot

@@ -1,0 +1,24 @@
+name=libxcrypt
+from_source=libxcrypt
+revision=1
+hostdeps="gcc automake autoconf libtool pkg-config"
+deps="mlibc libgcc libstdc++"
+
+configure() {
+    ${source_dir}/configure \
+        --host=x86_64-ironclad \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-obsolete-api=yes \
+        --disable-xcrypt-compat-files \
+        --disable-static
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

@@ -1,0 +1,27 @@
+name=mpfr
+from_source=mpfr
+revision=1
+imagedeps="gcc"
+hostdeps="gcc autoconf autoconf-archive automake libtool pkg-config"
+deps="core-libs gmp"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    ./configure \
+        --host=x86_64-ironclad \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-static=no \
+        --enable-shared=yes \
+        --with-pic
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

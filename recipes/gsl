@@ -1,14 +1,15 @@
 name=gsl
 from_source=gsl
 revision=1
-hostdeps="gcc automake autoconf"
-deps="mlibc"
+hostdeps="gcc automake autoconf libtool pkg-config"
+deps="core-libs"
 
 configure() {
     ${source_dir}/configure    \
         --host=x86_64-ironclad \
-        --prefix=${prefix}     \
-        CFLAGS="-DSLOW_BUT_NO_HACKS -Wno-error -O2 -pipe"
+        --sysconfdir=/etc      \
+        --localstatedir=/var   \
+        --prefix=${prefix}
 }
 
 build() {

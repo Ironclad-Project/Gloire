@@ -1,0 +1,41 @@
+name=libintl
+from_source=libintl
+revision=1
+hostdeps="gcc automake autoconf libtool pkg-config"
+deps="mlibc libgcc libstdc++ libiconv"
+
+configure() {
+    ${source_dir}/configure    \
+        --host=x86_64-ironclad    \
+        --prefix=${prefix}     \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --without-emacs        \
+        --without-lispdir      \
+        `# Normally this controls nls behavior in general, but the libintl` \
+        `# subdir is skipped unless this is explicitly set.` \
+        --enable-nls           \
+        `# This magic flag enables libintl.` \
+        --with-included-gettext \
+        --disable-c++ \
+        --disable-libasprintf \
+        --disable-java \
+        --enable-shared \
+        --disable-static \
+        --enable-threads=posix \
+        --disable-curses \
+        --without-git \
+        --without-cvs \
+        --without-bzip2 \
+        --without-xz
+}
+
+build() {
+    make -C gettext-runtime/intl -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make -C gettext-runtime/intl install-strip
+    # For some reason libintl.so is still not stripped, strip it now.
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libintl.so.8.3.0
+}

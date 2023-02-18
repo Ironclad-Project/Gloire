@@ -2,16 +2,18 @@ name=epoch
 from_source=epoch
 revision=1
 hostdeps="gcc autoconf automake libtool"
-deps="mlibc"
+deps="core-libs"
 
 configure() {
-    true
+    cp -rp ${source_dir}/. ./
 }
 
 build() {
-    make -C ${source_dir} CC=x86_64-ironclad-gcc CFLAGS="-DNO_EXECINFO ${common_cflags}"
+    make CC=x86_64-ironclad-gcc CFLAGS="-DNO_EXECINFO ${common_cflags}"
 }
 
 install() {
-    cp -r ${source_dir}/built/* "${dest_dir}"
+    mkdir -p "${dest_dir}${prefix}"/bin
+    cp -r built/sbin/* "${dest_dir}${prefix}"/bin/
+    cp -r built/bin/*  "${dest_dir}${prefix}"/bin/
 }

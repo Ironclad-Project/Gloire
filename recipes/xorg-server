@@ -2,11 +2,11 @@ name=xorg-server
 from_source=xorg-server
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="mlibc xorg-util-macros xorg-proto xcb-proto libxtrans libxshmfence libx11 libxxf86vm libxkbfile libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xkbcomp pixman"
+deps="core-libs xorg-util-macros xorg-proto xcb-proto libxtrans libxshmfence libx11 libxxf86vm libxkbfile libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xkbcomp pixman"
 
 configure() {
         CFLAGS="-Wno-error=array-bounds ${common_flags}" \
-   ${source_dir}/configure \
+    ${source_dir}/configure \
         --host=x86_64-ironclad \
         --prefix=${prefix} \
         --sysconfdir=/etc \
@@ -43,7 +43,7 @@ configure() {
 }
 
 build() {
-    make CFLAGS="-Wno-error=array-bounds ${common_flags}" -j${parallelism}
+    make -j${parallelism}
 }
 
 install() {

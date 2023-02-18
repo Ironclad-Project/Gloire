@@ -1,17 +1,8 @@
-From 5d88982bb932597b8baf1e4a2441fcc925437ea3 Mon Sep 17 00:00:00 2001
-From: mintsuki <mintsuki@protonmail.com>
-Date: Thu, 11 Nov 2021 00:30:59 +0100
-Subject: [PATCH] Ironclad specific changes
-
----
- configure | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/configure b/configure
-index 421cf85..f7570a6 100755
---- a/configure
-+++ b/configure
-@@ -6423,6 +6423,10 @@ CF_EOF
+diff --git ncurses-clean/configure ncurses-workdir/configure
+index aeb93b8..45a11c4 100755
+--- ncurses-clean/configure
++++ ncurses-workdir/configure
+@@ -6460,6 +6460,10 @@ CF_EOF
  		LINK_PROGS="$SHELL ${rel_builddir}/mk_prog.sh"
  		LINK_TESTS="$SHELL ${rel_builddir}/mk_prog.sh"
  		;;
@@ -22,7 +13,3 @@ index 421cf85..f7570a6 100755
  	(mingw*)
  		cf_cv_shlib_version=mingw
  		cf_cv_shlib_version_infix=mingw
--- 
-2.33.1
-
-© 2022 GitHub, Inc.

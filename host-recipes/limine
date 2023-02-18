@@ -1,7 +1,7 @@
 name=limine
 from_source=limine
 revision=1
-hostdeps="gcc"
+hostdeps="gcc autoconf automake libtool pkg-config"
 imagedeps="nasm gcc mtools"
 
 configure() {

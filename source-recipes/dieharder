@@ -6,8 +6,8 @@ tarball_blake2b="6584fd10b723d8083918d474ce00c9bb387e29ff04d21be41779f297d850d68
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {
-    autoreconf -fvi && libtoolize -cfvi
-    (cd libdieharder && autoreconf -fvi && libtoolize -cfvi)
-    (cd dieharder    && autoreconf -fvi && libtoolize -cfvi)
-    (cd manual       && autoreconf -fvi && libtoolize -cfvi)
+    libtoolize -cfvi && autoreconf -fvi
+    (cd libdieharder && libtoolize -cfvi && autoreconf -fvi)
+    (cd dieharder    && libtoolize -cfvi && autoreconf -fvi)
+    (cd manual       && libtoolize -cfvi && autoreconf -fvi)
 }

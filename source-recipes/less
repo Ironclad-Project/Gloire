@@ -1,9 +1,9 @@
 name=less
 version=608
-source_method=tarball
 tarball_url="https://www.greenwoodsoftware.com/less/less-${version}.tar.gz"
 tarball_blake2b="988940745fef1222c43b0bf4edec7cc7206ded0ac5d89d3faf4dab706a249913581c2fe7aa6063cf3d717176ed07b69299d3e791ba8a60358483fe9d1bf7f7c6"
+hostdeps="autoconf automake libtool pkg-config"
 
 regenerate() {
-    true
+    libtoolize -cfvi && autoreconf -fvi
 }

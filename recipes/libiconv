@@ -1,15 +1,16 @@
 name=libiconv
 from_source=libiconv
 revision=1
-hostdeps="gcc libtool"
-deps="mlibc"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="mlibc libgcc libstdc++"
 imagedeps="binutils"
 
 configure() {
     ${source_dir}/configure           \
-        --host=x86_64-ironclad        \
+        --host=x86_64-ironclad           \
         --prefix=${prefix}            \
-        --with-sysroot=${sysroot_dir} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
         --disable-static              \
         --enable-shared               \
         --disable-nls
@@ -21,4 +22,6 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" make install-strip
+
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/{libcharset.so.1.0.0,libiconv.so.2.6.1}
 }

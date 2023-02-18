@@ -2,7 +2,7 @@ name=bzip2
 from_source=bzip2
 revision=1
 hostdeps="gcc pkg-config"
-deps="mlibc"
+deps="core-libs"
 
 configure() {
     cp -r ${source_dir}/. .

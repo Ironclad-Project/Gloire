@@ -1,7 +1,7 @@
 From 260f2ad9900323978ed2d3962b50439480f4d11d Mon Sep 17 00:00:00 2001
 From: mintsuki <mintsuki@protonmail.com>
 Date: Sun, 30 Jan 2022 14:30:17 +0100
-Subject: [PATCH] Lyre specific changes
+Subject: [PATCH] Ironclad specific changes
 
 ---
  configure.ac    | 8 +++++---

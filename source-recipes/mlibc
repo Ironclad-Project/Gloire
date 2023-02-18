@@ -1,8 +1,7 @@
 name=mlibc
-version=0.0
-source_method=git
-clone_url="https://github.com/managarm/mlibc.git"
-tag="3.0.0-rc2"
+version=3.0.0-rc2
+tarball_url="https://github.com/managarm/mlibc/archive/${version}.tar.gz"
+tarball_blake2b="e0ed6c667c38483d81e94038bdfa3db4b91199f1411c8a39c51a617c19875ba8bd3452abf38bbfac5741f88318020259a473054fcc4eced32102014004ba25cd"
 
 regenerate() {
     true

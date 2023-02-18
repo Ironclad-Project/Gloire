@@ -571,8 +571,8 @@ index 000000000..2428e411a
 +//
 +//===----------------------------------------------------------------------===//
 +
-+#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_LYRE_H
-+#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_LYRE_H
++#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_IRONCLAD_H
++#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_IRONCLAD_H
 +
 +#include "Gnu.h"
 +#include "clang/Driver/ToolChain.h"
@@ -610,7 +610,7 @@ index 000000000..2428e411a
 +} // end namespace driver
 +} // end namespace clang
 +
-+#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_LYRE_H
++#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_IRONCLAD_H
 diff --git a/llvm/cmake/modules/CrossCompile.cmake b/llvm/cmake/modules/CrossCompile.cmake
 index 2a39b6a40..ceceb2aab 100644
 --- a/llvm/cmake/modules/CrossCompile.cmake

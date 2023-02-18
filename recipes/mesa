@@ -2,14 +2,14 @@ name=mesa
 from_source=mesa
 revision=1
 hostdeps="gcc pkg-config"
-deps="mlibc llvm zlib libxshmfence libxrandr libxdamage libxxf86vm libxfixes libx11 libxext libxcb libexpat"
-imagedeps="binutils meson ninja py3-mako"
+deps="core-libs llvm zlib libxshmfence libxrandr libxdamage libxxf86vm libxfixes libx11 libxext libxcb libexpat"
+imagedeps="binutils meson ninja python-mako"
 
 configure() {
     cp ${base_dir}/build-support/cross_file.txt ./
     sed -i "/^# sed adds binaries here.\$/a llvm-config = '${base_dir}/build-support/cross-llvm-config'" cross_file.txt
 
-    meson --cross-file cross_file.txt --prefix=/usr --libdir=lib --buildtype=debugoptimized -Dglx=gallium-xlib -Dplatforms=x11 -Ddri-drivers= -Dgallium-drivers=swrast -Dvulkan-drivers= -Dllvm=enabled ${source_dir}
+    meson setup --cross-file cross_file.txt --prefix=/usr --libdir=lib --buildtype=debugoptimized -Dglx=gallium-xlib -Dplatforms=x11 -Ddri-drivers= -Dgallium-drivers=swrast -Dvulkan-drivers= -Dllvm=enabled ${source_dir}
 }
 
 build() {
@@ -18,4 +18,6 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" ninja install
+
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/{libGL.so.1.5.0,libGLESv1_CM.so.1.1.0,libGLESv2.so.2.0.0,libglapi.so.0.0.0}
 }

@@ -2,12 +2,14 @@ name=pixman
 from_source=pixman
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="mlibc libpng"
+deps="core-libs libpng"
 
 configure() {
-    ${source_dir}/configure    \
+    ${source_dir}/configure \
         --host=x86_64-ironclad \
-        --prefix=${prefix}     \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
         --disable-static
 }
 

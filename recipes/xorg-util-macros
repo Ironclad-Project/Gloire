@@ -1,14 +1,15 @@
 name=xorg-util-macros
 from_source=xorg-util-macros
 revision=1
-hostdeps="gcc autoconf automake libtool pkg-config host-xorg-util-macros"
-deps="mlibc"
+hostdeps="gcc autoconf automake libtool pkg-config xorg-macros"
+deps="core-libs"
 
 configure() {
     ${source_dir}/configure \
         --host=x86_64-ironclad \
         --prefix=${prefix}  \
-        --sysconfdir=/etc
+        --sysconfdir=/etc \
+        --localstatedir=/var
 }
 
 build() {

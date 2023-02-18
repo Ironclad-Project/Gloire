@@ -1,11 +1,20 @@
 name=binutils
 version=2.39
-source_method=tarball
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="ac6a5296c6586d53eaadcbffc5c399a6d79edf72450b9bb8b3525ce525129cef3d2eb90c85ef3bb3270b5a03b0e1ffb8f0b705f028158726f9777ebb8685066f"
 hostdeps="autoconf automake libtool pkg-config"
 
 regenerate() {
-    autoreconf -fvi
-    cp /usr/local/share/automake-1.16/config.sub ./
+    libtoolize -cfvi && autoreconf -fvi -I$(realpath ./config)
+    ( cd libiberty && libtoolize -cfvi && autoreconf -fvi -I$(realpath ./config) -I$(realpath ../config) )
+    ( cd intl && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd zlib && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd bfd && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd opcodes && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd gas && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd gold && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd libctf && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd binutils && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd gprof && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
+    ( cd ld && libtoolize -cfvi && autoreconf -fvi -I$(realpath ../config) )
 }

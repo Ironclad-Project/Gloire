@@ -1,9 +1,9 @@
 name=gcon
-version=0.0
-source_method=git
-clone_url="https://github.com/streaksu/gcon"
-tag="main"
+version=24c39895302c4b85562dcef06913ea3b93b0826b
+tarball_url="https://github.com/streaksu/gcon/archive/${version}.tar.gz"
+tarball_blake2b="d08d8aec4175872155d4ac80a8b968f5520e11eaa88db6fde7d1591b86c9b3972e171389dc9c210dee3b94eef2bf9bf88fa24902e96f82f34719b4c735b41a8c"
 hostdeps="automake autoconf libtool pkg-config"
+imagedeps="git"
 allow_network="yes"
 
 regenerate() {

@@ -1,25 +1,35 @@
 name=binutils
 from_source=binutils
 revision=1
-hostdeps="gcc automake autoconf"
-deps="tzdata mlibc"
-imagedeps="gcc gperf bison flex"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs zlib gmp"
+imagedeps="gcc"
 
 configure() {
-    ${source_dir}/configure      \
-        --host=x86_64-ironclad   \
-        --target=x86_64-ironclad \
-        --prefix=${prefix}       \
-        --disable-nls            \
-        --with-sysroot="${sysroot_dir}" \
-        --disable-werror \
-        CFLAGS="-DSLOW_BUT_NO_HACKS -Wno-error -O2 -pipe"
+    ${source_dir}/configure           \
+        --host=x86_64-ironclad           \
+        --prefix=${prefix}            \
+        --target=x86_64-ironclad         \
+        --with-sysroot=${sysroot_dir} \
+        --disable-nls                 \
+        --disable-werror              \
+        --disable-dependency-tracking \
+        --with-system-zlib            \
+        --with-gmp=${sysroot_dir}/usr \
+        --enable-shared               \
+        --enable-host-shared
 }
 
 build() {
-    make -j${parallelism} all-binutils all-ld all-gas
+    make -j${parallelism} all
 }
 
 install() {
-    DESTDIR="${dest_dir}" make install-strip-binutils install-strip-gas install-strip-ld
+    DESTDIR="${dest_dir}" make install-strip
+
+    # Remove unnecessary directory
+    rm -rf "${dest_dir}${prefix}"/x86_64-ironclad
+
+    # Remove static libraries
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
 }

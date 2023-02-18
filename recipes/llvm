@@ -1,9 +1,9 @@
 name=llvm
 from_source=llvm
 revision=1
-imagedeps="gcc g++ ninja python3 git"
+imagedeps="gcc ninja python git"
 hostdeps="gcc cmake pkg-config"
-deps="mlibc zlib"
+deps="core-libs zlib"
 
 configure() {
     cmake \
@@ -27,5 +27,5 @@ build() {
 }
 
 install() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" ninja install/strip
 }

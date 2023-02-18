@@ -1,0 +1,17 @@
+name=gprbuild
+from_source=gprbuild
+revision=1
+imagedeps="gcc-ada"
+
+configure() {
+    cp -rp ${source_dir}/. ./
+}
+
+build() {
+    ./bootstrap.sh --with-xmlada=./xmlada --with-kb=./gprconfig_kb --prefix=./bootstrap
+}
+
+install() {
+    mkdir -p "${dest_dir}${prefix}"
+    cp -rv ./bootstrap/. "${dest_dir}${prefix}"/
+}

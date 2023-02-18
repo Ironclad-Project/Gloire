@@ -1,11 +1,15 @@
 name=gcon
 from_source=gcon
 revision=1
-hostdeps="gcc binutils"
-deps="mlibc"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
 
 configure() {
-    "${source_dir}"/configure --prefix="${prefix}" --host=x86_64-ironclad
+    "${source_dir}"/configure \
+      --prefix="${prefix}"    \
+      --sysconfdir=/etc       \
+      --localstatedir=/var    \
+      --host=x86_64-ironclad
 }
 
 build() {

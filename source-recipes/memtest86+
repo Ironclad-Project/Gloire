@@ -1,8 +1,7 @@
 name=memtest86+
-version=6.00
-source_method=git
-clone_url="https://github.com/memtest86plus/memtest86plus.git"
-tag="v6.00"
+version=6.10
+tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="2462c31f1ca27aa166c447e51a9b388872faaf7f845100a122f5dd8eb11dc76e26c503dc14d0825bda397c7180a5259094a020d25dd9d43b1997bfbe424c7f65"
 
 regenerate() {
     true

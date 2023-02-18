@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (c) 2022, mintsuki
+# Copyright (C) 2022-2023, mintsuki
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 
 set -e
 
-jinx_version="0.0.21"
+jinx_version="0.0.31"
 
 parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
 build_dir="$(pwd -P)"
@@ -55,8 +55,10 @@ else
 fi
 
 if [ -z "$JINX_CACHE_DIR" ]; then
-    JINX_CACHE_DIR="$HOME/.cache/jinx"
+    JINX_CACHE_DIR="$build_dir/.jinx-cache"
 fi
+
+pacman_cache="$JINX_CACHE_DIR/pacman"
 
 die() {
     echo "$1"
@@ -172,20 +174,32 @@ prepare_container() {
 
     imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
 
-    pkgset=""
-    for pkg in ${imagedeps}; do
-        pkgset="${pkgset}${pkg}/"
+    while true; do
+        fail_check=""
+        pkgset=""
+        for pkg in ${imagedeps}; do
+            pkgset="${pkgset}${pkg}/"
 
-        if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
-            continue
-        fi
+            if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
+                continue
+            fi
 
-        mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
+            mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
-        cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
-        "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/${pkgset}.image" rw --uid 0 --gid 0 -- apk update
+            cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
-        "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/${pkgset}.image" rw --uid 0 --gid 0 -- apk add "${pkg}"
+            if ! "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/${pkgset}.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S "${pkg}"; then
+                reinit_container
+                fail_check=on
+                break
+            fi
+
+            # Fix permissions of files
+            for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
+                chmod 755 "$f"
+            done
+        done
+        [ "$fail_check" = "on" ] || break
     done
 
     imgroot="$JINX_CACHE_DIR/sets/${pkgset}.image"
@@ -203,10 +217,11 @@ run_in_container() {
         --uid $(id -u) \
         --gid $(id -g) \
         --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
-        --mount "${container_pkgs}":/usr/local \
-        --mount "${sysroot_dir}":/sysroot \
-        --mount "${script_dir}":/jinx \
-        --mount "${base_dir}":/base_dir \
+        --mount "${container_pkgs}":/usr/local:ro \
+        --mount "${sysroot_dir}":/sysroot:ro \
+        --mount "${script_dir}":/jinx:ro \
+        --mount "${base_dir}":/base_dir${container_base_dir_ro} \
+        --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
         --mount "${build_dir}":/build_dir \
         ${unshare_net_flag} \
         -- \
@@ -217,25 +232,9 @@ destroy_container() {
     rm -rf "${container_pkgs}" "${sysroot_dir}"
 }
 
-do_hg_fetch() {
-    [ -d "${source_dir}" ] && return
-    hg clone ${clone_url} "${base_dir}"/sources/${name}
-    ( cd "${base_dir}"/sources/${name} && hg up ${tag} )
-}
+do_fetch() {
+    mkdir -p "${base_dir}"/sources
 
-do_git_fetch() {
-    [ -d "${source_dir}" ] && return
-    if ! [ -z "${commit}" ]; then
-        git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
-        ( cd "${base_dir}"/sources/${name} && git checkout ${commit} )
-    elif [ "${shallow}" = "no" ]; then
-        git clone ${clone_url} --branch=${tag} "${base_dir}"/sources/${name}
-    else
-        git clone ${clone_url} --branch=${tag} --depth=1 "${base_dir}"/sources/${name}
-    fi
-}
-
-do_tarball_fetch() {
     [ -d "${source_dir}" ] && return
 
     make_temp -d
@@ -271,7 +270,7 @@ do_tarball_fetch() {
 
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
-    mv "${extract_dir}"/* "${base_dir}"/sources/${name} || (
+    mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
         mkdir -p "${base_dir}"/sources/${name}
         mv "${extract_dir}"/* "${base_dir}"/sources/${name}/
     )
@@ -280,33 +279,12 @@ do_tarball_fetch() {
 }
 
 get_real_source_dir() {
-    source_dir="${base_dir}"/"${source_dir}"
-    case ${source_method} in
-        tarball|git|mercurial)
-            source_dir="${base_dir}"/sources/${name}
-            ;;
-        *)
-            is_local_package=true
-            ;;
-    esac
-}
-
-do_fetch() {
-    mkdir -p "${base_dir}"/sources
-
-    case ${source_method} in
-        tarball)
-            do_tarball_fetch
-            ;;
-        git)
-            do_git_fetch
-            ;;
-        mercurial)
-            do_hg_fetch
-            ;;
-        *)
-            ;;
-    esac
+    if [ -z "${source_dir}" ]; then
+        source_dir="${base_dir}"/sources/${name}
+    else
+        source_dir="${base_dir}"/"${source_dir}"
+        is_local_package=true
+    fi
 }
 
 cont_patch() {
@@ -350,7 +328,9 @@ do_regenerate() {
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${source_dir}"
+    [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
     regenerate
+    container_base_dir_ro=""
     cd "${base_dir}"
 
     touch "${base_dir}"/sources/${name}.regenerated
@@ -581,41 +561,7 @@ do_cmd_regenerate() {
     if ! [ "${is_local_package}" = true ]; then
         cd "${base_dir}"/sources
 
-        # exclude version control dirs
-        make_temp -d
-        vc_dir_clean="${tmp}"
-        rm -rf "${vc_dir_clean}"
-        make_temp -d
-        vc_dir_workdir="${tmp}"
-        rm -rf "${vc_dir_workdir}"
-
-        case "${source_method}" in
-            git)
-                mv $1-clean/.git "${vc_dir_clean}"
-                mv $1-workdir/.git "${vc_dir_workdir}"
-                ;;
-            mercurial)
-                mv $1-clean/.hg "${vc_dir_clean}"
-                mv $1-workdir/.hg "${vc_dir_workdir}"
-                ;;
-            *)
-                ;;
-        esac
-
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
-
-        case "${source_method}" in
-            git)
-                mv "${vc_dir_clean}" $1-clean/.git
-                mv "${vc_dir_workdir}" $1-workdir/.git
-                ;;
-            mercurial)
-                mv "${vc_dir_clean}" $1-clean/.hg
-                mv "${vc_dir_workdir}" $1-workdir/.hg
-                ;;
-            *)
-                ;;
-        esac
 
         if [ -s "${patch_file}" ]; then
             mkdir -p "${base_dir}"/patches/$1
@@ -648,9 +594,11 @@ do_host_pkg() {
 
     prepare_container
 
+    container_sources_ro=":ro"
     run_in_container internal-configure-host $1
     run_in_container internal-build-host $1
     run_in_container internal-install-host $1
+    unset container_sources_ro
 
     destroy_container
 }
@@ -668,9 +616,11 @@ do_pkg() {
 
     prepare_container
 
+    container_sources_ro=":ro"
     run_in_container internal-configure $1
     run_in_container internal-build $1
     run_in_container internal-install $1
+    unset container_sources_ro
 
     destroy_container
 }
@@ -758,10 +708,7 @@ cmd_install() {
     done
 }
 
-first_use() {
-    echo "* preparing jinx for first use..."
-    mkdir -p "$JINX_CACHE_DIR"
-
+rebuild_rbrt() {
     cat <<'EOF' >"$JINX_CACHE_DIR/rbrt.c"
 // Written by czapek1337 (czapek1337@gmail.com)
 // Inspired heavily by https://github.com/managarm/cbuildrt/
@@ -1062,10 +1009,28 @@ int main(int argc, char *argv[]) {
 
             *target++ = 0;
 
+            char *read_only = target;
+
+            while (*read_only && *read_only != ':') {
+                read_only++;
+            }
+
+            bool ro = false;
+            if (*read_only == ':') {
+                *read_only++ = 0;
+                ro = strcmp(read_only, "ro") == 0;
+            }
+
             snprintf(target_path, PATH_MAX, "%s/%s", rootfs, target);
-            if (mount(source, target_path, NULL, MS_BIND | MS_REC, NULL) < 0) {
+            if (mount(source, target_path, NULL, MS_BIND | (ro ? MS_RDONLY : 0), NULL) < 0) {
                 err_msg = "mount() failure at line " TOSTRING(__LINE__);
                 goto errno_error;
+            }
+            if (ro) {
+                if (mount(source, target_path, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL) < 0) {
+                    err_msg = "mount() failure at line " TOSTRING(__LINE__);
+                    goto errno_error;
+                }
             }
         }
 
@@ -1086,7 +1051,7 @@ int main(int argc, char *argv[]) {
 
         int child = fork();
         if (child == 0) {
-            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/sbin", 1);
+            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl", 1);
 
             for (int i = 0; i < env_count; i++) {
                 char *key = envs[i];
@@ -1153,12 +1118,19 @@ cleanup:
 }
 EOF
     cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
+}
 
-    curl -L -o "$JINX_CACHE_DIR/rootfs.tar.xz" https://eu.edge.kernel.org/alpine/edge/releases/x86_64/$(curl -L https://eu.edge.kernel.org/alpine/edge/releases/x86_64/latest-releases.yaml | grep 'x86_64.tar.gz' | head -n1 | sed 's/  file: //g')
-    mkdir -p "$JINX_CACHE_DIR/sets/.image"
-    ( cd "$JINX_CACHE_DIR/sets/.image" && tar -xf "$JINX_CACHE_DIR/rootfs.tar.xz" )
+reinit_container() {
+    chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
+    chmod -R 777 "$JINX_CACHE_DIR/pacman" 2>/dev/null || true
+    rm -rf "$JINX_CACHE_DIR/arch-root.tar.gz" "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/pacman"
 
-    touch "$JINX_CACHE_DIR/sets/.image/etc/resolv.conf"
+    mkdir -p "${pacman_cache}"
+
+    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://mirror.netcologne.de/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+    ( cd "$JINX_CACHE_DIR" && bsdtar -zxf arch-root.tar.gz )
+    mkdir -p "$JINX_CACHE_DIR/sets"
+    mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
     ln -s /proc/self/fd/0 "$JINX_CACHE_DIR/sets/.image/dev/stdin"
     ln -s /proc/self/fd/1 "$JINX_CACHE_DIR/sets/.image/dev/stdout"
@@ -1172,23 +1144,45 @@ EOF
     touch "$JINX_CACHE_DIR/sets/.image/dev/urandom"
     mkdir "$JINX_CACHE_DIR/sets/.image/dev/pts"
     mkdir "$JINX_CACHE_DIR/sets/.image/dev/shm"
-
-    cat <<'EOF' >"$JINX_CACHE_DIR/sets/.image/etc/apk/repositories"
-https://eu.edge.kernel.org/alpine/edge/main
-https://eu.edge.kernel.org/alpine/edge/community
-https://eu.edge.kernel.org/alpine/edge/testing
-EOF
+    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
+    echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
+    mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     mkdir "$JINX_CACHE_DIR/sets/.image/sysroot"
     mkdir "$JINX_CACHE_DIR/sets/.image/base_dir"
     mkdir "$JINX_CACHE_DIR/sets/.image/build_dir"
     mkdir "$JINX_CACHE_DIR/sets/.image/jinx"
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 -- apk update
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 -- apk upgrade
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 -- apk add alpine-base bash coreutils tzdata bison flex curl diffutils findutils sed grep gawk tar libarchive-tools gzip bzip2 xz zstd procps gettext-dev iputils libtool m4 make patch perl texinfo which libc-dev git
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 -- locale-gen
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
+    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl texinfo which
+
+    # Fix permissions of files
+    for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
+        chmod 755 "$f"
+    done
+}
+
+first_use() {
+    echo "* preparing Jinx for first use..."
+
+    mkdir -p "$JINX_CACHE_DIR"
+
+    rebuild_rbrt
+
+    reinit_container
 
     echo "$jinx_version" > "$JINX_CACHE_DIR/version"
 
     echo "* done"
+}
+
+redo_first_use() {
+    echo "* purging Jinx cache..."
+    chmod -R 777 "$JINX_CACHE_DIR" || true
+    rm -rf "$JINX_CACHE_DIR"
+    first_use
 }
 
 if ! [ -d "/jinx" ]; then
@@ -1197,9 +1191,7 @@ if ! [ -d "/jinx" ]; then
     fi
 
     if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" = "$jinx_version" ]; then
-        chmod -R 777 "$JINX_CACHE_DIR" || true
-        rm -rf "$JINX_CACHE_DIR"
-        first_use
+        redo_first_use
     fi
 fi
 
@@ -1291,6 +1283,9 @@ case "$1" in
         ;;
     clean)
         cmd_clean
+        ;;
+    rbrt)
+        rebuild_rbrt
         ;;
     *)
         die "unknown command: $1"

@@ -2,16 +2,18 @@ name=bash
 from_source=bash
 revision=1
 imagedeps="gcc"
-hostdeps="gcc autoconf automake"
-deps="mlibc ncurses libiconv readline"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs ncurses readline"
 
 configure() {
-    ac_cv_func_wcswidth=no     \
-    ${source_dir}/configure    \
+    ${source_dir}/configure \
         --host=x86_64-ironclad \
-        --prefix=${prefix}     \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
         --without-bash-malloc  \
-        --disable-nls
+        --disable-nls \
+        --with-installed-readline="${sysroot}"/usr/lib
 }
 
 build() {
@@ -20,7 +22,5 @@ build() {
 
 install() {
     make install-strip DESTDIR="${dest_dir}"
-    mkdir -p "${dest_dir}"/bin
-    ln -s /usr/bin/bash "${dest_dir}"/bin/bash
-    ln -s /usr/bin/bash "${dest_dir}"/bin/sh
+    ln -s bash "${dest_dir}${prefix}"/bin/sh
 }

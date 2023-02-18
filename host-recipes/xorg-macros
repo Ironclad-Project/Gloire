@@ -1,7 +1,6 @@
-name=host-libxtrans
-from_source=libxtrans
+name=xorg-macros
+from_source=xorg-util-macros
 revision=1
-imagedeps="gcc"
 
 configure() {
     "${source_dir}"/configure --prefix="${prefix}"

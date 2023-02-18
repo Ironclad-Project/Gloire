@@ -1,10 +1,9 @@
 name=libxrandr
 version=1.5.2
-source_method=tarball
 tarball_url="https://www.x.org/archive/individual/lib/libXrandr-${version}.tar.gz"
 tarball_blake2b="d37d2b049b39af2f23a57d5e99d35d97df9bd7cb79115bd3354617abb4079f50df140d295cce69e00451da52e11f75c4d3c879abcd82294ba81e75f3c24d11cd"
-hostdeps="automake autoconf libtool pkg-config host-xorg-util-macros"
+hostdeps="automake autoconf libtool pkg-config xorg-macros"
 
 regenerate() {
-    autoreconf -fvi
+    libtoolize -cfvi && autoreconf -fvi
 }

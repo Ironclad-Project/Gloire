@@ -1,7 +1,7 @@
 From 63821b6c4b72ea4913da1a4b804fd0b8bbbb03d7 Mon Sep 17 00:00:00 2001
 From: mintsuki <mintsuki@protonmail.com>
 Date: Sat, 14 May 2022 19:07:26 +0200
-Subject: [PATCH] Lyre specific changes
+Subject: [PATCH] Ironclad specific changes
 
 ---
  include/X11/Xos.h   | 2 +-

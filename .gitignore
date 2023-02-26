@@ -4,7 +4,7 @@ host-pkgs
 pkgs
 sources
 sysroot
-initramfs.tar
+initramfs
 gwm/**/*.o
 gwm/gwm
 gloire.iso

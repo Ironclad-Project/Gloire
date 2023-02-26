@@ -1,0 +1,82 @@
+diff --git neofetch-clean/neofetch neofetch-workdir/neofetch
+index 1e4b564..630af4c 100755
+--- neofetch-clean/neofetch
++++ neofetch-workdir/neofetch
+@@ -30,6 +30,8 @@
+ 
+ version=7.1.0
+ 
++config_file=/etc/config.conf
++
+ # Fallback to a value of '5' for shells which support bash
+ # but do not set the 'BASH_' shell variables (osh).
+ bash_version=${BASH_VERSINFO[0]:-5}
+@@ -929,6 +931,7 @@ get_os() {
+         AIX)      os=AIX ;;
+         IRIX*)    os=IRIX ;;
+         FreeMiNT) os=FreeMiNT ;;
++        Ironclad) os=Ironclad ;;
+ 
+         Linux|GNU*)
+             os=Linux
+@@ -954,6 +957,7 @@ get_distro() {
+     [[ $distro ]] && return
+ 
+     case $os in
++    	Ironclad) distro=Ironclad ;;
+         Linux|BSD|MINIX)
+             if [[ -f /bedrock/etc/bedrock-release && $PATH == */bedrock/cross/* ]]; then
+                 case $distro_shorthand in
+@@ -2068,6 +2072,9 @@ get_wm_theme() {
+ 
+ get_cpu() {
+     case $os in
++        "Ironclad")
++            cpu="$(cpuinfo -n) ($(cpuinfo -c)) @ $(cpuinfo -f)"
++            ;;
+         "Linux" | "MINIX" | "Windows")
+             # Get CPU name.
+             cpu_file="/proc/cpuinfo"
+@@ -2646,6 +2653,10 @@ get_memory() {
+             mem_used="$((mem_used / 1024))"
+         ;;
+ 
++        "Ironclad")
++            mem_free="$(showmem -f)"
++            mem_used="$(showmem -u)"
++            mem_total="$(showmem -t)"
+     esac
+ 
+     [[ "$memory_percent" == "on" ]] && ((mem_perc=mem_used * 100 / mem_total))
+@@ -3164,6 +3175,7 @@ get_term() {
+     [[ "$WT_SESSION" ]]     && term="Windows Terminal"
+ 
+     # Check $PPID for terminal emulator.
++    term="gcon"
+     while [[ -z "$term" ]]; do
+         parent="$(get_ppid "$parent")"
+         [[ -z "$parent" ]] && break
+@@ -5288,6 +5300,23 @@ get_distro_ascii() {
+     #
+     # $ascii_distro is the same as $distro.
+     case $(trim "$ascii_distro") in
++        "Ironclad"*)
++            set_colors 5 7 0
++            read -rd '' ascii_data <<'EOF'
++${c3}
++                  &#BGPPPPPG#&
++               B5?77!!?YJJ7!7YBB&
++            &G5YJ77!7JYYYYYBPJ&PY#
++          #PYYYYYY?!?YYYYY7?7JP5JJ
++         B?YYYYYY7!!7JYYYYJ!!?JJJ5
++  &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG&
++ G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG&
++ J777JB?!7JJ???!!!7?JYYYYYPJ!7JB
++ GYYG #JJJJJ??7!!!JYYY5PGB&GB&
++    #Y!?GB5YYJY5PG###&
++    GJJP
++EOF
++	;;
+         "AIX"*)
+             set_colors 2 7
+             read -rd '' ascii_data <<'EOF'

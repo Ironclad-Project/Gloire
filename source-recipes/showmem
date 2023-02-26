@@ -1,7 +1,0 @@
-name=showmem
-version=0.0
-source_dir="showmem"
-
-regenerate() {
-    true
-}

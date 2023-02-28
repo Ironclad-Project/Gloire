@@ -2,7 +2,7 @@ name=gwm
 from_source=gwm
 revision=1
 hostdeps="gcc binutils"
-deps="mlibc"
+deps="core-libs"
 imagedeps="binutils"
 
 configure() {

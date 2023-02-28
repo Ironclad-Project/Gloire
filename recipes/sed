@@ -1,0 +1,24 @@
+name=sed
+from_source=sed
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    ./configure \
+        --host=x86_64-ironclad \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-nls
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

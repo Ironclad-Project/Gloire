@@ -1,8 +1,8 @@
 diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
-index d1e9f02..c9e6759 100644
+index d1e9f02..1bb446f 100644
 --- mlibc-clean/abis/ironclad/fcntl.h
 +++ mlibc-workdir/abis/ironclad/fcntl.h
-@@ -1,51 +1,51 @@
+@@ -1,51 +1,52 @@
  #ifndef _ABIBITS_FCNTL_H
  #define _ABIBITS_FCNTL_H
  
@@ -43,6 +43,7 @@ index d1e9f02..c9e6759 100644
  #define O_SYNC 0x02000
 -#define O_CLOEXEC 0x04000
  #define O_PATH 0x08000
++#define O_DIRECTORY 0x10000
  #define O_LARGEFILE 0x10000
  #define O_NOATIME 0x20000
  #define O_TMPFILE 0x40000
@@ -77,7 +78,7 @@ index d1e9f02..c9e6759 100644
  #define F_SEAL_SHRINK 0x0002
  #define F_SEAL_GROW   0x0004
  #define F_SEAL_WRITE  0x0008
-@@ -53,12 +53,12 @@
+@@ -53,12 +54,12 @@
  #define F_ADD_SEALS   1033
  #define F_GET_SEALS   1034
  
@@ -185,7 +186,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..788b47f 100644
+index d6dbca3..2004c76 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,23 @@
@@ -219,7 +220,7 @@ index d6dbca3..788b47f 100644
  	sys_exit(1);
  }
  
-@@ -39,15 +38,19 @@ void sys_exit(int status) {
+@@ -39,15 +38,32 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -239,10 +240,23 @@ index d6dbca3..788b47f 100644
 +	    SYSCALL4(SYSCALL_OPEN,   AT_FDCWD, path, strlen (path), flags);
 +	}
 +
++	*fd = ret;
++	return errno;
++}
++
++int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
++	int ret, errno;
++
++	SYSCALL4(SYSCALL_OPEN, dirfd, path, strlen (path), flags);
++	if (ret == -1) {
++	    SYSCALL4(SYSCALL_CREATE, dirfd, path, strlen (path), mode);
++	    SYSCALL4(SYSCALL_OPEN,   dirfd, path, strlen (path), flags);
++	}
++
  	*fd = ret;
  	return errno;
  }
-@@ -56,12 +59,35 @@ int sys_open_dir(const char *path, int *handle) {
+@@ -56,12 +72,42 @@ int sys_open_dir(const char *path, int *handle) {
  	return sys_open(path, O_RDONLY, 0660, handle);
  }
  
@@ -275,10 +289,17 @@ index d6dbca3..788b47f 100644
 +   SYSCALL0(SYSCALL_SYNC);
 +}
 +
++int sys_fsync(int fd) {
++   int ret, errno;
++   (void)fd;
++   SYSCALL0(SYSCALL_SYNC);
++   return 0;
++}
++
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -113,6 +139,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +159,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -295,7 +316,7 @@ index d6dbca3..788b47f 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +167,68 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +187,68 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -322,18 +343,18 @@ index d6dbca3..788b47f 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -418,7 +439,7 @@ index d6dbca3..788b47f 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +238,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +258,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -447,7 +468,16 @@ index d6dbca3..788b47f 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -306,7 +313,7 @@ int sys_getcwd(const char *buff, size_t size) {
+@@ -290,7 +317,7 @@ int sys_sethostname(const char *buff, size_t size) {
+ 	return 0;
+ }
+ 
+-int sys_getcwd(const char *buff, size_t size) {
++int sys_getcwd(char *buff, size_t size) {
+ 	char* ret;
+ 	int errno;
+ 
+@@ -306,7 +333,7 @@ int sys_getcwd(const char *buff, size_t size) {
  int sys_chdir(const char *buff) {
  	int ret, errno;
  
@@ -456,7 +486,7 @@ index d6dbca3..788b47f 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,16 +335,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,16 +355,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -474,7 +504,7 @@ index d6dbca3..788b47f 100644
  }
  
  int sys_dup(int fd, int flags, int *newfd) {
-@@ -357,16 +357,14 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -357,16 +377,14 @@ int sys_dup(int fd, int flags, int *newfd) {
  int sys_dup2(int fd, int flags, int newfd) {
  	int ret, errno;
  
@@ -496,7 +526,7 @@ index d6dbca3..788b47f 100644
  	}
  }
  
-@@ -401,10 +399,17 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,10 +419,17 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -515,7 +545,7 @@ index d6dbca3..788b47f 100644
  
  	if (ret == -1) {
          return errno;
-@@ -413,46 +418,112 @@ int sys_access(const char *path, int mode) {
+@@ -413,46 +438,112 @@ int sys_access(const char *path, int mode) {
     }
  }
  
@@ -655,7 +685,7 @@ index d6dbca3..788b47f 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -470,19 +541,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -470,19 +561,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  
  	switch (fsfdt) {
  		case fsfd_target::fd: {
@@ -681,7 +711,7 @@ index d6dbca3..788b47f 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +563,106 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +583,106 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  

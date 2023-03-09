@@ -5,13 +5,13 @@ imagedeps="gcc-ada texinfo"
 hostdeps="gprbuild"
 
 configure() {
-    "${source_dir}"/configure.sh --skip-menu
+    "${source_dir}"/configure --prefix="${prefix}"
 }
 
 build() {
-    gprbuild -j${parallelism}
+    make all docs -j${parallelism}
 }
 
 install() {
-    PREFIX=${prefix} DESTDIR=${dest_dir} ./install.sh
+    DESTDIR=${dest_dir} make install install-docs
 }

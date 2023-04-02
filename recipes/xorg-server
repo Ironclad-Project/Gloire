@@ -47,5 +47,5 @@ build() {
 }
 
 install() {
-    DESTDIR="${dest_dir}" make install-strip
+    DESTDIR="${dest_dir}" make install
 }

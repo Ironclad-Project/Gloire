@@ -1,0 +1,21 @@
+name=wget2
+from_source=wget2
+revision=1
+hostdeps="gcc pkg-config automake autoconf libtool"
+deps="core-libs openssl pcre"
+
+configure() {
+    ${source_dir}/configure           \
+        --host=x86_64-ironclad        \
+        --prefix=${prefix}            \
+        --sysconfdir=/etc \
+        --localstatedir=/var
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

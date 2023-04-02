@@ -1,0 +1,31 @@
+name=libxkbcommon
+from_source=libxkbcommon
+revision=1
+hostdeps="gcc pkg-config"
+deps="core-libs libxcb libxml xkeyboard-config"
+imagedeps="meson ninja"
+
+configure() {
+    meson setup \
+        --cross-file "${base_dir}/build-support/cross_file.txt" \
+        --prefix=/usr \
+        --libdir=lib \
+        --buildtype=release \
+        -Denable-docs=false \
+        -Denable-x11=true \
+        -Denable-wayland=false \
+        "${source_dir}"
+}
+
+build() {
+    ninja
+}
+
+install() {
+    DESTDIR="${dest_dir}" ninja install
+    mkdir -p "${dest_dir}${prefix}/share/X11/xkb"
+
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/*
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/{libxkbcommon-x11.so.0.0.0,libxkbcommon.so.0.0.0,libxkbregistry.so.0.0.0}
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/libexec/xkbcommon/*
+}

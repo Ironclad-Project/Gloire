@@ -277,14 +277,16 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..fcdced3 100644
+index d6dbca3..a55505e 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,24 +10,23 @@
+@@ -10,24 +10,25 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
-+#include <sys/ironclad.h>
++#include <sys/ironclad_sched.h>
++#include <sys/ironclad_devices.h>
++#include <sys/ironclad_mac.h>
 +#include <sched.h>
 +#include <sys/mman.h>
  
@@ -311,7 +313,7 @@ index d6dbca3..fcdced3 100644
  	sys_exit(1);
  }
  
-@@ -39,15 +38,34 @@ void sys_exit(int status) {
+@@ -39,15 +40,37 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -338,6 +340,9 @@ index d6dbca3..fcdced3 100644
 +
 +	if (ret == -1 && (flags & O_CREAT)) {
 +	    SYSCALL4(SYSCALL_CREATE, AT_FDCWD, path, path_len, mode);
++       if (ret == -1) {
++           return errno;
++       }
 +	    SYSCALL4(SYSCALL_OPEN,   AT_FDCWD, path, path_len, flags);
 +	} else if (ret != -1 && (flags & O_TRUNC)) {
 +		// If the file cannot be truncated, dont sweat it, some software
@@ -349,7 +354,7 @@ index d6dbca3..fcdced3 100644
  	*fd = ret;
  	return errno;
  }
-@@ -56,12 +74,42 @@ int sys_open_dir(const char *path, int *handle) {
+@@ -56,12 +79,44 @@ int sys_open_dir(const char *path, int *handle) {
  	return sys_open(path, O_RDONLY, 0660, handle);
  }
  
@@ -380,19 +385,21 @@ index d6dbca3..fcdced3 100644
 +void sys_sync() {
 +   int ret, errno;
 +   SYSCALL0(SYSCALL_SYNC);
++   if (ret != 0) {
++      sys_libc_log("mlibc: sync failed");
++   }
 +}
 +
 +int sys_fsync(int fd) {
 +   int ret, errno;
-+   (void)fd;
-+   SYSCALL0(SYSCALL_SYNC);
-+   return 0;
++   SYSCALL1(SYSCALL_FSYNC, fd);
++   return errno;
 +}
 +
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -86,6 +134,12 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,6 +141,12 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -405,7 +412,7 @@ index d6dbca3..fcdced3 100644
  int sys_anon_allocate(size_t size, void **pointer) {
  	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
  }
-@@ -113,6 +167,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +174,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -422,7 +429,7 @@ index d6dbca3..fcdced3 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +195,68 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +202,75 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -431,6 +438,13 @@ index d6dbca3..fcdced3 100644
  	return 0;
  }
  
++int sys_ptrace(long req, pid_t pid, void *addr, void *data, long *out) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_PTRACE, req, pid, addr, data);
++	*out = (long)ret;
++	return errno;
++}
++
  int sys_fcntl(int fd, int request, va_list args, int *result) {
 -	(void)fd;
 -	(void)request;
@@ -545,7 +559,7 @@ index d6dbca3..fcdced3 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +266,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +280,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -574,7 +588,7 @@ index d6dbca3..fcdced3 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -290,7 +325,7 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,7 +339,7 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -583,7 +597,7 @@ index d6dbca3..fcdced3 100644
  	char* ret;
  	int errno;
  
-@@ -306,7 +341,7 @@ int sys_getcwd(const char *buff, size_t size) {
+@@ -306,7 +355,7 @@ int sys_getcwd(const char *buff, size_t size) {
  int sys_chdir(const char *buff) {
  	int ret, errno;
  
@@ -592,7 +606,7 @@ index d6dbca3..fcdced3 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,16 +363,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,16 +377,9 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -610,7 +624,7 @@ index d6dbca3..fcdced3 100644
  }
  
  int sys_dup(int fd, int flags, int *newfd) {
-@@ -357,16 +385,14 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -357,16 +399,14 @@ int sys_dup(int fd, int flags, int *newfd) {
  int sys_dup2(int fd, int flags, int newfd) {
  	int ret, errno;
  
@@ -632,64 +646,46 @@ index d6dbca3..fcdced3 100644
  	}
  }
  
-@@ -401,35 +427,21 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +441,167 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
--int sys_access(const char *path, int mode) {
++int sys_pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
++                const struct timespec *timeout, const sigset_t *sigmask,
++                int *num_events) {
++    return 0;
++}
++
+ int sys_access(const char *path, int mode) {
 -	int ret, errno;
--
++	return sys_faccessat(AT_FDCWD, path, mode, 0);
++}
+ 
 -	SYSCALL2(SYSCALL_ACCESS, path, mode);
--
++int sys_faccessat(int dirfd, const char *pathname, int mode, int flags) {
++	(void)flags;
++	struct stat buf;
++	if (int r = sys_stat(fsfd_target::fd_path, dirfd, pathname, mode & AT_SYMLINK_FOLLOW, &buf)) {
++		return r;
++	}
++	return 0;
++}
+ 
 -	if (ret == -1) {
 -        return errno;
 -	} else {
 -        return 0;
 -   }
-+int sys_pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-+                const struct timespec *timeout, const sigset_t *sigmask,
-+                int *num_events) {
-+    return 0;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
--	int ret, errno;
--
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
--
--	if (ret == -1 && errno != 0) {
--        return errno;
--	} else {
--			*value = ret;
--        return 0;
--   }
-+int sys_access(const char *path, int mode) {
-+	return sys_faccessat(AT_FDCWD, path, mode, 0);
- }
- 
--int sys_setpriority(int which, id_t who, int prio) {
-+int sys_faccessat(int dirfd, const char *pathname, int mode, int flags) {
- 	int ret, errno;
- 
--	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
-+   int path_len = strlen(pathname);
-+	SYSCALL5(SYSCALL_ACCESS, dirfd, pathname, path_len, mode, flags);
- 
- 	if (ret == -1) {
-         return errno;
-@@ -442,18 +454,109 @@ int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
- 	(void)pointer;
- 	(void)expected;
- 	(void)time;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
++int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
++	(void)pointer;
++	(void)expected;
++	(void)time;
 +	return 0;
  }
  
- int sys_futex_wake(int *pointer) {
- 	(void)pointer;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
+-int sys_getpriority(int which, id_t who, int *value) {
++int sys_futex_wake(int *pointer) {
++	(void)pointer;
 +	return 0;
 +}
 +
@@ -697,17 +693,60 @@ index d6dbca3..fcdced3 100644
 +   int ret, errno;
 +	SYSCALL2(SYSCALL_PIPE, fds, flags);
 +	return errno;
- }
- 
++}
++
 +int sys_getentropy(void *buffer, size_t length) {
 +	ssize_t ret;
 +	int errno;
 +	SYSCALL2(SYSCALL_GETRANDOM, buffer, length);
 +	return errno;
 +}
-+	
- #ifndef MLIBC_BUILDING_RTDL
++
++int sys_mkdir(const char *path, mode_t mode) {
++	return sys_mkdirat(AT_FDCWD, path, mode);
++}
++
++int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
+ 	int ret, errno;
++	size_t path_len = strlen (path);
++	SYSCALL4(SYSCALL_CREATE_DIRECTORY, dirfd, path, path_len, mode);
++	return errno;
++}
  
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
++int sys_rmdir(const char* path){
++	int ret, errno;
++	size_t path_len = strlen (path);
++	SYSCALL3(SYSCALL_DELETE, AT_FDCWD, path, path_len);
++	return errno;
++}
+ 
+-	if (ret == -1 && errno != 0) {
+-        return errno;
+-	} else {
+-			*value = ret;
+-        return 0;
+-   }
++int sys_unlinkat(int fd, const char *path, int flags) {
++	int ret, errno;
++	size_t path_len = strlen (path);
++	SYSCALL3(SYSCALL_DELETE, fd, path, path_len);
++	return errno;
+ }
+ 
+-int sys_setpriority(int which, id_t who, int prio) {
++int sys_link(const char* srcpath, const char* destpath) {
+ 	int ret, errno;
++	size_t src_len = strlen (srcpath);
++   size_t dst_len = strlen (destpath);
++	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
++	return errno;
++}
+ 
+-	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
++#ifndef MLIBC_BUILDING_RTDL
+ 
+-	if (ret == -1) {
 +extern "C" void __mlibc_thread_entry();
 +
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
@@ -715,13 +754,22 @@ index d6dbca3..fcdced3 100644
 +    SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
 +
 +    if (ret == -1) {
-+        return errno;
+         return errno;
+-	} else {
+-        return 0;
+-   }
 +    }
 +
 +    *tid_out = (pid_t)ret;
 +    return 0;
-+}
-+
+ }
+ 
+-int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
+-	(void)pointer;
+-	(void)expected;
+-	(void)time;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
 +int sys_prepare_stack(void **stack, void *entry, void *arg, void *tcb, size_t *stack_size, size_t *guard_size) {
 +	// TODO guard
 +
@@ -746,18 +794,26 @@ index d6dbca3..fcdced3 100644
 +	*stack = (void *)stack_it;
 +
 +	return 0;
-+}
-+
+ }
+ 
+-int sys_futex_wake(int *pointer) {
+-	(void)pointer;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
 +int sys_clock_get(int clock, time_t *secs, long *nanos) {
++   static int rtc_fd = -1;
++
 +	switch (clock) {
 +		case CLOCK_REALTIME: {
 +			// Use the RTC interface, there is no native kernel entity.
 +			// RTC gives true month and year, substract to make epoch.
-+			int fd, ret;
++			int ret;
 +			struct rtc_time rtc;
 +			struct tm tm;
-+			if (sys_open("/dev/rtc", O_RDONLY, 0, &fd) ||
-+				 sys_ioctl(fd, RTC_RD_TIME, &rtc, &ret))
++         if (rtc_fd == -1) {
++            sys_open("/dev/rtc", O_RDONLY, 0, &rtc_fd);
++         }
++			if (sys_ioctl(rtc_fd, RTC_RD_TIME, &rtc, &ret))
 +			{
 +				return -1;
 +			}
@@ -774,50 +830,57 @@ index d6dbca3..fcdced3 100644
 +			};
 +			*nanos = 0;
 +			*secs  = mktime(&tm);
-+			sys_close (fd);
 +			return 0;
 +		}
 +		default:
 +			return -1;
 +	}
-+}
-+
+ }
+ 
+-#ifndef MLIBC_BUILDING_RTDL
 +int sys_sleep(time_t *secs, long *nanos) {
 +	*secs  = 0;
 +	*nanos = 0;
 +	return 0;
 +}
-+
+ 
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
- 	if (uname(&buf)) {
-@@ -470,19 +573,18 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -465,24 +614,25 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+ }
+ 
+ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
+-	int ret, errno;
++	int ret, errno, fd2;
+ 	(void)flags;
  
  	switch (fsfdt) {
  		case fsfd_target::fd: {
 -			// mlibc wants us to do a fstat.
 -			SYSCALL2(SYSCALL_FSTAT, fd, statbuf);
-+			SYSCALL5(SYSCALL_LSTAT, fd, NULL, 0, statbuf, AT_EMPTY_PATH);
++			SYSCALL2(SYSCALL_LSTAT, fd, statbuf);
  			return errno;
  		}
  		case fsfd_target::path: {
 -			// mlibc wants us to do a lstat.
 -			SYSCALL2(SYSCALL_LSTAT, path, statbuf);
-+			size_t path_len = strlen(path);
-+			SYSCALL5(SYSCALL_LSTAT, AT_FDCWD, path, path_len, statbuf, AT_SYMLINK_NOFOLLOW);
++         sys_open(path, O_RDONLY | O_NOFOLLOW, 0777, &fd2);
++			SYSCALL2(SYSCALL_LSTAT, fd2, statbuf);
++         sys_close(fd2);
  			return errno;
  		}
  		case fsfd_target::fd_path: {
 -			// mlibc wants us to do an fstatat
 -			__ensure(!"stat: Invalid fstatat");
 -			__builtin_unreachable();
-+			size_t path_len = strlen(path);
-+			SYSCALL5(SYSCALL_LSTAT, fd, path, path_len, statbuf, 0);
++         sys_openat(fd, path, O_RDONLY, 0777, &fd2);
++			SYSCALL2(SYSCALL_LSTAT, fd2, statbuf);
++         sys_close(fd2);
 +			return errno;
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +595,106 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +643,106 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -964,22 +1027,25 @@ index 0000000..687ef8c
 +
 +	mlibc::sys_thread_exit();
 +}
-diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-index 89a3851..78031f6 100644
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
+deleted file mode 100644
+index 89a3851..0000000
 --- mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
-+++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad.h
-@@ -3,6 +3,7 @@
- 
- #include <stdint.h>
- #include <stdbool.h>
-+#include <sys/types.h>
- 
- #ifdef __cplusplus
- extern "C" {
-@@ -11,16 +12,10 @@ extern "C" {
- #define FB_DIMENSIONS 1
- 
- struct ironclad_fb_dimensions {
++++ /dev/null
+@@ -1,41 +0,0 @@
+-#ifndef _IRONCLAD_H
+-#define _IRONCLAD_H
+-
+-#include <stdint.h>
+-#include <stdbool.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-#define FB_DIMENSIONS 1
+-
+-struct ironclad_fb_dimensions {
 -	uint16_t width;
 -	uint16_t height;
 -	uint16_t pitch;
@@ -990,17 +1056,52 @@ index 89a3851..78031f6 100644
 -	uint8_t  green_mask_shift;
 -	uint8_t  blue_mask_size;
 -	uint8_t  blue_mask_shift;
-+	uint32_t width;
-+	uint32_t height;
-+	uint32_t pitch;
-+	uint8_t  bpp;
- };
- 
- #define PS2MOUSE_2_1_SCALING     1
-@@ -34,6 +29,59 @@ struct ironclad_mouse_data {
- 	bool is_left;
- 	bool is_right;
- };
+-};
+-
+-#define PS2MOUSE_2_1_SCALING     1
+-#define PS2MOUSE_1_1_SCALING     2
+-#define PS2MOUSE_SET_RES         3
+-#define PS2MOUSE_SET_SAMPLE_RATE 4
+-
+-struct ironclad_mouse_data {
+-	int  x_variation;
+-	int  y_variation;
+-	bool is_left;
+-	bool is_right;
+-};
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#endif // _IRONCLAD_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h
+new file mode 100644
+index 0000000..e4ea96e
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h
+@@ -0,0 +1,43 @@
++#ifndef _SYS_IRONCLAD_DEVICES_H
++#define _SYS_IRONCLAD_DEVICES_H
++
++#include <stdint.h>
++#include <stdbool.h>
++#include <sys/types.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define PS2MOUSE_2_1_SCALING     1
++#define PS2MOUSE_1_1_SCALING     2
++#define PS2MOUSE_SET_RES         3
++#define PS2MOUSE_SET_SAMPLE_RATE 4
++
++struct ironclad_mouse_data {
++	int  x_variation;
++	int  y_variation;
++	bool is_left;
++	bool is_right;
++};
 +
 +#define RTC_RD_TIME  1
 +#define RTC_SET_TIME 2
@@ -1017,21 +1118,36 @@ index 89a3851..78031f6 100644
 +	int tm_isdst;    /* unused */
 +};
 +
-+// Syscalls declared on the documentation, but without libc equivalents.
-+// Implemented in generic.cpp
-+#define THREAD_RT     0b0001
-+#define THREAD_MONO   0b0010
-+#define THREAD_MLOCK  0b0100
-+#define THREAD_BANNED 0b1000
-+int get_thread_sched(void);
-+int set_thread_sched(int flags);
++#ifdef __cplusplus
++}
++#endif
 +
-+#define MAC_EXIT_ITSELF   0b000001
-+#define MAC_CREATE_OTHERS 0b000010
-+#define MAC_CHANGE_SCHED  0b000100
-+#define MAC_ACC_ENTROPY   0b001000
-+#define MAC_ALLOC_MEM     0b010000
-+#define MAC_DEALLOC_MEM   0b100000
++#endif // _SYS_IRONCLAD_DEVICES_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h
+new file mode 100644
+index 0000000..a2a6c0f
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h
+@@ -0,0 +1,44 @@
++#ifndef _SYS_MAC_H
++#define _SYS_MAC_H
++
++#include <stdint.h>
++#include <stdbool.h>
++#include <sys/types.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define MAC_CAP_SCHED   0b00000001
++#define MAC_CAP_SPAWN   0b00000010
++#define MAC_CAP_ENTROPY 0b00000100
++#define MAC_CAP_SYS_MEM 0b00001000
++#define MAC_CAP_USE_NET 0b00010000
++#define MAC_CAP_SYS_NET 0b00100000
++#define MAC_CAP_SYS_MNT 0b01000000
++#define MAC_CAP_SYS_PWR 0b10000000
 +int set_mac_capabilities(unsigned long request);
 +int lock_mac(void);
 +
@@ -1052,13 +1168,43 @@ index 89a3851..78031f6 100644
 +#define MAC_KILL            0b100
 +int set_mac_enforcement(unsigned long enforcement);
 +
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_MAC_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h
+new file mode 100644
+index 0000000..2796dcd
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h
+@@ -0,0 +1,24 @@
++#ifndef _SYS_IRONCLAD_SCHED_H
++#define _SYS_IRONCLAD_SCHED_H
++
++#include <stdint.h>
++#include <stdbool.h>
++#include <sys/types.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define THREAD_RT     0b0001
++#define THREAD_MONO   0b0010
++#define THREAD_MLOCK  0b0100
++#define THREAD_BANNED 0b1000
++int get_thread_sched(void);
++int set_thread_sched(int flags);
 +int set_deadlines(int runtime, int period);
 +
- #ifdef __cplusplus
- }
- #endif
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_IRONCLAD_SCHED_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..4f75fc9 100644
+index 28d233e..4f6cf2b 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -38,9 +38,18 @@
@@ -1082,7 +1228,7 @@ index 28d233e..4f75fc9 100644
  	asm volatile ("int $0x80" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,65 @@
+@@ -48,33 +57,67 @@
  				  : "memory"); \
  })
  
@@ -1152,7 +1298,6 @@ index 28d233e..4f75fc9 100644
 +#define SYSCALL_DUP                  24
 +#define SYSCALL_DUP2                 25
 +#define SYSCALL_SYSCONF              26
-+#define SYSCALL_ACCESS               27
 +#define SYSCALL_GET_THREAD_SCHED     28
 +#define SYSCALL_SET_THREAD_SCHED     29
 +#define SYSCALL_FCNTL                30
@@ -1174,10 +1319,13 @@ index 28d233e..4f75fc9 100644
 +#define SYSCALL_CREATE_SYMLINK       46
 +#define SYSCALL_INTEGRITY_SETUP      47
 +#define SYSCALL_OPENPTY              48
++#define SYSCALL_FSYNC                49
++#define SYSCALL_LINK                 50
++#define SYSCALL_PTRACE               51
  
  #endif // _SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 09c724d..a96c912 100644
+index 09c724d..9e0f80c 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
 @@ -5,7 +5,9 @@ rtdl_sources += files(
@@ -1191,7 +1339,18 @@ index 09c724d..a96c912 100644
  )
  
  if not no_headers
-@@ -69,5 +71,23 @@ if not headers_only
+@@ -54,7 +56,9 @@ if not no_headers
+ 		subdir: 'abi-bits'
+ 	)
+ 	install_headers(
+-		'include/sys/ironclad.h',
++		'include/sys/ironclad_sched.h',
++      'include/sys/ironclad_devices.h',
++      'include/sys/ironclad_mac.h',
+ 		'include/sys/syscall.h',
+ 		subdir: 'sys'
+ 	)
+@@ -69,5 +73,23 @@ if not headers_only
  		install: true,
  		install_dir: get_option('libdir')
  	)

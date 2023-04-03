@@ -11,7 +11,7 @@ rm -rf sysroot
 # TODO: Once ready, move to ext4, now its ext2 only.
 rm -rf initramfs mount_contents
 mkdir mount_contents
-fallocate -l 400M initramfs
+fallocate -l 700M initramfs
 sudo mkfs.ext2 initramfs
 sudo losetup /dev/loop9 initramfs
 sudo mount /dev/loop9 mount_contents

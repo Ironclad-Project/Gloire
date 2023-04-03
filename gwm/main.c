@@ -9,7 +9,7 @@
 #include <bmp.h>
 #include <font.h>
 #include <widgets/widget.h>
-#include <sys/ironclad.h>
+#include <sys/ironclad_devices.h>
 #include <sys/ioctl.h>
 #include <string.h>
 

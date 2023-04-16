@@ -1,20 +1,22 @@
 name=gwm
 from_source=gwm
 revision=1
-hostdeps="gcc binutils"
-deps="core-libs"
+hostdeps="gcc binutils pkg-config"
+deps="core-libs freetype libpng"
 imagedeps="binutils"
 
 configure() {
-    true
+    "${source_dir}"/configure \
+      --prefix="${prefix}"    \
+      --sysconfdir=/etc       \
+      --localstatedir=/var    \
+      --host=x86_64-ironclad
 }
 
 build() {
-    cd ${source_dir}
-    make -j${parallelism} CC=x86_64-ironclad-gcc
+    make -j${parallelism}
 }
 
 install() {
-    cd ${source_dir}
-    make install PREFIX="${prefix}" DESTDIR="${dest_dir}"
+    make install DESTDIR="${dest_dir}"
 }

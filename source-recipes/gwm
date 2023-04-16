@@ -1,7 +1,10 @@
 name=gwm
-version=0.0
-source_dir="gwm"
+version=bd07a57b40cb18864c59f7a0e75fdd41f226ba2e
+tarball_url="https://github.com/streaksu/gwm/archive/${version}.tar.gz"
+tarball_blake2b="60533278852fcbba053ca3579191e4d215a06095a5fd86bc5a0acd23c70a8f42d69d10ca908ad687a237b9c2ef261455d258e7725651ca36f9bcbaa65dea903d"
+hostdeps="automake autoconf libtool pkg-config"
+imagedeps="git"
 
 regenerate() {
-    true
+    ./bootstrap
 }

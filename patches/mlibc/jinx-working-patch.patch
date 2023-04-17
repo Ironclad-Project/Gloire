@@ -1,5 +1,5 @@
 diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
-index d1e9f02..697ff97 100644
+index d1e9f02..397a69d 100644
 --- mlibc-clean/abis/ironclad/fcntl.h
 +++ mlibc-workdir/abis/ironclad/fcntl.h
 @@ -1,51 +1,55 @@
@@ -91,7 +91,7 @@ index d1e9f02..697ff97 100644
  #define F_SEAL_SHRINK 0x0002
  #define F_SEAL_GROW   0x0004
  #define F_SEAL_WRITE  0x0008
-@@ -53,12 +57,12 @@
+@@ -53,12 +57,19 @@
  #define F_ADD_SEALS   1033
  #define F_GET_SEALS   1034
  
@@ -100,8 +100,6 @@ index d1e9f02..697ff97 100644
 -#define AT_SYMLINK_NOFOLLOW 4
 -#define AT_REMOVEDIR 8
 -#define AT_EACCESS 512
--
--#define AT_FDCWD -100
 +// At flags.
 +#define AT_REMOVEDIR        500
 +#define AT_EACCESS          512
@@ -110,7 +108,28 @@ index d1e9f02..697ff97 100644
 +#define AT_SYMLINK_FOLLOW   0
 +#define AT_SYMLINK_NOFOLLOW 2
  
+-#define AT_FDCWD -100
++#define POSIX_FADV_NORMAL 1
++#define POSIX_FADV_SEQUENTIAL 2
++#define POSIX_FADV_NOREUSE 3
++#define POSIX_FADV_DONTNEED 4
++#define POSIX_FADV_WILLNEED 5
++#define POSIX_FADV_RANDOM 6
+ 
  #endif // _ABIBITS_FCNTL_H
+diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
+index 1f8a8ca..01ebd25 100644
+--- mlibc-clean/meson.build
++++ mlibc-workdir/meson.build
+@@ -137,7 +137,7 @@ elif host_machine.system() == 'managarm'
+ 	internal_conf.set10('MLIBC_MAP_FILE_WINDOWS', true)
+ 	subdir('sysdeps/managarm')
+ elif host_machine.system() == 'ironclad'
+-	# disable_linux_option = true
++	disable_linux_option = true
+ 	rtdl_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	subdir('sysdeps/ironclad')
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..6e87ed8 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -129,20 +148,18 @@ index 3474615..6e87ed8 100644
  }
 +*/
 diff --git mlibc-clean/options/linux/generic/pty-stubs.cpp mlibc-workdir/options/linux/generic/pty-stubs.cpp
-index 86341be..4eefc9b 100644
+index 513c4bc..f5da649 100644
 --- mlibc-clean/options/linux/generic/pty-stubs.cpp
 +++ mlibc-workdir/options/linux/generic/pty-stubs.cpp
-@@ -8,38 +8,16 @@
- #include <sys/ioctl.h>
+@@ -9,40 +9,17 @@
  #include <unistd.h>
  #include <stdlib.h>
--
+ 
 +#include <sys/syscall.h>
  #include <mlibc/debug.hpp>
  #include <mlibc/linux-sysdeps.hpp>
  
  int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win) {
--	__ensure(!name);
 -	__ensure(!ios);
 -
 -	if (win) {
@@ -158,10 +175,13 @@ index 86341be..4eefc9b 100644
 -	}
 -
 -	char spath[32];
--	if(ptsname_r(ptmx_fd, spath, 32))
+-	if(!name)
+-		name = spath;
+-	if(ptsname_r(ptmx_fd, name, 32))
 -		return -1;
 -
 -	int pts_fd;
+-	unlockpt(ptmx_fd);
 -	if(int e = mlibc::sys_open(spath, O_RDWR | O_NOCTTY, 0, &pts_fd); e) {
 -		errno = e;
 -		return -1;
@@ -169,14 +189,16 @@ index 86341be..4eefc9b 100644
 -
 -	*mfd = ptmx_fd;
 -	*sfd = pts_fd;
+-	return 0;
 +   int errno, ret;
 +   int fds[2];
 +   SYSCALL3(SYSCALL_OPENPTY, fds, ios, win);
 +   *mfd = fds[0];
 +   *sfd = fds[1];
- 	return 0;
++   return ret;
  }
  
+ int login_tty(int fd) {
 diff --git mlibc-clean/options/posix/generic/dirent-stubs.cpp mlibc-workdir/options/posix/generic/dirent-stubs.cpp
 index 1352585..6ae1cf3 100644
 --- mlibc-clean/options/posix/generic/dirent-stubs.cpp
@@ -211,30 +233,35 @@ index 1352585..6ae1cf3 100644
  		dir->__ent_next = 0;
  		if(!dir->__ent_limit) {
 diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-index e2c40ce..0a170e5 100644
+index 786671c..0ea29c5 100644
 --- mlibc-clean/options/posix/generic/unistd-stubs.cpp
 +++ mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-@@ -684,8 +684,8 @@ unsigned long sysconf(int number) {
+@@ -685,13 +685,8 @@ unsigned long sysconf(int number) {
+ 		case _SC_PAGE_SIZE:
  			return mlibc::page_size;
  		case _SC_OPEN_MAX:
- 			// TODO: actually return a proper value for _SC_OPEN_MAX
--			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 256\e[39m" << frg::endlog;
--			return 256;
+-			struct rlimit ru;
+-			if (getrlimit(RLIMIT_NOFILE, &ru) < 0) {
+-				mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 256\e[39m" << frg::endlog;
+-				return 256;
+-			} else {
+-				return (ru.rlim_cur == RLIM_INFINITY) ? -1 : ru.rlim_cur;
+-			}
 +			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 100\e[39m" << frg::endlog;
 +			return 100;
  		case _SC_PHYS_PAGES:
  			// TODO: actually return a proper value for _SC_PHYS_PAGES
  			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
 diff --git mlibc-clean/options/posix/include/dirent.h mlibc-workdir/options/posix/include/dirent.h
-index 787fb24..54ffb10 100644
+index b50566d..bdb807b 100644
 --- mlibc-clean/options/posix/include/dirent.h
 +++ mlibc-workdir/options/posix/include/dirent.h
-@@ -29,12 +29,12 @@ struct dirent {
- };
+@@ -39,12 +39,12 @@ struct dirent64 {
+ #undef __MLIBC_DIRENT_BODY
  
- #define d_fileno d_ino
+ #define IFTODT(mode) (((mode) & 0170000) >> 12)
 -
-+#define __DIR_BUFFER_LEN 2048 * 20
++#define __DIR_BUFFER_LEN (2048 * 20)
  struct __mlibc_dir_struct {
  	int __handle;
  	__mlibc_size __ent_next;
@@ -244,6 +271,23 @@ index 787fb24..54ffb10 100644
  	struct dirent __current;
  };
  
+diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
+index 003a162..8e04b03 100644
+--- mlibc-clean/options/rtdl/generic/linker.cpp
++++ mlibc-workdir/options/rtdl/generic/linker.cpp
+@@ -516,9 +516,9 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
+ 						phdr->p_filesz);
+ 			#endif
+ 			// Take care of removing superfluous permissions.
+-			if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
+-				if(mlibc::sys_vm_protect(map_pointer, total_map_size, prot))
+-					mlibc::infoLogger() << "mlibc: sys_vm_protect() failed in ld.so" << frg::endlog;
++			//if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
++			//	if(mlibc::sys_vm_protect(map_pointer, total_map_size, prot))
++			//		mlibc::infoLogger() << "mlibc: sys_vm_protect() failed in ld.so" << frg::endlog;
+ 		}else if(phdr->p_type == PT_TLS) {
+ 			object->tlsSegmentSize = phdr->p_memsz;
+ 			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-workdir/sysdeps/ironclad/crt-x86_64/crti.S mlibc-workdir/sysdeps/ironclad/crt-x86_64/crti.S
 new file mode 100644
 index 0000000..911b078
@@ -277,7 +321,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..a55505e 100644
+index d6dbca3..02eb53f 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,25 @@
@@ -339,7 +383,7 @@ index d6dbca3..a55505e 100644
 +	}
 +
 +	if (ret == -1 && (flags & O_CREAT)) {
-+	    SYSCALL4(SYSCALL_CREATE, AT_FDCWD, path, path_len, mode);
++	    SYSCALL5(SYSCALL_MAKENODE, AT_FDCWD, path, path_len, mode, 0);
 +       if (ret == -1) {
 +           return errno;
 +       }
@@ -624,29 +668,37 @@ index d6dbca3..a55505e 100644
  }
  
  int sys_dup(int fd, int flags, int *newfd) {
-@@ -357,16 +399,14 @@ int sys_dup(int fd, int flags, int *newfd) {
- int sys_dup2(int fd, int flags, int newfd) {
+@@ -345,7 +387,7 @@ int sys_dup(int fd, int flags, int *newfd) {
+ 
  	int ret, errno;
  
+-	SYSCALL1(SYSCALL_DUP, fd);
++	SYSCALL3(SYSCALL_DUP, fd, 0, 0b1000000000000);
+ 
+ 	if (ret == -1) {
+         return errno;
+@@ -356,18 +398,8 @@ int sys_dup(int fd, int flags, int *newfd) {
+ 
+ int sys_dup2(int fd, int flags, int newfd) {
+ 	int ret, errno;
+-
 -	if (flags) {
 -		SYSCALL3(SYSCALL_DUP3, fd, newfd, flags);
 -	} else {
 -		SYSCALL2(SYSCALL_DUP2, fd, newfd);
 -	}
 -
-+   SYSCALL2(SYSCALL_DUP2, fd, newfd);
- 	if (ret == -1) {
-         return errno;
- 	} else {
+-	if (ret == -1) {
+-        return errno;
+-	} else {
 -		return 0;
-+		if (flags) {
-+		   SYSCALL3(SYSCALL_FCNTL, fd, F_SETFL, flags);
-+	   }
-+	   return 0;
- 	}
+-	}
++   SYSCALL3(SYSCALL_DUP, fd, newfd, flags);
++	return errno;
  }
  
-@@ -401,58 +441,167 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+ int sys_tcgetattr(int fd, struct termios *attr) {
+@@ -401,58 +433,229 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -657,11 +709,9 @@ index d6dbca3..a55505e 100644
 +}
 +
  int sys_access(const char *path, int mode) {
--	int ret, errno;
 +	return sys_faccessat(AT_FDCWD, path, mode, 0);
 +}
- 
--	SYSCALL2(SYSCALL_ACCESS, path, mode);
++
 +int sys_faccessat(int dirfd, const char *pathname, int mode, int flags) {
 +	(void)flags;
 +	struct stat buf;
@@ -670,20 +720,14 @@ index d6dbca3..a55505e 100644
 +	}
 +	return 0;
 +}
- 
--	if (ret == -1) {
--        return errno;
--	} else {
--        return 0;
--   }
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
 +	(void)pointer;
 +	(void)expected;
 +	(void)time;
 +	return 0;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++}
++
 +int sys_futex_wake(int *pointer) {
 +	(void)pointer;
 +	return 0;
@@ -709,32 +753,31 @@ index d6dbca3..a55505e 100644
 +int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
  	int ret, errno;
 +	size_t path_len = strlen (path);
-+	SYSCALL4(SYSCALL_CREATE_DIRECTORY, dirfd, path, path_len, mode);
++	SYSCALL5(SYSCALL_MAKENODE, dirfd, path, path_len, S_IFDIR | mode, 0);
 +	return errno;
 +}
  
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
+-	SYSCALL2(SYSCALL_ACCESS, path, mode);
 +int sys_rmdir(const char* path){
 +	int ret, errno;
 +	size_t path_len = strlen (path);
-+	SYSCALL3(SYSCALL_DELETE, AT_FDCWD, path, path_len);
++	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
 +	return errno;
 +}
  
--	if (ret == -1 && errno != 0) {
+-	if (ret == -1) {
 -        return errno;
 -	} else {
--			*value = ret;
 -        return 0;
 -   }
 +int sys_unlinkat(int fd, const char *path, int flags) {
 +	int ret, errno;
 +	size_t path_len = strlen (path);
-+	SYSCALL3(SYSCALL_DELETE, fd, path, path_len);
++	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
 +	return errno;
  }
  
--int sys_setpriority(int which, id_t who, int prio) {
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_link(const char* srcpath, const char* destpath) {
  	int ret, errno;
 +	size_t src_len = strlen (srcpath);
@@ -742,13 +785,24 @@ index d6dbca3..a55505e 100644
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
 +}
- 
--	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
++
++int sys_socket(int domain, int type, int protocol, int *fd) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
++	if (ret != -1) {
++      *fd = ret;
++      return 0;
++   } else {
++      return errno;
++   }
++}
++
 +#ifndef MLIBC_BUILDING_RTDL
  
--	if (ret == -1) {
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +extern "C" void __mlibc_thread_entry();
-+
+ 
+-	if (ret == -1 && errno != 0) {
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
@@ -756,20 +810,15 @@ index d6dbca3..a55505e 100644
 +    if (ret == -1) {
          return errno;
 -	} else {
+-			*value = ret;
 -        return 0;
 -   }
 +    }
 +
 +    *tid_out = (pid_t)ret;
 +    return 0;
- }
- 
--int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
--	(void)pointer;
--	(void)expected;
--	(void)time;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
++}
++
 +int sys_prepare_stack(void **stack, void *entry, void *arg, void *tcb, size_t *stack_size, size_t *guard_size) {
 +	// TODO guard
 +
@@ -794,12 +843,8 @@ index d6dbca3..a55505e 100644
 +	*stack = (void *)stack_it;
 +
 +	return 0;
- }
- 
--int sys_futex_wake(int *pointer) {
--	(void)pointer;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
++}
++
 +int sys_clock_get(int clock, time_t *secs, long *nanos) {
 +   static int rtc_fd = -1;
 +
@@ -837,6 +882,73 @@ index d6dbca3..a55505e 100644
 +	}
  }
  
+-int sys_setpriority(int which, id_t who, int prio) {
++int sys_bind(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
+ 	int ret, errno;
++	SYSCALL3(SYSCALL_BIND, fd, addr_ptr, addrlen);
++	return errno;
++}
+ 
+-	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
++int sys_connect(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_CONNECT, fd, addr_ptr, addrlen);
++	return errno;
++}
+ 
+-	if (ret == -1) {
+-        return errno;
+-	} else {
+-        return 0;
++int sys_listen(int fd, int backlog) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_LISTEN, fd, backlog);
++	return errno;
++}
++
++int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_ACCEPT, fd, addr_ptr, addr_length, 0);
++   if (ret != -1) {
++      *newfd = ret;
++      return 0;
++   } else {
++	   return errno;
+    }
+ }
+ 
+-int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
+-	(void)pointer;
+-	(void)expected;
+-	(void)time;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
++int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
++   int ret, errno;
++	SYSCALL3(SYSCALL_RECVMSG, fd, hdr, flags);
++	if (ret != -1) {
++      *length = (ssize_t)ret;
++		return 0;
++	} else {
++      return errno;
++   }
+ }
+ 
+-int sys_futex_wake(int *pointer) {
+-	(void)pointer;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
++int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
++   int ret, errno;
++	SYSCALL3(SYSCALL_SENDMSG, fd, hdr, flags);
++	if (ret != -1) {
++      *length = (ssize_t)ret;
++		return 0;
++	} else {
++      return errno;
++   }
+ }
+ 
 -#ifndef MLIBC_BUILDING_RTDL
 +int sys_sleep(time_t *secs, long *nanos) {
 +	*secs  = 0;
@@ -846,7 +958,7 @@ index d6dbca3..a55505e 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +614,25 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +668,25 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -880,7 +992,7 @@ index d6dbca3..a55505e 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +643,106 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +697,133 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -923,6 +1035,33 @@ index d6dbca3..a55505e 100644
 +	int errno;
 +	size_t target_len = strlen(target);
 +	SYSCALL3(SYSCALL_UMOUNT, target, target_len, flags);
++   return errno;
++}
++
++
++int sys_rename(const char *path, const char *new_path) {
++	int ret;
++	int errno;
++	size_t old_len = strlen(path);
++   size_t new_len = strlen(new_path);
++	SYSCALL7(SYSCALL_RENAME, AT_FDCWD, path, old_len, AT_FDCWD, new_path, new_len, 0);
++   return errno;
++}
++
++int sys_renameat(int olddirfd, const char *old_path, int newdirfd, const char *new_path) {
++	int ret;
++	int errno;
++	size_t old_len = strlen(old_path);
++   size_t new_len = strlen(new_path);
++	SYSCALL7(SYSCALL_RENAME, olddirfd, old_path, old_len, newdirfd, new_path, new_len, 0);
++   return errno;
++}
++
++int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
++	int ret;
++	int errno;
++	size_t len = strlen(path);
++	SYSCALL5(SYSCALL_MAKENODE, dirfd, path, len, mode, dev);
 +   return errno;
 +}
 +
@@ -987,6 +1126,168 @@ index d6dbca3..a55505e 100644
 +}
 +}
 +#endif
+diff --git mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
+new file mode 100644
+index 0000000..d064af3
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
+@@ -0,0 +1,97 @@
++#include <errno.h>
++#include <mntent.h>
++#include <stdio.h>
++#include <limits.h>
++#include <string.h>
++#include <bits/ensure.h>
++
++namespace {
++
++char *internal_buf;
++size_t internal_bufsize;
++
++}
++
++#define SENTINEL (char *)&internal_buf
++
++FILE *setmntent(const char *name, const char *mode) {
++	return fopen(name, mode);
++}
++
++struct mntent *getmntent(FILE *f) {
++	static struct mntent mnt;
++	return getmntent_r(f, &mnt, SENTINEL, 0);
++}
++
++int addmntent(FILE *f, const struct mntent *mnt) {
++	if(fseek(f, 0, SEEK_END)) {
++		return 1;
++	}
++	return fprintf(f, "%s\t%s\t%s\t%s\t%d\t%d\n",
++		mnt->mnt_fsname, mnt->mnt_dir, mnt->mnt_type, mnt->mnt_opts,
++		mnt->mnt_freq, mnt->mnt_passno) < 0;
++}
++
++int endmntent(FILE *f) {
++	if(f) {
++		fclose(f);
++	}
++	return 1;
++}
++
++char *hasmntopt(const struct mntent *mnt, const char *opt) {
++	return strstr(mnt->mnt_opts, opt);
++}
++
++/* Adapted from musl */
++struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int buflen) {
++	int n[8];
++	bool use_internal = (linebuf == SENTINEL);
++	int len;
++	size_t i;
++
++	mnt->mnt_freq = 0;
++	mnt->mnt_passno = 0;
++
++	do {
++		if(use_internal) {
++			getline(&internal_buf, &internal_bufsize, f);
++			linebuf = internal_buf;
++		} else {
++			fgets(linebuf, buflen, f);
++		}
++		if(feof(f) || ferror(f)) {
++			return 0;
++		}
++		if(!strchr(linebuf, '\n')) {
++			fscanf(f, "%*[^\n]%*[\n]");
++			errno = ERANGE;
++			return 0;
++		}
++
++		len = strlen(linebuf);
++		if(len > INT_MAX) {
++			continue;
++		}
++
++		for(i = 0; i < sizeof n / sizeof *n; i++) {
++			n[i] = len;
++		}
++
++		sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
++			n, n + 1, n + 2, n + 3, n + 4, n + 5, n + 6, n + 7,
++			&mnt->mnt_freq, &mnt->mnt_passno);
++	} while(linebuf[n[0]] == '#' || n[1] == len);
++
++	linebuf[n[1]] = 0;
++	linebuf[n[3]] = 0;
++	linebuf[n[5]] = 0;
++	linebuf[n[7]] = 0;
++
++	mnt->mnt_fsname = linebuf + n[0];
++	mnt->mnt_dir = linebuf + n[2];
++	mnt->mnt_type = linebuf + n[4];
++	mnt->mnt_opts = linebuf + n[6];
++
++	return mnt;
++}
+diff --git mlibc-workdir/sysdeps/ironclad/generic/mount.cpp mlibc-workdir/sysdeps/ironclad/generic/mount.cpp
+new file mode 100644
+index 0000000..f10254d
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/mount.cpp
+@@ -0,0 +1,16 @@
++#include <errno.h>
++#include <sys/mount.h>
++#include <bits/ensure.h>
++
++int mount(const char *source, const char *target,
++		const char *fstype, unsigned long flags, const void *data) {
++	return 0;
++}
++
++int umount(const char *target) {
++	return umount2(target, 0);
++}
++
++int umount2(const char *target, int flags) {
++	return 0;
++}
+diff --git mlibc-workdir/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+new file mode 100644
+index 0000000..fcee169
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+@@ -0,0 +1,18 @@
++#include <asm/ioctls.h>
++#include <bits/ensure.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <pty.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <sys/syscall.h>
++
++int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win) {
++   int errno, ret;
++   int fds[2];
++   SYSCALL3(SYSCALL_OPENPTY, fds, ios, win);
++   *mfd = fds[0];
++   *sfd = fds[1];
++   return ret;
++}
+diff --git mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp
+new file mode 100644
+index 0000000..7c86ffd
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp
+@@ -0,0 +1,7 @@
++#include <errno.h>
++#include <sys/reboot.h>
++#include <bits/ensure.h>
++
++int reboot(int what) {
++	return 0;
++}
 diff --git mlibc-workdir/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
 new file mode 100644
 index 0000000..47ab6a9
@@ -1027,6 +1328,591 @@ index 0000000..687ef8c
 +
 +	mlibc::sys_thread_exit();
 +}
+diff --git mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+new file mode 100644
+index 0000000..5bb74bc
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+@@ -0,0 +1,102 @@
++#ifndef _ASM_IOCTLS_H
++#define _ASM_IOCTLS_H
++
++// List of all the IOCTLs supported, for further explanation on the meanings
++// please refer to documentation. If you did not get any, good luck!
++// Some IOCTL codes may be the same, in which case the device they are used in
++// gives them meaning. Cross-device IOCTLs have more distinct values.
++
++#define PS2MOUSE_2_1_SCALING     1
++#define PS2MOUSE_1_1_SCALING     2
++#define PS2MOUSE_SET_RES         3
++#define PS2MOUSE_SET_SAMPLE_RATE 4
++#define RTC_RD_TIME              1
++#define RTC_SET_TIME             2
++#define FIOQSIZE                 0x5460
++#define TCGETS                   0x5401
++#define TCSETS                   0x5402
++#define TCSETSW                  0x5403
++#define TCSETSF                  0x5404
++#define TCGETA                   0x5405
++#define TCSETA                   0x5406
++#define TCSETAW                  0x5407
++#define TCSETAF                  0x5408
++#define TCSBRK                   0x5409
++#define TCXONC                   0x540A
++#define TCFLSH                   0x540B
++#define TIOCEXCL                 0x540C
++#define TIOCNXCL                 0x540D
++#define TIOCSCTTY                0x540E
++#define TIOCGPGRP                0x540F
++#define TIOCSPGRP                0x5410
++#define TIOCOUTQ                 0x5411
++#define TIOCSTI                  0x5412
++#define TIOCGWINSZ               0x5413
++#define TIOCSWINSZ               0x5414
++#define TIOCMGET                 0x5415
++#define TIOCMBIS                 0x5416
++#define TIOCMBIC                 0x5417
++#define TIOCMSET                 0x5418
++#define TIOCGSOFTCAR             0x5419
++#define TIOCSSOFTCAR             0x541A
++#define FIONREAD                 0x541B
++#define TIOCINQ                  FIONREAD
++#define TIOCLINUX                0x541C
++#define TIOCCONS                 0x541D
++#define TIOCGSERIAL              0x541E
++#define TIOCSSERIAL              0x541F
++#define TIOCPKT                  0x5420
++#define FIONBIO                  0x5421
++#define TIOCNOTTY                0x5422
++#define TIOCSETD                 0x5423
++#define TIOCGETD                 0x5424
++#define TCSBRKP                  0x5425
++#define TIOCSBRK                 0x5427
++#define TIOCCBRK                 0x5428
++#define TIOCGSID                 0x5429 
++#define TCGETS2                  3
++#define TCSETS2                  3
++#define TCSETSW2                 3
++#define TCSETSF2                 3
++#define TIOCGRS485               0x542E
++#define TIOCSRS485               0x542F
++#define TIOCGPTN                 3
++#define TIOCSPTLCK               3
++#define TIOCGDEV                 3
++#define TCGETX                   0x5432
++#define TCSETX                   0x5433
++#define TCSETXF                  0x5434
++#define TCSETXW                  0x5435
++#define TIOCSIG                  0x36
++#define TIOCVHANGUP              0x5437
++#define TIOCGPKT                 3
++#define TIOCGPTLCK               3
++#define TIOCGEXCL                3
++#define TIOCGPTPEER              3
++#define TIOCGISO7816             3
++#define TIOCSISO7816             3
++#define FIONCLEX                 0x5450
++#define FIOCLEX                  0x5451
++#define FIOASYNC                 0x5452
++#define TIOCSERCONFIG            0x5453
++#define TIOCSERGWILD             0x5454
++#define TIOCSERSWILD             0x5455
++#define TIOCGLCKTRMIOS           0x5456
++#define TIOCSLCKTRMIOS           0x5457
++#define TIOCSERGSTRUCT           0x5458
++#define TIOCSERGETLSR            0x5459
++#define TIOCSERGETMULTI          0x545A
++#define TIOCSERSETMULTI          0x545B
++#define TIOCMIWAIT               0x545C
++#define TIOCGICOUNT              0x545D
++#define TIOCPKT_DATA             0
++#define TIOCPKT_FLUSHREAD        1
++#define TIOCPKT_FLUSHWRITE       2
++#define TIOCPKT_STOP             4
++#define TIOCPKT_START            8
++#define TIOCPKT_NOSTOP           16
++#define TIOCPKT_DOSTOP           32
++#define TIOCPKT_IOCTL            64
++#define TIOCSER_TEMT	            0x01
++
++#endif /* _ASM_IOCTLS_H */
+diff --git mlibc-workdir/sysdeps/ironclad/include/linux/fb.h mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
+new file mode 100644
+index 0000000..b3b5350
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
+@@ -0,0 +1,397 @@
++#ifndef _SYS_FB_H
++#define _SYS_FB_H
++
++#include <stddef.h>
++
++/* Definitions of frame buffers						*/
++
++#define FB_MAX			32	/* sufficient for now */
++
++/* ioctls
++   0x46 is 'F'								*/
++#define FBIOGET_VSCREENINFO	0x4600
++#define FBIOPUT_VSCREENINFO	0x4601
++#define FBIOGET_FSCREENINFO	0x4602
++#define FBIOGETCMAP		0x4604
++#define FBIOPUTCMAP		0x4605
++#define FBIOPAN_DISPLAY		0x4606
++#define FBIO_CURSOR            _IOWR('F', 0x08, struct fb_cursor)
++/* 0x4607-0x460B are defined below */
++/* #define FBIOGET_MONITORSPEC	0x460C */
++/* #define FBIOPUT_MONITORSPEC	0x460D */
++/* #define FBIOSWITCH_MONIBIT	0x460E */
++#define FBIOGET_CON2FBMAP	0x460F
++#define FBIOPUT_CON2FBMAP	0x4610
++#define FBIOBLANK		0x4611		/* arg: 0 or vesa level + 1 */
++#define FBIOGET_VBLANK		_IOR('F', 0x12, struct fb_vblank)
++#define FBIO_ALLOC              0x4613
++#define FBIO_FREE               0x4614
++#define FBIOGET_GLYPH           0x4615
++#define FBIOGET_HWCINFO         0x4616
++#define FBIOPUT_MODEINFO        0x4617
++#define FBIOGET_DISPINFO        0x4618
++
++#define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
++#define FB_TYPE_PLANES			1	/* Non interleaved planes */
++#define FB_TYPE_INTERLEAVED_PLANES	2	/* Interleaved planes	*/
++#define FB_TYPE_TEXT			3	/* Text/attributes	*/
++#define FB_TYPE_VGA_PLANES		4	/* EGA/VGA planes	*/
++#define FB_TYPE_FOURCC			5	/* Type identified by a V4L2 FOURCC */
++
++#define FB_AUX_TEXT_MDA		0	/* Monochrome text */
++#define FB_AUX_TEXT_CGA		1	/* CGA/EGA/VGA Color text */
++#define FB_AUX_TEXT_S3_MMIO	2	/* S3 MMIO fasttext */
++#define FB_AUX_TEXT_MGA_STEP16	3	/* MGA Millenium I: text, attr, 14 reserved bytes */
++#define FB_AUX_TEXT_MGA_STEP8	4	/* other MGAs:      text, attr,  6 reserved bytes */
++#define FB_AUX_TEXT_SVGA_GROUP	8	/* 8-15: SVGA tileblit compatible modes */
++#define FB_AUX_TEXT_SVGA_MASK	7	/* lower three bits says step */
++#define FB_AUX_TEXT_SVGA_STEP2	8	/* SVGA text mode:  text, attr */
++#define FB_AUX_TEXT_SVGA_STEP4	9	/* SVGA text mode:  text, attr,  2 reserved bytes */
++#define FB_AUX_TEXT_SVGA_STEP8	10	/* SVGA text mode:  text, attr,  6 reserved bytes */
++#define FB_AUX_TEXT_SVGA_STEP16	11	/* SVGA text mode:  text, attr, 14 reserved bytes */
++#define FB_AUX_TEXT_SVGA_LAST	15	/* reserved up to 15 */
++
++#define FB_AUX_VGA_PLANES_VGA4		0	/* 16 color planes (EGA/VGA) */
++#define FB_AUX_VGA_PLANES_CFB4		1	/* CFB4 in planes (VGA) */
++#define FB_AUX_VGA_PLANES_CFB8		2	/* CFB8 in planes (VGA) */
++
++#define FB_VISUAL_MONO01		0	/* Monochr. 1=Black 0=White */
++#define FB_VISUAL_MONO10		1	/* Monochr. 1=White 0=Black */
++#define FB_VISUAL_TRUECOLOR		2	/* True color	*/
++#define FB_VISUAL_PSEUDOCOLOR		3	/* Pseudo color (like atari) */
++#define FB_VISUAL_DIRECTCOLOR		4	/* Direct color */
++#define FB_VISUAL_STATIC_PSEUDOCOLOR	5	/* Pseudo color readonly */
++#define FB_VISUAL_FOURCC		6	/* Visual identified by a V4L2 FOURCC */
++
++#define FB_ACCEL_NONE		0	/* no hardware accelerator	*/
++#define FB_ACCEL_ATARIBLITT	1	/* Atari Blitter		*/
++#define FB_ACCEL_AMIGABLITT	2	/* Amiga Blitter                */
++#define FB_ACCEL_S3_TRIO64	3	/* Cybervision64 (S3 Trio64)    */
++#define FB_ACCEL_NCR_77C32BLT	4	/* RetinaZ3 (NCR 77C32BLT)      */
++#define FB_ACCEL_S3_VIRGE	5	/* Cybervision64/3D (S3 ViRGE)	*/
++#define FB_ACCEL_ATI_MACH64GX	6	/* ATI Mach 64GX family		*/
++#define FB_ACCEL_DEC_TGA	7	/* DEC 21030 TGA		*/
++#define FB_ACCEL_ATI_MACH64CT	8	/* ATI Mach 64CT family		*/
++#define FB_ACCEL_ATI_MACH64VT	9	/* ATI Mach 64CT family VT class */
++#define FB_ACCEL_ATI_MACH64GT	10	/* ATI Mach 64CT family GT class */
++#define FB_ACCEL_SUN_CREATOR	11	/* Sun Creator/Creator3D	*/
++#define FB_ACCEL_SUN_CGSIX	12	/* Sun cg6			*/
++#define FB_ACCEL_SUN_LEO	13	/* Sun leo/zx			*/
++#define FB_ACCEL_IMS_TWINTURBO	14	/* IMS Twin Turbo		*/
++#define FB_ACCEL_3DLABS_PERMEDIA2 15	/* 3Dlabs Permedia 2		*/
++#define FB_ACCEL_MATROX_MGA2064W 16	/* Matrox MGA2064W (Millenium)	*/
++#define FB_ACCEL_MATROX_MGA1064SG 17	/* Matrox MGA1064SG (Mystique)	*/
++#define FB_ACCEL_MATROX_MGA2164W 18	/* Matrox MGA2164W (Millenium II) */
++#define FB_ACCEL_MATROX_MGA2164W_AGP 19	/* Matrox MGA2164W (Millenium II) */
++#define FB_ACCEL_MATROX_MGAG100	20	/* Matrox G100 (Productiva G100) */
++#define FB_ACCEL_MATROX_MGAG200	21	/* Matrox G200 (Myst, Mill, ...) */
++#define FB_ACCEL_SUN_CG14	22	/* Sun cgfourteen		 */
++#define FB_ACCEL_SUN_BWTWO	23	/* Sun bwtwo			*/
++#define FB_ACCEL_SUN_CGTHREE	24	/* Sun cgthree			*/
++#define FB_ACCEL_SUN_TCX	25	/* Sun tcx			*/
++#define FB_ACCEL_MATROX_MGAG400	26	/* Matrox G400			*/
++#define FB_ACCEL_NV3		27	/* nVidia RIVA 128              */
++#define FB_ACCEL_NV4		28	/* nVidia RIVA TNT		*/
++#define FB_ACCEL_NV5		29	/* nVidia RIVA TNT2		*/
++#define FB_ACCEL_CT_6555x	30	/* C&T 6555x			*/
++#define FB_ACCEL_3DFX_BANSHEE	31	/* 3Dfx Banshee			*/
++#define FB_ACCEL_ATI_RAGE128	32	/* ATI Rage128 family		*/
++#define FB_ACCEL_IGS_CYBER2000	33	/* CyberPro 2000		*/
++#define FB_ACCEL_IGS_CYBER2010	34	/* CyberPro 2010		*/
++#define FB_ACCEL_IGS_CYBER5000	35	/* CyberPro 5000		*/
++#define FB_ACCEL_SIS_GLAMOUR    36	/* SiS 300/630/540              */
++#define FB_ACCEL_3DLABS_PERMEDIA3 37	/* 3Dlabs Permedia 3		*/
++#define FB_ACCEL_ATI_RADEON	38	/* ATI Radeon family		*/
++#define FB_ACCEL_I810           39      /* Intel 810/815                */
++#define FB_ACCEL_SIS_GLAMOUR_2  40	/* SiS 315, 650, 740		*/
++#define FB_ACCEL_SIS_XABRE      41	/* SiS 330 ("Xabre")		*/
++#define FB_ACCEL_I830           42      /* Intel 830M/845G/85x/865G     */
++#define FB_ACCEL_NV_10          43      /* nVidia Arch 10               */
++#define FB_ACCEL_NV_20          44      /* nVidia Arch 20               */
++#define FB_ACCEL_NV_30          45      /* nVidia Arch 30               */
++#define FB_ACCEL_NV_40          46      /* nVidia Arch 40               */
++#define FB_ACCEL_XGI_VOLARI_V	47	/* XGI Volari V3XT, V5, V8      */
++#define FB_ACCEL_XGI_VOLARI_Z	48	/* XGI Volari Z7                */
++#define FB_ACCEL_OMAP1610	49	/* TI OMAP16xx                  */
++#define FB_ACCEL_TRIDENT_TGUI	50	/* Trident TGUI			*/
++#define FB_ACCEL_TRIDENT_3DIMAGE 51	/* Trident 3DImage		*/
++#define FB_ACCEL_TRIDENT_BLADE3D 52	/* Trident Blade3D		*/
++#define FB_ACCEL_TRIDENT_BLADEXP 53	/* Trident BladeXP		*/
++#define FB_ACCEL_CIRRUS_ALPINE   53	/* Cirrus Logic 543x/544x/5480	*/
++#define FB_ACCEL_NEOMAGIC_NM2070 90	/* NeoMagic NM2070              */
++#define FB_ACCEL_NEOMAGIC_NM2090 91	/* NeoMagic NM2090              */
++#define FB_ACCEL_NEOMAGIC_NM2093 92	/* NeoMagic NM2093              */
++#define FB_ACCEL_NEOMAGIC_NM2097 93	/* NeoMagic NM2097              */
++#define FB_ACCEL_NEOMAGIC_NM2160 94	/* NeoMagic NM2160              */
++#define FB_ACCEL_NEOMAGIC_NM2200 95	/* NeoMagic NM2200              */
++#define FB_ACCEL_NEOMAGIC_NM2230 96	/* NeoMagic NM2230              */
++#define FB_ACCEL_NEOMAGIC_NM2360 97	/* NeoMagic NM2360              */
++#define FB_ACCEL_NEOMAGIC_NM2380 98	/* NeoMagic NM2380              */
++#define FB_ACCEL_PXA3XX		 99	/* PXA3xx			*/
++
++#define FB_ACCEL_SAVAGE4        0x80	/* S3 Savage4                   */
++#define FB_ACCEL_SAVAGE3D       0x81	/* S3 Savage3D                  */
++#define FB_ACCEL_SAVAGE3D_MV    0x82	/* S3 Savage3D-MV               */
++#define FB_ACCEL_SAVAGE2000     0x83	/* S3 Savage2000                */
++#define FB_ACCEL_SAVAGE_MX_MV   0x84	/* S3 Savage/MX-MV              */
++#define FB_ACCEL_SAVAGE_MX      0x85	/* S3 Savage/MX                 */
++#define FB_ACCEL_SAVAGE_IX_MV   0x86	/* S3 Savage/IX-MV              */
++#define FB_ACCEL_SAVAGE_IX      0x87	/* S3 Savage/IX                 */
++#define FB_ACCEL_PROSAVAGE_PM   0x88	/* S3 ProSavage PM133           */
++#define FB_ACCEL_PROSAVAGE_KM   0x89	/* S3 ProSavage KM133           */
++#define FB_ACCEL_S3TWISTER_P    0x8a	/* S3 Twister                   */
++#define FB_ACCEL_S3TWISTER_K    0x8b	/* S3 TwisterK                  */
++#define FB_ACCEL_SUPERSAVAGE    0x8c    /* S3 Supersavage               */
++#define FB_ACCEL_PROSAVAGE_DDR  0x8d	/* S3 ProSavage DDR             */
++#define FB_ACCEL_PROSAVAGE_DDRK 0x8e	/* S3 ProSavage DDR-K           */
++
++#define FB_ACCEL_PUV3_UNIGFX	0xa0	/* PKUnity-v3 Unigfx		*/
++
++#define FB_CAP_FOURCC		1	/* Device supports FOURCC-based formats */
++
++struct fb_fix_screeninfo {
++	char id[16];			/* identification string eg "TT Builtin" */
++	unsigned long smem_start;	/* Start of frame buffer mem */
++					/* (physical address) */
++	uint32_t smem_len;			/* Length of frame buffer mem */
++	uint32_t type;			/* see FB_TYPE_*		*/
++	uint32_t type_aux;			/* Interleave for interleaved Planes */
++	uint32_t visual;			/* see FB_VISUAL_*		*/ 
++	uint16_t xpanstep;			/* zero if no hardware panning  */
++	uint16_t ypanstep;			/* zero if no hardware panning  */
++	uint16_t ywrapstep;		/* zero if no hardware ywrap    */
++	uint32_t line_length;		/* length of a line in bytes    */
++	unsigned long mmio_start;	/* Start of Memory Mapped I/O   */
++					/* (physical address) */
++	uint32_t mmio_len;			/* Length of Memory Mapped I/O  */
++	uint32_t accel;			/* Indicate to driver which	*/
++					/*  specific chip/card we have	*/
++	uint16_t capabilities;		/* see FB_CAP_*			*/
++	uint16_t reserved[2];		/* Reserved for future compatibility */
++};
++
++/* Interpretation of offset for color fields: All offsets are from the right,
++ * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (means: you
++ * can use the offset as right argument to <<). A pixel afterwards is a bit
++ * stream and is written to video memory as that unmodified.
++ *
++ * For pseudocolor: offset and length should be the same for all color
++ * components. Offset specifies the position of the least significant bit
++ * of the palette index in a pixel value. Length indicates the number
++ * of available palette entries (i.e. # of entries = 1 << length).
++ */
++struct fb_bitfield {
++	uint32_t offset;			/* beginning of bitfield	*/
++	uint32_t length;			/* length of bitfield		*/
++	uint32_t msb_right;		/* != 0 : Most significant bit is */ 
++					/* right */ 
++};
++
++#define FB_NONSTD_HAM		1	/* Hold-And-Modify (HAM)        */
++#define FB_NONSTD_REV_PIX_IN_B	2	/* order of pixels in each byte is reversed */
++
++#define FB_ACTIVATE_NOW		0	/* set values immediately (or vbl)*/
++#define FB_ACTIVATE_NXTOPEN	1	/* activate on next open	*/
++#define FB_ACTIVATE_TEST	2	/* don't set, round up impossible */
++#define FB_ACTIVATE_MASK       15
++					/* values			*/
++#define FB_ACTIVATE_VBL	       16	/* activate values on next vbl  */
++#define FB_CHANGE_CMAP_VBL     32	/* change colormap on vbl	*/
++#define FB_ACTIVATE_ALL	       64	/* change all VCs on this fb	*/
++#define FB_ACTIVATE_FORCE     128	/* force apply even when no change*/
++#define FB_ACTIVATE_INV_MODE  256       /* invalidate videomode */
++#define FB_ACTIVATE_KD_TEXT   512       /* for KDSET vt ioctl */
++
++#define FB_ACCELF_TEXT		1	/* (OBSOLETE) see fb_info.flags and vc_mode */
++
++#define FB_SYNC_HOR_HIGH_ACT	1	/* horizontal sync high active	*/
++#define FB_SYNC_VERT_HIGH_ACT	2	/* vertical sync high active	*/
++#define FB_SYNC_EXT		4	/* external sync		*/
++#define FB_SYNC_COMP_HIGH_ACT	8	/* composite sync high active   */
++#define FB_SYNC_BROADCAST	16	/* broadcast video timings      */
++					/* vtotal = 144d/288n/576i => PAL  */
++					/* vtotal = 121d/242n/484i => NTSC */
++#define FB_SYNC_ON_GREEN	32	/* sync on green */
++
++#define FB_VMODE_NONINTERLACED  0	/* non interlaced */
++#define FB_VMODE_INTERLACED	1	/* interlaced	*/
++#define FB_VMODE_DOUBLE		2	/* double scan */
++#define FB_VMODE_ODD_FLD_FIRST	4	/* interlaced: top line first */
++#define FB_VMODE_MASK		255
++
++#define FB_VMODE_YWRAP		256	/* ywrap instead of panning     */
++#define FB_VMODE_SMOOTH_XPAN	512	/* smooth xpan possible (internally used) */
++#define FB_VMODE_CONUPDATE	512	/* don't update x/yoffset	*/
++
++/*
++ * Display rotation support
++ */
++#define FB_ROTATE_UR      0
++#define FB_ROTATE_CW      1
++#define FB_ROTATE_UD      2
++#define FB_ROTATE_CCW     3
++
++#define PICOS2KHZ(a) (1000000000UL/(a))
++#define KHZ2PICOS(a) (1000000000UL/(a))
++
++struct fb_var_screeninfo {
++	uint32_t xres;			/* visible resolution		*/
++	uint32_t yres;
++	uint32_t xres_virtual;		/* virtual resolution		*/
++	uint32_t yres_virtual;
++	uint32_t xoffset;			/* offset from virtual to visible */
++	uint32_t yoffset;			/* resolution			*/
++
++	uint32_t bits_per_pixel;		/* guess what			*/
++	uint32_t grayscale;		/* 0 = color, 1 = grayscale,	*/
++					/* >1 = FOURCC			*/
++	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
++	struct fb_bitfield green;	/* else only length is significant */
++	struct fb_bitfield blue;
++	struct fb_bitfield transp;	/* transparency			*/	
++
++	uint32_t nonstd;			/* != 0 Non standard pixel format */
++
++	uint32_t activate;			/* see FB_ACTIVATE_*		*/
++
++	uint32_t height;			/* height of picture in mm    */
++	uint32_t width;			/* width of picture in mm     */
++
++	uint32_t accel_flags;		/* (OBSOLETE) see fb_info.flags */
++
++	/* Timing: All values in pixclocks, except pixclock (of course) */
++	uint32_t pixclock;			/* pixel clock in ps (pico seconds) */
++	uint32_t left_margin;		/* time from sync to picture	*/
++	uint32_t right_margin;		/* time from picture to sync	*/
++	uint32_t upper_margin;		/* time from sync to picture	*/
++	uint32_t lower_margin;
++	uint32_t hsync_len;		/* length of horizontal sync	*/
++	uint32_t vsync_len;		/* length of vertical sync	*/
++	uint32_t sync;			/* see FB_SYNC_*		*/
++	uint32_t vmode;			/* see FB_VMODE_*		*/
++	uint32_t rotate;			/* angle we rotate counter clockwise */
++	uint32_t colorspace;		/* colorspace for FOURCC-based modes */
++	uint32_t reserved[4];		/* Reserved for future compatibility */
++};
++
++struct fb_cmap {
++	uint32_t start;			/* First entry	*/
++	uint32_t len;			/* Number of entries */
++	uint16_t *red;			/* Red values	*/
++	uint16_t *green;
++	uint16_t *blue;
++	uint16_t *transp;			/* transparency, can be NULL */
++};
++
++struct fb_con2fbmap {
++	uint32_t console;
++	uint32_t framebuffer;
++};
++
++/* VESA Blanking Levels */
++#define VESA_NO_BLANKING        0
++#define VESA_VSYNC_SUSPEND      1
++#define VESA_HSYNC_SUSPEND      2
++#define VESA_POWERDOWN          3
++
++
++enum {
++	/* screen: unblanked, hsync: on,  vsync: on */
++	FB_BLANK_UNBLANK       = VESA_NO_BLANKING,
++
++	/* screen: blanked,   hsync: on,  vsync: on */
++	FB_BLANK_NORMAL        = VESA_NO_BLANKING + 1,
++
++	/* screen: blanked,   hsync: on,  vsync: off */
++	FB_BLANK_VSYNC_SUSPEND = VESA_VSYNC_SUSPEND + 1,
++
++	/* screen: blanked,   hsync: off, vsync: on */
++	FB_BLANK_HSYNC_SUSPEND = VESA_HSYNC_SUSPEND + 1,
++
++	/* screen: blanked,   hsync: off, vsync: off */
++	FB_BLANK_POWERDOWN     = VESA_POWERDOWN + 1
++};
++
++#define FB_VBLANK_VBLANKING	0x001	/* currently in a vertical blank */
++#define FB_VBLANK_HBLANKING	0x002	/* currently in a horizontal blank */
++#define FB_VBLANK_HAVE_VBLANK	0x004	/* vertical blanks can be detected */
++#define FB_VBLANK_HAVE_HBLANK	0x008	/* horizontal blanks can be detected */
++#define FB_VBLANK_HAVE_COUNT	0x010	/* global retrace counter is available */
++#define FB_VBLANK_HAVE_VCOUNT	0x020	/* the vcount field is valid */
++#define FB_VBLANK_HAVE_HCOUNT	0x040	/* the hcount field is valid */
++#define FB_VBLANK_VSYNCING	0x080	/* currently in a vsync */
++#define FB_VBLANK_HAVE_VSYNC	0x100	/* verical syncs can be detected */
++
++struct fb_vblank {
++	uint32_t flags;			/* FB_VBLANK flags */
++	uint32_t count;			/* counter of retraces since boot */
++	uint32_t vcount;			/* current scanline position */
++	uint32_t hcount;			/* current scandot position */
++	uint32_t reserved[4];		/* reserved for future compatibility */
++};
++
++/* Internal HW accel */
++#define ROP_COPY 0
++#define ROP_XOR  1
++
++struct fb_copyarea {
++	uint32_t dx;
++	uint32_t dy;
++	uint32_t width;
++	uint32_t height;
++	uint32_t sx;
++	uint32_t sy;
++};
++
++struct fb_fillrect {
++	uint32_t dx;	/* screen-relative */
++	uint32_t dy;
++	uint32_t width;
++	uint32_t height;
++	uint32_t color;
++	uint32_t rop;
++};
++
++struct fb_image {
++	uint32_t dx;		/* Where to place image */
++	uint32_t dy;
++	uint32_t width;		/* Size of image */
++	uint32_t height;
++	uint32_t fg_color;		/* Only used when a mono bitmap */
++	uint32_t bg_color;
++	uint8_t  depth;		/* Depth of the image */
++	const char *data;	/* Pointer to image data */
++	struct fb_cmap cmap;	/* color map info */
++};
++
++/*
++ * hardware cursor control
++ */
++
++#define FB_CUR_SETIMAGE 0x01
++#define FB_CUR_SETPOS   0x02
++#define FB_CUR_SETHOT   0x04
++#define FB_CUR_SETCMAP  0x08
++#define FB_CUR_SETSHAPE 0x10
++#define FB_CUR_SETSIZE	0x20
++#define FB_CUR_SETALL   0xFF
++
++struct fbcurpos {
++	uint16_t x, y;
++};
++
++struct fb_cursor {
++	uint16_t set;		/* what to set */
++	uint16_t enable;		/* cursor on/off */
++	uint16_t rop;		/* bitop operation */
++	const char *mask;	/* cursor mask bits */
++	struct fbcurpos hot;	/* cursor hot spot */
++	struct fb_image	image;	/* Cursor image */
++};
++
++/* Settings for the generic backlight code */
++#define FB_BACKLIGHT_LEVELS	128
++#define FB_BACKLIGHT_MAX	0xFF
++
++
++#endif /* _SYS_FB_H */
+diff --git mlibc-workdir/sysdeps/ironclad/include/mntent.h mlibc-workdir/sysdeps/ironclad/include/mntent.h
+new file mode 100644
+index 0000000..e5e49e7
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/mntent.h
+@@ -0,0 +1,46 @@
++#ifndef _MNTENT_H
++#define _MNTENT_H
++
++#include <stdio.h>
++
++// TODO: Refer to _PATH_MOUNTED
++#define MOUNTED "/etc/mtab"
++
++/* Generic mount options */
++#define MNTOPT_DEFAULTS "defaults"		/* Use all default options. */
++#define MNTOPT_RO       "ro"			/* Read only. */
++#define MNTOPT_RW       "rw"			/* Read/write. */
++#define MNTOPT_SUID     "suid"			/* Set uid allowed. */
++#define MNTOPT_NOSUID   "nosuid"		/* No set uid allowed. */
++#define MNTOPT_NOAUTO   "noauto"		/* Do not auto mount. */
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++struct mntent {
++	char *mnt_fsname;
++	char *mnt_dir;
++	char *mnt_type;
++	char *mnt_opts;
++	int mnt_freq;
++	int mnt_passno;
++};
++
++FILE *setmntent(const char *, const char *);
++
++struct mntent *getmntent(FILE *);
++
++int addmntent(FILE *, const struct mntent *);
++
++int endmntent(FILE *);
++
++char *hasmntopt(const struct mntent *, const char *);
++
++struct mntent *getmntent_r(FILE *, struct mntent *,  char *, int);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _MNTENT_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/pty.h mlibc-workdir/sysdeps/ironclad/include/pty.h
+new file mode 100644
+index 0000000..0468b46
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/pty.h
+@@ -0,0 +1,16 @@
++#ifndef _PTY_H
++#define _PTY_H
++
++#include <termios.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _PTY_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h mlibc-clean/sysdeps/ironclad/include/sys/ironclad.h
 deleted file mode 100644
 index 89a3851..0000000
@@ -1076,16 +1962,17 @@ index 89a3851..0000000
 -#endif // _IRONCLAD_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h
 new file mode 100644
-index 0000000..e4ea96e
+index 0000000..74f47f8
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_devices.h
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,44 @@
 +#ifndef _SYS_IRONCLAD_DEVICES_H
 +#define _SYS_IRONCLAD_DEVICES_H
 +
 +#include <stdint.h>
 +#include <stdbool.h>
 +#include <sys/types.h>
++#include <asm/ioctls.h>
 +
 +#ifdef __cplusplus
 +extern "C" {
@@ -1203,10 +2090,65 @@ index 0000000..2796dcd
 +#endif
 +
 +#endif // _SYS_IRONCLAD_SCHED_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
+new file mode 100644
+index 0000000..71ae64d
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
+@@ -0,0 +1,19 @@
++#ifndef _SYS_MOUNT_H
++#define _SYS_MOUNT_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define MNT_FORCE 1
++
++int mount(const char *source, const char *target,
++		const char *fstype, unsigned long flags, const void *data);
++int umount(const char *target);
++int umount2(const char *target, int flags);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_MOUNT_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/reboot.h mlibc-workdir/sysdeps/ironclad/include/sys/reboot.h
+new file mode 100644
+index 0000000..c2dbbf2
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/reboot.h
+@@ -0,0 +1,16 @@
++#ifndef _SYS_REBOOT_H
++#define _SYS_REBOOT_H
++
++#include <abi-bits/reboot.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++int reboot(int arg);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_REBOOT_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..4f6cf2b 100644
+index 28d233e..7297e62 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -1,5 +1,5 @@
+-#ifndef _SYSCALL_H
+-#define _SYSCALL_H
++#ifndef _SYS_SYSCALL_H
++#define _SYS_SYSCALL_H
+ 
+ #include <stddef.h>
+ 
 @@ -38,9 +38,18 @@
  				  : "memory"); \
  })
@@ -1228,7 +2170,7 @@ index 28d233e..4f6cf2b 100644
  	asm volatile ("int $0x80" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,67 @@
+@@ -48,33 +57,73 @@
  				  : "memory"); \
  })
  
@@ -1287,7 +2229,7 @@ index 28d233e..4f6cf2b 100644
 +#define SYSCALL_WAIT                 13
 +#define SYSCALL_UNAME                14
 +#define SYSCALL_SETHOSTNAME          15
-+#define SYSCALL_DELETE               16
++#define SYSCALL_UNLINK               16
 +#define SYSCALL_LSTAT                17
 +#define SYSCALL_GETCWD               18
 +#define SYSCALL_CHDIR                19
@@ -1296,7 +2238,7 @@ index 28d233e..4f6cf2b 100644
 +#define SYSCALL_SET_DEADLINES        22
 +#define SYSCALL_PIPE                 23
 +#define SYSCALL_DUP                  24
-+#define SYSCALL_DUP2                 25
++#define SYSCALL_RENAME               25
 +#define SYSCALL_SYSCONF              26
 +#define SYSCALL_GET_THREAD_SCHED     28
 +#define SYSCALL_SET_THREAD_SCHED     29
@@ -1313,33 +2255,44 @@ index 28d233e..4f6cf2b 100644
 +#define SYSCALL_UMOUNT               40
 +#define SYSCALL_READLINK             41
 +#define SYSCALL_GETDENTS             42
-+#define SYSCALL_CREATE               43
++#define SYSCALL_MAKENODE             43
 +#define SYSCALL_TRUNCATE             44
-+#define SYSCALL_CREATE_DIRECTORY     45
-+#define SYSCALL_CREATE_SYMLINK       46
++#define SYSCALL_SYMLINK              46
 +#define SYSCALL_INTEGRITY_SETUP      47
 +#define SYSCALL_OPENPTY              48
 +#define SYSCALL_FSYNC                49
 +#define SYSCALL_LINK                 50
 +#define SYSCALL_PTRACE               51
++#define SYSCALL_SOCKET               52
++#define SYSCALL_BIND                 53
++#define SYSCALL_CONNECT              54
++#define SYSCALL_LISTEN               55
++#define SYSCALL_ACCEPT               56
++#define SYSCALL_RECVMSG              57
++#define SYSCALL_SENDMSG              58
  
- #endif // _SYSCALL_H
+-#endif // _SYSCALL_H
++#endif // _SYS_SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 09c724d..9e0f80c 100644
+index 898e0de..f3eb3a6 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
-@@ -5,7 +5,9 @@ rtdl_sources += files(
+@@ -5,7 +5,13 @@ rtdl_sources += files(
  
  libc_sources += files(
  	'generic/entry.cpp',
 -	'generic/generic.cpp'
 +	'generic/generic.cpp',
++   'generic/mntent.cpp',
++   'generic/mount.cpp',
++   'generic/reboot.cpp',
++   'generic/pty.cpp',
 +	'generic/thread.cpp',
 +	'generic/thread.S'
  )
  
  if not no_headers
-@@ -54,7 +56,9 @@ if not no_headers
+@@ -55,9 +61,28 @@ if not no_headers
  		subdir: 'abi-bits'
  	)
  	install_headers(
@@ -1348,9 +2301,29 @@ index 09c724d..9e0f80c 100644
 +      'include/sys/ironclad_devices.h',
 +      'include/sys/ironclad_mac.h',
  		'include/sys/syscall.h',
- 		subdir: 'sys'
+-		subdir: 'sys'
++      'include/sys/reboot.h',
++      'include/sys/mount.h',
++      subdir: 'sys'
++	)
++
++	install_headers(
++      'include/asm/ioctls.h',
++		subdir: 'asm'
++	)
++
++	install_headers(
++      'include/linux/fb.h',
++		subdir: 'linux'
++	)
++
++	install_headers(
++      'include/mntent.h',
++      'include/pty.h'
  	)
-@@ -69,5 +73,23 @@ if not headers_only
+ endif
+ 
+@@ -70,5 +95,23 @@ if not headers_only
  		install: true,
  		install_dir: get_option('libdir')
  	)

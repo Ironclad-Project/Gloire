@@ -1,13 +1,10 @@
 diff --git mesa-clean/include/drm-uapi/drm.h mesa-workdir/include/drm-uapi/drm.h
-index 5e54c3a..3fd8f34 100644
+index 5e54c3a..06c2024 100644
 --- mesa-clean/include/drm-uapi/drm.h
 +++ mesa-workdir/include/drm-uapi/drm.h
-@@ -35,10 +35,11 @@
- #ifndef _DRM_H_
- #define _DRM_H_
+@@ -37,10 +37,24 @@
  
--#if   defined(__linux__)
-+#if   defined(__linux__) || defined(__ironclad__)
+ #if   defined(__linux__)
  
 +#include <sys/ioctl.h>
  #include <linux/types.h>
@@ -15,9 +12,24 @@ index 5e54c3a..3fd8f34 100644
 +//#include <asm/ioctl.h>
  typedef unsigned int drm_handle_t;
  
++#elif defined(__ironclad__)
++#include <sys/ioctl.h>
++typedef int8_t   __s8;
++typedef uint8_t  __u8;
++typedef int16_t  __s16;
++typedef uint16_t __u16;
++typedef int32_t  __s32;
++typedef uint32_t __u32;
++typedef int64_t  __s64;
++typedef uint64_t __u64;
++typedef size_t   __kernel_size_t;
++typedef unsigned long drm_handle_t;
++
  #else /* One of the BSDs */
+ 
+ #include <stdint.h>
 diff --git mesa-clean/meson.build mesa-workdir/meson.build
-index 07c77e1..ec3aa28 100644
+index 07c77e1..5dd5be7 100644
 --- mesa-clean/meson.build
 +++ mesa-workdir/meson.build
 @@ -27,7 +27,7 @@ project(
@@ -87,7 +99,7 @@ index 89ae613..fbf45f4 100644
  #include "u_string.h"
  
 diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
-index 6506948..a631d69 100644
+index 6506948..f83124e 100644
 --- mesa-clean/src/util/detect_os.h
 +++ mesa-workdir/src/util/detect_os.h
 @@ -81,6 +81,11 @@
@@ -112,53 +124,109 @@ index 6506948..a631d69 100644
  
  #endif /* DETECT_OS_H */
 diff --git mesa-clean/src/util/futex.h mesa-workdir/src/util/futex.h
-index 43097f4..dfcbaa1 100644
+index 43097f4..54d0485 100644
 --- mesa-clean/src/util/futex.h
 +++ mesa-workdir/src/util/futex.h
-@@ -31,25 +31,27 @@
- #include <stdint.h>
- #include <unistd.h>
- #include <linux/futex.h>
--#include <sys/syscall.h>
-+#include <ironclad/syscall.h>
- #include <sys/time.h>
+@@ -24,97 +24,6 @@
+ #ifndef UTIL_FUTEX_H
+ #define UTIL_FUTEX_H
  
+-#if defined(HAVE_LINUX_FUTEX_H)
+-#define UTIL_FUTEX_SUPPORTED 1
+-
+-#include <limits.h>
+-#include <stdint.h>
+-#include <unistd.h>
+-#include <linux/futex.h>
+-#include <sys/syscall.h>
+-#include <sys/time.h>
+-
 -static inline long sys_futex(void *addr1, int op, int val1, const struct timespec *timeout, void *addr2, int val3)
 -{
 -   return syscall(SYS_futex, addr1, op, val1, timeout, addr2, val3);
 -}
-+static inline int futex_wait(uint32_t *pointer, int32_t expected, const struct timespec *timeout) {
-+    struct __syscall_ret ret = __syscall(SYS_futex_wait, pointer, expected, timeout);
- 
+-
 -static inline int futex_wake(uint32_t *addr, int count)
 -{
 -   return sys_futex(addr, FUTEX_WAKE, count, NULL, NULL, 0);
-+    if ((int)ret.ret == -1)
-+        return ret.errno;
-+
-+    return 0;
- }
- 
+-}
+-
 -static inline int futex_wait(uint32_t *addr, int32_t value, const struct timespec *timeout)
 -{
 -   /* FUTEX_WAIT_BITSET with FUTEX_BITSET_MATCH_ANY is equivalent to
 -    * FUTEX_WAIT, except that it treats the timeout as absolute. */
 -   return sys_futex(addr, FUTEX_WAIT_BITSET, value, timeout, NULL,
 -                    FUTEX_BITSET_MATCH_ANY);
-+static inline int futex_wake(uint32_t *pointer, int count) {
-+    struct __syscall_ret ret = __syscall(SYS_futex_wake, pointer);
-+
-+    if ((int)ret.ret == -1)
-+        return ret.errno;
-+
-+    int num_woken = ret.ret;
-+
-+    return num_woken;
- }
+-}
+-
+-#elif defined(__FreeBSD__)
+-#define UTIL_FUTEX_SUPPORTED 1
+-
+-#include <assert.h>
+-#include <errno.h>
+-#include <fcntl.h>
+-#include <sys/types.h>
+-#include <sys/umtx.h>
+-#include <sys/time.h>
+-
+-static inline int futex_wake(uint32_t *addr, int count)
+-{
+-   assert(count == (int)(uint32_t)count); /* Check that bits weren't discarded */
+-   return _umtx_op(addr, UMTX_OP_WAKE, (uint32_t)count, NULL, NULL) == -1 ? errno : 0;
+-}
+-
+-static inline int futex_wait(uint32_t *addr, int32_t value, struct timespec *timeout)
+-{
+-   void *uaddr = NULL, *uaddr2 = NULL;
+-   struct _umtx_time tmo = {
+-      ._flags = UMTX_ABSTIME,
+-      ._clockid = CLOCK_MONOTONIC
+-   };
+-
+-   assert(value == (int)(uint32_t)value); /* Check that bits weren't discarded */
+-
+-   if (timeout != NULL) {
+-      tmo._timeout = *timeout;
+-      uaddr = (void *)(uintptr_t)sizeof(tmo);
+-      uaddr2 = (void *)&tmo;
+-   }
+-
+-   return _umtx_op(addr, UMTX_OP_WAIT_UINT, (uint32_t)value, uaddr, uaddr2) == -1 ? errno : 0;
+-}
+-
+-#elif defined(__OpenBSD__)
+-#define UTIL_FUTEX_SUPPORTED 1
+-
+-#include <sys/time.h>
+-#include <sys/futex.h>
+-
+-static inline int futex_wake(uint32_t *addr, int count)
+-{
+-   return futex(addr, FUTEX_WAKE, count, NULL, NULL);
+-}
+-
+-static inline int futex_wait(uint32_t *addr, int32_t value, const struct timespec *timeout)
+-{
+-   struct timespec tsnow, tsrel;
+-
+-   if (timeout == NULL)
+-      return futex(addr, FUTEX_WAIT, value, NULL, NULL);
+-
+-   clock_gettime(CLOCK_MONOTONIC, &tsnow);
+-   if (timespeccmp(&tsnow, timeout, <))
+-      timespecsub(timeout, &tsnow, &tsrel);
+-   else
+-      timespecclear(&tsrel);
+-   return futex(addr, FUTEX_WAIT, value, &tsrel, NULL);
+-}
+-
+-#else
+ #define UTIL_FUTEX_SUPPORTED 0
+-#endif
  
- #elif defined(__FreeBSD__)
+ #endif /* UTIL_FUTEX_H */
 diff --git mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
-index 31f1c55..0095e53 100644
+index 31f1c55..3748bcb 100644
 --- mesa-clean/src/util/os_misc.c
 +++ mesa-workdir/src/util/os_misc.c
 @@ -57,7 +57,7 @@
@@ -180,7 +248,7 @@ index 31f1c55..0095e53 100644
     const long page_size = sysconf(_SC_PAGE_SIZE);
  
 diff --git mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
-index d2edd88..d7c3dfb 100644
+index d2edd88..9a3ca8f 100644
 --- mesa-clean/src/util/os_time.c
 +++ mesa-workdir/src/util/os_time.c
 @@ -53,7 +53,7 @@
@@ -215,7 +283,7 @@ index 44dcce5..e9e23ba 100644
  
  #include <string>
 diff --git mesa-clean/src/util/u_thread.h mesa-workdir/src/util/u_thread.h
-index 013e8be..a3a6031 100644
+index 013e8be..0ffbae1 100644
 --- mesa-clean/src/util/u_thread.h
 +++ mesa-workdir/src/util/u_thread.h
 @@ -129,7 +129,7 @@ static inline thrd_t u_thread_create(int (*routine)(void *), void *param)

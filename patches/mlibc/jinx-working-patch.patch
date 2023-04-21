@@ -321,7 +321,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..02eb53f 100644
+index d6dbca3..7b0496d 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,25 @@
@@ -507,18 +507,18 @@ index d6dbca3..02eb53f 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -698,7 +698,7 @@ index d6dbca3..02eb53f 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +433,229 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +433,258 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -775,19 +775,19 @@ index d6dbca3..02eb53f 100644
 +	size_t path_len = strlen (path);
 +	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
 +	return errno;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++}
++
 +int sys_link(const char* srcpath, const char* destpath) {
- 	int ret, errno;
++	int ret, errno;
 +	size_t src_len = strlen (srcpath);
 +   size_t dst_len = strlen (destpath);
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
-+}
-+
+ }
+ 
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_socket(int domain, int type, int protocol, int *fd) {
-+	int ret, errno;
+ 	int ret, errno;
 +	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
 +	if (ret != -1) {
 +      *fd = ret;
@@ -798,15 +798,15 @@ index d6dbca3..02eb53f 100644
 +}
 +
 +#ifndef MLIBC_BUILDING_RTDL
- 
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
++
 +extern "C" void __mlibc_thread_entry();
  
--	if (ret == -1 && errno != 0) {
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
-+
+ 
+-	if (ret == -1 && errno != 0) {
 +    if (ret == -1) {
          return errno;
 -	} else {
@@ -880,19 +880,25 @@ index d6dbca3..02eb53f 100644
 +		default:
 +			return -1;
 +	}
++}
++
++int sys_bind(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_BIND, fd, addr_ptr, addrlen);
++	return errno;
  }
  
 -int sys_setpriority(int which, id_t who, int prio) {
-+int sys_bind(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
++int sys_connect(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
  	int ret, errno;
-+	SYSCALL3(SYSCALL_BIND, fd, addr_ptr, addrlen);
++	SYSCALL3(SYSCALL_CONNECT, fd, addr_ptr, addrlen);
 +	return errno;
 +}
  
 -	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
-+int sys_connect(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
++int sys_listen(int fd, int backlog) {
 +	int ret, errno;
-+	SYSCALL3(SYSCALL_CONNECT, fd, addr_ptr, addrlen);
++	SYSCALL2(SYSCALL_LISTEN, fd, backlog);
 +	return errno;
 +}
  
@@ -900,12 +906,6 @@ index d6dbca3..02eb53f 100644
 -        return errno;
 -	} else {
 -        return 0;
-+int sys_listen(int fd, int backlog) {
-+	int ret, errno;
-+	SYSCALL2(SYSCALL_LISTEN, fd, backlog);
-+	return errno;
-+}
-+
 +int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length) {
 +	int ret, errno;
 +	SYSCALL4(SYSCALL_ACCEPT, fd, addr_ptr, addr_length, 0);
@@ -924,14 +924,23 @@ index d6dbca3..02eb53f 100644
 -	__ensure(!"sys_futex is a stub!");
 -	__builtin_unreachable();
 +int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-+   int ret, errno;
-+	SYSCALL3(SYSCALL_RECVMSG, fd, hdr, flags);
-+	if (ret != -1) {
-+      *length = (ssize_t)ret;
-+		return 0;
-+	} else {
-+      return errno;
++   if (flags != 0 || hdr->msg_control != NULL || hdr->msg_name != NULL) {
++      mlibc::infoLogger() << "mlibc: recv() was invalid!" << frg::endlog;
++      return EINVAL;
 +   }
++
++   size_t ret, count = 0;
++   int errno;
++   for (size_t i = 0; i < hdr->msg_iovlen; i++) {
++      SYSCALL3(SYSCALL_READ, fd, hdr->msg_iov->iov_base, hdr->msg_iov->iov_len);
++      if (ret == -1) {
++         return errno;
++      }
++      count += ret;
++   }
++
++   *length = count;
++   return 0;
  }
  
 -int sys_futex_wake(int *pointer) {
@@ -939,17 +948,37 @@ index d6dbca3..02eb53f 100644
 -	__ensure(!"sys_futex is a stub!");
 -	__builtin_unreachable();
 +int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
-+   int ret, errno;
-+	SYSCALL3(SYSCALL_SENDMSG, fd, hdr, flags);
-+	if (ret != -1) {
-+      *length = (ssize_t)ret;
-+		return 0;
-+	} else {
-+      return errno;
++   if (flags != 0 || hdr->msg_control != NULL || hdr->msg_name != NULL) {
++      mlibc::infoLogger() << "mlibc: recv() was invalid!" << frg::endlog;
++      return EINVAL;
 +   }
++
++   size_t ret, count = 0;
++   int errno;
++   for (size_t i = 0; i < hdr->msg_iovlen; i++) {
++      SYSCALL3(SYSCALL_WRITE, fd, hdr->msg_iov->iov_base, hdr->msg_iov->iov_len);
++      if (ret == -1) {
++         return errno;
++      }
++      count += ret;
++   }
++
++   *length = count;
++   return 0;
  }
  
 -#ifndef MLIBC_BUILDING_RTDL
++int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_POLL, fds, count, timeout);
++   if (ret == -1) {
++      return errno;
++   }
++
++   *num_events = ret;
++	return errno;
++}
++
 +int sys_sleep(time_t *secs, long *nanos) {
 +	*secs  = 0;
 +	*nanos = 0;
@@ -958,7 +987,7 @@ index d6dbca3..02eb53f 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +668,25 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +697,29 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -970,14 +999,16 @@ index d6dbca3..02eb53f 100644
  		case fsfd_target::fd: {
 -			// mlibc wants us to do a fstat.
 -			SYSCALL2(SYSCALL_FSTAT, fd, statbuf);
-+			SYSCALL2(SYSCALL_LSTAT, fd, statbuf);
++			SYSCALL2(SYSCALL_STAT, fd, statbuf);
  			return errno;
  		}
  		case fsfd_target::path: {
 -			// mlibc wants us to do a lstat.
 -			SYSCALL2(SYSCALL_LSTAT, path, statbuf);
-+         sys_open(path, O_RDONLY | O_NOFOLLOW, 0777, &fd2);
-+			SYSCALL2(SYSCALL_LSTAT, fd2, statbuf);
++         if (sys_open(path, O_RDONLY | O_NOFOLLOW, 0777, &fd2)) {
++            return ENOENT;
++         }
++			SYSCALL2(SYSCALL_STAT, fd2, statbuf);
 +         sys_close(fd2);
  			return errno;
  		}
@@ -985,14 +1016,16 @@ index d6dbca3..02eb53f 100644
 -			// mlibc wants us to do an fstatat
 -			__ensure(!"stat: Invalid fstatat");
 -			__builtin_unreachable();
-+         sys_openat(fd, path, O_RDONLY, 0777, &fd2);
-+			SYSCALL2(SYSCALL_LSTAT, fd2, statbuf);
++         if (sys_openat(fd, path, O_RDONLY, 0777, &fd2)) {
++            return ENOENT;
++         }
++			SYSCALL2(SYSCALL_STAT, fd2, statbuf);
 +         sys_close(fd2);
 +			return errno;
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +697,133 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +730,133 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -2138,7 +2171,7 @@ index 0000000..c2dbbf2
 +
 +#endif // _SYS_REBOOT_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..7297e62 100644
+index 28d233e..8f76ec4 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,5 +1,5 @@
@@ -2170,7 +2203,7 @@ index 28d233e..7297e62 100644
  	asm volatile ("int $0x80" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,73 @@
+@@ -48,33 +57,72 @@
  				  : "memory"); \
  })
  
@@ -2230,7 +2263,7 @@ index 28d233e..7297e62 100644
 +#define SYSCALL_UNAME                14
 +#define SYSCALL_SETHOSTNAME          15
 +#define SYSCALL_UNLINK               16
-+#define SYSCALL_LSTAT                17
++#define SYSCALL_STAT                 17
 +#define SYSCALL_GETCWD               18
 +#define SYSCALL_CHDIR                19
 +#define SYSCALL_IOCTL                20
@@ -2268,8 +2301,7 @@ index 28d233e..7297e62 100644
 +#define SYSCALL_CONNECT              54
 +#define SYSCALL_LISTEN               55
 +#define SYSCALL_ACCEPT               56
-+#define SYSCALL_RECVMSG              57
-+#define SYSCALL_SENDMSG              58
++#define SYSCALL_POLL                 57
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H

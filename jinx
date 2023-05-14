@@ -25,7 +25,13 @@
 
 set -e
 
-jinx_version="0.0.31"
+jinx_version="0.0.40"
+
+IFS=" ""	"'
+'
+
+LC_COLLATE=C
+export LC_COLLATE
 
 parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
 build_dir="$(pwd -P)"
@@ -145,6 +151,33 @@ get_deps_file() {
     done
 }
 
+run_in_container1() {
+    if ! [ -z "$TERM" ]; then
+        run_in_cont1_term="--env TERM=\"$TERM\""
+    fi
+
+    if ! [ -z "$COLORTERM" ]; then
+        run_in_cont1_colorterm="--env COLORTERM=\"$COLORTERM\""
+    fi
+
+    run_in_cont1_root="$1"
+    shift 1
+
+    "$JINX_CACHE_DIR/rbrt" \
+        --root "$run_in_cont1_root" rw \
+        --uid 0 \
+        --gid 0 \
+        --env HOME=/root \
+        --env LANG=en_US.UTF-8 \
+        --env LC_COLLATE=C \
+        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+        ${run_in_cont1_term} \
+        ${run_in_cont1_colorterm} \
+        --mount "${pacman_cache}":/var/cache/pacman/pkg \
+        -- \
+        "$@"
+}
+
 prepare_container() {
     cd "${build_dir}"
 
@@ -188,11 +221,27 @@ prepare_container() {
 
             cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
-            if ! "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/${pkgset}.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S "${pkg}"; then
+            make_temp
+            pacman_log="${tmp}"
+
+            tail -f "${pacman_log}" &
+            tail_pid=$!
+
+            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}" >"${pacman_log}" 2>&1; then
+                kill "${tail_pid}"
+                if grep "target not found" "${pacman_log}" >/dev/null 2>&1; then
+                    rm -f "${pacman_log}"
+                    chmod -R 777 "$JINX_CACHE_DIR/sets/${pkgset}"
+                    rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
+                    die
+                fi
+                rm -f "${pacman_log}"
                 reinit_container
                 fail_check=on
                 break
             fi
+            kill "${tail_pid}"
+            rm -f "${pacman_log}"
 
             # Fix permissions of files
             for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
@@ -212,20 +261,36 @@ run_in_container() {
         unshare_net_flag="-n"
     fi
 
+    if [ ! -z "$TERM" ]; then
+        run_in_cont_term="--env TERM=\"$TERM\""
+    fi
+
+    if ! [ -z "$COLORTERM" ]; then
+        run_in_cont_colorterm="--env COLORTERM=\"$COLORTERM\""
+    fi
+
     "$JINX_CACHE_DIR/rbrt" \
         --root "${imgroot}" \
         --uid $(id -u) \
         --gid $(id -g) \
+        --env HOME=/home/$(whoami) \
+        --env LANG=en_US.UTF-8 \
+        --env LC_COLLATE=C \
+        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+        ${run_in_cont_term} \
+        ${run_in_cont_colorterm} \
         --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+        --env JINX_SOURCE_DIR=/base_dir \
         --mount "${container_pkgs}":/usr/local:ro \
         --mount "${sysroot_dir}":/sysroot:ro \
-        --mount "${script_dir}":/jinx:ro \
+        --mount "${script}":/jinx:ro \
         --mount "${base_dir}":/base_dir${container_base_dir_ro} \
         --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
         --mount "${build_dir}":/build_dir \
         ${unshare_net_flag} \
+        --workdir /build_dir \
         -- \
-        bash -c "cd /build_dir && JINX_SOURCE_DIR=/base_dir /jinx/${script_name} $1 $2 $3 $4 $5"
+        /jinx "$@"
 }
 
 destroy_container() {
@@ -246,20 +311,29 @@ do_fetch() {
     checksum_verified=no
 
     if ! [ -z "${tarball_sha256}" ]; then
-        if ! sha256sum "${tarball_path}" | grep "${tarball_sha256}" >/dev/null 2>&1; then
-            die "* error: Failed to verify SHA256 for ${name}!"
+        actual_sha256="$(sha256sum "${tarball_path}" | awk '{print $1;}')"
+        if ! [ ${actual_sha256} = ${tarball_sha256} ]; then
+            die "* error: Failed to verify SHA256 for ${name}.
+  Expected '${tarball_sha256}';
+  got '${actual_sha256}'."
         fi
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_sha512}" ]; then
-        if ! sha512sum "${tarball_path}" | grep "${tarball_sha512}" >/dev/null 2>&1; then
-            die "* error: Failed to verify SHA512 for ${name}!"
+        actual_sha512="$(sha512sum "${tarball_path}" | awk '{print $1;}')"
+        if ! [ ${actual_sha512} = ${tarball_sha512} ]; then
+            die "* error: Failed to verify SHA512 for ${name}.
+  Expected '${tarball_sha512}';
+  got '${actual_sha512}'."
         fi
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_blake2b}" ]; then
-        if ! b2sum "${tarball_path}" | grep "${tarball_blake2b}" >/dev/null 2>&1; then
-            die "* error: Failed to verify BLAKE2B for ${name}!"
+        actual_blake2b="$(b2sum "${tarball_path}" | awk '{print $1;}')"
+        if ! [ ${actual_blake2b} = ${tarball_blake2b} ]; then
+            die "* error: Failed to verify BLAKE2B for ${name}.
+  Expected '${tarball_blake2b}';
+  got '${actual_blake2b}'."
         fi
         checksum_verified=yes
     fi
@@ -757,8 +831,13 @@ int main(int argc, char *argv[]) {
     int uid_map_fd = -1;
     int gid_map_fd = -1;
 
+    char *workdir = "/";
+
     for (int i = 1; i < argc; ) {
-        if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--root") == 0) {
+        if (strcmp(argv[i], "--workdir") == 0) {
+            workdir = argv[i + 1];
+            i += 2;
+        } else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--root") == 0) {
             if (i == argc - 1) {
                 fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
                 goto cleanup;
@@ -945,23 +1024,7 @@ int main(int argc, char *argv[]) {
             goto errno_error;
         }
 
-        char *dev_overlays[] = { "tty", "null", "zero", "full", "random", "urandom" };
         char target_path[PATH_MAX];
-
-        for (size_t i = 0; i < sizeof(dev_overlays) / sizeof(char *); i++) {
-            char source_path[PATH_MAX];
-
-            snprintf(source_path, PATH_MAX, "/dev/%s", dev_overlays[i]);
-            snprintf(target_path, PATH_MAX, "%s/dev/%s", rootfs, dev_overlays[i]);
-
-            if (mount(source_path, target_path, NULL, MS_BIND, NULL) < 0) {
-                int tmp_errno = errno;
-                fprintf(stderr, "(source: %s, target: %s) ", source_path, target_path);
-                errno = tmp_errno;
-                err_msg = "mount() failure at line " TOSTRING(__LINE__);
-                goto errno_error;
-            }
-        }
 
         snprintf(target_path, PATH_MAX, "%s/etc/resolv.conf", rootfs);
         if (mount("/etc/resolv.conf", target_path, NULL, MS_BIND, NULL) < 0) {
@@ -969,14 +1032,14 @@ int main(int argc, char *argv[]) {
             goto errno_error;
         }
 
-        snprintf(target_path, PATH_MAX, "%s/dev/pts", rootfs);
-        if (mount(NULL, target_path, "devpts", 0, NULL) < 0) {
+        snprintf(target_path, PATH_MAX, "%s/dev", rootfs);
+        if (mount("/dev", target_path, NULL, MS_REC | MS_BIND | MS_SLAVE, NULL) < 0) {
             err_msg = "mount() failure at line " TOSTRING(__LINE__);
             goto errno_error;
         }
 
-        snprintf(target_path, PATH_MAX, "%s/dev/shm", rootfs);
-        if (mount(NULL, target_path, "tmpfs",  0, NULL) < 0) {
+        snprintf(target_path, PATH_MAX, "%s/sys", rootfs);
+        if (mount("/sys", target_path, NULL, MS_REC | MS_BIND | MS_SLAVE, NULL) < 0) {
             err_msg = "mount() failure at line " TOSTRING(__LINE__);
             goto errno_error;
         }
@@ -1021,7 +1084,7 @@ int main(int argc, char *argv[]) {
                 ro = strcmp(read_only, "ro") == 0;
             }
 
-            snprintf(target_path, PATH_MAX, "%s/%s", rootfs, target);
+            snprintf(target_path, PATH_MAX, "%s%s", rootfs, target);
             if (mount(source, target_path, NULL, MS_BIND | (ro ? MS_RDONLY : 0), NULL) < 0) {
                 err_msg = "mount() failure at line " TOSTRING(__LINE__);
                 goto errno_error;
@@ -1044,14 +1107,18 @@ int main(int argc, char *argv[]) {
             goto errno_error;
         }
 
-        if (chdir("/") < 0) {
+        if (chdir(workdir) < 0) {
             err_msg = "chdir() failure at line " TOSTRING(__LINE__);
             goto errno_error;
         }
 
         int child = fork();
         if (child == 0) {
-            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl", 1);
+            clearenv();
+
+            setenv("HOME", "/root", 1);
+            setenv("LANG", "C", 1);
+            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 
             for (int i = 0; i < env_count; i++) {
                 char *key = envs[i];
@@ -1132,31 +1199,27 @@ reinit_container() {
     mkdir -p "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
-    ln -s /proc/self/fd/0 "$JINX_CACHE_DIR/sets/.image/dev/stdin"
-    ln -s /proc/self/fd/1 "$JINX_CACHE_DIR/sets/.image/dev/stdout"
-    ln -s /proc/self/fd/2 "$JINX_CACHE_DIR/sets/.image/dev/stderr"
-    ln -s /proc/self/fd "$JINX_CACHE_DIR/sets/.image/dev/fd"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/full"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/null"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/zero"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/tty"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/random"
-    touch "$JINX_CACHE_DIR/sets/.image/dev/urandom"
-    mkdir "$JINX_CACHE_DIR/sets/.image/dev/pts"
-    mkdir "$JINX_CACHE_DIR/sets/.image/dev/shm"
     echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     mkdir "$JINX_CACHE_DIR/sets/.image/sysroot"
     mkdir "$JINX_CACHE_DIR/sets/.image/base_dir"
     mkdir "$JINX_CACHE_DIR/sets/.image/build_dir"
-    mkdir "$JINX_CACHE_DIR/sets/.image/jinx"
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 -- locale-gen
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --init
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman-key --populate archlinux
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Sy archlinux-keyring
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --noconfirm -Syu
-    "$JINX_CACHE_DIR/rbrt" --root "$JINX_CACHE_DIR/sets/.image" rw --uid 0 --gid 0 --mount "${pacman_cache}":/var/cache/pacman/pkg -- pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl texinfo which
+    touch "$JINX_CACHE_DIR/sets/.image/jinx"
+    chmod +x "$JINX_CACHE_DIR/sets/.image/jinx"
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --init
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --populate archlinux
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Sy archlinux-keyring
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S reflector
+    echo "* updating Arch mirrors..."
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" reflector --latest 6 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl python texinfo which
+
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" groupadd --gid $(id -g) $(whoami)
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" useradd -m --uid $(id -u) --gid $(id -g) $(whoami)
 
     # Fix permissions of files
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
@@ -1185,14 +1248,23 @@ redo_first_use() {
     first_use
 }
 
-if ! [ -d "/jinx" ]; then
-    if ! [ -d "$JINX_CACHE_DIR" ]; then
-        first_use
-    fi
+case "$1" in
+    version|--version)
+        echo "Jinx version $jinx_version"
+        exit 0
+        ;;
+esac
 
-    if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" = "$jinx_version" ]; then
-        redo_first_use
-    fi
+if ! [ -f "$JINX_CONFIG_FILE_PATH" ]; then
+    die "$0: missing Jinx config file in source directory $base_dir"
+fi
+
+if ! [ -d "$JINX_CACHE_DIR" ]; then
+    first_use
+fi
+
+if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" = "$jinx_version" ]; then
+    redo_first_use
 fi
 
 case "$1" in
@@ -1288,6 +1360,10 @@ case "$1" in
         rebuild_rbrt
         ;;
     *)
-        die "unknown command: $1"
+        if [ -z "$1" ]; then
+            die "$0: no command specified."
+        else
+            die "$0: unknown command: $1"
+        fi
         ;;
 esac

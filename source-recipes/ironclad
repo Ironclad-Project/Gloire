@@ -1,10 +1,11 @@
 name=ironclad
-version=1c756731455b3d93d9065414546fe18eef9d518c
+version=963d7246e3d12836ae263d935c6f1f6adfc4cb7a
 tarball_url=https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz
-tarball_blake2b="88a5abd8d19da11371fba5be76a76c7bced7402e635c703bcd506c8666d73b5efa4fe77fe5249055d00f6aaf4a2e88303262026d3aedb2615c328dc7c9e282a8"
+tarball_blake2b="f1c8dde04e108e6489ffa907d424b3406a6b88dcaed188879785cb73da1f9affea1a8ca613c0d6f97dc0ea8f7cbfa387d16317de022e6e759cd200a043c216fa"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 
 regenerate() {
     ./bootstrap
+    libtoolize -cfvi && autoreconf -fvi
 }

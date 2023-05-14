@@ -5,7 +5,7 @@ imagedeps="gcc-ada texinfo"
 hostdeps="gprbuild"
 
 configure() {
-    "${source_dir}"/configure --prefix="${prefix}"
+    "${source_dir}"/configure --prefix="${prefix}" --target=x86_64-multiboot2-elf
 }
 
 build() {

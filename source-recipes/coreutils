@@ -1,7 +1,7 @@
 name=coreutils
-version=9.1
+version=9.3
 tarball_url="https://ftp.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
-tarball_blake2b="f5654e4935535275615d44a56c071d1c0746af36cf4615fcc0a5a0d387af9c9023adac31f31a52e16b3d1105b9d4c0fb7ebff9b2862498849f867a866049dd6e"
+tarball_blake2b="11502cd2dbeef150d0d4cece2546bf6b835941b94456c258f6058338f0477f22e68e88934d075b08fe51ee4d1c0c50cb23d8084ac06a457d6e8975f01643b1cd"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="gcc gperf"
 

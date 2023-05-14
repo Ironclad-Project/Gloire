@@ -7,13 +7,14 @@ imagedeps="gcc"
 
 configure() {
     ${source_dir}/configure           \
-        --host=x86_64-ironclad           \
+        --host=x86_64-ironclad        \
         --prefix=${prefix}            \
-        --target=x86_64-ironclad         \
+        --target=x86_64-ironclad      \
         --with-sysroot=${sysroot_dir} \
         --disable-nls                 \
         --disable-werror              \
         --disable-dependency-tracking \
+        --enable-colored-disassembly  \
         --with-system-zlib            \
         --with-gmp=${sysroot_dir}/usr \
         --enable-shared               \
@@ -21,6 +22,7 @@ configure() {
 }
 
 build() {
+        SFRAME_LIB_PATH="-L$(pwd -P)/libsframe/.libs" \
     make -j${parallelism} all
 }
 

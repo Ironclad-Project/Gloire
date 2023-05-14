@@ -2,7 +2,7 @@ name=grep
 from_source=grep
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs pcre"
+deps="core-libs pcre2"
 imagedeps="gperf"
 
 configure() {

@@ -2,7 +2,7 @@ name=wget2
 from_source=wget2
 revision=1
 hostdeps="gcc pkg-config automake autoconf libtool"
-deps="core-libs openssl pcre"
+deps="core-libs openssl pcre2"
 
 configure() {
     ${source_dir}/configure           \

@@ -1,7 +1,6 @@
 name=mpfr
 from_source=mpfr
 revision=1
-imagedeps="gcc"
 hostdeps="gcc autoconf autoconf-archive automake libtool pkg-config"
 deps="core-libs gmp"
 

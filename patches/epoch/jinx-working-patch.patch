@@ -21,10 +21,710 @@ index 7a6fdfd..96d18ff 100755
  
  printf "\nBuilding object files.\n\n"
 diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
-index 92c56e2..acaea50 100644
+index 92c56e2..1e17409 100644
 --- epoch-clean/src/actions.c
 +++ epoch-workdir/src/actions.c
-@@ -669,11 +669,11 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+@@ -36,14 +36,14 @@ struct _EnvVarList *GlobalEnvVars;
+ static void MountVirtuals(void)
+ {
+ 	enum { MVIRT_PROC, MVIRT_SYSFS, MVIRT_DEVFS, MVIRT_PTS, MVIRT_SHM };
+-	
++
+ 	const char *FSTypes[5] = { "proc", "sysfs", "devtmpfs", "devpts", "tmpfs" };
+ 	const char *MountLocations[5] = { "/proc", "/sys", "/dev", "/dev/pts", "/dev/shm" };
+ 	const char *PTSArg = "gid=5,mode=620";
+ 	Bool HeavyPermissions[5] = { true, true, true, true, false };
+ 	mode_t PermissionSet[2] = { (S_IRWXU | S_IRWXG | S_IRWXO), (S_IRWXU | S_IRGRP | S_IXGRP | S_IXOTH) };
+ 	short Inc = 0;
+-	
++
+ 	for (; Inc < 5; ++Inc)
+ 	{
+ 		if (AutoMountOpts[Inc])
+@@ -53,12 +53,12 @@ static void MountVirtuals(void)
+ 				if (mkdir(MountLocations[Inc], PermissionSet[HeavyPermissions[Inc]] != 0))
+ 				{
+ 					char TmpBuf[1024];
+-					
++
+ 					snprintf(TmpBuf, sizeof TmpBuf, "Failed to create directory for %s!", MountLocations[Inc]);
+ 					SpitWarning(TmpBuf);
+ 				} /*No continue statement because it might already exist*/
+ 			}	/*and we might be able to mount it anyways.*/
+-			
++
+ 			if (mount(FSTypes[Inc], MountLocations[Inc], FSTypes[Inc], 0, (Inc == MVIRT_PTS ? PTSArg : NULL)) != 0)
+ 			{
+ 				char TmpBuf[1024];
+@@ -79,12 +79,12 @@ static void MountVirtuals(void)
+ 			else
+ 			{
+ 				char TmpBuf[1024];
+-				
++
+ 				snprintf(TmpBuf, sizeof TmpBuf, "Mounted virtual filesystem %s", MountLocations[Inc]);
+ 				WriteLogLine(TmpBuf, true);
+ 			}
+ 		}
+-		
++
+ 	}
+ }
+ 
+@@ -95,39 +95,39 @@ static void PrimaryLoop(void)
+ 	struct tm TimeStruct;
+ 	time_t TimeCore;
+ 	short LoopStepper = 0, ScanStepper = 0;
+-	
++
+ 	for (ContinuePrimaryLoop = true; ContinuePrimaryLoop; ++LoopStepper)
+-	{	
+-	
++	{
++
+ 		/**The line below is of critical importance. It harvests
+ 		 * the zombies created by all processes throughout the system.**/
+ 		while (waitpid(-1, NULL, WNOHANG) > 0);
+-		
++
+ 		/*Do not flood the system with this big loop more than necessary.*/
+ 		if (LoopStepper == 5)
+ 		{
+-			
++
+ 			LoopStepper = 0;
+-			
++
+ 			HandleMemBusPings(); /*Tell clients we are alive if they ask.*/
+-			
++
+ 			CheckMemBusIntegrity(); /*See if we need to manually disconnect a dead client.*/
+-			
++
+ 			ParseMemBus(); /*Check membus for new data.*/
+-			
++
+ 			if (HaltParams.HaltMode != -1)
+ 			{
+ 				time(&TimeCore);
+ 				localtime_r(&TimeCore, &TimeStruct);
+-				
++
+ 				CurMin = TimeStruct.tm_min;
+ 				CurSec = TimeStruct.tm_sec;
+-				
++
+ 				/*Allow a membus job to finish before shutdown, but actually do the shutdown afterwards.*/
+ 				if (GetStateOfTime(HaltParams.TargetHour, HaltParams.TargetMin, HaltParams.TargetSec,
+ 						HaltParams.TargetMonth, HaltParams.TargetDay, HaltParams.TargetYear))
+ 				{ /*GetStateOfTime() returns 1 if the passed time is the present, and 2 if it's the past,
+-					so we can just take whatever positive value we are given.*/		
++					so we can just take whatever positive value we are given.*/
+ 					LaunchShutdown(HaltParams.HaltMode);
+ 				}
+ 				else if (CurSec >= HaltParams.TargetSec && CurMin != HaltParams.TargetMin &&
+@@ -137,11 +137,11 @@ static void PrimaryLoop(void)
+ 					const char *HaltMode = NULL;
+ 					static unsigned LastJobID = 0;
+ 					static short LastMin = -1;
+-	
++
+ 					if (LastJobID != HaltParams.JobID || CurMin != LastMin)
+ 					{ /*Don't repeat ourselves 80 times while the second rolls over.*/
+ 						const unsigned *const TimeReport = DateDiff(HaltParams.TargetHour, HaltParams.TargetMin, NULL, NULL, NULL);
+-						
++
+ 						if (HaltParams.HaltMode == OSCTL_HALT)
+ 						{
+ 							HaltMode = "halt";
+@@ -155,17 +155,17 @@ static void PrimaryLoop(void)
+ 							HaltParams.HaltMode = OSCTL_REBOOT;
+ 							HaltMode = "reboot";
+ 						}
+-						
++
+ 						snprintf(TBuf, sizeof TBuf, "System is going down for %s in %u minutes %u seconds!",
+ 								HaltMode, TimeReport[0], TimeReport[1]);
+ 						EmulWall(TBuf, false);
+-						
++
+ 						LastJobID = HaltParams.JobID;
+ 						LastMin = CurMin;
+ 					}
+ 				}
+ 			}
+-			
++
+ 			if (ObjectTable)
+ 			{
+ 				for (Worker = ObjectTable; Worker->Next != NULL; Worker = Worker->Next)
+@@ -173,12 +173,12 @@ static void PrimaryLoop(void)
+ 					if (Worker->Opts.AutoRestart && Worker->Started && !ObjectProcessRunning(Worker))
+ 					{
+ 						char TmpBuf[MAX_LINE_SIZE];
+-						
++
+ 						if (!Worker->Opts.HasPIDFile && AdvancedPIDFind(Worker, true))
+ 						{ /* Try to update the PID rather than restart, since some things change their PIDs via forking etc.*/
+ 							continue;
+ 						}
+-						
++
+ 						/*Don't let us enter a restart loop.*/
+ 						if (Worker->StartedSince + (Worker->Opts.AutoRestart >> 1) > time(NULL))
+ 						{
+@@ -188,18 +188,18 @@ static void PrimaryLoop(void)
+ 									"within 5 secs of last start.\n ** " CONSOLE_ENDCOLOR
+ 									"Marking object stopped to safeguard against restart loop.",
+ 									Worker->ObjectID);
+-									
++
+ 							WriteLogLine(TmpBuf, true);
+-							
++
+ 							Worker->Started = false;
+ 							Worker->ObjectPID = 0;
+ 							Worker->StartedSince = 0;
+ 							continue;
+ 						}
+-						
++
+ 						snprintf(TmpBuf, MAX_LINE_SIZE, "AUTORESTART: Object %s is not running. Restarting.", Worker->ObjectID);
+ 						WriteLogLine(TmpBuf, true);
+-						
++
+ 						if (ProcessConfigObject(Worker, true, false))
+ 						{
+ 							snprintf(TmpBuf, MAX_LINE_SIZE, "AUTORESTART: Object %s successfully restarted.", Worker->ObjectID);
+@@ -212,10 +212,10 @@ static void PrimaryLoop(void)
+ 							Worker->ObjectPID = 0;
+ 							Worker->StartedSince = 0;
+ 						}
+-						
++
+ 						WriteLogLine(TmpBuf, true);
+ 					}
+-					
++
+ 					/*Rescan PIDs every minute to keep them up-to-date.*/
+ 					if (ScanStepper == 240 && Worker->Started && !Worker->Opts.HasPIDFile)
+ 					{
+@@ -223,40 +223,40 @@ static void PrimaryLoop(void)
+ 					}
+ 				}
+ 			}
+-			
++
+ 			if (ScanStepper == 240)
+ 			{
+ 				ScanStepper = 0;
+ 			}
+-			
++
+ 			++ScanStepper;
+ 		}
+-		
++
+ 		usleep(50000); /*0.05 secs*/
+ 
+ 		/*Lots of brilliant code here, but I typed it in invisible pixels.*/
+-	}		
++	}
+ }
+ 
+ /*This does what it sounds like. It exits us to go to a shell in event of catastrophe.*/
+ void EmergencyShell(void)
+ {
+ 	fprintf(stderr, CONSOLE_COLOR_MAGENTA "\nPreparing to start emergency shell." CONSOLE_ENDCOLOR "\n---\n");
+-	
++
+ 	fprintf(stderr, "\nSyncing disks...\n");
+ 	sync(); /*First things first, sync disks.*/
+-	
++
+ 	fprintf(stderr, "Shutting down Epoch...\n");
+ 	ShutdownConfig(); /*Release all memory.*/
+ 	ShutdownMemBus(true); /*Stop the membus.*/
+-	
++
+ 	fprintf(stderr, "Launching the shell...\n");
+-	
++
+ 	execlp("sh", "sh", NULL); /*Nuke our process image and replace with a shell. No point forking.*/
+-	
++
+ 	/*We're supposed to be gone! Something went wrong!*/
+ 	SpitError("Failed to start emergency shell! Sleeping forever.");
+-	
++
+ 	while (1) sleep(1); /*Hang forever to prevent a kernel panic.*/
+ }
+ 
+@@ -271,13 +271,13 @@ void RecoverFromReexec(Bool ViaMemBus)
+ 	unsigned TInc = 0;
+ 	unsigned long OurLong; /*We write unsigned int values as unsigned long to maintan compatibility with 1.1.1 and earlier.*/
+ 	MemBusKey = MEMKEY + 1;
+-	
++
+ 	/*Restore any goobled up environ vars.*/
+ 	setenv("USER", ENVVAR_USER, true);
+ 	setenv("PATH", ENVVAR_PATH, true);
+ 	setenv("HOME", ENVVAR_HOME, true);
+ 	setenv("SHELL", ENVVAR_SHELL, true);
+-	
++
+ 	if (!InitConfig(ConfigFile))
+ 	{
+ 		EmulWall("Epoch: "CONSOLE_COLOR_RED "ERROR: " CONSOLE_ENDCOLOR
+@@ -286,68 +286,68 @@ void RecoverFromReexec(Bool ViaMemBus)
+ 	}
+ 
+ 	ApplyGlobalEnvVars(); /*Set global environment variables.*/
+-	
++
+ 	if (!InitMemBus(false))
+ 	{
+ 		EmulWall("Epoch: "CONSOLE_COLOR_RED "ERROR: " CONSOLE_ENDCOLOR
+ 				"Re-executed process cannot connect to modified membus.", false);
+ 		EmergencyShell();
+ 	}
+-	
++
+ 	while (!MemBus_BinRead(InBuf, sizeof InBuf, false)) usleep(100);
+-	
++
+ 	memcpy(&ChildPID, InBuf + MCodeLength, sizeof(pid_t));
+-	
++
+ 	while (!MemBus_BinRead(InBuf, sizeof InBuf, false)) usleep(100);
+-	
++
+ 	while (!strcmp(InBuf, MCode))
+ 	{
+ 		if ((CurObj = LookupObjectInTable(InBuf + MCodeLength)) != NULL)
+ 		{
+ 			unsigned TLength = strlen(CurObj->ObjectID) + 1;
+-			
++
+ 
+ 			memcpy(&OurLong, (InBuf + MCodeLength + TLength), sizeof(long));
+ 			CurObj->ObjectPID = OurLong;
+-			
++
+ 			memcpy(&OurLong, (InBuf + MCodeLength + TLength + sizeof(long)), sizeof(Bool));
+ 			CurObj->Started = OurLong;
+-			
++
+ 			memcpy(&OurLong, (InBuf + MCodeLength + TLength + sizeof(long) + sizeof(Bool)), sizeof(long));
+ 			CurObj->StartedSince = OurLong;
+ 		}
+-		
++
+ 		while (!MemBus_BinRead(InBuf, sizeof InBuf, false)) usleep(100);
+ 	}
+-	
++
+ 	MCode = MEMBUS_CODE_RXD_OPTS;
+ 	MCodeLength = strlen(MCode) + 1;
+-	
++
+ 	/*Retrieve the HaltParams structure.*/
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.HaltMode = *(long*)&OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetHour = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetMin = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetSec = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetMonth = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetDay = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.TargetYear = OurLong;
+-	
++
+ 	memcpy(&OurLong, InBuf + MCodeLength + (HPS++ * sizeof(long)), sizeof(long));
+ 	HaltParams.JobID = OurLong;
+-	
++
+ 	/*Retrieve our important options.*/
+ 	while (!MemBus_BinRead(InBuf, sizeof InBuf, false)) usleep(100);
+ 	EnableLogging = (Bool)*(InBuf + MCodeLength);
+@@ -355,31 +355,31 @@ void RecoverFromReexec(Bool ViaMemBus)
+ 	/*Retrieve the current runlevel.*/
+ 	while (!MemBus_BinRead(InBuf, sizeof InBuf, false)) usleep(100);
+ 	snprintf(CurRunlevel, sizeof CurRunlevel, "%s", InBuf + MCodeLength);
+-	
++
+ 	MemBus_Write(MCode, false); /*Tell the child they can quit.*/
+-	
++
+ 	/*Wait for the child to terminate.*/
+ 	waitpid(ChildPID, NULL, 0); /*We don't really have to, but I think we should.*/
+-	
++
+ 	/**
+ 	 * EVERYTHING BEYOND HERE IS USED TO RESUME NORMAL OPERATION!
+ 	 * **/
+-	
++
+ 	/*Bring down the old, custom membus and bring up the classic.*/
+ 	ShutdownMemBus(false);
+ 	MemBusKey = MEMKEY;
+-	
++
+ 	/*Reset environment variables.*/
+ 	setenv("USER", ENVVAR_USER, true);
+ 	setenv("PATH", ENVVAR_PATH, true);
+ 	setenv("HOME", ENVVAR_HOME, true);
+ 	setenv("SHELL", ENVVAR_SHELL, true);
+-	
++
+ 	if (!InitMemBus(true))
+ 	{
+ 		SpitWarning("Cannot restart normal membus after re-exec. System is otherwise operational.");
+ 	}
+-	
++
+ 	if (ViaMemBus) /*Client probably wants confirmation.*/
+ 	{
+ 		/*Handle pings.*/
+@@ -387,7 +387,7 @@ void RecoverFromReexec(Bool ViaMemBus)
+ 		{ /*Wait ten seconds.*/
+ 			 usleep(100);
+ 		}
+-		
++
+ 		if (TInc < 100000)
+ 		{ /*Do not attempt this if we didn't receive a ping because it will only slow us down
+ 			with another ten second timeout.*/
+@@ -395,13 +395,13 @@ void RecoverFromReexec(Bool ViaMemBus)
+ 			MemBus_Write(MEMBUS_CODE_ACKNOWLEDGED " " MEMBUS_CODE_RXD, true);
+ 		}
+ 	}
+-		
++
+ 	FinaliseLogStartup(false); /*Bring back logging.*/
+ 	LogInMemory = false;
+-	
++
+ 	WriteLogLine(CONSOLE_COLOR_GREEN "Re-executed Epoch.\nNow using " VERSIONSTRING
+ 				"\nCompiled " __DATE__ " " __TIME__ "." CONSOLE_ENDCOLOR, true);
+-				
++
+ 	PrimaryLoop(); /*Does everything until the end of time.*/
+ }
+ 
+@@ -415,24 +415,24 @@ void ReexecuteEpoch(void)
+ 	unsigned MCodeLength = strlen(MCode) + 1;
+ 	short HPS = 0;
+ 	unsigned long OurLong; /*Compatibility with 1.1.1 and earlier.*/
+-	
+-	
++
++
+ 	ShutdownMemBus(true); /*We are now going to use a different MemBus key.*/
+ 	MemBusKey = MEMKEY + 1; /*This prevents clients from interfering.*/
+-		
+-	
++
++
+ 	if (!TestDescriptor)
+ 	{
+ 		EmulWall("Epoch: " CONSOLE_COLOR_RED "ERROR: " CONSOLE_ENDCOLOR
+ 				"Unable to read \"" EPOCH_BINARY_PATH "\"! Cannot reexec!", false);
+-	
++
+ 		MemBusKey = MEMKEY;
+-		
++
+ 		if (!InitMemBus(true))
+ 		{
+ 			SpitError("ReexecuteEpoch(): Failed to restart membus after failed reexec!");
+ 		}
+-		
++
+ 		MemBus_Write(MEMBUS_CODE_FAILURE " " MEMBUS_CODE_RXD, true);
+ 		return;
+ 	}
+@@ -440,56 +440,56 @@ void ReexecuteEpoch(void)
+ 	{
+ 		fclose(TestDescriptor);
+ 	}
+-	
++
+ 	if ((PID = fork()) == -1)
+ 	{
+ 		EmulWall("Epoch: " CONSOLE_COLOR_RED "ERROR: " CONSOLE_ENDCOLOR
+ 				"Unable to fork! Aborting reexecution.", false);
+-				
++
+ 		MemBusKey = MEMKEY;
+-		
++
+ 		if (!InitMemBus(true)) /*Bring back the membus.*/
+ 		{
+ 			SpitError("ReexecuteEpoch(): Failed to restart membus after failed reexec!");
+ 		}
+-		
++
+ 		MemBus_Write(MEMBUS_CODE_FAILURE " " MEMBUS_CODE_RXD, true);
+ 		return;
+ 	}
+-	
++
+ 	/*Handle us if we are the original process first.*/
+ 	if (PID > 0)
+ 	{
+ 		WriteLogLine(CONSOLE_COLOR_YELLOW "Re-executing Epoch..." CONSOLE_ENDCOLOR, true);
+-		
++
+ 		while (shmget(MEMKEY + 1, MEMBUS_SIZE, 0660) == -1) usleep(100);
+-		
++
+ 		/**Execute the new binary.**/ /*We pass the custom args to tell us we are re-executing.*/
+ 		execlp(EPOCH_BINARY_PATH, "!rxd", "REEXEC", NULL);
+-		
++
+ 		/*Not supposed to be here.*/
+ 		EmulWall(CONSOLE_COLOR_RED "ERROR: " CONSOLE_ENDCOLOR
+ 				"Failed to execute \"" EPOCH_BINARY_PATH "\"! Cannot reexec!", false);
+-				
++
+ 		WriteLogLine(CONSOLE_COLOR_RED "Reexecution failed." CONSOLE_ENDCOLOR, true);
+ 		kill(PID, SIGKILL); /*Kill the failed child.*/
+-		
++
+ 		if (shmget(MEMKEY + 1, MEMBUS_SIZE, 0660) != -1)
+ 		{
+ 			ShutdownMemBus(true);
+ 		}
+-		
++
+ 		MemBusKey = MEMKEY;
+-		
++
+ 		if (!InitMemBus(true))
+ 		{
+ 			SpitError("ReexecuteEpoch(): Failed to restart membus after failed reexec!");
+ 		}
+-		
++
+ 		MemBus_Write(MEMBUS_CODE_FAILURE " " MEMBUS_CODE_RXD, true);
+ 		return;
+ 	}
+-	
++
+ 	/**The child is responsible for sending us our data.**/
+ 	if (!InitMemBus(true))
+ 	{
+@@ -497,30 +497,30 @@ void ReexecuteEpoch(void)
+ 				"Re-exec: Child unable to start modified membus. Child terminating.", false);
+ 		exit(1);
+ 	}
+-	
++
+ 	while (!HandleMemBusPings())
+ 	{ /*Wait for the re-executed parent process to connect to receive it's config.*/
+ 		static unsigned Counter = 0;
+-	
++
+ 		usleep(1000); /*0.001 seconds.*/
+-		
++
+ 		if (Counter == 0) ++Counter;
+ 		else if (Counter >= 10000) /*Sleep ten seconds.*/
+ 		{
+ 			/*Quietly exit.*/
+ 			SpitError("Host process not responding for reexec data exchange. Child exiting.");
+ 			ShutdownMemBus(true);
+-			
++
+ 			exit(1);
+ 		}
+ 	}
+-	
++
+ 	/*Send our PID. This doubles as a greeting.*/
+ 	PID = getpid();
+ 	MemBus_BinWrite(&PID, sizeof(pid_t), true);
+-	
++
+ 	strncpy(OutBuf, MCode, MCodeLength); /*We only need to do this once per MCode change, since we never wipe OutBuf.*/
+-	
++
+ 	/*PIDs and started states.
+ 	 * It doesn't matter if they are done eating the PID,
+ 	 * MemBus_*Write() blocks until they're done with the first message.*/
+@@ -528,61 +528,61 @@ void ReexecuteEpoch(void)
+ 	{
+ 		unsigned TLength = 0;
+ 		strncpy(OutBuf + MCodeLength, Worker->ObjectID, (TLength = strlen(Worker->ObjectID) + 1));
+-		
++
+ 		OurLong = Worker->ObjectPID;
+ 		memcpy(OutBuf + MCodeLength + TLength, &OurLong, sizeof(long));
+-		
++
+ 		OurLong = Worker->Started;
+ 		memcpy(OutBuf + sizeof(long) + TLength + MCodeLength, &OurLong, sizeof(Bool));
+-		
++
+ 		OurLong = Worker->StartedSince;
+ 		memcpy(OutBuf + sizeof(long) + sizeof(Bool) + TLength + MCodeLength, &OurLong, sizeof(long));
+-		
++
+ 		MemBus_BinWrite(OutBuf, sizeof OutBuf, true);
+ 	}
+-	
++
+ 	/*We change to a new code to mark the end of our loop.*/
+ 	strncpy(OutBuf, (MCode = MEMBUS_CODE_RXD_OPTS), (MCodeLength = strlen(MEMBUS_CODE_RXD_OPTS) + 1));
+-	
++
+ 	/*HaltParams, we're lazy and just write the whole structure.*/
+ 	OurLong = HaltParams.HaltMode;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetHour;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetMin;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetSec;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetMonth;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetDay;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.TargetYear;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	OurLong = HaltParams.JobID;
+ 	memcpy(OutBuf + MCodeLength + (HPS++ * sizeof(long)), &OurLong, sizeof HaltParams);
+-	
++
+ 	MemBus_BinWrite(OutBuf, sizeof HaltParams + MCodeLength, true);
+-	
++
+ 	/*Misc. global options. We don't include all because only some are used after initial boot.*/
+ 	*(OutBuf + MCodeLength) = (char)EnableLogging;
+ 	MemBus_BinWrite(OutBuf, MCodeLength + 1, true);
+-	
++
+ 	/*The current runlevel is very important.*/
+ 	strncpy(OutBuf + MCodeLength, CurRunlevel, strlen(CurRunlevel) + 1);
+ 	MemBus_BinWrite(OutBuf, sizeof OutBuf, true);
+-	
++
+ 	while (!MemBus_Read(OutBuf, true)) usleep(100); /*Wait for the main process to say we can quit.*/
+ 	ShutdownMemBus(true); /*Nothing is deleted until the new process releases the lock, don't worry.*/
+ 	ShutdownConfig();
+-	
++
+ 	exit(0);
+ }
+ 
+@@ -599,37 +599,37 @@ void PerformExec(const char *Cmd)
+ 		WriteLogLine(ErrMsg, true);
+ 		return;
+ 	}
+-	
++
+ 	/*Get the number of words in the command.*/
+ 	while ((Worker = WhitespaceArg(Worker))) ++NumSpaces;
+-	
++
+ 	/*Allocate space for pointers to represent each word.*/
+ 	Buffer = malloc(sizeof(char*) * NumSpaces + 1);
+-	
++
+ 	for (Worker = Cmd, Inc = 0; Inc < NumSpaces && Worker != NULL; ++Inc)
+ 	{
+ 		/*Count the length of this section of the command.*/
+ 		for (Inc2 = 0; Worker[Inc2] != ' ' && Worker[Inc2] != '\t' && Worker[Inc2] != '\0'; ++Inc2);
+-		
++
+ 		/*Allocate space for it.*/
+ 		Buffer[Inc] = malloc(Inc2 + 1);
+-		
++
+ 		/*Copy it into its Buffer cell.*/
+ 		for (Inc2 = 0; Worker[Inc2] != ' ' && Worker[Inc2] != '\t' && Worker[Inc2] != '\0'; ++Inc2)
+ 		{
+ 			Buffer[Inc][Inc2] = Worker[Inc2];
+ 		}
+ 		Buffer[Inc][Inc2] = '\0';
+-		
++
+ 		/*Skip to the next word in the command.*/
+ 		Worker = WhitespaceArg(Worker);
+ 	}
+-	
++
+ 	/*Fill the last cell with nothing, as mandated by execvp().*/
+ 	Buffer[NumSpaces] = NULL;
+-	
++
+ 	sync(); /*Sync disks.*/
+-	
++
+ 	ShutdownMemBus(true); /*Shutdown membus since we won't need it anymore.*/
+ 
+ 	for (Inc = 1; Inc < NSIG; ++Inc)
+@@ -638,7 +638,7 @@ void PerformExec(const char *Cmd)
+ 	}
+ 
+ 	execvp(Buffer[0], Buffer); /*Perform the exec.*/
+-	
++
+ 	/**We should not still be here at this point.**/
+ 	SpitError("exec() failed! Starting emergency shell.");
+ 	EmergencyShell();
+@@ -654,26 +654,26 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+ 			SpitError(ErrMsg);
+ 			WriteLogLine(ErrMsg, true);
+ 		}
+-		
++
+ 		if (OldRootDir == NULL)
+ 		{
+ 			const char *ErrMsg = "NULL OldRootDir passed to PerformPivotRoot()! This is likely a bug, please report.";
+ 			SpitError(ErrMsg);
+ 			WriteLogLine(ErrMsg, true);
+ 		}
+-		
++
+ 		return;
+ 	}
+-	
++
+ 	/*Sync to be safe.*/
  	sync();
  
  	/*pivot_root now.*/
@@ -41,15 +741,422 @@ index 92c56e2..acaea50 100644
  
  	chdir("/"); /*Reset working directory*/
  }
-@@ -711,7 +711,7 @@ void FinaliseLogStartup(Bool BlankLog)
+@@ -682,7 +682,7 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+ void FinaliseLogStartup(Bool BlankLog)
+ {
+ 	if (MemLogBuffer != NULL)
+-	{ /*Switch logging out of memory mode and write it's memory buffer to disk.*/		
++	{ /*Switch logging out of memory mode and write it's memory buffer to disk.*/
+ 		if (EnableLogging)
+ 		{
+ 			FILE *Descriptor = fopen(LogFile, (BlankLog ? "w" : "a"));
+@@ -700,9 +700,9 @@ void FinaliseLogStartup(Bool BlankLog)
+ 				fflush(Descriptor);
+ 				fclose(Descriptor);
+ 			}
+-			
++
+ 		}
+-		
++
+ 		free(MemLogBuffer); /*Release the memory anyways.*/
+ 		MemLogBuffer = NULL;
+ 	}
+@@ -710,24 +710,24 @@ void FinaliseLogStartup(Bool BlankLog)
+ 
  void LaunchBootup(void)
  { /*Handles what would happen if we were PID 1.*/
- 	
+-	
 -	setsid();
+-	
++
 +	// setsid();
- 	
++
  	/*Print our version to the console*/
  	puts(CONSOLE_COLOR_CYAN VERSIONSTRING CONSOLE_ENDCOLOR);
+-	
++
+ 	/*Set environment variables.*/
+ 	setenv("USER", ENVVAR_USER, true);
+ 	setenv("PATH", ENVVAR_PATH, true);
+ 	setenv("HOME", ENVVAR_HOME, true);
+ 	setenv("SHELL", ENVVAR_SHELL, true);
+-		
++
+ 	/*Add tiny message if we passed epochconfig= on the kernel cli.*/
+ 	if (strcmp(ConfigFile, CONFIGDIR CONF_NAME) != 0)
+ 	{
+ 		printf("Using configuration file \"%s\".\n\n", ConfigFile);
+ 	}
+-	
++
+ 	/*Add tiny message if we passed runlevel= on the kernel cli.*/
+ 	if (*CurRunlevel != '\0')
+ 	{
+@@ -737,47 +737,47 @@ void LaunchBootup(void)
+ 	if (*StartupCustomObjCommands.Start[0])
+ 	{
+ 		printf("Objects specified to start if found: ");
+-		
++
+ 		int Inc = 0;
+ 		char (*Arr)[sizeof *StartupCustomObjCommands.Start] = StartupCustomObjCommands.Start;
+-		
++
+ 		for (; *Arr[Inc]; ++Inc)
+ 		{
+ 			printf("%s ", Arr[Inc]);
+ 		}
+-		
++
+ 		//Whitespace
+ 		putchar('\n'); putchar('\n');
+ 	}
+-	
++
+ 	if (*StartupCustomObjCommands.Skip[0])
+ 	{
+ 		printf("Objects specified to skip if found: ");
+-		
++
+ 		int Inc = 0;
+ 		char (*Arr)[sizeof *StartupCustomObjCommands.Skip] = StartupCustomObjCommands.Skip;
+-		
++
+ 		for (; *Arr[Inc]; ++Inc)
+ 		{
+ 			printf("%s ", Arr[Inc]);
+ 		}
+-		
++
+ 		//Whitespace
+ 		putchar('\n'); putchar('\n');
+ 	}
+-	
++
+ 	if (InteractiveBoot)
+ 	{
+ 		const char *const Msg = "Booting in interactive mode.\n";
+ 		puts(Msg);
+ 		WriteLogLine(Msg, true);
+ 	}
+-	
++
+ 	if (!InitConfig(ConfigFile))
+ 	{ /*That is very very bad if we fail here.*/
+ 		EmergencyShell();
+ 	}
+-	
++
+ 	ApplyGlobalEnvVars(); /*Use the global environment variables we have set.*/
+ 
+ 	PrintBootBanner();
+@@ -792,7 +792,7 @@ void LaunchBootup(void)
+ 	if (Hostname[0] != '\0')
+ 	{ /*The system hostname.*/
+ 		char TmpBuf[MAX_LINE_SIZE];
+-		
++
+ 		if (sethostname(Hostname, strlen(Hostname)) == 0)
+ 		{
+ 			snprintf(TmpBuf, MAX_LINE_SIZE, "Hostname set to \"%s\".", Hostname);
+@@ -803,14 +803,14 @@ void LaunchBootup(void)
+ 					"Ensure that this is a valid hostname.", Hostname);
+ 			SpitWarning(TmpBuf);
+ 		}
+-		
++
+ 		WriteLogLine(TmpBuf, true);
+ 	}
+-	
++
+ 	if (*Domainname != '\0')
+ 	{ /*The domain name. Not actually used much but still an important feature.*/
+ 		char TmpBuf[MAX_LINE_SIZE];
+-		
++
+ 		if (setdomainname(Domainname, strlen(Domainname)) == 0)
+ 		{
+ 			snprintf(TmpBuf, sizeof TmpBuf, "Domain name set to \"%s\".", Domainname);
+@@ -821,17 +821,17 @@ void LaunchBootup(void)
+ 					"Ensure that this is a properly formatted domain name.", Domainname);
+ 			SpitWarning(TmpBuf);
+ 		}
+-		
++
+ 		WriteLogLine(TmpBuf, true);
+ 	}
+-	
++
+ 	if (DisableCAD)
+-	{	
++	{
+ 		const char *CADMsg[2] = { "Epoch has taken control of CTRL-ALT-DEL events.",
+ 							"Epoch was unable to take control of CTRL-ALT-DEL events." };
+-			
++
+ 		if (!reboot(OSCTL_DISABLE_CTRLALTDEL)) /*Disable instant reboot on CTRL-ALT-DEL.*/
+-		{			
++		{
+ 			WriteLogLine(CADMsg[0], true);
+ 		}
+ 		else
+@@ -846,15 +846,15 @@ void LaunchBootup(void)
+ 	}
+ 
+ 	WriteLogLine(CONSOLE_COLOR_YELLOW "Starting all objects.\n" CONSOLE_ENDCOLOR, true);
+-	
++
+ 	if (!RunAllObjects(true))
+ 	{
+ 		EmergencyShell();
+ 	}
+-	
++
+ 	FinaliseLogStartup(BlankLogOnBoot); /*Write anything in the log's memory to disk.
+ 		* NOTE: It's possible for data to be in here even if logging is disabled, so don't touch.*/
+-					
++
+ 	WriteLogLine(CONSOLE_COLOR_GREEN "Bootup complete.\n" CONSOLE_ENDCOLOR, true);
+ 
+ 	if (!InitMemBus(true))
+@@ -862,13 +862,13 @@ void LaunchBootup(void)
+ 		const char *MemBusErr = CONSOLE_COLOR_RED "FAILURE IN MEMBUS! "
+ 								"You won't be able to shut down the system with Epoch!"
+ 								CONSOLE_ENDCOLOR;
+-		
++
+ 		SpitError(MemBusErr);
+ 		WriteLogLine(MemBusErr, true);
+-		
++
+ 		putc('\007', stderr); /*Beep.*/
+ 	}
+-	
++
+ 	PrimaryLoop(); /*Does everything after initial boot.*/
+ }
+ 
+@@ -880,7 +880,7 @@ void LaunchShutdown(int Signal)
+ 	const char *LogMsg = ((Signal == OSCTL_HALT || Signal == OSCTL_POWEROFF) ?
+ 						CONSOLE_COLOR_RED "Shutting down." CONSOLE_ENDCOLOR :
+ 						CONSOLE_COLOR_RED "Rebooting." CONSOLE_ENDCOLOR);
+-	
++
+ 	switch (Signal)
+ 	{
+ 		case OSCTL_HALT:
+@@ -893,25 +893,25 @@ void LaunchShutdown(int Signal)
+ 			HType = "reboot";
+ 			break;
+ 	}
+-	
++
+ 	snprintf(MsgBuf, sizeof MsgBuf, "System is going down for %s NOW!", HType);
+ 	EmulWall(MsgBuf, false);
+-	
++
+ 	if (!BlankLogOnBoot) /*No point in doing it if it's just going to be erased.*/
+ 	{
+ 		WriteLogLine(LogMsg, true);
+ 	}
+-	
++
+ 
+ 	EnableLogging = false; /*Prevent any additional log entries.*/
+-	
++
+ 	/*Kill any running jobs.*/
+ 	if (CurrentTask.Set)
+ 	{
+ 		if (CurrentTask.PID == 0)
+ 		{
+ 			Bool *TNum = (void*)CurrentTask.Node;
+-			
++
+ 			*TNum = true;
+ 		}
+ 		else
+@@ -919,19 +919,19 @@ void LaunchShutdown(int Signal)
+ 			kill(CurrentTask.PID, SIGKILL);
+ 			waitpid(CurrentTask.PID, NULL, 0); /*Reap it.*/
+ 		}
+-		
++
+ 		CurrentTask.Set = false;
+ 		CurrentTask.Node = NULL;
+ 		CurrentTask.TaskName = NULL;
+ 		CurrentTask.PID = 0;
+ 	}
+-	
+-	
++
++
+ 	if (!ShutdownMemBus(true))
+ 	{ /*Shutdown membus first, so no other signals will reach us.*/
+ 		SpitWarning("Failed to shut down membus interface.");
+ 	}
+-	
++
+ 	if (Signal == OSCTL_HALT || Signal == OSCTL_POWEROFF)
+ 	{
+ 		printf("%s", CONSOLE_COLOR_RED "Shutting down.\n" CONSOLE_ENDCOLOR "\n");
+@@ -940,16 +940,16 @@ void LaunchShutdown(int Signal)
+ 	{
+ 		printf("%s", CONSOLE_COLOR_RED "Rebooting.\n" CONSOLE_ENDCOLOR "\n");
+ 	}
+-	
++
+ 	if (!RunAllObjects(false)) /*Run all the service stopping things.*/
+ 	{
+ 		SpitError("Failed to complete shutdown/reboot sequence!");
+ 		EmergencyShell();
+ 	}
+-	
++
+ 	ShutdownConfig();
+-	
+-	
++
++
+ 	if (Signal == OSCTL_HALT)
+ 	{
+ 		AttemptMsg = "Attempting to halt the system...";
+@@ -962,16 +962,16 @@ void LaunchShutdown(int Signal)
+ 	{
+ 		AttemptMsg = "Attempting to reboot the system...";
+ 	}
+-	
++
+ 	printf("%s%s%s\n", CONSOLE_COLOR_CYAN, AttemptMsg, CONSOLE_ENDCOLOR);
+-	
++
+ 	sync(); /*Force sync of disks in case somebody forgot.*/
+ 
+ 	reboot(Signal); /*Send the signal.*/
+ 
+-	
++
+ 	/*Again, not supposed to be here.*/
+-	
++
+ 	SpitError("Failed to reboot/halt/power down!");
+ 	EmergencyShell();
+ }
+@@ -979,13 +979,13 @@ void LaunchShutdown(int Signal)
+ static void ApplyGlobalEnvVars(void)
+ {
+ 	struct _EnvVarList *Worker = GlobalEnvVars;
+-	
++
+ 	if (!Worker) return;
+-	
++
+ 	for (; Worker->Next; Worker = Worker->Next)
+ 	{
+ 		char OutBuf[MAX_LINE_SIZE];
+-		
++
+ 		putenv(Worker->EnvVar);
+ 		snprintf(OutBuf, sizeof OutBuf, "Set global environment variable \"%s\"", Worker->EnvVar);
+ 		WriteLogLine(OutBuf, true);
+diff --git epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
+index 8130386..9cb938b 100644
+--- epoch-clean/src/epoch.h
++++ epoch-workdir/src/epoch.h
+@@ -67,9 +67,9 @@
+ #define VERSIONSTRING "Epoch Init System 1.3.0 \"Fluoxetine\""
+ 
+ /*Power control magic.*/
+-#define OSCTL_REBOOT 0x1234567
+-#define OSCTL_HALT 0xcdef0123
+-#define OSCTL_POWEROFF 0x4321fedc
++#define OSCTL_REBOOT 3
++#define OSCTL_HALT 1
++#define OSCTL_POWEROFF 2
+ #define OSCTL_DISABLE_CTRLALTDEL 0 /*Now isn't this hilarious. It's zero.*/
+ #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
+ 
+@@ -156,7 +156,7 @@ enum { COPT_HALTONLY = 1, COPT_PERSISTENT, COPT_FORK, COPT_SERVICE, COPT_AUTORES
+ 		COPT_FORCESHELL, COPT_NOSTOPWAIT, COPT_STOPTIMEOUT, COPT_TERMSIGNAL,
+ 		COPT_RAWDESCRIPTION, COPT_PIVOTROOT, COPT_EXEC, COPT_RUNONCE, COPT_FORKSCANONCE,
+ 		COPT_NOTRACK, COPT_STARTFAILCRITICAL, COPT_STOPFAILCRITICAL, COPT_MAX };
+-		
++
+ /*Trinary return values for functions.*/
+ typedef enum { FAILURE, SUCCESS, WARNING } ReturnCode;
+ 
+@@ -167,11 +167,11 @@ typedef enum { BOOT_NEUTRAL, BOOT_BOOTUP, BOOT_SHUTDOWN } BootMode;
+ struct _RLTree
+ { /*Runlevel linked list.*/
+ 	char RL[MAX_DESCRIPT_SIZE];
+-	
++
+ 	struct _RLTree *Prev;
+ 	struct _RLTree *Next;
+ };
+-	
++
+ typedef struct _EpochObjectTable
+ {
+ 	unsigned ObjectStartPriority;
+@@ -190,28 +190,28 @@ typedef struct _EpochObjectTable
+ 	char *ObjectWorkingDirectory; /*The working directory the object chdirs to before execution.*/
+ 	char *ObjectStderr; /*A file that stderr redirects to.*/
+ 	char *ObjectStdout; /*A file that stdout redirects to.*/
+-	
++
+ 	const char *ConfigFile; /*The config file this object was declared in.
+ 	* Points either to the correct element in ConfigFileList or it points to the single-file ConfigFile array.
+ 	* You can safely cast the above pointer to remove const.*/
+-	
++
+ 	unsigned char TermSignal; /*The signal we send to an object if it's stop mode is PID or PIDFILE.*/
+ 	unsigned char ReloadCommandSignal; /*If the reload command sends a signal, this works.*/
+ 	Bool Enabled;
+ 	Bool Started;
+-	
++
+ 	struct
+ 	{ /*Maps an object's exit statuses to a special case of an ReturnCode value.*/
+ 		unsigned char ExitStatus; /*The exit status of the program.*/
+ 		unsigned char Value; /*An ReturnCode trinary value, or 4 for unused.*/
+ 	} ExitStatuses[8];
+-	
+-	struct 
++
++	struct
+ 	{
+ 		enum _StopMode StopMode; /*If we use a stop command, set this to 1, otherwise, set to 0 to use PID.*/
+ 		unsigned StopTimeout; /*The number of seconds we wait for a task we're stopping's PID to become unavailable.*/
+ 		unsigned short AutoRestart; /*Autorestarts a service whenever it terminates.*/
+-		
++
+ 		/*This saves a tiny bit of memory to use bitfields here.*/
+ 		unsigned Persistent : 1; /*Allowed to stop this without starting a shutdown?*/
+ 		unsigned HaltCmdOnly : 1; /*Run just the stop command when we halt, not the start command?*/
+@@ -232,10 +232,10 @@ typedef struct _EpochObjectTable
+ 		unsigned ForkScanOnce : 1; /*Same as Fork, but only scans through the PID once.*/
+ #endif
+ 	} Opts;
+-	
++
+ 	struct _EnvVarList *EnvVars; /*List of environment variables.*/
+ 	struct _RLTree *ObjectRunlevels; /*Dynamically allocated, needless to say.*/
+-	
++
+ 	struct _EpochObjectTable *Prev;
+ 	struct _EpochObjectTable *Next;
+ } ObjTable;
+@@ -272,7 +272,7 @@ struct _MemBusInterface
+ 	void *Root;
+ 	unsigned long *LockPID;
+ 	unsigned long *LockTime;
+-	
++
+ 	struct
+ 	{
+ 		unsigned char *Status;
 diff --git epoch-clean/src/parse.c epoch-workdir/src/parse.c
 index 84d97b9..90ff438 100644
 --- epoch-clean/src/parse.c

@@ -321,16 +321,14 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..f3cd7ca 100644
+index d6dbca3..89b61a5 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,24 +10,25 @@
+@@ -10,24 +10,23 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
-+#include <sys/ironclad_sched.h>
 +#include <sys/ironclad_devices.h>
-+#include <sys/ironclad_mac.h>
 +#include <sched.h>
 +#include <sys/mman.h>
  
@@ -357,7 +355,7 @@ index d6dbca3..f3cd7ca 100644
  	sys_exit(1);
  }
  
-@@ -39,15 +40,37 @@ void sys_exit(int status) {
+@@ -39,15 +38,37 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -398,7 +396,7 @@ index d6dbca3..f3cd7ca 100644
  	*fd = ret;
  	return errno;
  }
-@@ -56,12 +79,44 @@ int sys_open_dir(const char *path, int *handle) {
+@@ -56,12 +77,50 @@ int sys_open_dir(const char *path, int *handle) {
  	return sys_open(path, O_RDONLY, 0660, handle);
  }
  
@@ -436,14 +434,20 @@ index d6dbca3..f3cd7ca 100644
 +
 +int sys_fsync(int fd) {
 +   int ret, errno;
-+   SYSCALL1(SYSCALL_FSYNC, fd);
++   SYSCALL2(SYSCALL_FSYNC, fd, 0);
++   return errno;
++}
++
++int sys_fdatasync(int fd) {
++   int ret, errno;
++   SYSCALL2(SYSCALL_FSYNC, fd, 1);
 +   return errno;
 +}
 +
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -86,6 +141,12 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,6 +145,12 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -456,7 +460,7 @@ index d6dbca3..f3cd7ca 100644
  int sys_anon_allocate(size_t size, void **pointer) {
  	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
  }
-@@ -113,6 +174,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +178,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -473,7 +477,7 @@ index d6dbca3..f3cd7ca 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +202,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +206,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -507,18 +511,18 @@ index d6dbca3..f3cd7ca 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -601,7 +605,7 @@ index d6dbca3..f3cd7ca 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +270,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +274,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -630,7 +634,7 @@ index d6dbca3..f3cd7ca 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,7 +302,7 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,7 +306,7 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -639,7 +643,25 @@ index d6dbca3..f3cd7ca 100644
  }
  
  int sys_uname(struct utsname *buf) {
-@@ -290,7 +329,7 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -278,6 +321,17 @@ int sys_uname(struct utsname *buf) {
+ 	return 0;
+ }
+ 
++int sys_setpgid(pid_t pid, pid_t pgid) {
++	(void)pid;
++	(void)pgid;
++	mlibc::infoLogger() << "mlibc: " << __func__ << " is a stub!" << frg::endlog;
++	return 0;
++}
++
++int sys_ttyname(int, char *, size_t) {
++	return ENOSYS;
++}
++
+ int sys_sethostname(const char *buff, size_t size) {
+ 	int ret, errno;
+ 
+@@ -290,7 +344,7 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -648,7 +670,7 @@ index d6dbca3..f3cd7ca 100644
  	char* ret;
  	int errno;
  
-@@ -306,7 +345,7 @@ int sys_getcwd(const char *buff, size_t size) {
+@@ -306,7 +360,7 @@ int sys_getcwd(const char *buff, size_t size) {
  int sys_chdir(const char *buff) {
  	int ret, errno;
  
@@ -657,7 +679,7 @@ index d6dbca3..f3cd7ca 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +367,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +382,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -724,7 +746,7 @@ index d6dbca3..f3cd7ca 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +433,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +448,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -1040,7 +1062,7 @@ index d6dbca3..f3cd7ca 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +725,29 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +740,29 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -1078,10 +1100,34 @@ index d6dbca3..f3cd7ca 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +758,125 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +773,98 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
++int sys_fchmodat(int fd, const char *pathname, mode_t mode, int flags) {
++	int ret, errno, fd2;
++   if (sys_openat(fd, pathname, O_RDONLY, 0777, &fd2)) {
++       return ENOENT;
++   }
++   SYSCALL2(SYSCALL_FCHMOD, fd2, mode);
++   sys_close(fd2);
++   return errno;
++}
++
++int sys_fchmod(int fd, mode_t mode) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_FCHMOD, fd, mode);
++	return errno;
++}
++
++int sys_umask(mode_t mode, mode_t *old) {
++   mode_t ret;
++   int errno;
++	SYSCALL1(SYSCALL_UMASK, mode);
++	*old = (mode_t)ret;
++	return errno;
++}
++
 +int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
 +	ssize_t ret;
 +	int errno;
@@ -1153,57 +1199,48 @@ index d6dbca3..f3cd7ca 100644
 +
  #endif
  } // namespace mlibc
+diff --git mlibc-workdir/sysdeps/ironclad/generic/mac.cpp mlibc-workdir/sysdeps/ironclad/generic/mac.cpp
+new file mode 100644
+index 0000000..a13e56f
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/mac.cpp
+@@ -0,0 +1,36 @@
++#include <sys/syscall.h>
++#include <sys/mac.h>
++#include <errno.h>
++#include <string.h>
 +
-+#ifndef MLIBC_BUILDING_RTDL
 +extern "C" {
-+// Syscalls for ironclad.h
-+int get_thread_sched(void) {
-+	int ret, errn;
-+	SYSCALL0(SYSCALL_GET_THREAD_SCHED);
-+	errno = errn;
-+	return ret;
-+}
 +
-+int set_thread_sched(int flags) {
++unsigned long get_mac_capabilities(void) {
 +	int ret, errn;
-+	SYSCALL1(SYSCALL_SET_THREAD_SCHED, flags);
++	SYSCALL0(SYSCALL_GET_MAC_CAPABILITIES);
 +	errno = errn;
 +	return ret;
 +}
 +
 +int set_mac_capabilities(unsigned long request) {
-+	int ret;
-+	int errn;
++	int ret, errn;
 +	SYSCALL1(SYSCALL_SET_MAC_CAPABILITIES, request);
 +	errno = errn;
 +	return ret;
 +}
 +
-+int add_mac_filter(struct mac_filter *filt) {
-+	int ret;
-+	int errn;
-+	SYSCALL1(SYSCALL_ADD_MAC_FILTER, filt);
++int add_mac_permissions(const char *path, int flags) {
++	int ret, errn;
++	SYSCALL3(SYSCALL_ADD_MAC_PERMISSIONS, path, strlen(path), flags);
 +	errno = errn;
 +	return ret;
 +}
 +
 +int set_mac_enforcement(unsigned long enforcement) {
-+	int ret;
-+	int errn;
++	int ret, errn;
 +	SYSCALL1(SYSCALL_SET_MAC_ENFORCEMENT, enforcement);
 +	errno = errn;
 +	return ret;
 +}
 +
-+int set_deadlines(int runtime, int period) {
-+	int ret;
-+	int errn;
-+	SYSCALL2(SYSCALL_SET_DEADLINES, runtime, period);
-+	errno = errn;
-+	return ret;
 +}
-+}
-+#endif
 diff --git mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
 new file mode 100644
 index 0000000..d064af3
@@ -1355,16 +1392,54 @@ index 0000000..fcee169
 +}
 diff --git mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp
 new file mode 100644
-index 0000000..7c86ffd
+index 0000000..45e8f03
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/generic/reboot.cpp
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,9 @@
 +#include <errno.h>
 +#include <sys/reboot.h>
-+#include <bits/ensure.h>
++#include <sys/syscall.h>
 +
 +int reboot(int what) {
-+	return 0;
++	int ret, errno;
++	SYSCALL2(SYSCALL_REBOOT, what, 0);
++	return ret;
++}
+diff --git mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp
+new file mode 100644
+index 0000000..c76faa3
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp
+@@ -0,0 +1,30 @@
++#include <sys/syscall.h>
++#include <sys/sched2.h>
++#include <errno.h>
++#include <string.h>
++
++extern "C" {
++
++int get_thread_sched(void) {
++	int ret, errn;
++	SYSCALL0(SYSCALL_GET_THREAD_SCHED);
++	errno = errn;
++	return ret;
++}
++
++int set_thread_sched(int flags) {
++	int ret, errn;
++	SYSCALL1(SYSCALL_SET_THREAD_SCHED, flags);
++	errno = errn;
++	return ret;
++}
++
++int set_deadlines(int runtime, int period) {
++	int ret;
++	int errn;
++	SYSCALL2(SYSCALL_SET_DEADLINES, runtime, period);
++	errno = errn;
++	return ret;
++}
++
 +}
 diff --git mlibc-workdir/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
 new file mode 100644
@@ -2088,11 +2163,11 @@ index 0000000..74f47f8
 +#endif
 +
 +#endif // _SYS_IRONCLAD_DEVICES_H
-diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/mac.h mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
 new file mode 100644
-index 0000000..a2a6c0f
+index 0000000..fda3821
 --- /dev/null
-+++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_mac.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
 @@ -0,0 +1,44 @@
 +#ifndef _SYS_MAC_H
 +#define _SYS_MAC_H
@@ -2105,28 +2180,28 @@ index 0000000..a2a6c0f
 +extern "C" {
 +#endif
 +
-+#define MAC_CAP_SCHED   0b00000001
-+#define MAC_CAP_SPAWN   0b00000010
-+#define MAC_CAP_ENTROPY 0b00000100
-+#define MAC_CAP_SYS_MEM 0b00001000
-+#define MAC_CAP_USE_NET 0b00010000
-+#define MAC_CAP_SYS_NET 0b00100000
-+#define MAC_CAP_SYS_MNT 0b01000000
-+#define MAC_CAP_SYS_PWR 0b10000000
++#define MAC_CAP_SCHED   0b00000000001
++#define MAC_CAP_SPAWN   0b00000000010
++#define MAC_CAP_ENTROPY 0b00000000100
++#define MAC_CAP_SYS_MEM 0b00000001000
++#define MAC_CAP_USE_NET 0b00000010000
++#define MAC_CAP_SYS_NET 0b00000100000
++#define MAC_CAP_SYS_MNT 0b00001000000
++#define MAC_CAP_SYS_PWR 0b00010000000
++#define MAC_CAP_PTRACE  0b00100000000
++#define MAC_CAP_SETUID  0b01000000000
++#define MAC_CAP_SYS_MAC 0b10000000000
++unsigned long get_mac_capabilities(void);
 +int set_mac_capabilities(unsigned long request);
-+int lock_mac(void);
 +
-+#define MAC_FILTER_INC_FILES 0b0000001
-+#define MAC_FILTER_INC_DIRS  0b0000010
-+#define MAC_FILTER_R         0b0000100
-+#define MAC_FILTER_W         0b0001000
-+#define MAC_FILTER_EXEC      0b0010000
-+struct mac_filter {
-+    char    path[75];
-+    int     length;
-+    uint8_t perms;
-+};
-+int add_mac_filter(struct mac_filter *filt);
++#define MAC_PERM_CONTENTS 0b0000001
++#define MAC_PERM_READ     0b0000010
++#define MAC_PERM_WRITE    0b0000100
++#define MAC_PERM_EXEC     0b0001000
++#define MAC_PERM_APPEND   0b0010000
++#define MAC_PERM_FLOCK    0b0100000
++#define MAC_PERM_DEV      0b1000000
++int add_mac_permissions(const char *path, int flags);
 +
 +#define MAC_DENY            0b001
 +#define MAC_DENY_AND_SCREAM 0b010
@@ -2138,36 +2213,6 @@ index 0000000..a2a6c0f
 +#endif
 +
 +#endif // _SYS_MAC_H
-diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h
-new file mode 100644
-index 0000000..2796dcd
---- /dev/null
-+++ mlibc-workdir/sysdeps/ironclad/include/sys/ironclad_sched.h
-@@ -0,0 +1,24 @@
-+#ifndef _SYS_IRONCLAD_SCHED_H
-+#define _SYS_IRONCLAD_SCHED_H
-+
-+#include <stdint.h>
-+#include <stdbool.h>
-+#include <sys/types.h>
-+
-+#ifdef __cplusplus
-+extern "C" {
-+#endif
-+
-+#define THREAD_RT     0b0001
-+#define THREAD_MONO   0b0010
-+#define THREAD_MLOCK  0b0100
-+#define THREAD_BANNED 0b1000
-+int get_thread_sched(void);
-+int set_thread_sched(int flags);
-+int set_deadlines(int runtime, int period);
-+
-+#ifdef __cplusplus
-+}
-+#endif
-+
-+#endif // _SYS_IRONCLAD_SCHED_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
 new file mode 100644
 index 0000000..71ae64d
@@ -2215,8 +2260,38 @@ index 0000000..c2dbbf2
 +#endif
 +
 +#endif // _SYS_REBOOT_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/sched2.h mlibc-workdir/sysdeps/ironclad/include/sys/sched2.h
+new file mode 100644
+index 0000000..caeb86a
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/sched2.h
+@@ -0,0 +1,24 @@
++#ifndef _SYS_SCHED2_H
++#define _SYS_SCHED2_H
++
++#include <stdint.h>
++#include <stdbool.h>
++#include <sys/types.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define THREAD_RT     0b0001
++#define THREAD_MONO   0b0010
++#define THREAD_MLOCK  0b0100
++#define THREAD_BANNED 0b1000
++int get_thread_sched(void);
++int set_thread_sched(int flags);
++int set_deadlines(int runtime, int period);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..adceb4d 100644
+index 28d233e..3b94bda 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,5 +1,5 @@
@@ -2248,7 +2323,7 @@ index 28d233e..adceb4d 100644
  	asm volatile ("int $0x80" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,73 @@
+@@ -48,33 +57,77 @@
  				  : "memory"); \
  })
  
@@ -2326,8 +2401,8 @@ index 28d233e..adceb4d 100644
 +#define SYSCALL_MPROTECT             33
 +#define SYSCALL_SYNC                 34
 +#define SYSCALL_SET_MAC_CAPABILITIES 35
-+#define SYSCALL_GETEUID              36
-+#define SYSCALL_ADD_MAC_FILTER       37
++#define SYSCALL_GET_MAC_CAPABILITIES 36
++#define SYSCALL_ADD_MAC_PERMISSIONS  37
 +#define SYSCALL_SET_MAC_ENFORCEMENT  38
 +#define SYSCALL_MOUNT                39
 +#define SYSCALL_UMOUNT               40
@@ -2347,15 +2422,19 @@ index 28d233e..adceb4d 100644
 +#define SYSCALL_LISTEN               55
 +#define SYSCALL_ACCEPT               56
 +#define SYSCALL_POLL                 57
-+#define SYSCALL_SETUIDS              58
++#define SYSCALL_GETEUID              58
++#define SYSCALL_SETUIDS              59
++#define SYSCALL_FCHMOD               60
++#define SYSCALL_UMASK                61
++#define SYSCALL_REBOOT               62
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 898e0de..f3eb3a6 100644
+index 898e0de..81b3157 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
-@@ -5,7 +5,13 @@ rtdl_sources += files(
+@@ -5,7 +5,15 @@ rtdl_sources += files(
  
  libc_sources += files(
  	'generic/entry.cpp',
@@ -2366,18 +2445,20 @@ index 898e0de..f3eb3a6 100644
 +   'generic/reboot.cpp',
 +   'generic/pty.cpp',
 +	'generic/thread.cpp',
++   'generic/mac.cpp',
++   'generic/sched2.cpp',
 +	'generic/thread.S'
  )
  
  if not no_headers
-@@ -55,9 +61,28 @@ if not no_headers
+@@ -55,9 +63,28 @@ if not no_headers
  		subdir: 'abi-bits'
  	)
  	install_headers(
 -		'include/sys/ironclad.h',
-+		'include/sys/ironclad_sched.h',
++		'include/sys/sched2.h',
 +      'include/sys/ironclad_devices.h',
-+      'include/sys/ironclad_mac.h',
++      'include/sys/mac.h',
  		'include/sys/syscall.h',
 -		subdir: 'sys'
 +      'include/sys/reboot.h',
@@ -2401,7 +2482,7 @@ index 898e0de..f3eb3a6 100644
  	)
  endif
  
-@@ -70,5 +95,23 @@ if not headers_only
+@@ -70,5 +97,23 @@ if not headers_only
  		install: true,
  		install_dir: get_option('libdir')
  	)

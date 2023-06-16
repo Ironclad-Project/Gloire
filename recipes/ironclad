@@ -1,17 +1,18 @@
 name=ironclad
 from_source=ironclad
 revision=1
-imagedeps="gcc-ada texinfo"
-hostdeps="gprbuild"
+imagedeps="texinfo binutils"
+hostdeps="gcc binutils autoconf automake libtool pkg-config gprbuild"
 
 configure() {
+    GPRBUILD="gprbuild --target=x86_64-ironclad" \
     "${source_dir}"/configure --prefix="${prefix}" --target=x86_64-multiboot2-elf
 }
 
 build() {
-    make all docs -j${parallelism}
+    make all -j${parallelism}
 }
 
 install() {
-    DESTDIR=${dest_dir} make install install-docs
+    DESTDIR=${dest_dir} make install
 }

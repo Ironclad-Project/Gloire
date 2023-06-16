@@ -1,14 +1,13 @@
 name=gcc
 from_source=gcc-host
 revision=1
-imagedeps="gcc"
+imagedeps="gcc gcc-ada"
 hostdeps="autoconf automake libtool pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
 
 configure() {
     cp -rp "${source_dir}"/. ./
-
     mkdir build && cd build
 
         CXXFLAGS_FOR_TARGET="$CFLAGS" \
@@ -18,7 +17,8 @@ configure() {
         --target=x86_64-ironclad \
         --with-sysroot="${sysroot_dir}" \
         --disable-nls \
-        --enable-languages=c,c++,lto \
+        --disable-libada \
+        --enable-languages=c,c++,ada \
         --disable-multilib \
         --enable-initfini-array \
         --enable-shared \
@@ -28,6 +28,7 @@ configure() {
 build() {
     cd build
     make -j${parallelism} all-gcc
+    make -j${parallelism} -C gcc cross-gnattools ada.all.cross
 }
 
 install() {

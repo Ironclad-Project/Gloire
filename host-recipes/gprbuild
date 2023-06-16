@@ -13,5 +13,7 @@ build() {
 
 install() {
     mkdir -p "${dest_dir}${prefix}"
+    sed -i 's/elf/ironclad/g'     ./bootstrap/share/gprconfig/compilers.xml
+    sed -i 's/freebsd/ironclad/g' ./bootstrap/share/gprconfig/linker.xml
     cp -rv ./bootstrap/. "${dest_dir}${prefix}"/
 }

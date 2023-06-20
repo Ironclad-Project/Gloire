@@ -6,7 +6,7 @@
 
 ![](artwork/screenshot.png)
 
-Gloire is an OS built with the [Ironclad](https://github.com/streaksu/ironclad)
+Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
 kernel and using GNU tools for the userland, along with some original
 applications like `gwm`. This repository holds scripts and tools to build the
 OS from the ground up.
@@ -51,13 +51,7 @@ sudo apt install libarchive-tools git build-essentials
 
 ## Licensing
 
-Original code distributed along with the distribution like `gwm` fall under
-the [GPLv3-Or-Later](https://www.gnu.org/licenses/gpl-3.0.html) license
-detailed in [COPYING](COPYING).
-
-While that is true for original code, patches for packages fall under the
-license of the patched project. A list of the licenses used by the software
-ported to Gloire is:
+A list of the licenses used by the software ported to Gloire is:
 
 - [GPLv3 (Or-Later and Only)](https://www.gnu.org/licenses/gpl-3.0.html)
 - [GPLv2 (Or-Later and Only)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)

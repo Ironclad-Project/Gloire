@@ -38,12 +38,16 @@ qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.iso
 A list of the tools needed for compilation of the OS are:
 
 - `git` for cloning packages.
-- `curl` for downloading tarballs.
-- `GNU Bash`.
-- A working `docker` install.
-- Common UNIX tools like `coreutils`, `grep`, `find`, etc.
+- `curl` and `bsdtar` for setting up jinx.
+- Common UNIX tools like `bash`, `coreutils`, `grep`, `find`, etc.
 - `xorriso` for image building.
 - `qemu` for testing, if wanted.
+
+All of said things can be installed in debian-based systems with
+
+```bash
+sudo apt install libarchive-tools git build-essentials
+```
 
 ## Licensing
 

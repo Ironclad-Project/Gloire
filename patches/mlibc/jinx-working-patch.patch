@@ -117,6 +117,58 @@ index d1e9f02..397a69d 100644
 +#define POSIX_FADV_RANDOM 6
  
  #endif // _ABIBITS_FCNTL_H
+diff --git mlibc-workdir/abis/ironclad/vm-flags.h mlibc-workdir/abis/ironclad/vm-flags.h
+new file mode 100644
+index 0000000..a686cd3
+--- /dev/null
++++ mlibc-workdir/abis/ironclad/vm-flags.h
+@@ -0,0 +1,46 @@
++#ifndef _ABIBITS_MMAP_FLAGS_H
++#define _ABIBITS_MMAP_FLAGS_H
++
++#define PROT_NONE  0x00
++#define PROT_READ  0x01
++#define PROT_WRITE 0x02
++#define PROT_EXEC  0x04
++
++#define MAP_FAILED ((void *)(-1))
++#define MAP_FILE      0x00
++#define MAP_PRIVATE   0x01
++#define MAP_SHARED    0x02
++#define MAP_FIXED     0x04
++#define MAP_ANON      0x08
++#define MAP_ANONYMOUS 0x08
++#define MAP_NORESERVE 0x10
++#define MAP_WC        0b10000
++
++#define MS_ASYNC 0x01
++#define MS_SYNC 0x02
++#define MS_INVALIDATE 0x04
++
++#define MCL_CURRENT 0x01
++#define MCL_FUTURE 0x02
++
++#define POSIX_MADV_NORMAL 1
++#define POSIX_MADV_SEQUENTIAL 2
++#define POSIX_MADV_RANDOM 3
++#define POSIX_MADV_DONTNEED 4
++#define POSIX_MADV_WILLNEED 5
++
++#define MADV_NORMAL 0
++#define MADV_RANDOM 1
++#define MADV_SEQUENTIAL 2
++#define MADV_WILLNEED 3
++#define MADV_DONTNEED 4
++#define MADV_FREE 8
++
++// Linux extensions:
++#define MREMAP_MAYMOVE 1
++#define MREMAP_FIXED 2
++
++#define MFD_CLOEXEC 1U
++#define MFD_ALLOW_SEALING 2U
++
++#endif // _ABIBITS_MMAP_FLAGS_H
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
 index 1f8a8ca..01ebd25 100644
 --- mlibc-clean/meson.build
@@ -1489,6 +1541,15 @@ index 0000000..687ef8c
 +
 +	mlibc::sys_thread_exit();
 +}
+diff --git mlibc-clean/sysdeps/ironclad/include/abi-bits/vm-flags.h mlibc-workdir/sysdeps/ironclad/include/abi-bits/vm-flags.h
+index f1a985e..6dc4788 120000
+--- mlibc-clean/sysdeps/ironclad/include/abi-bits/vm-flags.h
++++ mlibc-workdir/sysdeps/ironclad/include/abi-bits/vm-flags.h
+@@ -1 +1 @@
+-../../../../abis/mlibc/vm-flags.h
+\ No newline at end of file
++../../../../abis/ironclad/vm-flags.h
+\ No newline at end of file
 diff --git mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
 new file mode 100644
 index 0000000..5bb74bc

@@ -373,7 +373,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..7c01b91 100644
+index d6dbca3..ad28893 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,23 @@
@@ -563,18 +563,18 @@ index d6dbca3..7c01b91 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -657,7 +657,7 @@ index d6dbca3..7c01b91 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +274,20 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +274,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -683,10 +683,24 @@ index d6dbca3..7c01b91 100644
 +	}
 +
 +	return 0;
++}
++
++int sys_getrlimit(int resource, struct rlimit *limit) {
++	uint64_t ret, errno;
++	SYSCALL1(SYSCALL_GETRLIMIT, resource);
++	limit->rlim_cur = ret;
++	limit->rlim_max = ret;
++	return errno;
++}
++
++int sys_setrlimit(int resource, const struct rlimit *limit) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_SETRLIMIT, resource, limit->rlim_cur);
++	return errno;
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,7 +306,7 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +320,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -695,7 +709,14 @@ index d6dbca3..7c01b91 100644
  }
  
  int sys_uname(struct utsname *buf) {
-@@ -278,6 +321,17 @@ int sys_uname(struct utsname *buf) {
+ 	int ret, errno;
+ 
+-	SYSCALL1(SYSCALL_UNAME, buf);
++	SYSCALL3(SYSCALL_SYSCONF, 10, buf, sizeof(struct utsname));
+ 
+ 	if (ret == -1) {
+ 		return errno;
+@@ -278,6 +335,17 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -713,7 +734,7 @@ index d6dbca3..7c01b91 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,7 +344,7 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,7 +358,7 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -722,7 +743,7 @@ index d6dbca3..7c01b91 100644
  	char* ret;
  	int errno;
  
-@@ -306,7 +360,7 @@ int sys_getcwd(const char *buff, size_t size) {
+@@ -306,7 +374,7 @@ int sys_getcwd(const char *buff, size_t size) {
  int sys_chdir(const char *buff) {
  	int ret, errno;
  
@@ -731,7 +752,7 @@ index d6dbca3..7c01b91 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +382,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +396,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -798,7 +819,7 @@ index d6dbca3..7c01b91 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +448,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +462,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -875,20 +896,19 @@ index d6dbca3..7c01b91 100644
 +	size_t path_len = strlen (path);
 +	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
 +	return errno;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++}
++
 +int sys_link(const char* srcpath, const char* destpath) {
- 	int ret, errno;
++	int ret, errno;
 +	size_t src_len = strlen (srcpath);
 +   size_t dst_len = strlen (destpath);
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
-+}
+ }
  
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_socket(int domain, int type, int protocol, int *fd) {
-+	int ret, errno;
+ 	int ret, errno;
 +	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
 +	if (ret != -1) {
 +      *fd = ret;
@@ -898,17 +918,18 @@ index d6dbca3..7c01b91 100644
 +   }
 +}
  
--	if (ret == -1 && errno != 0) {
--        return errno;
--	} else {
--			*value = ret;
--        return 0;
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +uid_t sys_getuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETUID);
 +   return (uid_t)ret;
 +}
-+
+ 
+-	if (ret == -1 && errno != 0) {
+-        return errno;
+-	} else {
+-			*value = ret;
+-        return 0;
 +uid_t sys_geteuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETEUID);
@@ -1114,7 +1135,7 @@ index d6dbca3..7c01b91 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +740,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +754,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -1156,7 +1177,7 @@ index d6dbca3..7c01b91 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +777,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +791,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -2360,7 +2381,7 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..ba434ee 100644
+index 28d233e..ba60e79 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,5 +1,5 @@
@@ -2449,7 +2470,7 @@ index 28d233e..ba434ee 100644
 +#define SYSCALL_EXEC                 11
 +#define SYSCALL_CLONE                12
 +#define SYSCALL_WAIT                 13
-+#define SYSCALL_UNAME                14
++#define SYSCALL_SOCKET               14
 +#define SYSCALL_SETHOSTNAME          15
 +#define SYSCALL_UNLINK               16
 +#define SYSCALL_STAT                 17
@@ -2479,17 +2500,17 @@ index 28d233e..ba434ee 100644
 +#define SYSCALL_GETDENTS             42
 +#define SYSCALL_MAKENODE             43
 +#define SYSCALL_TRUNCATE             44
++#define SYSCALL_BIND                 45
 +#define SYSCALL_SYMLINK              46
-+#define SYSCALL_INTEGRITY_SETUP      47
++#define SYSCALL_CONNECT              47
 +#define SYSCALL_OPENPTY              48
 +#define SYSCALL_FSYNC                49
 +#define SYSCALL_LINK                 50
 +#define SYSCALL_PTRACE               51
-+#define SYSCALL_SOCKET               52
-+#define SYSCALL_BIND                 53
-+#define SYSCALL_CONNECT              54
-+#define SYSCALL_LISTEN               55
-+#define SYSCALL_ACCEPT               56
++#define SYSCALL_LISTEN               52
++#define SYSCALL_ACCEPT               53
++#define SYSCALL_GETRLIMIT            54
++#define SYSCALL_SETRLIMIT            55
 +#define SYSCALL_POLL                 57
 +#define SYSCALL_GETEUID              58
 +#define SYSCALL_SETUIDS              59

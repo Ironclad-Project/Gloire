@@ -1,7 +1,7 @@
 name=gwm
-version=bd07a57b40cb18864c59f7a0e75fdd41f226ba2e
+version=c92e0f563246f993c1f5e787cd1e853d0ffa6cc7
 tarball_url="https://github.com/streaksu/gwm/archive/${version}.tar.gz"
-tarball_blake2b="60533278852fcbba053ca3579191e4d215a06095a5fd86bc5a0acd23c70a8f42d69d10ca908ad687a237b9c2ef261455d258e7725651ca36f9bcbaa65dea903d"
+tarball_blake2b="521b63ae9544ad25c82614b66453bc8cc5dbef3699e741cee3e34d3b05dac9b1da454c8afbc05a8b3d08b1e6be2520450b195d4a539192514cd95bdfb5c82342"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 

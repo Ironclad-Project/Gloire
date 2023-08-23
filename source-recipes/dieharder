@@ -1,8 +1,8 @@
 name=dieharder
-version=3.31.2
+version=3.31.1.4
 source_method=tarball
-tarball_url="https://github.com/christopherkobayashi/dieharder/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="6584fd10b723d8083918d474ce00c9bb387e29ff04d21be41779f297d850d688aedf9e675c18a543f8b0babafe7828049c36b13a112ba64abe205d262bb89efb"
+tarball_url="https://github.com/eddelbuettel/dieharder/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="4dd2716a53cb3ed36f64851651b60f29c7d0028ba2a3000bb28cebd22a13b9eb36ce5003412868d4cbadb5e74654bec64157e5d7f453361a4a0613a90380893a"
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {

@@ -25,7 +25,7 @@
 
 set -e
 
-jinx_version="0.0.40"
+jinx_version="0.1.2"
 
 IFS=" ""	"'
 '
@@ -207,48 +207,26 @@ prepare_container() {
 
     imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
 
-    while true; do
-        fail_check=""
-        pkgset=""
-        for pkg in ${imagedeps}; do
-            pkgset="${pkgset}${pkg}/"
+    pkgset=""
+    for pkg in ${imagedeps}; do
+        pkgset="${pkgset}${pkg}/"
 
-            if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
-                continue
-            fi
+        if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
+            continue
+        fi
 
-            mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
+        mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
-            cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+        cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
-            make_temp
-            pacman_log="${tmp}"
+        if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
+            die 'Jinx error: Installing an imagedep failed. If the error is not due to a non-existant package, try running `jinx rebuild-cache` and try again.'
+        fi
 
-            tail -f "${pacman_log}" &
-            tail_pid=$!
-
-            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}" >"${pacman_log}" 2>&1; then
-                kill "${tail_pid}"
-                if grep "target not found" "${pacman_log}" >/dev/null 2>&1; then
-                    rm -f "${pacman_log}"
-                    chmod -R 777 "$JINX_CACHE_DIR/sets/${pkgset}"
-                    rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
-                    die
-                fi
-                rm -f "${pacman_log}"
-                reinit_container
-                fail_check=on
-                break
-            fi
-            kill "${tail_pid}"
-            rm -f "${pacman_log}"
-
-            # Fix permissions of files
-            for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
-                chmod 755 "$f"
-            done
+        # Fix permissions of files
+        for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
+            chmod 755 "$f"
         done
-        [ "$fail_check" = "on" ] || break
     done
 
     imgroot="$JINX_CACHE_DIR/sets/${pkgset}.image"
@@ -1211,10 +1189,11 @@ reinit_container() {
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --init
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --populate archlinux
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Sy archlinux-keyring
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -S pacman pacman-mirrorlist
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S reflector
     echo "* updating Arch mirrors..."
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" reflector --latest 6 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" reflector --delay 0.25 --protocol https --score 10 --sort score --save /etc/pacman.d/mirrorlist
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl python texinfo which
 
@@ -1228,7 +1207,7 @@ reinit_container() {
 }
 
 first_use() {
-    echo "* preparing Jinx for first use..."
+    echo "* preparing Jinx cache..."
 
     mkdir -p "$JINX_CACHE_DIR"
 
@@ -1242,7 +1221,7 @@ first_use() {
 }
 
 redo_first_use() {
-    echo "* purging Jinx cache..."
+    echo "* purging old Jinx cache..."
     chmod -R 777 "$JINX_CACHE_DIR" || true
     rm -rf "$JINX_CACHE_DIR"
     first_use
@@ -1358,6 +1337,9 @@ case "$1" in
         ;;
     rbrt)
         rebuild_rbrt
+        ;;
+    rebuild-cache)
+        redo_first_use
         ;;
     *)
         if [ -z "$1" ]; then

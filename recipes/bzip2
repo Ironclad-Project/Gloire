@@ -10,9 +10,9 @@ configure() {
 }
 
 build() {
-    make CC=x86_64-ironclad-gcc CFLAGS=-fPIC -f Makefile-libbz2_so
+    make CC=x86_64-ironclad-gcc CFLAGS="-fPIC $CFLAGS" -f Makefile-libbz2_so
     make clean
-    make CC=x86_64-ironclad-gcc AR=x86_64-ironclad-ar CFLAGS=-fPIC -j${parallelism}
+    make CC=x86_64-ironclad-gcc AR=x86_64-ironclad-ar CFLAGS="-fPIC $CFLAGS" -j${parallelism}
 }
 
 install() {

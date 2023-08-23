@@ -1,17 +1,18 @@
-name=texinfo
-from_source=texinfo
+name=gzip
+from_source=gzip
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs ncurses bash gzip"
-imagedeps="gcc perl help2man"
+deps="core-libs"
 
 configure() {
     cp -rp "${source_dir}"/. ./
-    ./configure                \
+
+    ./configure \
         --host=x86_64-ironclad \
-        --prefix=${prefix}     \
-        --sysconfdir=/etc      \
-        --localstatedir=/var
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-static
 }
 
 build() {

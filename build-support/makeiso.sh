@@ -29,16 +29,16 @@ cp -r sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
 # Install the limine and memtest86+ binaries.
 mkdir -pv iso_root/EFI/BOOT
-cp -r host-pkgs/limine/usr/local/share/limine/limine.sys        iso_root/boot/
-cp -r host-pkgs/limine/usr/local/share/limine/limine-cd.bin     iso_root/boot/
-cp -r host-pkgs/limine/usr/local/share/limine/limine-cd-efi.bin iso_root/boot/
+cp -r host-pkgs/limine/usr/local/share/limine/limine-bios.sys    iso_root/boot/
+cp -r host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/
+cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/
 cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI            iso_root/EFI/BOOT/
 cp -r host-pkgs/memtest86+/boot/memtest.bin                     iso_root/boot/
 
 # Create the disk image.
-xorriso -as mkisofs -b boot/limine-cd.bin -no-emul-boot -boot-load-size 4 \
--boot-info-table --efi-boot boot/limine-cd-efi.bin -efi-boot-part         \
+xorriso -as mkisofs -b boot/limine-bios-cd.bin -no-emul-boot -boot-load-size 4 \
+-boot-info-table --efi-boot boot/limine-uefi-cd.bin -efi-boot-part         \
 --efi-boot-image --protective-msdos-label iso_root -o gloire.iso
 
 # Install limine.
-host-pkgs/limine/usr/local/bin/limine-deploy gloire.iso
+host-pkgs/limine/usr/local/bin/limine bios-install gloire.iso

@@ -170,7 +170,7 @@ index 0000000..a686cd3
 +
 +#endif // _ABIBITS_MMAP_FLAGS_H
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 1f8a8ca..01ebd25 100644
+index 73650b4..59813de 100644
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
 @@ -137,7 +137,7 @@ elif host_machine.system() == 'managarm'
@@ -251,84 +251,29 @@ index 513c4bc..f5da649 100644
  }
  
  int login_tty(int fd) {
-diff --git mlibc-clean/options/posix/generic/dirent-stubs.cpp mlibc-workdir/options/posix/generic/dirent-stubs.cpp
-index 1352585..6ae1cf3 100644
---- mlibc-clean/options/posix/generic/dirent-stubs.cpp
-+++ mlibc-workdir/options/posix/generic/dirent-stubs.cpp
-@@ -66,14 +66,14 @@ DIR *opendir(const char *path) {
- }
- struct dirent *readdir(DIR *dir) {
- 	__ensure(dir->__ent_next <= dir->__ent_limit);
--	if(dir->__ent_next == dir->__ent_limit) {
-+	if(dir->__ent_next == 0 && dir->__ent_limit == 0) {
- 		MLIBC_CHECK_OR_ENOSYS(mlibc::sys_read_entries, nullptr);
--		if(int e = mlibc::sys_read_entries(dir->__handle, dir->__ent_buffer, 2048, &dir->__ent_limit); e)
-+		if(int e = mlibc::sys_read_entries(dir->__handle, dir->__ent_buffer, __DIR_BUFFER_LEN, &dir->__ent_limit); e)
- 			__ensure(!"mlibc::sys_read_entries() failed");
- 		dir->__ent_next = 0;
--		if(!dir->__ent_limit)
--			return nullptr;
--	}
-+	} else if (dir->__ent_next == dir->__ent_limit) {
-+	   return nullptr;
-+   }
- 
- 	auto entp = reinterpret_cast<struct dirent *>(dir->__ent_buffer + dir->__ent_next);
- 	// We only copy as many bytes as we need to avoid buffer-overflows.
-@@ -89,7 +89,7 @@ int readdir_r(DIR *dir, struct dirent *entry, struct dirent **result) {
- 
- 	__ensure(dir->__ent_next <= dir->__ent_limit);
- 	if(dir->__ent_next == dir->__ent_limit) {
--		if(int e = mlibc::sys_read_entries(dir->__handle, dir->__ent_buffer, 2048, &dir->__ent_limit); e)
-+		if(int e = mlibc::sys_read_entries(dir->__handle, dir->__ent_buffer, __DIR_BUFFER_LEN, &dir->__ent_limit); e)
- 			__ensure(!"mlibc::sys_read_entries() failed");
- 		dir->__ent_next = 0;
- 		if(!dir->__ent_limit) {
-diff --git mlibc-clean/options/posix/generic/unistd-stubs.cpp mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-index 786671c..0ea29c5 100644
---- mlibc-clean/options/posix/generic/unistd-stubs.cpp
-+++ mlibc-workdir/options/posix/generic/unistd-stubs.cpp
-@@ -685,13 +685,8 @@ unsigned long sysconf(int number) {
- 		case _SC_PAGE_SIZE:
- 			return mlibc::page_size;
- 		case _SC_OPEN_MAX:
--			struct rlimit ru;
--			if (getrlimit(RLIMIT_NOFILE, &ru) < 0) {
--				mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 256\e[39m" << frg::endlog;
--				return 256;
--			} else {
--				return (ru.rlim_cur == RLIM_INFINITY) ? -1 : ru.rlim_cur;
--			}
-+			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns arbitrary value 100\e[39m" << frg::endlog;
-+			return 100;
- 		case _SC_PHYS_PAGES:
- 			// TODO: actually return a proper value for _SC_PHYS_PAGES
- 			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_PHYS_PAGES) returns arbitrary value 1024\e[39m" << frg::endlog;
-diff --git mlibc-clean/options/posix/include/dirent.h mlibc-workdir/options/posix/include/dirent.h
-index b50566d..bdb807b 100644
---- mlibc-clean/options/posix/include/dirent.h
-+++ mlibc-workdir/options/posix/include/dirent.h
-@@ -39,12 +39,12 @@ struct dirent64 {
- #undef __MLIBC_DIRENT_BODY
- 
- #define IFTODT(mode) (((mode) & 0170000) >> 12)
--
-+#define __DIR_BUFFER_LEN (2048 * 20)
- struct __mlibc_dir_struct {
- 	int __handle;
- 	__mlibc_size __ent_next;
- 	__mlibc_size __ent_limit;
--	char __ent_buffer[2048];
-+	char __ent_buffer[__DIR_BUFFER_LEN];
- 	struct dirent __current;
- };
- 
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index 003a162..8e04b03 100644
+index 7acd190..9e9906f 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
-@@ -516,9 +516,9 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
+@@ -507,18 +507,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
+ 
+ 				void *map_pointer;
+ 				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
+-						total_map_size, prot | PROT_WRITE,
++						total_map_size, PROT_WRITE,
+ 						MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0, &map_pointer))
+ 					__ensure(!"sys_vm_map failed");
+ 
+ 				seekOrDie(fd, phdr->p_offset);
+ 				readExactlyOrDie(fd, reinterpret_cast<char *>(map_address) + misalign,
  						phdr->p_filesz);
++
++				if (prot & PROT_EXEC) {
++				   prot = PROT_READ | PROT_EXEC;
++			   }
++				if (mlibc::sys_vm_protect (reinterpret_cast<void *>(map_address),
++				      total_map_size, prot))
++				   __ensure(!"vm_protect not feeling all there");
  			#endif
  			// Take care of removing superfluous permissions.
 -			if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
@@ -373,7 +318,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d6dbca3..ad28893 100644
+index d32864b..74eb06a 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,23 @@
@@ -407,7 +352,7 @@ index d6dbca3..ad28893 100644
  	sys_exit(1);
  }
  
-@@ -39,15 +38,37 @@ void sys_exit(int status) {
+@@ -39,21 +38,68 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -443,15 +388,24 @@ index d6dbca3..ad28893 100644
 +		// depends on some things being truncate-able that ironclad does not
 +		// allow. For example, some devices.
 +		sys_ftruncate(ret, 0);
++	} else if (ret != -1 && (flags & O_DIRECTORY)) {
++	   struct stat st;
++      sys_stat(fsfd_target::fd, ret, NULL, 0, &st);
++      if (!S_ISDIR (st.st_mode)) {
++          ret   = -1;
++          errno = ENOTDIR;
++      }
 +	}
 +
  	*fd = ret;
  	return errno;
  }
-@@ -56,12 +77,50 @@ int sys_open_dir(const char *path, int *handle) {
- 	return sys_open(path, O_RDONLY, 0660, handle);
- }
  
+ int sys_open_dir(const char *path, int *handle) {
+-	return sys_open(path, O_RDONLY, 0660, handle);
++	return sys_open(path, O_RDONLY | O_DIRECTORY, 0660, handle);
++}
++
 +int sys_read_entries(int handle, void *buffer, size_t max_size, size_t *bytes_read) {
 +	size_t ret;
 +	int errno;
@@ -468,11 +422,10 @@ index d6dbca3..ad28893 100644
 +    int ret, errno;
 +    SYSCALL0(SYSCALL_EXIT_THREAD);
 +    __builtin_unreachable();
-+}
-+
+ }
+ 
  int sys_close(int fd) {
- 	int ret, errno;
- 	SYSCALL1(SYSCALL_CLOSE, fd);
+@@ -62,6 +108,26 @@ int sys_close(int fd) {
  	return errno;
  }
  
@@ -499,7 +452,7 @@ index d6dbca3..ad28893 100644
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -86,6 +145,12 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,8 +152,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -510,9 +463,12 @@ index d6dbca3..ad28893 100644
 +}
 +
  int sys_anon_allocate(size_t size, void **pointer) {
- 	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
+-	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
++	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE, MAP_ANON, 0, 0, pointer);
  }
-@@ -113,6 +178,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+ 
+ int sys_anon_free(void *pointer, size_t size) {
+@@ -113,6 +185,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -529,7 +485,7 @@ index d6dbca3..ad28893 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +206,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +213,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -629,7 +585,7 @@ index d6dbca3..ad28893 100644
  	return 0;
  }
  
- pid_t sys_getpgid(pid_t pid, pid_t *pgid) {
+ int sys_getpgid(pid_t pid, pid_t *pgid) {
  	(void)pid;
 -	mlibc::infoLogger() << "getpgid() is a stub" << frg::endlog;
 +	// FIXME: Stub needed by mlibc.
@@ -657,7 +613,7 @@ index d6dbca3..ad28893 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +274,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +281,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -700,7 +656,7 @@ index d6dbca3..ad28893 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +320,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +327,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -716,7 +672,7 @@ index d6dbca3..ad28893 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +335,17 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +342,17 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -734,7 +690,7 @@ index d6dbca3..ad28893 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,7 +358,7 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,7 +365,7 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -743,7 +699,7 @@ index d6dbca3..ad28893 100644
  	char* ret;
  	int errno;
  
-@@ -306,7 +374,7 @@ int sys_getcwd(const char *buff, size_t size) {
+@@ -306,7 +381,7 @@ int sys_getcwd(const char *buff, size_t size) {
  int sys_chdir(const char *buff) {
  	int ret, errno;
  
@@ -752,7 +708,7 @@ index d6dbca3..ad28893 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +396,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +403,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -819,7 +775,7 @@ index d6dbca3..ad28893 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +462,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +469,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -1135,7 +1091,7 @@ index d6dbca3..ad28893 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +754,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +761,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -1177,7 +1133,7 @@ index d6dbca3..ad28893 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +791,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +798,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -1539,10 +1495,10 @@ index 0000000..47ab6a9
 +.section .note.GNU-stack,"",%progbits
 diff --git mlibc-workdir/sysdeps/ironclad/generic/thread.cpp mlibc-workdir/sysdeps/ironclad/generic/thread.cpp
 new file mode 100644
-index 0000000..687ef8c
+index 0000000..1b2f040
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/generic/thread.cpp
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,54 @@
 +#include <sys/mman.h>
 +#include <mlibc/debug.hpp>
 +#include <errno.h>
@@ -1555,12 +1511,47 @@ index 0000000..687ef8c
 +		mlibc::sys_futex_wait(&tcb->tid, 0, nullptr);
 +	}
 +
-+	tcb->returnValue = fn(arg);
++	tcb->invokeThreadFunc(reinterpret_cast<void *>(fn), arg);
 +
 +	__atomic_store_n(&tcb->didExit, 1, __ATOMIC_RELEASE);
 +	mlibc::sys_futex_wake(&tcb->didExit);
 +
 +	mlibc::sys_thread_exit();
++}
++
++#define DEFAULT_STACK 0x20000
++
++namespace mlibc {
++	int sys_prepare_stack(void **stack, void *entry, void *arg, void *tcb, size_t *stack_size, size_t *guard_size, void **stack_base) {
++		// TODO guard
++
++		mlibc::infoLogger() << "mlibc: sys_prepare_stack() does not setup a guard!" << frg::endlog;
++
++		*guard_size = 0;
++
++		*stack_size = *stack_size ? *stack_size : DEFAULT_STACK;
++
++		if (!*stack) {
++			*stack_base = mmap(NULL, *stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
++			if (*stack_base == MAP_FAILED) {
++				return errno;
++			}
++		} else {
++			*stack_base = *stack;
++		}
++
++		*stack = (void *)((char *)*stack_base + *stack_size);
++
++		void **stack_it = (void **)*stack;
++
++		*--stack_it = arg;
++		*--stack_it = tcb;
++		*--stack_it = entry;
++
++		*stack = (void *)stack_it;
++
++		return 0;
++	}
 +}
 diff --git mlibc-clean/sysdeps/ironclad/include/abi-bits/vm-flags.h mlibc-workdir/sysdeps/ironclad/include/abi-bits/vm-flags.h
 index f1a985e..6dc4788 120000
@@ -1573,7 +1564,7 @@ index f1a985e..6dc4788 120000
 \ No newline at end of file
 diff --git mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
 new file mode 100644
-index 0000000..5bb74bc
+index 0000000..aa9f0b4
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
 @@ -0,0 +1,102 @@
@@ -1632,7 +1623,7 @@ index 0000000..5bb74bc
 +#define TCSBRKP                  0x5425
 +#define TIOCSBRK                 0x5427
 +#define TIOCCBRK                 0x5428
-+#define TIOCGSID                 0x5429 
++#define TIOCGSID                 0x5429
 +#define TCGETS2                  3
 +#define TCSETS2                  3
 +#define TCSETSW2                 3
@@ -1681,7 +1672,7 @@ index 0000000..5bb74bc
 +#endif /* _ASM_IOCTLS_H */
 diff --git mlibc-workdir/sysdeps/ironclad/include/linux/fb.h mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
 new file mode 100644
-index 0000000..b3b5350
+index 0000000..563ce82
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
 @@ -0,0 +1,397 @@
@@ -1843,7 +1834,7 @@ index 0000000..b3b5350
 +	uint32_t smem_len;			/* Length of frame buffer mem */
 +	uint32_t type;			/* see FB_TYPE_*		*/
 +	uint32_t type_aux;			/* Interleave for interleaved Planes */
-+	uint32_t visual;			/* see FB_VISUAL_*		*/ 
++	uint32_t visual;			/* see FB_VISUAL_*		*/
 +	uint16_t xpanstep;			/* zero if no hardware panning  */
 +	uint16_t ypanstep;			/* zero if no hardware panning  */
 +	uint16_t ywrapstep;		/* zero if no hardware ywrap    */
@@ -1870,8 +1861,8 @@ index 0000000..b3b5350
 +struct fb_bitfield {
 +	uint32_t offset;			/* beginning of bitfield	*/
 +	uint32_t length;			/* length of bitfield		*/
-+	uint32_t msb_right;		/* != 0 : Most significant bit is */ 
-+					/* right */ 
++	uint32_t msb_right;		/* != 0 : Most significant bit is */
++					/* right */
 +};
 +
 +#define FB_NONSTD_HAM		1	/* Hold-And-Modify (HAM)        */
@@ -1935,7 +1926,7 @@ index 0000000..b3b5350
 +	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
 +	struct fb_bitfield green;	/* else only length is significant */
 +	struct fb_bitfield blue;
-+	struct fb_bitfield transp;	/* transparency			*/	
++	struct fb_bitfield transp;	/* transparency			*/
 +
 +	uint32_t nonstd;			/* != 0 Non standard pixel format */
 +
@@ -2522,7 +2513,7 @@ index 28d233e..ba60e79 100644
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 898e0de..81b3157 100644
+index a0b4f8d..24f6292 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
 @@ -5,7 +5,15 @@ rtdl_sources += files(
@@ -2542,7 +2533,7 @@ index 898e0de..81b3157 100644
  )
  
  if not no_headers
-@@ -55,9 +63,28 @@ if not no_headers
+@@ -56,9 +64,28 @@ if not no_headers
  		subdir: 'abi-bits'
  	)
  	install_headers(
@@ -2573,7 +2564,7 @@ index 898e0de..81b3157 100644
  	)
  endif
  
-@@ -70,5 +97,23 @@ if not headers_only
+@@ -71,5 +98,23 @@ if not headers_only
  		install: true,
  		install_dir: get_option('libdir')
  	)

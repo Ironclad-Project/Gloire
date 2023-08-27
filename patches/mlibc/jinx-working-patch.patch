@@ -318,7 +318,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..74eb06a 100644
+index d32864b..7ef5df7 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,23 @@
@@ -452,7 +452,30 @@ index d32864b..74eb06a 100644
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -86,8 +152,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -78,6 +144,22 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
+ 	return errno;
+ }
+ 
++int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read) {
++	ssize_t ret;
++	int errno;
++	SYSCALL4(SYSCALL_PREAD, fd, buf, n, off);
++	*bytes_read = ret;
++	return errno;
++}
++
++int sys_pwrite(int fd, const void *buf, size_t n, off_t off, ssize_t *bytes_written) {
++	ssize_t ret;
++	int errno;
++	SYSCALL4(SYSCALL_WRITE, fd, buf, n, off);
++	*bytes_written = ret;
++	return errno;
++}
++
+ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+ 	ssize_t ret;
+ 	int errno;
+@@ -86,8 +168,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -468,7 +491,7 @@ index d32864b..74eb06a 100644
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -113,6 +185,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +201,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -485,7 +508,7 @@ index d32864b..74eb06a 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +213,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +229,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -519,18 +542,18 @@ index d32864b..74eb06a 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -613,7 +636,7 @@ index d32864b..74eb06a 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +281,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +297,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -656,7 +679,7 @@ index d32864b..74eb06a 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +327,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +343,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -672,7 +695,7 @@ index d32864b..74eb06a 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +342,17 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +358,17 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -690,25 +713,43 @@ index d32864b..74eb06a 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,7 +365,7 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +381,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
 -int sys_getcwd(const char *buff, size_t size) {
-+int sys_getcwd(char *buff, size_t size) {
- 	char* ret;
- 	int errno;
+-	char* ret;
+-	int errno;
++int sys_chdir(const char *buff) {
++	int ret, errno;
  
-@@ -306,7 +381,7 @@ int sys_getcwd(const char *buff, size_t size) {
- int sys_chdir(const char *buff) {
+-	SYSCALL2(SYSCALL_GETCWD, buff, size);
++   size_t buff_len = strlen(buff);
++	SYSCALL4(SYSCALL_OPEN, AT_FDCWD, buff, buff_len, O_RDONLY);
++	if (ret == -1) {
++		return ENOENT;
++	}
+ 
+-	if (ret == NULL) {
++	SYSCALL1(SYSCALL_CHDIR, ret);
++
++	if (ret == -1) {
+ 		return errno;
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-int sys_chdir(const char *buff) {
++int sys_fchdir(int fd) {
  	int ret, errno;
  
 -	SYSCALL1(SYSCALL_CHDIR, buff);
-+	SYSCALL2(SYSCALL_CHDIR, buff, strlen(buff));
++	SYSCALL1(SYSCALL_CHDIR, fd);
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +403,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +424,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -775,7 +816,7 @@ index d32864b..74eb06a 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +469,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +490,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -852,19 +893,20 @@ index d32864b..74eb06a 100644
 +	size_t path_len = strlen (path);
 +	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
 +	return errno;
-+}
-+
+ }
+ 
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_link(const char* srcpath, const char* destpath) {
-+	int ret, errno;
+ 	int ret, errno;
 +	size_t src_len = strlen (srcpath);
 +   size_t dst_len = strlen (destpath);
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
- }
++}
  
--int sys_getpriority(int which, id_t who, int *value) {
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +int sys_socket(int domain, int type, int protocol, int *fd) {
- 	int ret, errno;
++	int ret, errno;
 +	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
 +	if (ret != -1) {
 +      *fd = ret;
@@ -874,18 +916,17 @@ index d32864b..74eb06a 100644
 +   }
 +}
  
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
-+uid_t sys_getuid() {
-+	uint64_t ret, errno;
-+	SYSCALL0(SYSCALL_GETUID);
-+   return (uid_t)ret;
-+}
- 
 -	if (ret == -1 && errno != 0) {
 -        return errno;
 -	} else {
 -			*value = ret;
 -        return 0;
++uid_t sys_getuid() {
++	uint64_t ret, errno;
++	SYSCALL0(SYSCALL_GETUID);
++   return (uid_t)ret;
++}
++
 +uid_t sys_geteuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETEUID);
@@ -908,13 +949,13 @@ index d32864b..74eb06a 100644
 +	SYSCALL2(SYSCALL_SETUIDS, ((uint64_t)-1), euid);
 +   return ret;
 +}
- 
--	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
++
 +#ifndef MLIBC_BUILDING_RTDL
  
--	if (ret == -1) {
+-	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
 +extern "C" void __mlibc_thread_entry();
-+
+ 
+-	if (ret == -1) {
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
@@ -1091,7 +1132,7 @@ index d32864b..74eb06a 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +761,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -465,24 +782,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  }
  
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
@@ -1133,7 +1174,7 @@ index d32864b..74eb06a 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +798,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -493,5 +819,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  	__builtin_unreachable();
  }
  
@@ -2372,7 +2413,7 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..ba60e79 100644
+index 28d233e..2a8ade3 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,5 +1,5 @@
@@ -2404,7 +2445,7 @@ index 28d233e..ba60e79 100644
  	asm volatile ("int $0x80" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,78 @@
+@@ -48,33 +57,81 @@
  				  : "memory"); \
  })
  
@@ -2474,6 +2515,7 @@ index 28d233e..ba60e79 100644
 +#define SYSCALL_GETUID               24
 +#define SYSCALL_RENAME               25
 +#define SYSCALL_SYSCONF              26
++#define SYSCALL_SPAWN                27
 +#define SYSCALL_GET_THREAD_SCHED     28
 +#define SYSCALL_SET_THREAD_SCHED     29
 +#define SYSCALL_FCNTL                30
@@ -2509,6 +2551,8 @@ index 28d233e..ba60e79 100644
 +#define SYSCALL_UMASK                61
 +#define SYSCALL_REBOOT               62
 +#define SYSCALL_FCHOWN               63
++#define SYSCALL_PREAD                64
++#define SYSCALL_PWRITE               64
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H

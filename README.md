@@ -27,12 +27,13 @@ The instructions to build are:
 ./jinx build-all           # Build all packages.
 ./build-support/makeiso.sh # Create the image.
 ```
+
 This commands will generate a bootable disk image that can be burned to
 USB mass-storage media or be booted by several emulators, an example to boot
 the image with QEMU would be:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -hda gloire.iso
+qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -M q35 -hda gloire.iso
 ```
 
 A list of the tools needed for compilation of the OS are:

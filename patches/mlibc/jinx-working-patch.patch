@@ -2413,10 +2413,10 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..2a8ade3 100644
+index 28d233e..f93c996 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -1,5 +1,5 @@
+@@ -1,80 +1,142 @@
 -#ifndef _SYSCALL_H
 -#define _SYSCALL_H
 +#ifndef _SYS_SYSCALL_H
@@ -2424,29 +2424,90 @@ index 28d233e..2a8ade3 100644
  
  #include <stddef.h>
  
-@@ -38,9 +38,18 @@
- 				  : "memory"); \
+ #define SYSCALL0(NUM) ({ \
+-	asm volatile ("int $0x80" \
++	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+ 				  : "a"(NUM) \
+-				  : "memory"); \
++				  : "rcx", "r11", "memory"); \
  })
  
-+#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
-+   register auto arg_r8 asm("r8") = ARG4; \
-+	asm volatile ("int $0x80" \
-+				  : "=a"(ret), "=d"(errno) \
-+				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), "c"(ARG3), \
-+				    "r"(arg_r8) \
-+				  : "memory"); \
+ #define SYSCALL1(NUM, ARG0) ({ \
+-	asm volatile ("int $0x80" \
++	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+ 				  : "a"(NUM), "D"(ARG0) \
+-				  : "memory"); \
++				  : "rcx", "r11", "memory"); \
+ })
+ 
+ #define SYSCALL2(NUM, ARG0, ARG1) ({ \
+-	asm volatile ("int $0x80" \
++	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+ 				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
+-				  : "memory"); \
++				  : "rcx", "r11", "memory"); \
+ })
+ 
+ #define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
+-	asm volatile ("int $0x80" \
++	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+ 				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
+-				  : "memory"); \
++				  : "rcx", "r11", "memory"); \
+ })
+ 
+ #define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
+-	asm volatile ("int $0x80" \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), "c"(ARG3) \
+-				  : "memory"); \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12) \
++				  : "rcx", "r11", "memory"); \
 +})
 +
++#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8) \
++				  : "rcx", "r11", "memory"); \
+ })
+ 
  #define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
 -	register uint64_t arg_r8 asm("r8") = (uint64_t)ARG4; \
 -	register uint64_t arg_r9 asm("r9") = (uint64_t)ARG5; \
-+	register auto arg_r8 asm("r8") = ARG4; \
-+	register auto arg_r9 asm("r9") = ARG5; \
- 	asm volatile ("int $0x80" \
+-	asm volatile ("int $0x80" \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
++	register __typeof(ARG5) arg_r9 asm("r9") = ARG5; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
++	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
++	register __typeof(ARG6) arg_r10 asm("r10") = ARG6; \
++	asm volatile ("syscall" \
  				  : "=a"(ret), "=d"(errno) \
  				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-@@ -48,33 +57,81 @@
- 				  : "memory"); \
+-					"c"(ARG3), "r"(arg_r8), "r"(arg_r9) \
+-				  : "memory"); \
++					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
++				  : "rcx", "r11", "memory"); \
  })
  
 -#define SYSCALL_EXIT               0
@@ -2477,17 +2538,6 @@ index 28d233e..2a8ade3 100644
 -#define SYSCALL_DUP2              25
 -#define SYSCALL_DUP3              26
 -#define SYSCALL_ACCESS            27
-+#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
-+	register auto arg_r8  asm("r8")  = ARG4; \
-+	register auto arg_r9  asm("r9")  = ARG5; \
-+	register auto arg_r10 asm("r10") = ARG6; \
-+	asm volatile ("int $0x80" \
-+				  : "=a"(ret), "=d"(errno) \
-+				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
-+					"c"(ARG3), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
-+				  : "memory"); \
-+})
-+
 +#define SYSCALL_EXIT                  0
 +#define SYSCALL_ARCH_PRCTL            1
 +#define SYSCALL_OPEN                  2

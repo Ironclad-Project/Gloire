@@ -1,7 +1,7 @@
 name=gcon
-version=f9979d838a45fedcad00356037e2966753d602ad
+version=cff4fc9432baa09d84ff1d7dfecf2f919b3cc826
 tarball_url="https://github.com/streaksu/gcon/archive/${version}.tar.gz"
-tarball_blake2b="ef1b3fc89f45129d2cb03fbb11c3bba4e9692be2d20abea1ca776848049e39606f622164e6833a74b5516cd8376ba8fa1d3d2f66b382bef2e79df3c272eb61a9"
+tarball_blake2b="903183f0e1d226a491f9b4ec5fe24bbcc5ac521462ef48ec46cb87b4434ea1f4b4c788ad15eff92e14599fd51dc502bc897bb6a04be3d7fa85be153cbf797cfc"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 allow_network="yes"

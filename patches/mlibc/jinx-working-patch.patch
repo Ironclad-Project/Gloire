@@ -318,16 +318,17 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..7ef5df7 100644
+index d32864b..e52634c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,24 +10,23 @@
+@@ -10,24 +10,24 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
 +#include <sys/ironclad_devices.h>
 +#include <sched.h>
 +#include <sys/mman.h>
++#include <unistd.h>
  
  namespace mlibc {
  
@@ -352,7 +353,7 @@ index d32864b..7ef5df7 100644
  	sys_exit(1);
  }
  
-@@ -39,21 +38,68 @@ void sys_exit(int status) {
+@@ -39,21 +39,68 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -425,7 +426,7 @@ index d32864b..7ef5df7 100644
  }
  
  int sys_close(int fd) {
-@@ -62,6 +108,26 @@ int sys_close(int fd) {
+@@ -62,6 +109,26 @@ int sys_close(int fd) {
  	return errno;
  }
  
@@ -452,7 +453,7 @@ index d32864b..7ef5df7 100644
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -78,6 +144,22 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
+@@ -78,6 +145,22 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
  	return errno;
  }
  
@@ -475,7 +476,7 @@ index d32864b..7ef5df7 100644
  int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	ssize_t ret;
  	int errno;
-@@ -86,8 +168,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,8 +169,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -491,7 +492,7 @@ index d32864b..7ef5df7 100644
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -113,6 +201,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +202,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -508,7 +509,7 @@ index d32864b..7ef5df7 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +229,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +230,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -636,7 +637,7 @@ index d32864b..7ef5df7 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +297,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +298,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -646,7 +647,7 @@ index d32864b..7ef5df7 100644
 +	int errno;
  
 -    SYSCALL0(SYSCALL_FORK);
-+	SYSCALL5(SYSCALL_CLONE, 0, 0, 0, 0, 0);
++	SYSCALL6(SYSCALL_CLONE, 0, 0, 0, 0, 0, 1);
  
 -    if (ret == -1) {
 -        return errno;
@@ -679,7 +680,7 @@ index d32864b..7ef5df7 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +343,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +344,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -695,7 +696,7 @@ index d32864b..7ef5df7 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +358,17 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +359,17 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -713,7 +714,7 @@ index d32864b..7ef5df7 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +381,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +382,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -722,17 +723,17 @@ index d32864b..7ef5df7 100644
 -	int errno;
 +int sys_chdir(const char *buff) {
 +	int ret, errno;
- 
--	SYSCALL2(SYSCALL_GETCWD, buff, size);
++
 +   size_t buff_len = strlen(buff);
 +	SYSCALL4(SYSCALL_OPEN, AT_FDCWD, buff, buff_len, O_RDONLY);
 +	if (ret == -1) {
 +		return ENOENT;
 +	}
  
--	if (ret == NULL) {
+-	SYSCALL2(SYSCALL_GETCWD, buff, size);
 +	SYSCALL1(SYSCALL_CHDIR, ret);
-+
+ 
+-	if (ret == NULL) {
 +	if (ret == -1) {
  		return errno;
  	}
@@ -749,7 +750,7 @@ index d32864b..7ef5df7 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +424,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +425,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -816,7 +817,7 @@ index d32864b..7ef5df7 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +490,286 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +491,295 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -827,16 +828,17 @@ index d32864b..7ef5df7 100644
 +}
 +
  int sys_access(const char *path, int mode) {
-+	return sys_faccessat(AT_FDCWD, path, mode, 0);
++   int ret, errno;
++   size_t len = strlen(path);
++	SYSCALL5(SYSCALL_ACCESS, AT_FDCWD, path, len, mode, 0);
++	return errno;
 +}
 +
 +int sys_faccessat(int dirfd, const char *pathname, int mode, int flags) {
-+	(void)flags;
-+	struct stat buf;
-+	if (int r = sys_stat(fsfd_target::fd_path, dirfd, pathname, mode & AT_SYMLINK_FOLLOW, &buf)) {
-+		return r;
-+	}
-+	return 0;
++   int ret, errno;
++   size_t len = strlen(pathname);
++	SYSCALL5(SYSCALL_ACCESS, dirfd, pathname, len, mode, flags);
++	return errno;
 +}
 +
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
@@ -893,20 +895,19 @@ index d32864b..7ef5df7 100644
 +	size_t path_len = strlen (path);
 +	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
 +	return errno;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++}
++
 +int sys_link(const char* srcpath, const char* destpath) {
- 	int ret, errno;
++	int ret, errno;
 +	size_t src_len = strlen (srcpath);
 +   size_t dst_len = strlen (destpath);
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
-+}
+ }
  
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_socket(int domain, int type, int protocol, int *fd) {
-+	int ret, errno;
+ 	int ret, errno;
 +	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
 +	if (ret != -1) {
 +      *fd = ret;
@@ -915,24 +916,25 @@ index d32864b..7ef5df7 100644
 +      return errno;
 +   }
 +}
++
++uid_t sys_getuid() {
++	uint64_t ret, errno;
++	SYSCALL0(SYSCALL_GETUID);
++   return (uid_t)ret;
++}
+ 
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
++uid_t sys_geteuid() {
++	uint64_t ret, errno;
++	SYSCALL0(SYSCALL_GETEUID);
++   return (uid_t)ret;
++}
  
 -	if (ret == -1 && errno != 0) {
 -        return errno;
 -	} else {
 -			*value = ret;
 -        return 0;
-+uid_t sys_getuid() {
-+	uint64_t ret, errno;
-+	SYSCALL0(SYSCALL_GETUID);
-+   return (uid_t)ret;
-+}
-+
-+uid_t sys_geteuid() {
-+	uint64_t ret, errno;
-+	SYSCALL0(SYSCALL_GETEUID);
-+   return (uid_t)ret;
-+}
-+
 +int sys_setuid(uid_t uid) {
 +	int ret, errno;
 +   if (uid == 0) {
@@ -958,7 +960,7 @@ index d32864b..7ef5df7 100644
 -	if (ret == -1) {
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
-+    SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
++    SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
 +
 +    if (ret == -1) {
          return errno;
@@ -1051,9 +1053,17 @@ index d32864b..7ef5df7 100644
 +	return errno;
 +}
 +
-+int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length) {
++int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length, int flags) {
 +	int ret, errno;
-+	SYSCALL4(SYSCALL_ACCEPT, fd, addr_ptr, addr_length, 0);
++
++   if (addr_ptr) {
++   	SYSCALL4(SYSCALL_ACCEPT, fd, addr_ptr, addr_length, flags);
++   } else {
++      char example;
++      socklen_t len = 0;
++      SYSCALL4(SYSCALL_ACCEPT, fd, &example, &len, flags);
++   }
++
 +   if (ret != -1) {
 +      *newfd = ret;
 +      return 0;
@@ -1132,9 +1142,37 @@ index d32864b..7ef5df7 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -465,24 +782,33 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +791,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+ 	return 0;
  }
  
++int sys_sysconf(int num, long *rret) {
++   long ret, errno;
++
++   // Translate the number for the POSIX compat of the sysconf.
++   int translated;
++   switch (num) {
++      case _SC_PAGE_SIZE:        translated = 1;  break;
++      case _SC_OPEN_MAX:         translated = 2;  break;
++      case _SC_HOST_NAME_MAX:    translated = 3;  break;
++      case _SC_NPROCESSORS_ONLN: translated = 6;  break;
++      case _SC_PHYS_PAGES:       translated = 7;  break;
++      case _SC_CHILD_MAX:        translated = 11; break;
++
++      // These are values that mlibc technically has to provide itself, but
++      // I personally dont like how ugly the hardcoded warnings look, so I just
++      // harcode them myself :)
++      case _SC_LINE_MAX: *rret = 4096; return 0;
++
++      // Default is for mlibc to handle it.
++      default: return EINVAL;
++   }
++
++   SYSCALL3(SYSCALL_SYSCONF, translated, 0, 0);
++   *rret = ret;
++   return errno;
++}
++
  int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
 -	int ret, errno;
 +	int ret, errno, fd2;
@@ -1144,70 +1182,76 @@ index d32864b..7ef5df7 100644
  		case fsfd_target::fd: {
 -			// mlibc wants us to do a fstat.
 -			SYSCALL2(SYSCALL_FSTAT, fd, statbuf);
-+			SYSCALL2(SYSCALL_STAT, fd, statbuf);
- 			return errno;
- 		}
+-			return errno;
+-		}
++			SYSCALL5(SYSCALL_STAT, fd, "", 0, statbuf, AT_EMPTY_PATH);
++			break;
++	   }
  		case fsfd_target::path: {
 -			// mlibc wants us to do a lstat.
 -			SYSCALL2(SYSCALL_LSTAT, path, statbuf);
-+         int open_flags = O_RDONLY;
-+         if (flags & AT_SYMLINK_NOFOLLOW) {
-+             open_flags |= O_NOFOLLOW;
-+         }
-+         if (sys_open(path, open_flags, 0777, &fd2)) {
-+            return ENOENT;
-+         }
-+			SYSCALL2(SYSCALL_STAT, fd2, statbuf);
-+         sys_close(fd2);
- 			return errno;
- 		}
+-			return errno;
+-		}
++		   size_t len = strlen(path);
++         SYSCALL5(SYSCALL_STAT, AT_FDCWD, path, len, statbuf, flags);
++			break;
++	   }
  		case fsfd_target::fd_path: {
 -			// mlibc wants us to do an fstatat
 -			__ensure(!"stat: Invalid fstatat");
 -			__builtin_unreachable();
-+         if (sys_openat(fd, path, O_RDONLY, 0777, &fd2)) {
-+            return ENOENT;
-+         }
-+			SYSCALL2(SYSCALL_STAT, fd2, statbuf);
-+         sys_close(fd2);
-+			return errno;
++		   size_t len = strlen(path);
++         SYSCALL5(SYSCALL_STAT, fd, path, len, statbuf, flags);
++			break;
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -493,5 +819,84 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
- 	__builtin_unreachable();
- }
+@@ -490,7 +843,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+ 		}
+ 	}
  
+-	__builtin_unreachable();
++   return errno;
++}
++
++int sys_chmod(const char *pathname, mode_t mode) {
++   int ret, errno;
++   size_t len = strlen(pathname);
++   SYSCALL5(SYSCALL_FCHMOD, AT_FDCWD, pathname, len, mode, 0);
++   return errno;
++}
++
 +int sys_fchmodat(int fd, const char *pathname, mode_t mode, int flags) {
-+	int ret, errno, fd2;
-+   if (sys_openat(fd, pathname, O_RDONLY, 0777, &fd2)) {
-+       return ENOENT;
-+   }
-+   SYSCALL2(SYSCALL_FCHMOD, fd2, mode);
-+   sys_close(fd2);
++   int ret, errno;
++   size_t len = strlen(pathname);
++   SYSCALL5(SYSCALL_FCHMOD, fd, pathname, len, mode, flags);
 +   return errno;
 +}
 +
 +int sys_fchmod(int fd, mode_t mode) {
-+	int ret, errno;
-+	SYSCALL2(SYSCALL_FCHMOD, fd, mode);
-+	return errno;
++   int ret, errno;
++   SYSCALL5(SYSCALL_FCHMOD, fd, "", 0, mode, AT_EMPTY_PATH);
++   return errno;
++}
++
++int sys_chown(const char *pathname, uid_t uid, gid_t gid) {
++   int ret, errno;
++   size_t len = strlen(pathname);
++   SYSCALL6(SYSCALL_FCHOWN, AT_FDCWD, pathname, len, uid, gid, 0);
++   return errno;
 +}
 +
 +int sys_fchownat(int fd, const char *pathname, uid_t uid, gid_t gid, int flags) {
-+	int ret, errno, fd2;
-+   if (sys_openat(fd, pathname, O_RDONLY, 0777, &fd2)) {
-+       return ENOENT;
-+   }
-+   SYSCALL3(SYSCALL_FCHOWN, fd2, uid, gid);
-+   sys_close(fd2);
++   int ret, errno;
++   size_t len = strlen(pathname);
++   SYSCALL6(SYSCALL_FCHOWN, fd, pathname, len, uid, gid, flags);
 +   return errno;
 +}
 +
 +int sys_fchown(int fd, uid_t uid, gid_t gid) {
-+	int ret, errno;
-+	SYSCALL3(SYSCALL_FCHOWN, fd, uid, gid);
-+	return errno;
++   int ret, errno;
++   SYSCALL6(SYSCALL_FCHOWN, fd, "", 0, uid, gid, AT_EMPTY_PATH);
++   return errno;
 +}
 +
 +int sys_umask(mode_t mode, mode_t *old) {
@@ -1255,10 +1299,9 @@ index d32864b..7ef5df7 100644
 +	size_t len = strlen(path);
 +	SYSCALL5(SYSCALL_MAKENODE, dirfd, path, len, mode, dev);
 +   return errno;
-+}
-+
+ }
+ 
  #endif
- } // namespace mlibc
 diff --git mlibc-workdir/sysdeps/ironclad/generic/mac.cpp mlibc-workdir/sysdeps/ironclad/generic/mac.cpp
 new file mode 100644
 index 0000000..a13e56f
@@ -1485,10 +1528,10 @@ index 0000000..45e8f03
 +}
 diff --git mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp
 new file mode 100644
-index 0000000..c76faa3
+index 0000000..9699517
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/generic/sched2.cpp
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,20 @@
 +#include <sys/syscall.h>
 +#include <sys/sched2.h>
 +#include <errno.h>
@@ -1497,25 +1540,15 @@ index 0000000..c76faa3
 +extern "C" {
 +
 +int get_thread_sched(void) {
-+	int ret, errn;
-+	SYSCALL0(SYSCALL_GET_THREAD_SCHED);
-+	errno = errn;
-+	return ret;
++	return 0;
 +}
 +
 +int set_thread_sched(int flags) {
-+	int ret, errn;
-+	SYSCALL1(SYSCALL_SET_THREAD_SCHED, flags);
-+	errno = errn;
-+	return ret;
++	return 0;
 +}
 +
 +int set_deadlines(int runtime, int period) {
-+	int ret;
-+	int errn;
-+	SYSCALL2(SYSCALL_SET_DEADLINES, runtime, period);
-+	errno = errn;
-+	return ret;
++	return 0;
 +}
 +
 +}
@@ -2413,10 +2446,10 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..f93c996 100644
+index 28d233e..a599e7c 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -1,80 +1,142 @@
+@@ -1,80 +1,154 @@
 -#ifndef _SYSCALL_H
 -#define _SYSCALL_H
 +#ifndef _SYS_SYSCALL_H
@@ -2480,6 +2513,17 @@ index 28d233e..f93c996 100644
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
 +					"r"(arg_r12), "r"(arg_r8) \
 +				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
++	register __typeof(ARG5) arg_r9 asm("r9") = ARG5; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9) \
++				  : "rcx", "r11", "memory"); \
  })
  
  #define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
@@ -2487,8 +2531,8 @@ index 28d233e..f93c996 100644
 -	register uint64_t arg_r9 asm("r9") = (uint64_t)ARG5; \
 -	asm volatile ("int $0x80" \
 +	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
-+	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
-+	register __typeof(ARG5) arg_r9 asm("r9") = ARG5; \
++	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
++	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
 +	asm volatile ("syscall" \
 +				  : "=a"(ret), "=d"(errno) \
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
@@ -2560,14 +2604,14 @@ index 28d233e..f93c996 100644
 +#define SYSCALL_CHDIR                19
 +#define SYSCALL_IOCTL                20
 +#define SYSCALL_SCHED_YIELD          21
-+#define SYSCALL_SET_DEADLINES        22
++#define SYSCALL_DELETE_TCLUSTER      22
 +#define SYSCALL_PIPE                 23
 +#define SYSCALL_GETUID               24
 +#define SYSCALL_RENAME               25
 +#define SYSCALL_SYSCONF              26
 +#define SYSCALL_SPAWN                27
-+#define SYSCALL_GET_THREAD_SCHED     28
-+#define SYSCALL_SET_THREAD_SCHED     29
++#define SYSCALL_GETTID               28
++#define SYSCALL_MANAGE_TCLUSTER      29
 +#define SYSCALL_FCNTL                30
 +#define SYSCALL_EXIT_THREAD          31
 +#define SYSCALL_GETRANDOM            32
@@ -2594,6 +2638,7 @@ index 28d233e..f93c996 100644
 +#define SYSCALL_ACCEPT               53
 +#define SYSCALL_GETRLIMIT            54
 +#define SYSCALL_SETRLIMIT            55
++#define SYSCALL_ACCESS               56
 +#define SYSCALL_POLL                 57
 +#define SYSCALL_GETEUID              58
 +#define SYSCALL_SETUIDS              59

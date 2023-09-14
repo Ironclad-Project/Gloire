@@ -25,7 +25,7 @@
 
 set -e
 
-jinx_version="0.1.2"
+jinx_version="0.1.3"
 
 IFS=" ""	"'
 '
@@ -33,7 +33,9 @@ IFS=" ""	"'
 LC_COLLATE=C
 export LC_COLLATE
 
+max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 ))"
 parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
+parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
 build_dir="$(pwd -P)"
 
 if [ -z "$JINX_SOURCE_DIR" ]; then
@@ -251,7 +253,7 @@ run_in_container() {
         --root "${imgroot}" \
         --uid $(id -u) \
         --gid $(id -g) \
-        --env HOME=/home/$(whoami) \
+        --env HOME=/root \
         --env LANG=en_US.UTF-8 \
         --env LC_COLLATE=C \
         --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
@@ -1172,12 +1174,12 @@ reinit_container() {
 
     mkdir -p "${pacman_cache}"
 
-    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://mirror.netcologne.de/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://mirror.osbeck.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
     ( cd "$JINX_CACHE_DIR" && bsdtar -zxf arch-root.tar.gz )
     mkdir -p "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
-    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
+    echo 'Server = https://mirror.osbeck.com/archlinux/$repo/os/$arch' > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     mkdir "$JINX_CACHE_DIR/sets/.image/sysroot"
@@ -1196,9 +1198,6 @@ reinit_container() {
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" reflector --delay 0.25 --protocol https --score 10 --sort score --save /etc/pacman.d/mirrorlist
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl python texinfo which
-
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" groupadd --gid $(id -g) $(whoami)
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" useradd -m --uid $(id -u) --gid $(id -g) $(whoami)
 
     # Fix permissions of files
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do

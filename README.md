@@ -18,6 +18,17 @@ which was the first ocean-going vessel of its kind.
 
 One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/releases).
 
+## Running
+
+One can run either the downloaded uncompressed disk image or a built ISO with
+a command as such:
+
+```bash
+qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 1 -M q35 -hda gloire.iso
+```
+
+Where `gloire.iso` is your image of choice.
+
 ## Building
 
 The project uses `jinx` as its build system, which is included in the tree.
@@ -29,12 +40,7 @@ The instructions to build are:
 ```
 
 This commands will generate a bootable disk image that can be burned to
-USB mass-storage media or be booted by several emulators, an example to boot
-the image with QEMU would be:
-
-```bash
-qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 4 -M q35 -hda gloire.iso
-```
+USB mass-storage media or be booted by several emulators.
 
 A list of the tools needed for compilation of the OS are:
 

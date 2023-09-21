@@ -357,3 +357,21 @@ index 2ba1c80..63dedc6 100644
  }
  
  int
+diff --git xorg-server-clean/xkb/xkmread.c xorg-server-workdir/xkb/xkmread.c
+index 1666e32..8bb820a 100644
+--- xorg-server-clean/xkb/xkmread.c
++++ xorg-server-workdir/xkb/xkmread.c
+@@ -1231,13 +1231,6 @@ XkmReadFile(FILE * file, unsigned need, unsigned want, XkbDescPtr *xkb)
+     unsigned tmp, nRead = 0;
+     unsigned which = need | want;
+ 
+-    if (!XkmReadTOC(file, &fileInfo, MAX_TOC, toc))
+-        return which;
+-    if ((fileInfo.present & need) != need) {
+-        _XkbLibError(_XkbErrIllegalContents, "XkmReadFile",
+-                     need & (~fileInfo.present));
+-        return which;
+-    }
+     if (*xkb == NULL)
+         *xkb = XkbAllocKeyboard();
+     for (i = 0; i < fileInfo.num_toc; i++) {

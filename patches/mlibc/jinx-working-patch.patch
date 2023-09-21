@@ -318,7 +318,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..e52634c 100644
+index d32864b..5deaff0 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,24 @@
@@ -492,7 +492,75 @@ index d32864b..e52634c 100644
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -113,6 +202,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -102,6 +191,67 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+ 	return errno;
+ }
+ 
++
++int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
++	(void)fd;
++	(void)size;
++	if (layer == SOL_SOCKET && number == SO_PEERCRED) {
++		mlibc::infoLogger() << "mlibc: getsockopt() call with SOL_SOCKET and SO_PEERCRED is unimplemented" << frg::endlog;
++		*(int *)buffer = 0;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_SNDBUF) {
++		mlibc::infoLogger() << "mlibc: getsockopt() call with SOL_SOCKET and SO_SNDBUF is unimplemented" << frg::endlog;
++		*(int *)buffer = 4096;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_TYPE) {
++		mlibc::infoLogger() << "mlibc: getsockopt() call with SOL_SOCKET and SO_TYPE is unimplemented, hardcoding SOCK_STREAM" << frg::endlog;
++		*(int *)buffer = SOCK_STREAM;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_ERROR) {
++		mlibc::infoLogger() << "mlibc: getsockopt() call with SOL_SOCKET and SO_ERROR is unimplemented, hardcoding 0" << frg::endlog;
++		*(int *)buffer = 0;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_KEEPALIVE) {
++		mlibc::infoLogger() << "mlibc: getsockopt() call with SOL_SOCKET and SO_KEEPALIVE is unimplemented, hardcoding 0" << frg::endlog;
++		*(int *)buffer = 0;
++		return 0;
++	} else {
++		mlibc::panicLogger() << "mlibc: Unexpected getsockopt() call, layer: " << layer << " number: " << number << frg::endlog;
++	}
++
++	return 0;
++}
++
++int sys_setsockopt(int fd, int layer, int number, const void *buffer, socklen_t size) {
++	(void)fd;
++	(void)buffer;
++	(void)size;
++	if (layer == SOL_SOCKET && number == SO_PASSCRED) {
++		mlibc::infoLogger() << "mlibc: setsockopt(SO_PASSCRED) is not implemented correctly" << frg::endlog;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_ATTACH_FILTER) {
++		mlibc::infoLogger() << "mlibc: setsockopt(SO_ATTACH_FILTER) is not implemented correctly" << frg::endlog;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_RCVBUFFORCE) {
++		mlibc::infoLogger() << "mlibc: setsockopt(SO_RCVBUFFORCE) is not implemented correctly" << frg::endlog;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_SNDBUF) {
++		mlibc::infoLogger() << "mlibc: setsockopt() call with SOL_SOCKET and SO_SNDBUF is unimplemented" << frg::endlog;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_KEEPALIVE) {
++		mlibc::infoLogger() << "mlibc: setsockopt() call with SOL_SOCKET and SO_KEEPALIVE is unimplemented" << frg::endlog;
++		return 0;
++	} else if (layer == SOL_SOCKET && number == SO_REUSEADDR) {
++		mlibc::infoLogger() << "mlibc: setsockopt() call with SOL_SOCKET and SO_REUSEADDR is unimplemented" << frg::endlog;
++		return 0;
++	} else if (layer == AF_NETLINK && number == SO_ACCEPTCONN) {
++		mlibc::infoLogger() << "mlibc: setsockopt() call with AF_NETLINK and SO_ACCEPTCONN is unimplemented" << frg::endlog;
++		return 0;
++	} else {
++		mlibc::panicLogger() << "mlibc: Unexpected setsockopt() call, layer: " << layer << " number: " << number << frg::endlog;
++	}
++}
++
+ int sys_vm_unmap(void *pointer, size_t size) {
+ 	int ret;
+ 	int errno;
+@@ -113,6 +263,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -509,7 +577,7 @@ index d32864b..e52634c 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +230,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +291,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -543,18 +611,18 @@ index d32864b..e52634c 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -637,7 +705,7 @@ index d32864b..e52634c 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +298,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +359,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -680,7 +748,7 @@ index d32864b..e52634c 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +344,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +405,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -696,7 +764,7 @@ index d32864b..e52634c 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +359,17 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +420,17 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -714,7 +782,7 @@ index d32864b..e52634c 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +382,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +443,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -750,7 +818,7 @@ index d32864b..e52634c 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +425,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +486,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -817,7 +885,7 @@ index d32864b..e52634c 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +491,295 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +552,313 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -889,7 +957,6 @@ index d32864b..e52634c 100644
 -        return errno;
 -	} else {
 -        return 0;
--   }
 +int sys_unlinkat(int fd, const char *path, int flags) {
 +	int ret, errno;
 +	size_t path_len = strlen (path);
@@ -903,61 +970,54 @@ index d32864b..e52634c 100644
 +   size_t dst_len = strlen (destpath);
 +	SYSCALL6(SYSCALL_LINK, AT_FDCWD, srcpath, src_len, AT_FDCWD, destpath, dst_len);
 +	return errno;
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++}
++
 +int sys_socket(int domain, int type, int protocol, int *fd) {
- 	int ret, errno;
++	int ret, errno;
 +	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
 +	if (ret != -1) {
 +      *fd = ret;
 +      return 0;
 +   } else {
 +      return errno;
-+   }
-+}
-+
+    }
+ }
+ 
+-int sys_getpriority(int which, id_t who, int *value) {
 +uid_t sys_getuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETUID);
 +   return (uid_t)ret;
 +}
- 
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
++
 +uid_t sys_geteuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETEUID);
 +   return (uid_t)ret;
 +}
- 
--	if (ret == -1 && errno != 0) {
--        return errno;
--	} else {
--			*value = ret;
--        return 0;
++
 +int sys_setuid(uid_t uid) {
-+	int ret, errno;
+ 	int ret, errno;
 +   if (uid == 0) {
 +	    SYSCALL2(SYSCALL_SETUIDS, uid, uid);
 +   } else {
 +       SYSCALL2(SYSCALL_SETUIDS, uid, ((uint64_t)-1));
-    }
-+   return ret;
- }
- 
--int sys_setpriority(int which, id_t who, int prio) {
-+int sys_seteuid(uid_t euid) {
- 	int ret, errno;
-+	SYSCALL2(SYSCALL_SETUIDS, ((uint64_t)-1), euid);
++   }
 +   return ret;
 +}
 +
++int sys_seteuid(uid_t euid) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_SETUIDS, ((uint64_t)-1), euid);
++   return ret;
++}
+ 
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +#ifndef MLIBC_BUILDING_RTDL
  
--	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
+-	if (ret == -1 && errno != 0) {
 +extern "C" void __mlibc_thread_entry();
- 
--	if (ret == -1) {
++
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
@@ -965,6 +1025,7 @@ index d32864b..e52634c 100644
 +    if (ret == -1) {
          return errno;
 -	} else {
+-			*value = ret;
 -        return 0;
 +    }
 +
@@ -1062,24 +1123,42 @@ index d32864b..e52634c 100644
 +      char example;
 +      socklen_t len = 0;
 +      SYSCALL4(SYSCALL_ACCEPT, fd, &example, &len, flags);
-+   }
-+
-+   if (ret != -1) {
-+      *newfd = ret;
-+      return 0;
-+   } else {
-+	   return errno;
     }
++
++   *newfd = ret;
++   return errno;
  }
  
--int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
--	(void)pointer;
--	(void)expected;
--	(void)time;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
+-int sys_setpriority(int which, id_t who, int prio) {
++
++int sys_sockname(int fd, struct sockaddr *addr_ptr, socklen_t max_addr_length, socklen_t *actual_length) {
+ 	int ret, errno;
++   SYSCALL3(SYSCALL_GETSOCKNAME, fd, addr_ptr, &max_addr_length);
++   *actual_length = max_addr_length;
++   return errno;
++}
+ 
+-	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
++int sys_peername(int fd, struct sockaddr *addr_ptr, socklen_t max_addr_length, socklen_t *actual_length) {
++	int ret, errno;
++   SYSCALL3(SYSCALL_GETPEERNAME, fd, addr_ptr, &max_addr_length);
++   *actual_length = max_addr_length;
++   return errno;
++}
+ 
+-	if (ret == -1) {
+-        return errno;
+-	} else {
+-        return 0;
++int sys_shutdown(int sockfd, int how) {
++	int ret, errno;
++   SYSCALL2(SYSCALL_SHUTDOWN, sockfd, how);
++   return errno;
++}
++
 +int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-+   if (flags != 0 || hdr->msg_control != NULL || hdr->msg_name != NULL) {
++   if (flags != 0 || hdr->msg_name != NULL) {
++      // Technically msg_control should be here too, but
 +      mlibc::infoLogger() << "mlibc: recv() was invalid!" << frg::endlog;
 +      return EINVAL;
 +   }
@@ -1092,14 +1171,16 @@ index d32864b..e52634c 100644
 +         return errno;
 +      }
 +      count += ret;
-+   }
+    }
 +
 +   *length = count;
 +   return 0;
  }
  
--int sys_futex_wake(int *pointer) {
+-int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
 -	(void)pointer;
+-	(void)expected;
+-	(void)time;
 -	__ensure(!"sys_futex is a stub!");
 -	__builtin_unreachable();
 +int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
@@ -1122,7 +1203,10 @@ index d32864b..e52634c 100644
 +   return 0;
  }
  
--#ifndef MLIBC_BUILDING_RTDL
+-int sys_futex_wake(int *pointer) {
+-	(void)pointer;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
 +int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
 +	int ret, errno;
 +	SYSCALL3(SYSCALL_POLL, fds, count, timeout);
@@ -1132,8 +1216,9 @@ index d32864b..e52634c 100644
 +
 +   *num_events = ret;
 +	return errno;
-+}
-+
+ }
+ 
+-#ifndef MLIBC_BUILDING_RTDL
 +int sys_sleep(time_t *secs, long *nanos) {
 +	*secs  = 0;
 +	*nanos = 0;
@@ -1142,7 +1227,7 @@ index d32864b..e52634c 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -464,25 +791,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +870,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  	return 0;
  }
  
@@ -1206,7 +1291,7 @@ index d32864b..e52634c 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -490,7 +843,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -490,7 +922,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  		}
  	}
  
@@ -2446,10 +2531,10 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..a599e7c 100644
+index 28d233e..c5e678a 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -1,80 +1,154 @@
+@@ -1,80 +1,157 @@
 -#ifndef _SYSCALL_H
 -#define _SYSCALL_H
 +#ifndef _SYS_SYSCALL_H
@@ -2647,7 +2732,10 @@ index 28d233e..a599e7c 100644
 +#define SYSCALL_REBOOT               62
 +#define SYSCALL_FCHOWN               63
 +#define SYSCALL_PREAD                64
-+#define SYSCALL_PWRITE               64
++#define SYSCALL_PWRITE               65
++#define SYSCALL_GETSOCKNAME          66
++#define SYSCALL_GETPEERNAME          67
++#define SYSCALL_SHUTDOWN             68
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H

@@ -19,5 +19,5 @@ install() {
     ln -s /bin "${dest_dir}"/usr/sbin
     ln -s /lib "${dest_dir}"/usr/lib64
     mkdir "${dest_dir}"/tmp
-    mkdir "${dest_dir}"/tmp/.X11-unix
+    mkdir "${dest_dir}"/var
 }

@@ -1,0 +1,28 @@
+name=glib
+from_source=glib
+revision=1
+hostdeps="gcc pkg-config"
+deps="core-libs pcre2 libffi zlib"
+imagedeps="meson ninja"
+
+configure() {
+    meson setup \
+        --cross-file ${base_dir}/build-support/cross_file.txt \
+        --prefix=${prefix} \
+        --libdir=lib \
+        --buildtype=release \
+        -Dxattr=false \
+        ${source_dir}
+}
+
+build() {
+    ninja
+}
+
+install() {
+    DESTDIR="${dest_dir}" ninja install
+
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/{gapplication,gdbus,gio,gio-querymodules,glib-compile-resources,glib-compile-schemas,gobject-query,gresource,gsettings,gtester}
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/libexec/gio-launch-desktop
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/{libgio,libglib,libgmodule,libgobject,libgthread}-2.0.so.0.7600.2
+}

@@ -1,0 +1,22 @@
+name=xz-utils
+from_source=xz-utils
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs zlib"
+
+configure() {
+    ${source_dir}/configure           \
+        --host=x86_64-ironclad           \
+        --prefix=${prefix}            \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-static
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

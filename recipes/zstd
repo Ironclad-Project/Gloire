@@ -1,0 +1,31 @@
+name=zstd
+from_source=zstd
+revision=1
+hostdeps="gcc pkg-config"
+deps="core-libs zlib xz-utils"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+}
+
+build() {
+        CC=x86_64-ironclad-gcc \
+        CXX=x86_64-ironclad-g++ \
+        AR=x86_64-ironclad-ar \
+        PREFIX="${prefix}" \
+    make -j${parallelism}
+}
+
+install() {
+        CC=x86_64-ironclad-gcc \
+        DESTDIR="${dest_dir}" \
+        PREFIX="${prefix}" \
+    make install
+
+    # Remove static libraries.
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+
+    # Strip executables.
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libzstd.so.1.5.2
+    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/zstd
+}

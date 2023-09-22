@@ -1,0 +1,8 @@
+name=zstd
+version=1.5.2
+tarball_url="https://github.com/facebook/zstd/releases/download/v${version}/zstd-${version}.tar.gz"
+tarball_blake2b="c4da9317e612dcf53983617151290bfbe8eae96701621eaff9f47cbdf4e1ca06e94db2058f7590fec8ca3bf744740ffdcefb29a8f4f043a51e8c8a01128b2942"
+
+regenerate() {
+    true
+}

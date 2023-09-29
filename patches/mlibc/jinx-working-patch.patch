@@ -170,10 +170,10 @@ index 0000000..a686cd3
 +
 +#endif // _ABIBITS_MMAP_FLAGS_H
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 73650b4..59813de 100644
+index 08c9de6..1bb7c66 100644
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
-@@ -137,7 +137,7 @@ elif host_machine.system() == 'managarm'
+@@ -139,7 +139,7 @@ elif host_machine.system() == 'managarm'
  	internal_conf.set10('MLIBC_MAP_FILE_WINDOWS', true)
  	subdir('sysdeps/managarm')
  elif host_machine.system() == 'ironclad'
@@ -252,10 +252,10 @@ index 513c4bc..f5da649 100644
  
  int login_tty(int fd) {
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index 7acd190..9e9906f 100644
+index 53b3046..ddd2b2f 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
-@@ -507,18 +507,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
+@@ -514,18 +514,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -318,7 +318,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..5deaff0 100644
+index d32864b..022b5c0 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,24 @@
@@ -611,18 +611,18 @@ index d32864b..5deaff0 100644
  	(void)set;
  	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
--	return ENOSYS;
--}
--
++	// FIXME: Stub.
+ 	return ENOSYS;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
 -	(void)size;
 -	mlibc::infoLogger() << "ttyname() is a stub!" << frg::endlog;
-+	// FIXME: Stub.
- 	return ENOSYS;
- }
- 
+-	return ENOSYS;
+-}
+-
 -int sys_setpgid(pid_t pid, pid_t pgid) {
 -	(void)pid;
 -	(void)pgid;
@@ -764,10 +764,12 @@ index d32864b..5deaff0 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +420,17 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +420,19 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
++
++
 +int sys_setpgid(pid_t pid, pid_t pgid) {
 +	(void)pid;
 +	(void)pgid;
@@ -782,7 +784,7 @@ index d32864b..5deaff0 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +443,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +445,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -818,7 +820,7 @@ index d32864b..5deaff0 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +486,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +488,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -885,7 +887,7 @@ index d32864b..5deaff0 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +552,313 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +554,315 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -909,16 +911,24 @@ index d32864b..5deaff0 100644
 +	return errno;
 +}
 +
++struct futex_item {
++    uint64_t addr;
++    uint32_t expected;
++    uint32_t flags;
++};
++
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
-+	(void)pointer;
-+	(void)expected;
-+	(void)time;
-+	return 0;
++   int ret, errno;
++   struct futex_item item = {.addr = (uint64_t)pointer, .expected = expected, .flags = 0};
++	SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, time);
++	return errno;
 +}
 +
 +int sys_futex_wake(int *pointer) {
-+	(void)pointer;
-+	return 0;
++   int ret, errno;
++   struct futex_item item = {.addr = (uint64_t)pointer, .expected = 0, .flags = 0};
++	SYSCALL4(SYSCALL_FUTEX, 0b10, &item, 1, NULL);
++	return errno;
 +}
 +
 +int sys_pipe(int *fds, int flags) {
@@ -980,10 +990,9 @@ index d32864b..5deaff0 100644
 +      return 0;
 +   } else {
 +      return errno;
-    }
- }
- 
--int sys_getpriority(int which, id_t who, int *value) {
++   }
++}
++
 +uid_t sys_getuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETUID);
@@ -997,27 +1006,28 @@ index d32864b..5deaff0 100644
 +}
 +
 +int sys_setuid(uid_t uid) {
- 	int ret, errno;
++	int ret, errno;
 +   if (uid == 0) {
 +	    SYSCALL2(SYSCALL_SETUIDS, uid, uid);
 +   } else {
 +       SYSCALL2(SYSCALL_SETUIDS, uid, ((uint64_t)-1));
-+   }
+    }
 +   return ret;
-+}
-+
+ }
+ 
+-int sys_getpriority(int which, id_t who, int *value) {
 +int sys_seteuid(uid_t euid) {
-+	int ret, errno;
+ 	int ret, errno;
 +	SYSCALL2(SYSCALL_SETUIDS, ((uint64_t)-1), euid);
 +   return ret;
 +}
- 
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
++
 +#ifndef MLIBC_BUILDING_RTDL
  
--	if (ret == -1 && errno != 0) {
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +extern "C" void __mlibc_thread_entry();
-+
+ 
+-	if (ret == -1 && errno != 0) {
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
@@ -1059,41 +1069,29 @@ index d32864b..5deaff0 100644
 +	return 0;
 +}
 +
-+int sys_clock_get(int clock, time_t *secs, long *nanos) {
-+   static int rtc_fd = -1;
++int sys_clock_getres(int clock, time_t *secs, long *nanos) {
++	struct timespec time;
++	int ret, errno;
++	SYSCALL3(SYSCALL_CLOCK, 0, clock, &time);
++	*secs  = time.tv_sec;
++	*nanos = time.tv_nsec;
++	return errno;
++}
 +
-+	switch (clock) {
-+		case CLOCK_REALTIME: {
-+			// Use the RTC interface, there is no native kernel entity.
-+			// RTC gives true month and year, substract to make epoch.
-+			int ret;
-+			struct rtc_time rtc;
-+			struct tm tm;
-+         if (rtc_fd == -1) {
-+            sys_open("/dev/rtc", O_RDWR, 0, &rtc_fd);
-+         }
-+			if (sys_ioctl(rtc_fd, RTC_RD_TIME, &rtc, &ret))
-+			{
-+				return -1;
-+			}
-+			tm = {
-+				.tm_sec  = rtc.tm_sec,
-+				.tm_min  = rtc.tm_min,
-+				.tm_hour = rtc.tm_hour,
-+				.tm_mday = rtc.tm_mday,
-+				.tm_mon  = rtc.tm_mon  - 1,
-+				.tm_year = rtc.tm_year - 1900,
-+				.tm_wday = rtc.tm_wday,
-+				.tm_yday = rtc.tm_yday,
-+				.tm_isdst = rtc.tm_isdst
-+			};
-+			*nanos = 0;
-+			*secs  = mktime(&tm);
-+			return 0;
-+		}
-+		default:
-+			return -1;
-+	}
++int sys_clock_get(int clock, time_t *secs, long *nanos) {
++	struct timespec time;
++	int ret, errno;
++	SYSCALL3(SYSCALL_CLOCK, 1, clock, &time);
++	*secs  = time.tv_sec;
++	*nanos = time.tv_nsec;
++	return errno;
++}
++
++int sys_clock_set(int clock, time_t secs, long nanos) {
++	struct timespec time = {.tv_sec = secs, .tv_nsec = nanos };
++	int ret, errno;
++	SYSCALL3(SYSCALL_CLOCK, 2, clock, &time);
++	return errno;
 +}
 +
 +int sys_bind(int fd, const struct sockaddr *addr_ptr, socklen_t addrlen) {
@@ -1209,7 +1207,8 @@ index d32864b..5deaff0 100644
 -	__builtin_unreachable();
 +int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
 +	int ret, errno;
-+	SYSCALL3(SYSCALL_POLL, fds, count, timeout);
++	struct timespec time = {.tv_sec = timeout / 1000, .tv_nsec = (timeout % 1000) * 1000000 };
++	SYSCALL3(SYSCALL_POLL, fds, count, &time);
 +   if (ret == -1) {
 +      return errno;
 +   }
@@ -1220,14 +1219,19 @@ index d32864b..5deaff0 100644
  
 -#ifndef MLIBC_BUILDING_RTDL
 +int sys_sleep(time_t *secs, long *nanos) {
-+	*secs  = 0;
-+	*nanos = 0;
-+	return 0;
++   struct timespec time = {.tv_sec = *secs, .tv_nsec = *nanos};
++	struct timespec rem  = {.tv_sec = 0, .tv_nsec = 0};
++
++	int ret, errno;
++	SYSCALL4(SYSCALL_CLOCK_NANOSLEEP, CLOCK_MONOTONIC, 0, &time, &rem);
++	*secs  = rem.tv_sec;
++	*nanos = rem.tv_nsec;
++	return errno;
 +}
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -464,25 +870,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +874,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  	return 0;
  }
  
@@ -1291,7 +1295,7 @@ index d32864b..5deaff0 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -490,7 +922,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -490,7 +926,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  		}
  	}
  
@@ -2531,10 +2535,10 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..c5e678a 100644
+index 28d233e..c6c158c 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -1,80 +1,157 @@
+@@ -1,80 +1,160 @@
 -#ifndef _SYSCALL_H
 -#define _SYSCALL_H
 +#ifndef _SYS_SYSCALL_H
@@ -2736,6 +2740,9 @@ index 28d233e..c5e678a 100644
 +#define SYSCALL_GETSOCKNAME          66
 +#define SYSCALL_GETPEERNAME          67
 +#define SYSCALL_SHUTDOWN             68
++#define SYSCALL_FUTEX                69
++#define SYSCALL_CLOCK                70
++#define SYSCALL_CLOCK_NANOSLEEP      71
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H

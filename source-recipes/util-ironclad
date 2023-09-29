@@ -1,7 +1,7 @@
 name=util-ironclad
-version=b11b09bd9849124b353aa209cc162d06fcdea95e
-tarball_url="https://github.com/streaksu/util-ironclad/archive/${version}.tar.gz"
-tarball_blake2b="a2f44b7729953ce1bf1f6e50597486808e864c13672cb34c39fd225b6558527fe4a64671d0e835d3ce54e6ed2356b7c4929015e3daa767c3399d7583ad26eaba"
+version=7c5c030cb8d31c81d34b5e0c409c20d2251fd8b2
+tarball_url="https://git.ironclad.cx/Ironclad/util-ironclad/archive/${version}.tar.gz"
+tarball_blake2b="5c7b73523b242583ab9eb762c63db15ffd9da163bde3118b0800ee45ee4b03793b960a35986bff61687cd9c2fccbea9da979b903dbab8c3bc7d5f5fbd1b743eb"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 

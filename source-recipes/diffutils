@@ -1,0 +1,9 @@
+name=diffutils
+version=3.9
+tarball_url="https://mirrors.ocf.berkeley.edu/gnu/diffutils/diffutils-${version}.tar.xz"
+tarball_blake2b="d43ed9f1643ac46b69083755974fc9611ad00c3b98b08332c681223d17d762567562233b51342a16f7dad8f28dfc5536999143594e33a64e6624001a71787c8f"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    libtoolize -cfvi && autoreconf -fvi
+}

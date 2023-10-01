@@ -4,15 +4,18 @@
 
 # Gloire
 
-![](artwork/screenshot.png)
-
-Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
+Gloire is an OS built with the [Ironclad](https://ironclad.cx)
 kernel and using GNU tools for the userland, along with some original
 applications like `gwm`. This repository holds scripts and tools to build the
 OS from the ground up.
 
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
+
+![Gloire running its window manager, GWM](artwork/screenshot1.png)
+*Gloire running its window manager, GWM.*
+![Gloire generating an RSA key and running neofetch](artwork/screenshot2.png)
+*Gloire generating an RSA key and running neofetch.*
 
 ## Downloading
 

@@ -318,7 +318,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..022b5c0 100644
+index d32864b..686e709 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,24 @@
@@ -476,7 +476,7 @@ index d32864b..022b5c0 100644
  int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	ssize_t ret;
  	int errno;
-@@ -86,8 +169,14 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,8 +169,26 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -486,17 +486,28 @@ index d32864b..022b5c0 100644
 +   return errno;
 +}
 +
++int sys_getrusage(int scope, struct rusage *usage) {
++   int ret, errno;
++   SYSCALL2(SYSCALL_GETRUSAGE, scope, usage);
++
++   // Ironclad returns nanoseconds instead of microseconds for usage, so we
++   // have to compensate for that.
++   usage->ru_utime.tv_usec = usage->ru_utime.tv_usec / 1000;
++   usage->ru_stime.tv_usec = usage->ru_stime.tv_usec / 1000;
++
++   return errno;
++}
++
  int sys_anon_allocate(size_t size, void **pointer) {
 -	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, 0, 0, pointer);
 +	return sys_vm_map(NULL, size, PROT_READ | PROT_WRITE, MAP_ANON, 0, 0, pointer);
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -102,6 +191,67 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+@@ -102,6 +203,66 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  	return errno;
  }
  
-+
 +int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
 +	(void)fd;
 +	(void)size;
@@ -560,7 +571,7 @@ index d32864b..022b5c0 100644
  int sys_vm_unmap(void *pointer, size_t size) {
  	int ret;
  	int errno;
-@@ -113,6 +263,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +274,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -577,7 +588,7 @@ index d32864b..022b5c0 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -131,100 +291,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
+@@ -131,100 +302,65 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
  	(void)signum;
  	(void)act;
  	(void)oldact;
@@ -705,7 +716,7 @@ index d32864b..022b5c0 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +359,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +370,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -748,7 +759,7 @@ index d32864b..022b5c0 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +405,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +416,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -764,7 +775,7 @@ index d32864b..022b5c0 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +420,19 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +431,19 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -784,7 +795,7 @@ index d32864b..022b5c0 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +445,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +456,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -793,14 +804,14 @@ index d32864b..022b5c0 100644
 -	int errno;
 +int sys_chdir(const char *buff) {
 +	int ret, errno;
-+
+ 
+-	SYSCALL2(SYSCALL_GETCWD, buff, size);
 +   size_t buff_len = strlen(buff);
 +	SYSCALL4(SYSCALL_OPEN, AT_FDCWD, buff, buff_len, O_RDONLY);
 +	if (ret == -1) {
 +		return ENOENT;
 +	}
- 
--	SYSCALL2(SYSCALL_GETCWD, buff, size);
++
 +	SYSCALL1(SYSCALL_CHDIR, ret);
  
 -	if (ret == NULL) {
@@ -820,7 +831,7 @@ index d32864b..022b5c0 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +488,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +499,39 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -887,7 +898,7 @@ index d32864b..022b5c0 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +554,315 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +565,315 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -1231,7 +1242,7 @@ index d32864b..022b5c0 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -464,25 +874,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +885,51 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  	return 0;
  }
  
@@ -1295,7 +1306,7 @@ index d32864b..022b5c0 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -490,7 +926,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -490,7 +937,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  		}
  	}
  
@@ -2535,10 +2546,10 @@ index 0000000..caeb86a
 +
 +#endif // _SYS_SCHED2_H
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 28d233e..c6c158c 100644
+index 28d233e..be6b80f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -1,80 +1,160 @@
+@@ -1,80 +1,161 @@
 -#ifndef _SYSCALL_H
 -#define _SYSCALL_H
 +#ifndef _SYS_SYSCALL_H
@@ -2743,6 +2754,7 @@ index 28d233e..c6c158c 100644
 +#define SYSCALL_FUTEX                69
 +#define SYSCALL_CLOCK                70
 +#define SYSCALL_CLOCK_NANOSLEEP      71
++#define SYSCALL_GETRUSAGE            72
  
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H

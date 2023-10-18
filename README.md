@@ -23,14 +23,14 @@ One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/
 
 ## Running
 
-One can run either the downloaded uncompressed disk image or a built ISO with
+One can run either the downloaded uncompressed disk image or a built image with
 a command as such:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 1 -M q35 -hda gloire.iso
+qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 1 -M q35 -hda gloire.img
 ```
 
-Where `gloire.iso` is your image of choice.
+Where `gloire.img` is your image of choice.
 
 ## Building
 

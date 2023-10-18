@@ -3,10 +3,16 @@
 set -ex
 
 # Build the sysroot with jinx, build limine and memtest86+
-rm -rf sysroot
+sudo rm -rf sysroot
 ./jinx sysroot
 ./jinx host-build limine
 ./jinx host-build memtest86+
+
+# Ensure permissions are set.
+sudo chown -R root:root sysroot/*
+sudo chown -R 1000:1000 sysroot/home/user
+sudo chmod 700 sysroot/root
+sudo chmod 777 sysroot/tmp
 
 # TODO: Once ready, move to ext4, now its ext2 only.
 rm gloire.img
@@ -15,6 +21,7 @@ sudo parted -s gloire.img mklabel gpt
 sudo parted -s gloire.img mkpart ESP fat32 2048s 5%
 sudo parted -s gloire.img mkpart gloire_data ext2 5% 100%
 sudo parted -s gloire.img set 1 esp on
+sudo sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 
 LOOPBACK_DEV=$(sudo losetup -Pf --show gloire.img)
 sudo mkfs.fat ${LOOPBACK_DEV}p1

@@ -11,7 +11,7 @@ build() {
 }
 
 install() {
-    cp -rv ${source_dir}/. "${dest_dir}"/
+    cp -prv ${source_dir}/. "${dest_dir}"/
     ln -s /usr/bin "${dest_dir}"/bin
     ln -s /usr/bin "${dest_dir}"/sbin
     ln -s /usr/lib "${dest_dir}"/lib

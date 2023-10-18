@@ -1,7 +1,7 @@
 name=util-ironclad
-version=7c5c030cb8d31c81d34b5e0c409c20d2251fd8b2
+version=f40066b999743078e7a5aaf4277b0aefefbd2ce6
 tarball_url="https://git.ironclad.cx/Ironclad/util-ironclad/archive/${version}.tar.gz"
-tarball_blake2b="5c7b73523b242583ab9eb762c63db15ffd9da163bde3118b0800ee45ee4b03793b960a35986bff61687cd9c2fccbea9da979b903dbab8c3bc7d5f5fbd1b743eb"
+tarball_blake2b="8ae1c148683f9b3c4cd509d635f2d3f4b58afd62b92605af7b69c86b33fb06ce6269070f6152c43e51f4bae5e7e258a54351a54d5bf8aaa2d020860c206e3b3b"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 

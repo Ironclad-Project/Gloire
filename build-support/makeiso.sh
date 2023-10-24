@@ -15,7 +15,7 @@ sudo chmod 700 sysroot/root
 sudo chmod 777 sysroot/tmp
 
 # TODO: Once ready, move to ext4, now its ext2 only.
-rm gloire.img
+rm -f gloire.img
 fallocate -l 700M gloire.img
 sudo parted -s gloire.img mklabel gpt
 sudo parted -s gloire.img mkpart ESP fat32 2048s 5%

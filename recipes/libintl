@@ -6,7 +6,7 @@ deps="mlibc libgcc libstdc++ libiconv"
 
 configure() {
     ${source_dir}/configure    \
-        --host=x86_64-ironclad    \
+        --host=${OS_TRIPLET}    \
         --prefix=${prefix}     \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -37,5 +37,5 @@ build() {
 install() {
     DESTDIR="${dest_dir}" make -C gettext-runtime/intl install-strip
     # For some reason libintl.so is still not stripped, strip it now.
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libintl.so.8.3.0
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libintl.so.8.3.0
 }

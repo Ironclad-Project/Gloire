@@ -6,7 +6,7 @@ deps="core-libs ncurses"
 
 configure() {
     ${source_dir}/configure \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix="${prefix}" \
         --sysconfdir=/etc \
         --localstatedir=/var
@@ -19,7 +19,7 @@ build() {
 install() {
     make install DESTDIR="${dest_dir}"
     # We strip it manually because install-strip is broken.
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/less
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/lessecho
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/lesskey
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/less
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/lessecho
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/lesskey
 }

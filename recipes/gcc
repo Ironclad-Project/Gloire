@@ -1,22 +1,22 @@
 name=gcc
 from_source=gcc
 revision=1
-imagedeps="gcc"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs binutils zlib gmp mpfr mpc"
+imagedeps="gcc"
 
 configure() {
-        CXXFLAGS_FOR_TARGET="$CFLAGS"       \
-        CFLAGS_FOR_TARGET="$CFLAGS"         \
+        CXXFLAGS_FOR_TARGET="$CFLAGS" \
+        CFLAGS_FOR_TARGET="$CFLAGS" \
     ${source_dir}/configure                 \
-        --host=x86_64-ironclad              \
+        --host=${OS_TRIPLET}                 \
         --prefix=${prefix}                  \
-        --sysconfdir=/etc                   \
-        --localstatedir=/var                \
-        --target=x86_64-ironclad            \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --target=${OS_TRIPLET}               \
         --with-sysroot=/                    \
         --with-build-sysroot=${sysroot_dir} \
-        --enable-languages=c,c++,lto        \
+        --enable-languages=c,c++,lto            \
         --enable-initfini-array             \
         --disable-multilib                  \
         --disable-nls                       \

@@ -6,11 +6,12 @@ deps="core-libs zlib"
 
 configure() {
     ${source_dir}/configure \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
         --disable-static \
+        --with-sysroot=${sysroot_dir} \
         --without-threads \
         --disable-ipv6
 }

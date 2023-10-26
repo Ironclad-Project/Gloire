@@ -5,12 +5,13 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs xorg-util-macros xorg-proto libx11 libxtrans"
 
 configure() {
-    ${source_dir}/configure           \
-        --host=x86_64-ironclad           \
-        --prefix=${prefix}            \
-        --sysconfdir=/etc             \
-        --localstatedir=/var          \
-        --disable-static
+    ${source_dir}/configure \
+        --host=${OS_TRIPLET} \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-static \
+        --disable-futex
 }
 
 build() {

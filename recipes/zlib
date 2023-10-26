@@ -6,7 +6,7 @@ deps="core-libs"
 
 configure() {
         prefix="${prefix}" \
-        CHOST="x86_64-ironclad" \
+        CHOST="${OS_TRIPLET}" \
     ${source_dir}/configure
 }
 
@@ -19,5 +19,5 @@ install() {
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libz.so.1.2.12
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libz.so.1.2.12
 }

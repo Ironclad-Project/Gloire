@@ -6,7 +6,7 @@ deps="core-libs openssl pcre2"
 
 configure() {
     ${source_dir}/configure           \
-        --host=x86_64-ironclad        \
+        --host=${OS_TRIPLET}        \
         --prefix=${prefix}            \
         --sysconfdir=/etc \
         --localstatedir=/var

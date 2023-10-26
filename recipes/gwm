@@ -10,7 +10,7 @@ configure() {
       --prefix="${prefix}"    \
       --sysconfdir=/etc       \
       --localstatedir=/var    \
-      --host=x86_64-ironclad
+      --host=${OS_TRIPLET}
 }
 
 build() {

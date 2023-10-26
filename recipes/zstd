@@ -9,15 +9,15 @@ configure() {
 }
 
 build() {
-        CC=x86_64-ironclad-gcc \
-        CXX=x86_64-ironclad-g++ \
-        AR=x86_64-ironclad-ar \
+        CC=${OS_TRIPLET}-gcc \
+        CXX=${OS_TRIPLET}-g++ \
+        AR=${OS_TRIPLET}-ar \
         PREFIX="${prefix}" \
     make -j${parallelism}
 }
 
 install() {
-        CC=x86_64-ironclad-gcc \
+        CC=${OS_TRIPLET}-gcc \
         DESTDIR="${dest_dir}" \
         PREFIX="${prefix}" \
     make install
@@ -26,6 +26,6 @@ install() {
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
     # Strip executables.
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libzstd.so.1.5.2
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/bin/zstd
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libzstd.so.1.5.2
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/zstd
 }

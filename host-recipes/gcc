@@ -14,11 +14,11 @@ configure() {
         CFLAGS_FOR_TARGET="$CFLAGS" \
     ../configure \
         --prefix="${prefix}" \
-        --target=x86_64-ironclad \
+        --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot_dir}" \
         --disable-nls \
         --disable-libada \
-        --enable-languages=c,c++,ada \
+        --enable-languages=c,c++,lto,ada \
         --disable-multilib \
         --enable-initfini-array \
         --enable-shared \

@@ -1,7 +1,7 @@
 name=freetype
-version=2.12.1
-tarball_url="https://download.savannah.gnu.org/releases/freetype/freetype-${version}.tar.xz"
-tarball_blake2b="c4737dc0c6e44e0a911545d604fdb2e8e8b3f5185d3f5dfe4e4561ee2d75b3e5a31afcbb2089306fec4b31ba10324a6ec6499c3735b2b7591c71e96fee4ed278"
+version=2.13.0
+tarball_url="https://mirrors.sarata.com/non-gnu/freetype/freetype-${version}.tar.xz"
+tarball_blake2b="11aac3cddb3e71cc0e6a616ed609294d6641aa0011842aa8230eace826955883aca0063331660025be14582b44aa189718ce21e0e5193a66bb5d7cffa1d0fb7f"
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {

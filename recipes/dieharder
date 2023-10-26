@@ -10,7 +10,7 @@ configure() {
     rm -f ${source_dir}/dieharder/config.status
     rm -f ${source_dir}/libdieharder/config.status
     ${source_dir}/configure    \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix=${prefix}     \
         --sysconfdir=/etc      \
         --localstatedir=/var   \

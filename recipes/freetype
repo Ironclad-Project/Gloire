@@ -7,7 +7,7 @@ imagedeps="gcc"
 
 configure() {
     ${source_dir}/configure \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -21,5 +21,5 @@ build() {
 
 install() {
     DESTDIR="${dest_dir}" make install
-    x86_64-ironclad-strip "${dest_dir}${prefix}/lib/libfreetype.so.6.18.3"
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}/lib/libfreetype.so.6.19.0"
 }

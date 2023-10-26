@@ -1,7 +1,7 @@
 name=gnulib
-version=431af5a160d3a946c9c27a30274fc708e8b74dfd
+version=8c4d0fbf4c45df8e86acbb338b154930c5498dc3
 tarball_url="https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-${version}.tar.gz"
-tarball_blake2b="0e5fa2953cfc4a1aeacb58d7250502d79ab91e8e66ce37dd5d34c26fb87422b18fd4d340bf6780ef8647a078935c5acb6d9e4f51a23773b26f5809afb1043aca"
+tarball_blake2b="b808f83f296dc31c147cbff3e9fa1d2345d49ee8fda606b4efd702d4c15fd83e61371550712a10bc15397b1424e135ffd1ffd118e7e5bc72e4a4b866ccce5720"
 
 regenerate() {
     true

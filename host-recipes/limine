@@ -7,7 +7,7 @@ imagedeps="nasm gcc mtools"
 configure() {
     "${source_dir}"/configure \
         --prefix="${prefix}" \
-        TOOLCHAIN_FOR_TARGET=x86_64-ironclad \
+        TOOLCHAIN_FOR_TARGET=${OS_TRIPLET} \
         LDFLAGS="-static" \
         --enable-uefi-ia32 \
         --enable-uefi-x86-64 \

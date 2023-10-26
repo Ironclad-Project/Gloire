@@ -6,7 +6,7 @@ deps="core-libs ncurses"
 
 configure() {
     ${source_dir}/configure \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -22,6 +22,6 @@ build() {
 install() {
     make SHLIB_LIBS="-lncursesw" install DESTDIR="${dest_dir}"
 
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libhistory.so.8
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/libreadline.so.8
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libhistory.so.8
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libreadline.so.8
 }

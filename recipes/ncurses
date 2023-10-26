@@ -8,7 +8,7 @@ deps="core-libs"
 configure() {
         cf_cv_func_nanosleep=yes \
     "${source_dir}"/configure \
-        --host=x86_64-ironclad \
+        --host=${OS_TRIPLET} \
         --prefix="${prefix}" \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -42,5 +42,5 @@ install() {
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
     # Strip
-    x86_64-ironclad-strip "${dest_dir}${prefix}"/lib/{libformw.so,libmenuw.so,libncursesw.so,libpanelw.so,libtinfow.so}
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/{libformw.so,libmenuw.so,libncursesw.so,libpanelw.so,libtinfow.so}
 }

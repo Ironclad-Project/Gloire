@@ -23,14 +23,23 @@ One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/
 
 ## Running
 
-One can run either the downloaded uncompressed disk image or a built image with
-a command as such:
+### On virtual machines
+
+One can run either the downloaded disk image (uncompressing it first) or a
+built image with a command as such:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -m 2G -smp 1 -M q35 -hda gloire.img
+qemu-system-x86_64 -enable-kvm -m 2G -M q35 -hda gloire.img
 ```
 
 Where `gloire.img` is your image of choice.
+
+### On physical hardware
+
+Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
+one can burn your gloire image (uncompressing it first if downloaded) to either
+a USB drive featuring HDD emulation, a SATA drive, or an ATA drive. USB without
+HDD emulation is not supported as of yet.
 
 ## Building
 

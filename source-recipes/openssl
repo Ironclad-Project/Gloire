@@ -1,7 +1,7 @@
 name=openssl
-version=1.1.1s
-tarball_url="https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1s/openssl-${version}.tar.gz"
-tarball_blake2b="ecd19eaf84dbc80448b51651abe52a89cc0052f024537959c4ebe61528988f235d661244fce6967159a876dd038c817bad19df742e828ca1cbae97ce6a4124bb"
+version=1.1.1w
+tarball_url="https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/openssl-${version}.tar.gz"
+tarball_blake2b="2fdba6ca0188928ab2f74e606136afca66cfa0467170fa6298ef160b64ac6fdcad1e81e5dd14013ce0e9921d0f7417edec531cd0beaf1196fec704c2c6d48395"
 
 regenerate() {
     true

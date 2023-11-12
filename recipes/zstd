@@ -26,6 +26,6 @@ install() {
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
     # Strip executables.
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libzstd.so.1.5.2
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libzstd.so.1.5.5
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/zstd
 }

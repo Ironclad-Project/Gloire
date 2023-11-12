@@ -19,5 +19,5 @@ install() {
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libz.so.1.2.12
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libz.so.1.3
 }

@@ -1,17 +1,17 @@
 name=figlet
 from_source=figlet
 revision=1
-hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs mpfr gmp"
+hostdeps="gcc pkg-config"
+deps="core-libs"
 
 configure() {
     cp -rp "${source_dir}"/. ./
 }
 
 build() {
-    make CC=${OS_TRIPLET}-gcc LD=${OS_TRIPLET}-gcc -j${parallelism}
+    make CC=${OS_TRIPLET}-gcc CFLAGS="${CFLAGS}" LD=${OS_TRIPLET}-gcc prefix="${prefix}" -j${parallelism}
 }
 
 install() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" make install prefix="${prefix}"
 }

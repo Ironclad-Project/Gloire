@@ -1,7 +1,7 @@
 name=diffutils
-version=3.9
-tarball_url="https://mirrors.ocf.berkeley.edu/gnu/diffutils/diffutils-${version}.tar.xz"
-tarball_blake2b="d43ed9f1643ac46b69083755974fc9611ad00c3b98b08332c681223d17d762567562233b51342a16f7dad8f28dfc5536999143594e33a64e6624001a71787c8f"
+version=3.10
+tarball_url="https://ftp.gnu.org/gnu/diffutils/diffutils-${version}.tar.xz"
+tarball_blake2b="24a90162b3d876e6378243f19a85a1f1bb4cdfe98d130dee684740a902f2987509d5830dd32df4e26678b468b96960f6f9785ffb922e828cb8b4acce0d8587f6"
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {

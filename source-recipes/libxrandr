@@ -1,7 +1,7 @@
 name=libxrandr
-version=1.5.2
+version=1.5.4
 tarball_url="https://www.x.org/archive/individual/lib/libXrandr-${version}.tar.gz"
-tarball_blake2b="d37d2b049b39af2f23a57d5e99d35d97df9bd7cb79115bd3354617abb4079f50df140d295cce69e00451da52e11f75c4d3c879abcd82294ba81e75f3c24d11cd"
+tarball_blake2b="d5dd5ef33c4452fac7d2c5f16afc15d9e2dcb4e721824ca6e412c6a990ab529003e1beea087afad9dedbcceab17953e066700dac7df0b2aac2cec404335ba93f"
 hostdeps="automake autoconf libtool pkg-config xorg-macros"
 
 regenerate() {

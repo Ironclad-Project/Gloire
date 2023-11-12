@@ -23,6 +23,6 @@ install() {
     DESTDIR="${dest_dir}" make install
 
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/*
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libhogweed.so.6.6
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libnettle.so.8.6
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libhogweed.so.6.8
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libnettle.so.8.8
 }

@@ -1,7 +1,7 @@
 name=glib
-version=2.76.2
-tarball_url="https://download.gnome.org/sources/glib/2.76/glib-${version}.tar.xz"
-tarball_blake2b="db5d5e45fe4a17bade7f5bf923ac0e5541237d19146ede33b4d52f05b82e4ecb94519393f49ac3b04e17d0f56bfd5dd99b8e81ae80956cfdb5cb2396cd5ec8cc"
+version=2.78.1
+tarball_url="https://download.gnome.org/sources/glib/2.78/glib-${version}.tar.xz"
+tarball_blake2b="af8f2e83600dfb3ec84702399cb00a3aaedbc80087e35dc7cc2e2374d4fe5fdf82707ac8c911da1c53eb7b027c9da9ecfc1c0a8f56b39431fa4cf44cad5b10f7"
 
 regenerate() {
     true

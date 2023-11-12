@@ -24,5 +24,5 @@ install() {
 
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/{gapplication,gdbus,gio,gio-querymodules,glib-compile-resources,glib-compile-schemas,gobject-query,gresource,gsettings,gtester}
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/libexec/gio-launch-desktop
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/{libgio,libglib,libgmodule,libgobject,libgthread}-2.0.so.0.7600.2
+    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/{libgio,libglib,libgmodule,libgobject,libgthread}-2.0.so.0.7800.1
 }

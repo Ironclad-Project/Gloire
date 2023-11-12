@@ -13,7 +13,8 @@ configure() {
         --disable-static \
         --with-sysroot=${sysroot_dir} \
         --without-threads \
-        --disable-ipv6
+        --disable-ipv6 \
+        --without-python
 }
 
 build() {

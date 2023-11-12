@@ -403,48 +403,45 @@ index 3474615..6e87ed8 100644
  }
 +*/
 diff --git mlibc-clean/options/linux/generic/pty-stubs.cpp mlibc-workdir/options/linux/generic/pty-stubs.cpp
-index 513c4bc..f5da649 100644
+index 8d95027..eae92f7 100644
 --- mlibc-clean/options/linux/generic/pty-stubs.cpp
 +++ mlibc-workdir/options/linux/generic/pty-stubs.cpp
-@@ -9,40 +9,17 @@
- #include <unistd.h>
- #include <stdlib.h>
- 
-+#include <sys/syscall.h>
- #include <mlibc/debug.hpp>
+@@ -13,38 +13,12 @@
  #include <mlibc/linux-sysdeps.hpp>
  
  int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win) {
--	__ensure(!ios);
--
--	if (win) {
--		mlibc::infoLogger() << "mlibc: openpty ignores win argument" << frg::endlog;
--	}
--
--	// FIXME: Close the master FD if the slave open fails.
--
 -	int ptmx_fd;
 -	if(int e = mlibc::sys_open("/dev/ptmx", O_RDWR | O_NOCTTY, 0, &ptmx_fd); e) {
 -		errno = e;
--		return -1;
+-		goto fail;
 -	}
 -
 -	char spath[32];
 -	if(!name)
 -		name = spath;
 -	if(ptsname_r(ptmx_fd, name, 32))
--		return -1;
+-		goto fail;
 -
 -	int pts_fd;
 -	unlockpt(ptmx_fd);
--	if(int e = mlibc::sys_open(spath, O_RDWR | O_NOCTTY, 0, &pts_fd); e) {
+-	if(int e = mlibc::sys_open(name, O_RDWR | O_NOCTTY, 0, &pts_fd); e) {
 -		errno = e;
--		return -1;
+-		goto fail;
 -	}
+-
+-	if(ios)
+-		tcsetattr(ptmx_fd, TCSAFLUSH, ios);
+-
+-	if(win)
+-		ioctl(ptmx_fd, TIOCSWINSZ, (void*)win);
 -
 -	*mfd = ptmx_fd;
 -	*sfd = pts_fd;
 -	return 0;
+-
+-fail:
+-	mlibc::sys_close(ptmx_fd);
+-	return -1;
 +   int errno, ret;
 +   int fds[2];
 +   SYSCALL3(SYSCALL_OPENPTY, fds, ios, win);
@@ -544,7 +541,7 @@ index 9983219..5e2b44b 100644
  #define FALLOC_FL_KEEP_SIZE 1
  #define FALLOC_FL_PUNCH_HOLE 2
 diff --git mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
-index cd0052f..212a50a 100644
+index 730bf59..683faf9 100644
 --- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
 +++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
 @@ -48,6 +48,9 @@ int sys_open(const char *pathname, int flags, mode_t mode, int *fd);
@@ -558,7 +555,7 @@ index cd0052f..212a50a 100644
  int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written);
  [[gnu::weak]] int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read);
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index 53b3046..ddd2b2f 100644
+index a0f2bf5..4c3a8c6 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
 @@ -514,18 +514,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
@@ -624,7 +621,7 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..d56c640 100644
+index d32864b..0a0d828 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -10,24 +10,24 @@
@@ -810,7 +807,7 @@ index d32864b..d56c640 100644
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -102,6 +203,66 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+@@ -102,6 +203,68 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  	return errno;
  }
  
@@ -872,12 +869,14 @@ index d32864b..d56c640 100644
 +	} else {
 +		mlibc::panicLogger() << "mlibc: Unexpected setsockopt() call, layer: " << layer << " number: " << number << frg::endlog;
 +	}
++
++    return 0;
 +}
 +
  int sys_vm_unmap(void *pointer, size_t size) {
  	int ret;
  	int errno;
-@@ -113,6 +274,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +276,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -894,7 +893,7 @@ index d32864b..d56c640 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -128,103 +299,60 @@ pid_t sys_getppid() {
+@@ -128,103 +301,60 @@ pid_t sys_getppid() {
  }
  
  int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
@@ -1025,7 +1024,7 @@ index d32864b..d56c640 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +362,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +364,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -1068,7 +1067,7 @@ index d32864b..d56c640 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +408,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +410,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -1084,7 +1083,7 @@ index d32864b..d56c640 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +423,19 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +425,19 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -1104,7 +1103,7 @@ index d32864b..d56c640 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +448,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +450,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -1140,7 +1139,7 @@ index d32864b..d56c640 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +491,50 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +493,50 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -1216,7 +1215,7 @@ index d32864b..d56c640 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -401,58 +568,314 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -401,58 +570,316 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
      return 0;
  }
  
@@ -1323,17 +1322,11 @@ index d32864b..d56c640 100644
 +      return errno;
 +   }
 +}
-+
+ 
+-	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
 +uid_t sys_getuid() {
 +	uint64_t ret, errno;
 +	SYSCALL0(SYSCALL_GETUID);
-+   return (uid_t)ret;
-+}
- 
--	SYSCALL2(SYSCALL_GETPRIORITY, which, who);
-+uid_t sys_geteuid() {
-+	uint64_t ret, errno;
-+	SYSCALL0(SYSCALL_GETEUID);
 +   return (uid_t)ret;
 +}
  
@@ -1342,6 +1335,12 @@ index d32864b..d56c640 100644
 -	} else {
 -			*value = ret;
 -        return 0;
++uid_t sys_geteuid() {
++	uint64_t ret, errno;
++	SYSCALL0(SYSCALL_GETEUID);
++   return (uid_t)ret;
++}
++
 +int sys_setuid(uid_t uid) {
 +	int ret, errno;
 +   if (uid == 0) {
@@ -1358,13 +1357,13 @@ index d32864b..d56c640 100644
 +	SYSCALL2(SYSCALL_SETUIDS, ((uint64_t)-1), euid);
 +   return ret;
 +}
-+
-+#ifndef MLIBC_BUILDING_RTDL
  
 -	SYSCALL3(SYSCALL_SETPRIORITY, which, who, prio);
-+extern "C" void __mlibc_thread_entry();
++#ifndef MLIBC_BUILDING_RTDL
  
 -	if (ret == -1) {
++extern "C" void __mlibc_thread_entry();
++
 +int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
 +    int ret, errno;
 +    SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
@@ -1480,19 +1479,20 @@ index d32864b..d56c640 100644
 +   if (hdr->msg_control != NULL) {
 +      mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
 +      return EINVAL;
-+   }
+    }
 +
-+   size_t ret, count = 0;
++   int ret;
++   size_t count = 0;
 +   int errno;
 +
-+   for (size_t i = 0; i < hdr->msg_iovlen; i++) {
++   for (int i = 0; i < hdr->msg_iovlen; i++) {
 +      SYSCALL6(SYSCALL_RECVFROM, fd, hdr->msg_iov->iov_base, hdr->msg_iov->iov_len,
 +               hdr->msg_flags, hdr->msg_name, hdr->msg_namelen);
 +      if (ret == -1) {
 +         return errno;
 +      }
 +      count += ret;
-    }
++   }
 +
 +   *length = count;
 +   return 0;
@@ -1510,10 +1510,11 @@ index d32864b..d56c640 100644
 +      return EINVAL;
 +   }
 +
-+   size_t ret, count = 0;
++   int ret;
++   size_t count = 0;
 +   int errno;
 +
-+   for (size_t i = 0; i < hdr->msg_iovlen; i++) {
++   for (int i = 0; i < hdr->msg_iovlen; i++) {
 +      SYSCALL6(SYSCALL_SENDTO, fd, hdr->msg_iov->iov_base, hdr->msg_iov->iov_len,
 +               hdr->msg_flags, hdr->msg_name, hdr->msg_namelen);
 +      if (ret == -1) {
@@ -1560,13 +1561,12 @@ index d32864b..d56c640 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -464,25 +887,79 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +891,79 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  	return 0;
  }
  
--int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
 +int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags) {
- 	int ret, errno;
++	int ret, errno;
 +	if (pathname == NULL) {
 +	   pathname = "";
 +	   flags |= AT_EMPTY_PATH;
@@ -1580,7 +1580,7 @@ index d32864b..d56c640 100644
 +       if (ret) {
 +           return ret;
 +       }
-+       struct timespec times2[2] = {0};
++       struct timespec times2[2] = {0, 0};
 +       times2[0].tv_sec = secs;
 +       times2[0].tv_nsec = nsec;
 +       times2[1].tv_sec = secs;
@@ -1620,8 +1620,8 @@ index d32864b..d56c640 100644
 +   return errno;
 +}
 +
-+int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
-+	int ret, errno, fd2;
+ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
+ 	int ret, errno;
  	(void)flags;
  
  	switch (fsfdt) {
@@ -1652,7 +1652,7 @@ index d32864b..d56c640 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -490,7 +967,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -490,7 +971,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  		}
  	}
  

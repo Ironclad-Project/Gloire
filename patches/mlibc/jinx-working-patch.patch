@@ -452,64 +452,32 @@ index 8d95027..eae92f7 100644
  
  int login_tty(int fd) {
 diff --git mlibc-clean/options/posix/generic/sys-uio.cpp mlibc-workdir/options/posix/generic/sys-uio.cpp
-index 0f14bc0..910e6bb 100644
+index 0f14bc0..eab41b1 100644
 --- mlibc-clean/options/posix/generic/sys-uio.cpp
 +++ mlibc-workdir/options/posix/generic/sys-uio.cpp
-@@ -26,42 +26,40 @@ ssize_t readv(int fd, const struct iovec *iovs, int iovc) {
- }
- 
- ssize_t writev(int fd, const struct iovec *iovs, int iovc) {
--	__ensure(iovc);
--
--	ssize_t written = 0;
--	size_t bytes = 0;
--	for(int i = 0; i < iovc; i++) {
--		if(SSIZE_MAX - bytes < iovs[i].iov_len) {
--			errno = EINVAL;
--			return -1;
--		}
--		bytes += iovs[i].iov_len;
-+	ssize_t written_bytes = 0;
-+
-+	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_writev, -1);
-+
-+	if (int e = sysdep(fd, iovs, iovc, &written_bytes); e) {
-+		errno = e;
-+		return -1;
- 	}
--	frg::vector<char, MemoryAllocator> buffer{getAllocator()};
--	buffer.resize(bytes);
- 
--	size_t to_copy = bytes;
--	char *bp = buffer.data();
--	for(int i = 0; i < iovc; i++) {
--		size_t copy = frg::min(iovs[i].iov_len, to_copy);
-+	return written_bytes;
-+}
-+
-+ssize_t preadv(int fd, const struct iovec *iovs, int iovc, off_t off) {
-+	ssize_t read_bytes = 0;
- 
--		bp = (char *)mempcpy((void *)bp, (void *)iovs[i].iov_base, copy);
-+	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_preadv, -1);
- 
--		to_copy -= copy;
--		if(to_copy == 0)
--			break;
-+	if (int e = sysdep(fd, iovs, iovc, off, &read_bytes); e) {
-+		errno = e;
-+		return -1;
- 	}
- 
--	written = write(fd, buffer.data(), bytes);
--	return written;
-+	return read_bytes;
+@@ -56,12 +56,28 @@ ssize_t writev(int fd, const struct iovec *iovs, int iovc) {
+ 	return written;
  }
  
 -ssize_t preadv(int, const struct iovec *, int, off_t) {
 -	__ensure(!"Not implemented");
 -	__builtin_unreachable();
--}
++ssize_t preadv(int fd, const struct iovec *iovs, int iovc, off_t off) {
++	ssize_t read_bytes = 0;
++
++	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_preadv, -1);
++
++	if (int e = sysdep(fd, iovs, iovc, off, &read_bytes); e) {
++		errno = e;
++		return -1;
++	}
++
++	return read_bytes;
+ }
+ 
+-ssize_t pwritev(int, const struct iovec *, int, off_t) {
+-	__ensure(!"Not implemented");
+-	__builtin_unreachable();
 +ssize_t pwritev(int fd, const struct iovec *iovs, int iovc, off_t off) {
 +	ssize_t written_bytes = 0;
 +
@@ -519,10 +487,7 @@ index 0f14bc0..910e6bb 100644
 +		errno = e;
 +		return -1;
 +	}
- 
--ssize_t pwritev(int, const struct iovec *, int, off_t) {
--	__ensure(!"Not implemented");
--	__builtin_unreachable();
++
 +	return written_bytes;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
@@ -1933,6 +1898,21 @@ index 0000000..ee8f87f
 +	SYSCALL3(SYSCALL_UMOUNT, target, target_len, flags);
 +   return errno;
 +}
+diff --git mlibc-workdir/sysdeps/ironclad/generic/ptrace.cpp mlibc-workdir/sysdeps/ironclad/generic/ptrace.cpp
+new file mode 100644
+index 0000000..bcb2d66
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/ptrace.cpp
+@@ -0,0 +1,9 @@
++#include <sys/syscall.h>
++#include <errno.h>
++#include <sys/ptrace.h>
++
++int ptrace(int request, pid_t pid, void *addr, void *data) {
++   int ret;
++   SYSCALL4(SYSCALL_PTRACE, request, pid, addr, data);
++   return ret;
++}
 diff --git mlibc-workdir/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
 new file mode 100644
 index 0000000..fcee169
@@ -2775,10 +2755,10 @@ index 0000000..74f47f8
 +#endif // _SYS_IRONCLAD_DEVICES_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/mac.h mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
 new file mode 100644
-index 0000000..fda3821
+index 0000000..d4cf76d
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,46 @@
 +#ifndef _SYS_MAC_H
 +#define _SYS_MAC_H
 +
@@ -2801,6 +2781,8 @@ index 0000000..fda3821
 +#define MAC_CAP_PTRACE  0b00100000000
 +#define MAC_CAP_SETUID  0b01000000000
 +#define MAC_CAP_SYS_MAC 0b10000000000
++#define MAC_CAP_CLOCK  0b100000000000
++#define MAC_CAP_SIGNALALL 0b1000000000000
 +unsigned long get_mac_capabilities(void);
 +int set_mac_capabilities(unsigned long request);
 +
@@ -2848,6 +2830,31 @@ index 0000000..71ae64d
 +#endif
 +
 +#endif // _SYS_MOUNT_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/sys/ptrace.h mlibc-workdir/sysdeps/ironclad/include/sys/ptrace.h
+new file mode 100644
+index 0000000..db131df
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/sys/ptrace.h
+@@ -0,0 +1,19 @@
++#ifndef _SYS_PTRACE_H
++#define _SYS_PTRACE_H
++
++#include <stdint.h>
++#include <stdbool.h>
++#include <sys/types.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define PTRACE_SYSCALL_PIPE 1
++int ptrace(int request, pid_t pid, void *addr, void *data);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _SYS_PTRACE_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/reboot.h mlibc-workdir/sysdeps/ironclad/include/sys/reboot.h
 new file mode 100644
 index 0000000..c2dbbf2
@@ -3123,14 +3130,15 @@ index 28d233e..b0227d5 100644
 -#endif // _SYSCALL_H
 +#endif // _SYS_SYSCALL_H
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index a0b4f8d..24f6292 100644
+index a0b4f8d..92edba0 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
-@@ -5,7 +5,15 @@ rtdl_sources += files(
+@@ -5,7 +5,16 @@ rtdl_sources += files(
  
  libc_sources += files(
  	'generic/entry.cpp',
 -	'generic/generic.cpp'
++	'generic/ptrace.cpp',
 +	'generic/generic.cpp',
 +   'generic/mntent.cpp',
 +   'generic/mount.cpp',
@@ -3143,7 +3151,7 @@ index a0b4f8d..24f6292 100644
  )
  
  if not no_headers
-@@ -56,9 +64,28 @@ if not no_headers
+@@ -56,9 +65,29 @@ if not no_headers
  		subdir: 'abi-bits'
  	)
  	install_headers(
@@ -3155,6 +3163,7 @@ index a0b4f8d..24f6292 100644
 -		subdir: 'sys'
 +      'include/sys/reboot.h',
 +      'include/sys/mount.h',
++      'include/sys/ptrace.h',
 +      subdir: 'sys'
 +	)
 +
@@ -3174,7 +3183,7 @@ index a0b4f8d..24f6292 100644
  	)
  endif
  
-@@ -71,5 +98,23 @@ if not headers_only
+@@ -71,5 +100,23 @@ if not headers_only
  		install: true,
  		install_dir: get_option('libdir')
  	)

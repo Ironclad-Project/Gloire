@@ -1,7 +1,7 @@
 name=limine
-version=5.20231103.0
+version=5.20231114.0
 tarball_url="https://github.com/limine-bootloader/limine/releases/download/v${version}/limine-${version}.tar.xz"
-tarball_blake2b="72348e39ad8cd614e19d88c840580c58b3dbd5d4796f2fb525bb6333bd60d641cb0e3fb2abacbef209637708754a52aadc626c625ae3b548d4d3b3db08e474f1"
+tarball_blake2b="7d3d2df9799aa71a41eba0382103187954d9cf84652d49da313f691921489e765a1c6be38b4ae2fdc579467afe750ee17dc9c5b5ab55870a82145fb523b242e0"
 hostdeps="autoconf automake libtool pkg-config"
 
 regenerate() {

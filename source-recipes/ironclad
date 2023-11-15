@@ -1,10 +1,11 @@
 name=ironclad
-version=0.5.0
-tarball_url=https://download.savannah.nongnu.org/releases/ironclad/ironclad-${version}.tar.gz
-tarball_blake2b="893f6a599bdee8340bc3290957c46ea617af05eb1e2b2955589e591503352681bf038b0ce91cc6a87f67569922832ee3d0c2ba60d918cd6303c5c6c71411fd1d"
+version=4294db69d8356d14568e5a4e3280af032aefd253
+tarball_url=https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz
+tarball_blake2b="592d3aa8e5faa0f7f2698775f011eaab1b31666b75ce9e559ac250ec83d454ebeeaa302cc718fdeee2b9c4977524bf20039d94208695ec353a4169ded3dadae8"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 
 regenerate() {
-    true
+    ./bootstrap
+    autotools_recursive_regen
 }

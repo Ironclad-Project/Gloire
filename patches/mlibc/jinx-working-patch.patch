@@ -1,8 +1,8 @@
 diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
-index d1e9f02..397a69d 100644
+index d1e9f02..10188de 100644
 --- mlibc-clean/abis/ironclad/fcntl.h
 +++ mlibc-workdir/abis/ironclad/fcntl.h
-@@ -1,51 +1,55 @@
+@@ -1,50 +1,58 @@
  #ifndef _ABIBITS_FCNTL_H
  #define _ABIBITS_FCNTL_H
  
@@ -63,35 +63,40 @@ index d1e9f02..397a69d 100644
 +#define O_TMPFILE   0b100000000000000000000
 +
 +// Fcntl flags.
-+#define FD_CLOEXEC 1
-+#define F_GETFD    3
-+#define F_SETFD    4
-+#define F_GETFL    5
-+#define F_SETFL    6
-+
-+// Stubbed fcntl flags.
++#define FD_CLOEXEC   1
  #define F_DUPFD 1
  #define F_DUPFD_CLOEXEC 2
 -#define F_GETFD 3
 -#define F_SETFD 4
 -#define F_GETFL 5
 -#define F_SETFL 6
- #define F_GETLK 7
- #define F_SETLK 8
- #define F_SETLKW 9
- #define F_GETOWN 10
- #define F_SETOWN 11
--
+-#define F_GETLK 7
+-#define F_SETLK 8
+-#define F_SETLKW 9
+-#define F_GETOWN 10
+-#define F_SETOWN 11
++#define F_GETFD      3
++#define F_SETFD      4
++#define F_GETFL      5
++#define F_SETFL      6
++#define F_GETPIPE_SZ 7
++#define F_SETPIPE_SZ 8
++#define F_GETLK      9
++#define F_SETLK      10
++#define F_SETLKW     11
+ 
  #define F_RDLCK 1
  #define F_UNLCK 2
  #define F_WRLCK 3
--
+ 
 -#define FD_CLOEXEC 1
--
++// Stubbed fcntl flags.
++#define F_GETOWN 10
++#define F_SETOWN 11
+ 
  #define F_SEAL_SHRINK 0x0002
  #define F_SEAL_GROW   0x0004
- #define F_SEAL_WRITE  0x0008
-@@ -53,12 +57,19 @@
+@@ -53,12 +61,19 @@
  #define F_ADD_SEALS   1033
  #define F_GET_SEALS   1034
  
@@ -491,20 +496,19 @@ index 0f14bc0..eab41b1 100644
 +	return written_bytes;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index 9983219..5e2b44b 100644
+index 9983219..b43929d 100644
 --- mlibc-clean/options/posix/include/fcntl.h
 +++ mlibc-workdir/options/posix/include/fcntl.h
-@@ -62,8 +62,8 @@ ssize_t vmsplice(int fd, const struct iovec *iov, size_t nr_segs, unsigned int f
+@@ -62,9 +62,6 @@ ssize_t vmsplice(int fd, const struct iovec *iov, size_t nr_segs, unsigned int f
  
  #define AT_NO_AUTOMOUNT 0x800
  
 -#define F_SETPIPE_SZ 1031
 -#define F_GETPIPE_SZ 1032
-+#define F_SETPIPE_SZ 8
-+#define F_GETPIPE_SZ 7
- 
+-
  #define FALLOC_FL_KEEP_SIZE 1
  #define FALLOC_FL_PUNCH_HOLE 2
+ 
 diff --git mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
 index 730bf59..683faf9 100644
 --- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
@@ -586,10 +590,10 @@ index 0000000..0187e50
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index d32864b..674e56e 100644
+index d32864b..3eac8e5 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -10,24 +10,24 @@
+@@ -10,24 +10,25 @@
  #include <string.h>
  #include <stdio.h>
  #include <sys/syscall.h>
@@ -597,6 +601,7 @@ index d32864b..674e56e 100644
 +#include <sched.h>
 +#include <sys/mman.h>
 +#include <unistd.h>
++#include <sys/file.h>
  
  namespace mlibc {
  
@@ -621,7 +626,7 @@ index d32864b..674e56e 100644
  	sys_exit(1);
  }
  
-@@ -39,21 +39,68 @@ void sys_exit(int status) {
+@@ -39,21 +40,68 @@ void sys_exit(int status) {
  
  int sys_tcb_set(void *pointer) {
  	int ret, errno;
@@ -694,7 +699,7 @@ index d32864b..674e56e 100644
  }
  
  int sys_close(int fd) {
-@@ -62,6 +109,26 @@ int sys_close(int fd) {
+@@ -62,6 +110,26 @@ int sys_close(int fd) {
  	return errno;
  }
  
@@ -721,7 +726,7 @@ index d32864b..674e56e 100644
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
-@@ -78,6 +145,22 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
+@@ -78,6 +146,22 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
  	return errno;
  }
  
@@ -744,7 +749,7 @@ index d32864b..674e56e 100644
  int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	ssize_t ret;
  	int errno;
-@@ -86,8 +169,26 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
+@@ -86,8 +170,52 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
  	return errno;
  }
  
@@ -752,6 +757,32 @@ index d32864b..674e56e 100644
 +   int ret, errno;
 +   SYSCALL2(SYSCALL_TRUNCATE, fd, size);
 +   return errno;
++}
++
++int sys_flock(int fd, int options) {
++   struct flock lock;
++   lock.l_whence = SEEK_SET;
++   lock.l_start = 0;
++   lock.l_len = (off_t)((uint64_t)-1);
++   lock.l_pid = sys_getpid();
++
++   switch (options) {
++      case LOCK_SH:
++         lock.l_type = F_RDLCK;
++         break;
++      case LOCK_EX:
++         lock.l_type = F_WRLCK;
++         break;
++      case LOCK_UN:
++         lock.l_type = F_UNLCK;
++         break;
++      default:
++         return -1;
++   }
++
++	int ret, errno;
++	SYSCALL3(SYSCALL_FCNTL, fd, F_SETLK, &lock);
++	return errno;
 +}
 +
 +int sys_getrusage(int scope, struct rusage *usage) {
@@ -772,7 +803,7 @@ index d32864b..674e56e 100644
  }
  
  int sys_anon_free(void *pointer, size_t size) {
-@@ -102,6 +203,68 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+@@ -102,6 +230,68 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  	return errno;
  }
  
@@ -841,7 +872,7 @@ index d32864b..674e56e 100644
  int sys_vm_unmap(void *pointer, size_t size) {
  	int ret;
  	int errno;
-@@ -113,6 +276,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -113,6 +303,16 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -858,7 +889,7 @@ index d32864b..674e56e 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -128,103 +301,60 @@ pid_t sys_getppid() {
+@@ -128,103 +328,60 @@ pid_t sys_getppid() {
  }
  
  int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
@@ -867,9 +898,8 @@ index d32864b..674e56e 100644
 -	(void)oldact;
 -	mlibc::infoLogger() << "sigaction() is a stub" << frg::endlog;
 -	return 0;
-+   return 0;
- }
- 
+-}
+-
 -int sys_fcntl(int fd, int request, va_list args, int *result) {
 -	(void)fd;
 -	(void)request;
@@ -885,8 +915,9 @@ index d32864b..674e56e 100644
 -	(void)retrieve;
 -	mlibc::infoLogger() << "sigprocmask() is a stub!" << frg::endlog;
 -	return ENOSYS;
--}
--
++   return 0;
+ }
+ 
 -int sys_ttyname(int fd, char *buf, size_t size) {
 -	(void)fd;
 -	(void)buf;
@@ -989,7 +1020,7 @@ index d32864b..674e56e 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -234,17 +364,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -234,17 +391,34 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
  }
  
  int sys_fork(pid_t *child) {
@@ -1032,7 +1063,7 @@ index d32864b..674e56e 100644
  }
  
  int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
-@@ -263,13 +410,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
+@@ -263,13 +437,13 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
  	}
  
  	*ret_pid = ret;
@@ -1048,7 +1079,7 @@ index d32864b..674e56e 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -278,6 +425,19 @@ int sys_uname(struct utsname *buf) {
+@@ -278,6 +452,19 @@ int sys_uname(struct utsname *buf) {
  	return 0;
  }
  
@@ -1068,7 +1099,7 @@ index d32864b..674e56e 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -290,23 +450,28 @@ int sys_sethostname(const char *buff, size_t size) {
+@@ -290,23 +477,28 @@ int sys_sethostname(const char *buff, size_t size) {
  	return 0;
  }
  
@@ -1104,7 +1135,7 @@ index d32864b..674e56e 100644
  
  	if (ret == -1) {
  		return errno;
-@@ -328,46 +493,50 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+@@ -328,46 +520,50 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	return 0;
  }
  
@@ -1180,7 +1211,7 @@ index d32864b..674e56e 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -402,57 +571,385 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
+@@ -402,57 +598,396 @@ int sys_tcsetattr(int fd, int optional_action, const struct termios *attr) {
  }
  
  int sys_access(const char *path, int mode) {
@@ -1206,14 +1237,20 @@ index d32864b..674e56e 100644
 +int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
 +   int ret, errno;
 +   struct futex_item item = {.addr = (uint64_t)pointer, .expected = expected, .flags = 0};
-+	SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, time);
++   if (time == NULL) {
++       struct timespec t = {(time_t)-1, (time_t)-1};
++       SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, &t);
++   } else {
++	    SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, time);
++	}
 +	return errno;
 +}
 +
 +int sys_futex_wake(int *pointer) {
 +   int ret, errno;
 +   struct futex_item item = {.addr = (uint64_t)pointer, .expected = 0, .flags = 0};
-+	SYSCALL4(SYSCALL_FUTEX, 0b10, &item, 1, NULL);
++   struct timespec t = {(time_t)-1, (time_t)-1};
++	SYSCALL4(SYSCALL_FUTEX, 0b10, &item, 1, &t);
 +	return errno;
 +}
 +
@@ -1235,24 +1272,17 @@ index d32864b..674e56e 100644
 +}
 +
 +int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
-+	int ret, errno;
+ 	int ret, errno;
 +	size_t path_len = strlen (path);
 +	SYSCALL5(SYSCALL_MAKENODE, dirfd, path, path_len, S_IFDIR | mode, 0);
 +	return errno;
 +}
-+
-+int sys_rmdir(const char* path){
- 	int ret, errno;
-+	size_t path_len = strlen (path);
-+	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
-+	return errno;
-+}
  
 -	SYSCALL2(SYSCALL_ACCESS, path, mode);
-+int sys_unlinkat(int fd, const char *path, int flags) {
++int sys_rmdir(const char* path){
 +	int ret, errno;
 +	size_t path_len = strlen (path);
-+	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
++	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
 +	return errno;
 +}
  
@@ -1261,6 +1291,13 @@ index d32864b..674e56e 100644
 -	} else {
 -        return 0;
 -   }
++int sys_unlinkat(int fd, const char *path, int flags) {
++	int ret, errno;
++	size_t path_len = strlen (path);
++	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
++	return errno;
++}
++
 +int sys_link(const char* srcpath, const char* destpath) {
 +	int ret, errno;
 +	size_t src_len = strlen (srcpath);
@@ -1328,8 +1365,6 @@ index d32864b..674e56e 100644
 +
 +    if (ret == -1) {
          return errno;
--	} else {
--        return 0;
 +    }
 +
 +    *tid_out = (pid_t)ret;
@@ -1450,18 +1485,12 @@ index d32864b..674e56e 100644
 +         return errno;
 +      }
 +      count += ret;
-    }
++   }
 +
 +   *length = count;
 +   return 0;
- }
- 
--int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
--	(void)pointer;
--	(void)expected;
--	(void)time;
--	__ensure(!"sys_futex is a stub!");
--	__builtin_unreachable();
++}
++
 +int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
 +   if (hdr->msg_control != NULL) {
 +      mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
@@ -1483,34 +1512,45 @@ index d32864b..674e56e 100644
 +
 +   *length = count;
 +   return 0;
++}
++
++
++int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
++   // XXX: Ironclad has no sigprogmask so this is basically a weird ppoll poll
++   // chimeral abomination.
++	int ret, errno;
++	if (timeout == NULL) {
++	    struct timespec t = {.tv_sec = (time_t)-1, .tv_nsec = (time_t)-1};
++	    SYSCALL3(SYSCALL_POLL, fds, nfds, &t);
+ 	} else {
+-        return 0;
++	    SYSCALL3(SYSCALL_POLL, fds, nfds, timeout);
++	}
++   if (ret == -1) {
++      return errno;
+    }
++
++   *num_events = ret;
++	return errno;
+ }
+ 
+-int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
+-	(void)pointer;
+-	(void)expected;
+-	(void)time;
+-	__ensure(!"sys_futex is a stub!");
+-	__builtin_unreachable();
++int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
++	struct timespec ts;
++	ts.tv_sec = timeout / 1000;
++	ts.tv_nsec = (timeout % 1000) * 1000000;
++	return sys_ppoll(fds, count, timeout < 0 ? NULL : &ts, NULL, num_events);
  }
  
 -int sys_futex_wake(int *pointer) {
 -	(void)pointer;
 -	__ensure(!"sys_futex is a stub!");
 -	__builtin_unreachable();
-+
-+int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
-+   // XXX: Ironclad has no sigprogmask so this is basically a weird ppoll poll
-+   // chimeral abomination.
-+	int ret, errno;
-+	SYSCALL3(SYSCALL_POLL, fds, nfds, &timeout);
-+   if (ret == -1) {
-+      return errno;
-+   }
-+
-+   *num_events = ret;
-+	return errno;
- }
- 
--#ifndef MLIBC_BUILDING_RTDL
-+int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
-+	struct timespec ts;
-+	ts.tv_sec = timeout / 1000;
-+	ts.tv_nsec = (timeout % 1000) * 1000000;
-+	return sys_ppoll(fds, count, timeout < 0 ? NULL : &ts, NULL, num_events);
-+}
-+
 +int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
 +		fd_set *except_set, const struct timespec *timeout,
 +		const sigset_t *sigmask, int *num_events) {
@@ -1576,8 +1616,9 @@ index d32864b..674e56e 100644
 +	}
 +
 +	return 0;
-+}
-+
+ }
+ 
+-#ifndef MLIBC_BUILDING_RTDL
 +int sys_fadvise(int fd, off_t offset, off_t length, int advice) {
 +    return 0;
 +}
@@ -1595,7 +1636,7 @@ index d32864b..674e56e 100644
  
  int sys_gethostname(char *buffer, size_t bufsize) {
  	struct utsname buf;
-@@ -464,25 +961,79 @@ int sys_gethostname(char *buffer, size_t bufsize) {
+@@ -464,25 +999,79 @@ int sys_gethostname(char *buffer, size_t bufsize) {
  	return 0;
  }
  
@@ -1686,7 +1727,7 @@ index d32864b..674e56e 100644
  		}
  		default: {
  			__ensure(!"stat: Invalid fsfdt");
-@@ -490,7 +1041,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
+@@ -490,7 +1079,94 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
  		}
  	}
  

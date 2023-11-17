@@ -9,7 +9,7 @@ configure() {
 }
 
 build() {
-    make CC=${OS_TRIPLET}-gcc CFLAGS="${CFLAGS}" LD=${OS_TRIPLET}-gcc prefix="${prefix}" -j${parallelism}
+    make CC=${OS_TRIPLET}-gcc CFLAGS="${CFLAGS}" LD=${OS_TRIPLET}-gcc LDFLAGS="${CFLAGS}" prefix="${prefix}" -j${parallelism}
 }
 
 install() {

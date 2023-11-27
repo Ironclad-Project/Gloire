@@ -62,3 +62,95 @@ index a0f2bf5..4c3a8c6 100644
  		}else if(phdr->p_type == PT_TLS) {
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index 7136150..f91b6e1 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -202,6 +202,19 @@ int sys_flock(int fd, int options) {
+ 	return errno;
+ }
+ 
++int sys_getpriority(int which, id_t who, int *value) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_GETPRIO, which, who);
++   *value = ret;
++   return errno;
++}
++
++int sys_setpriority(int which, id_t who, int value) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_SETPRIO, which, who, value);
++   return errno;
++}
++
+ int sys_getrusage(int scope, struct rusage *usage) {
+ 	int ret, errno;
+ 	SYSCALL2(SYSCALL_GETRUSAGE, scope, usage);
+@@ -1165,5 +1178,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+ 	return errno;
+ }
+ 
++#define SC_LIST_MOUNTS 9
++struct mountinfo {
++    uint32_t type;
++    uint32_t flags;
++    char     source[20];
++    uint32_t source_length;
++    char     location[20];
++    uint32_t location_length;
++    uint64_t block_size;
++    uint64_t fragment_size;
++    uint64_t size_in_fragments;
++    uint64_t free_blocks;
++    uint64_t free_blocks_user;
++    uint64_t inode_count;
++    uint64_t free_inodes;
++    uint64_t free_inodes_user;
++    uint64_t max_filename;
++};
++
++int sys_statvfs(const char *path, struct statvfs *out) {
++   long ret, errno;
++   struct mountinfo *buffer = (mountinfo *)malloc(5 * sizeof(struct mountinfo));
++   SYSCALL3(SYSCALL_SYSCONF, SC_LIST_MOUNTS, buffer, 5 * sizeof(struct mountinfo));
++   if (errno) {
++      free(buffer);
++      return errno;
++   } else if (ret > 5) {
++      free(buffer);
++      return 1;
++   }
++
++   for (int i = 0; i < ret; i++) {
++      if (!strncmp(path, buffer[i].location, buffer[i].location_length)) {
++         out->f_bsize  = buffer[i].block_size;
++         out->f_frsize = buffer[i].fragment_size;
++         out->f_blocks = buffer[i].size_in_fragments;
++         out->f_bfree  = buffer[i].free_blocks;
++         out->f_bavail = buffer[i].free_blocks_user;
++         out->f_files  = buffer[i].inode_count;
++         out->f_ffree  = buffer[i].free_inodes;
++         out->f_favail = buffer[i].free_inodes_user;
++         out->f_fsid   = 0;
++         out->f_flag   = buffer[i].flags;
++         out->f_namemax = buffer[i].max_filename;
++         return 0;
++      }
++   }
++
++   return EINVAL;
++}
+ #endif
+ } // namespace mlibc
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+index b0227d5..e4fc00a 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -166,5 +166,7 @@
+ #define SYSCALL_ACTUALLY_KILL        79
+ #define SYSCALL_SIGNALPOST           80
+ #define SYSCALL_SEND_SIGNAL          81
++#define SYSCALL_GETPRIO              82
++#define SYSCALL_SETPRIO              83
+ 
+ #endif // _SYS_SYSCALL_H

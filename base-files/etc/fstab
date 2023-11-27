@@ -1,0 +1,2 @@
+sata01p1 /boot fat32
+sata01p2 / ext

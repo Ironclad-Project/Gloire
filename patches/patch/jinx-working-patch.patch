@@ -1,0 +1,33 @@
+diff --git patch-clean/lib/fcntl.c patch-workdir/lib/fcntl.c
+index 3dfb6b7..ec1618b 100644
+--- patch-clean/lib/fcntl.c
++++ patch-workdir/lib/fcntl.c
+@@ -43,6 +43,10 @@
+ /* Upper bound on getdtablesize().  See lib/getdtablesize.c.  */
+ # define OPEN_MAX_MAX 0x10000
+ 
++int getdtablesize(void) {
++   return sysconf(_SC_OPEN_MAX);
++}
++
+ /* Duplicate OLDFD into the first available slot of at least NEWFD,
+    which must be positive, with FLAGS determining whether the duplicate
+    will be inheritable.  */
+@@ -59,7 +63,7 @@ dupfd (int oldfd, int newfd, int flags)
+   BOOL inherit = flags & O_CLOEXEC ? FALSE : TRUE;
+   int mode;
+ 
+-  if (newfd < 0 || getdtablesize () <= newfd)
++  if (newfd < 0 || OPEN_MAX <= newfd)
+     {
+       errno = EINVAL;
+       return -1;
+@@ -186,7 +190,7 @@ rpl_fcntl (int fd, int action, /* arg */...)
+       {
+         int target = va_arg (arg, int);
+         /* Detect invalid target; needed for cygwin 1.5.x.  */
+-        if (target < 0 || getdtablesize () <= target)
++        if (target < 0 || OPEN_MAX <= target)
+           errno = EINVAL;
+         else
+           {

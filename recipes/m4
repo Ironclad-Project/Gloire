@@ -1,0 +1,25 @@
+name=m4
+from_source=m4
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    ./configure \
+        --host=${OS_TRIPLET} \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-nls \
+        --disable-static
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

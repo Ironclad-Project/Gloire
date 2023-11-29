@@ -1,0 +1,23 @@
+name=file
+from_source=file
+revision=1
+imagedeps="file gcc"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    ./configure \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-nls \
+        --disable-static
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

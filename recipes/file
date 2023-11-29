@@ -1,0 +1,27 @@
+name=file
+from_source=file
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config file"
+deps="core-libs readline"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    ./configure \
+        --host=${OS_TRIPLET} \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-nls \
+        --disable-static \
+        --disable-bzlib \
+        --disable-xzlib
+}
+
+build() {
+    make -j${parallelism}
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip
+}

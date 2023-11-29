@@ -1,0 +1,31 @@
+name=groff
+from_source=groff
+revision=1
+imagedeps="sed"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_1 (signbit)"//g lib/math.in.h
+    sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_2 (signbit)"//g lib/math.in.h
+    sed -i s/"#   undef signbit"//g lib/math.in.h
+
+    PAGE="A4" ./configure \
+        --host=${OS_TRIPLET} \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-nls \
+        --disable-static \
+        --with-doc=no
+}
+
+build() {
+    make -j${parallelism} AR="x86_64-ironclad-ar"
+}
+
+install() {
+    DESTDIR="${dest_dir}" make install-strip AR="x86_64-ironclad-ar"
+}

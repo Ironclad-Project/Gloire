@@ -1,7 +1,7 @@
 name=util-ironclad
-version=1a16b1505bd5b40df19d6de8e57be16dbe677dd9
+version=7567d70381647c4cd58b01887b1b610fbc3fbdd2
 tarball_url="https://git.savannah.nongnu.org/cgit/ironclad/util-ironclad.git/snapshot/util-ironclad-${version}.tar.gz"
-tarball_blake2b="cedfbee8ad991b24828f1f43daad86de1fbffdbf4dd88a6779d8bbf821a75fac431f57bc622b3165b2efe73d9f4b9f1f449c92fe3174146e05f304d095ad89e3"
+tarball_blake2b="82d3286206053bf74f00e7ba58c6df30dd95c4e17f4dde2fec2fabf971a7991225b1e9ccca4241e99fbbd0fe6c87334d829c64245e8a78a1cdb31cde214a761c"
 hostdeps="automake autoconf libtool pkg-config"
 imagedeps="git"
 

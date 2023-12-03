@@ -1,8 +1,0 @@
-name=neofetch
-version=7.1.0
-tarball_url="https://github.com/dylanaraps/neofetch/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b=32368d461835d95ba8203c560b2f6733594966cbaf809d877a46c08675284288565e3a21b14d94900dd66b778dc975339196f182732e2cd8bc1ccc9e6da6253e
-
-regenerate() {
-        true
-}

@@ -1,9 +1,9 @@
-name=neofetch
-from_source=neofetch
+name=hyfetch
+from_source=hyfetch
 revision=1
 rundeps="bash"
 
-configure() {	
+configure() {
     true
 }
 

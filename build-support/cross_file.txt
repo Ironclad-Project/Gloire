@@ -3,7 +3,7 @@ c = 'x86_64-ironclad-gcc'
 cpp = 'x86_64-ironclad-g++'
 ar = 'x86_64-ironclad-ar'
 strip = 'x86_64-ironclad-strip'
-pkgconfig = 'x86_64-ironclad-pkg-config'
+pkg-config = 'x86_64-ironclad-pkg-config'
 # sed adds binaries here.
 
 [host_machine]

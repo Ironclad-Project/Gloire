@@ -4,17 +4,15 @@ revision=1
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
-configure() {
+build() {
         prefix="${prefix}" \
         CHOST="${OS_TRIPLET}" \
     ${source_dir}/configure
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a

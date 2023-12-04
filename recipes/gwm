@@ -5,18 +5,16 @@ hostdeps="gcc binutils pkg-config"
 deps="core-libs freetype libpng"
 imagedeps="binutils"
 
-configure() {
+build() {
     "${source_dir}"/configure \
       --prefix="${prefix}"    \
       --sysconfdir=/etc       \
       --localstatedir=/var    \
       --host=${OS_TRIPLET}
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     make install DESTDIR="${dest_dir}"
 }

@@ -4,15 +4,13 @@ revision=1
 hostdeps="gcc autoconf automake libtool"
 deps="core-libs"
 
-configure() {
-    cp -rp ${source_dir}/. ./
-}
-
 build() {
+    cp -rp ${source_dir}/. ./
+
     make CC=${OS_TRIPLET}-gcc CFLAGS="-DNO_EXECINFO ${CFLAGS}"
 }
 
-install() {
+package() {
     mkdir -p "${dest_dir}${prefix}"/bin
     cp -r built/sbin/* "${dest_dir}${prefix}"/bin/
     cp -r built/bin/*  "${dest_dir}${prefix}"/bin/

@@ -4,7 +4,7 @@ revision=1
 hostdeps="gcc automake autoconf libtool pkg-config"
 deps="mlibc libgcc libstdc++ libiconv"
 
-configure() {
+build() {
         ACLOCAL=true \
         AUTOCONF=true \
         AUTOMAKE=true \
@@ -32,15 +32,13 @@ configure() {
         --without-cvs \
         --without-bzip2 \
         --without-xz
-}
 
-build() {
     sed -i 's/touch $@//g' gettext-runtime/intl/Makefile
 
     make -C gettext-runtime/intl -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make -C gettext-runtime/intl install-strip
     # For some reason libintl.so is still not stripped, strip it now.
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libintl.so.8.4.0

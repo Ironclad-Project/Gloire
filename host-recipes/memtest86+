@@ -4,16 +4,14 @@ revision=1
 hostdeps="gcc"
 imagedeps="nasm gcc mtools dosfstools xorriso git"
 
-configure() {
-    cp -rp ${source_dir}/. ./
-}
-
 build() {
+    cp -rp ${source_dir}/. ./
+
     cd build64
     make -j${parallelism}
 }
 
-install() {
+package() {
     cd build64
     mkdir -p "${dest_dir}"/boot
     cp memtest.bin "${dest_dir}"/boot/

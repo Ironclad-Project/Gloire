@@ -3,15 +3,13 @@ from_source=hyfetch
 revision=1
 rundeps="bash"
 
-configure() {
-    true
-}
-
 build() {
     true
+
+    true
 }
 
-install() {
+package() {
     mkdir -p "${dest_dir}"/usr/bin
     cp -f "${source_dir}"/neofetch "${dest_dir}"/usr/bin/neofetch
 }

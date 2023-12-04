@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs freetype libexpat libxml"
 imagedeps="python gperf"
 
-configure() {
+build() {
     ${source_dir}/configure \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
@@ -15,12 +15,10 @@ configure() {
         --disable-docs \
         --disable-nls \
         --enable-libxml2
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

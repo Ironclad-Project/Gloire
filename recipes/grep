@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs pcre2"
 imagedeps="gperf"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -14,12 +14,10 @@ configure() {
         --sysconfdir=/etc \
         --localstatedir=/var \
         --disable-nls
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

@@ -25,7 +25,8 @@
 
 set -e
 
-jinx_version="0.1.5"
+jinx_version="0.2.0"
+jinx_major_ver="0.2"
 
 IFS=" ""	"'
 '
@@ -85,7 +86,7 @@ build_hostdeps() {
     for hostdep in ${hostdeps} ${hostrundeps}; do
         [ -f "${base_dir}"/host-recipes/${hostdep} ] || die "missing host dependency '${hostdep}' for recipe '${name}'"
 
-        [ -f "${build_dir}"/host-builds/${hostdep}.installed ] && continue
+        [ -f "${build_dir}"/host-builds/${hostdep}.packaged ] && continue
 
         "${script}" host-build ${hostdep}
     done
@@ -95,7 +96,7 @@ build_deps() {
     for dep in ${deps} ${builddeps}; do
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
-        [ -f "${build_dir}"/builds/${dep}.installed ] && continue
+        [ -f "${build_dir}"/builds/${dep}.packaged ] && continue
 
         "${script}" build ${dep}
     done
@@ -390,38 +391,16 @@ do_regenerate() {
     touch "${base_dir}"/sources/${name}.regenerated
 }
 
-do_configure_host() {
-    . "${base_dir}"/host-recipes/$1
-
-    [ -f "${build_dir}"/host-builds/${name}.configured ] && return
-
-    mkdir -p "${build_dir}"/host-builds/${name}
-
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
-    if [ -z "${source_dir}" ]; then
-        source_dir="${base_dir}"/sources/${from_source}
-    else
-        source_dir="${base_dir}"/"${source_dir}"
-    fi
-
-    prefix="/usr/local"
-    sysroot_dir="/sysroot"
-
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
-
-    cd "${build_dir}"/host-builds/${name}
-    configure
-    cd "${base_dir}"
-
-    touch "${build_dir}"/host-builds/${name}.configured
-}
-
 do_build_host() {
     . "${base_dir}"/host-recipes/$1
 
     [ -f "${build_dir}"/host-builds/${name}.built ] && return
 
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
+
+    mkdir -p "${build_dir}"/host-builds/${name}
+
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -440,17 +419,19 @@ do_build_host() {
     touch "${build_dir}"/host-builds/${name}.built
 }
 
-do_install_host() {
+do_package_host() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${build_dir}"/host-builds/${name}.installed ] && return
+    [ -f "${build_dir}"/host-builds/${name}.packaged ] && return
+
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     dest_dir="${build_dir}"/host-pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -465,7 +446,7 @@ do_install_host() {
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${build_dir}"/host-builds/${name}
-    install
+    package
     cd "${base_dir}"
 
     # Remove libtool files
@@ -473,33 +454,7 @@ do_install_host() {
         rm -rvf $i
     done
 
-    touch "${build_dir}"/host-builds/${name}.installed
-}
-
-do_configure() {
-    . "${base_dir}"/recipes/$1
-
-    [ -f "${build_dir}"/builds/${name}.configured ] && return
-
-    mkdir -p "${build_dir}"/builds/${name}
-
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
-    if [ -z "${source_dir}" ]; then
-        source_dir="${base_dir}"/sources/${from_source}
-    else
-        source_dir="${base_dir}"/"${source_dir}"
-    fi
-
-    prefix="/usr"
-    sysroot_dir="/sysroot"
-
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
-
-    cd "${build_dir}"/builds/${name}
-    configure
-    cd "${base_dir}"
-
-    touch "${build_dir}"/builds/${name}.configured
+    touch "${build_dir}"/host-builds/${name}.packaged
 }
 
 do_build() {
@@ -507,7 +462,11 @@ do_build() {
 
     [ -f "${build_dir}"/builds/${name}.built ] && return
 
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
+
+    mkdir -p "${build_dir}"/builds/${name}
+
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -526,17 +485,19 @@ do_build() {
     touch "${build_dir}"/builds/${name}.built
 }
 
-do_install() {
+do_package() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${build_dir}"/builds/${name}.installed ] && return
+    [ -f "${build_dir}"/builds/${name}.packaged ] && return
+
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     dest_dir="${build_dir}"/pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    eval $(grep 'source_dir=' < "${base_dir}"/source-recipes/${from_source})
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -551,7 +512,7 @@ do_install() {
     [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${build_dir}"/builds/${name}
-    install
+    package
     cd "${base_dir}"
 
     # Remove libtool files
@@ -559,7 +520,7 @@ do_install() {
         rm -rvf $i
     done
 
-    touch "${build_dir}"/builds/${name}.installed
+    touch "${build_dir}"/builds/${name}.packaged
 }
 
 precont_patch() {
@@ -638,20 +599,19 @@ do_cmd_regenerate() {
 do_host_pkg() {
     . "${base_dir}"/host-recipes/$1
 
-    [ -f "${build_dir}"/host-builds/${name}.installed ] && return
+    [ -f "${build_dir}"/host-builds/${name}.packaged ] && return
 
     echo "* building host package: $name"
 
-    eval $(grep 'from_source=' < "${base_dir}"/host-recipes/$1)
+    from_source="$(. "${base_dir}"/host-recipes/$1 && echo "$from_source")"
     [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
         "${script}" internal-source "${from_source}"
 
     prepare_container
 
     container_sources_ro=":ro"
-    run_in_container internal-configure-host $1
     run_in_container internal-build-host $1
-    run_in_container internal-install-host $1
+    run_in_container internal-package-host $1
     unset container_sources_ro
 
     destroy_container
@@ -660,20 +620,19 @@ do_host_pkg() {
 do_pkg() {
     . "${base_dir}"/recipes/$1
 
-    [ -f "${build_dir}"/builds/${name}.installed ] && return
+    [ -f "${build_dir}"/builds/${name}.packaged ] && return
 
     echo "* building package: $name"
 
-    eval $(grep 'from_source=' < "${base_dir}"/recipes/$1)
+    from_source="$(. "${base_dir}"/recipes/$1 && echo "$from_source")"
     [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
         "${script}" internal-source "${from_source}"
 
     prepare_container
 
     container_sources_ro=":ro"
-    run_in_container internal-configure $1
     run_in_container internal-build $1
-    run_in_container internal-install $1
+    run_in_container internal-package $1
     unset container_sources_ro
 
     destroy_container
@@ -732,12 +691,6 @@ cmd_install() {
     for ppkg in "$@"; do
         if [ "${ppkg}" = '*' ]; then
             for pkg in "${build_dir}"/pkgs/*; do
-                add_to_sysroot=""
-                eval $(grep 'add_to_sysroot=' < "${base_dir}"/recipes/$(basename "${pkg}"))
-                if [ "${add_to_sysroot}" = "no" ]; then
-                    continue
-                fi
-
                 echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
                 cp -rf "${pkg}"/. "${sysroot}"/
             done
@@ -1234,6 +1187,16 @@ if ! [ -f "$JINX_CONFIG_FILE_PATH" ]; then
     die "$0: missing Jinx config file in source directory $base_dir"
 fi
 
+JINX_MAJOR_VER_CONFIG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_MAJOR_VER")"
+
+if [ -z "$JINX_MAJOR_VER_CONFIG" ]; then
+    die "$0: required config variable \$JINX_MAJOR_VER missing"
+fi
+
+if ! [ "$JINX_MAJOR_VER_CONFIG" = "$jinx_major_ver" ]; then
+    die "$0: needed major version ($JINX_MAJOR_VER_CONFIG) differs from Jinx-provided major version ($jinx_major_ver)"
+fi
+
 if ! [ -d "$JINX_CACHE_DIR" ]; then
     first_use
 fi
@@ -1252,23 +1215,17 @@ case "$1" in
     internal-cont-patch)
         cont_patch "$2"
         ;;
-    internal-configure-host)
-        do_configure_host "$2"
-        ;;
     internal-build-host)
         do_build_host "$2"
         ;;
-    internal-install-host)
-        do_install_host "$2"
-        ;;
-    internal-configure)
-        do_configure "$2"
+    internal-package-host)
+        do_package_host "$2"
         ;;
     internal-build)
         do_build "$2"
         ;;
-    internal-install)
-        do_install "$2"
+    internal-package)
+        do_package "$2"
         ;;
     internal-get-deps-file)
         . "${base_dir}"/recipes/$2

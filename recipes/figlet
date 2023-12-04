@@ -4,15 +4,13 @@ revision=1
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
-configure() {
-    cp -rp "${source_dir}"/. ./
-}
-
 build() {
+    cp -rp "${source_dir}"/. ./
+
     make CC=${OS_TRIPLET}-gcc CFLAGS="${CFLAGS}" LD=${OS_TRIPLET}-gcc LDFLAGS="${CFLAGS}" prefix="${prefix}" -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install prefix="${prefix}"
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}/bin/figlet"
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}/bin/chkfont"

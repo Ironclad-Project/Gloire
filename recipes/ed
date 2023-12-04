@@ -4,16 +4,14 @@ revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     CC="x86_64-ironclad-gcc" ./configure
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install
 }

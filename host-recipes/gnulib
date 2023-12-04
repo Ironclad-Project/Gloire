@@ -2,14 +2,12 @@ name=gnulib
 from_source=gnulib
 revision=1
 
-configure() {
-    true
-}
-
 build() {
     true
+
+    true
 }
 
-install() {
+package() {
     true
 }

@@ -4,7 +4,7 @@ revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs ncurses"
 
-configure() {
+build() {
     ${source_dir}/configure \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
@@ -13,13 +13,11 @@ configure() {
         --disable-static \
         --enable-multibyte \
         --with-curses
-}
 
-build() {
     make SHLIB_LIBS="-lncursesw" -j${parallelism}
 }
 
-install() {
+package() {
     make SHLIB_LIBS="-lncursesw" install DESTDIR="${dest_dir}"
 
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libhistory.so.8

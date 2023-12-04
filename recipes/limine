@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 imagedeps="mtools nasm"
 
-configure() {
+build() {
     ${source_dir}/configure \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
@@ -18,12 +18,10 @@ configure() {
         --enable-bios-cd \
         --enable-bios-pxe \
         TOOLCHAIN_FOR_TARGET=${OS_TRIPLET}
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="mlibc libgcc libstdc++"
 imagedeps="binutils"
 
-configure() {
+build() {
     ${source_dir}/configure           \
         --host=${OS_TRIPLET}           \
         --prefix=${prefix}            \
@@ -14,13 +14,11 @@ configure() {
         --disable-static              \
         --enable-shared               \
         --disable-nls
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/{libcharset.so.1.0.0,libiconv.so.2.6.1}

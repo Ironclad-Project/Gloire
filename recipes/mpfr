@@ -5,7 +5,7 @@ imagedeps="gcc"
 hostdeps="gcc autoconf autoconf-archive automake libtool pkg-config"
 deps="core-libs gmp"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -16,12 +16,10 @@ configure() {
         --enable-static=no \
         --enable-shared=yes \
         --with-pic
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

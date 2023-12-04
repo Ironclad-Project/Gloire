@@ -3,15 +3,13 @@ from_source=gprbuild
 revision=1
 imagedeps="gcc-ada"
 
-configure() {
-    cp -rp ${source_dir}/. ./
-}
-
 build() {
+    cp -rp ${source_dir}/. ./
+
     ./bootstrap.sh --with-xmlada=./xmlada --with-kb=./gprconfig_kb --prefix=./bootstrap
 }
 
-install() {
+package() {
     mkdir -p "${dest_dir}${prefix}"
     sed -i 's/elf/ironclad/g'     ./bootstrap/share/gprconfig/compilers.xml
     sed -i 's/freebsd/ironclad/g' ./bootstrap/share/gprconfig/linker.xml

@@ -5,7 +5,7 @@ imagedeps="groff"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline libiconv groff less libpipeline gdbm"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -20,12 +20,10 @@ configure() {
         --with-systemdsystemunitdir= \
         --disable-manual \
         --with-pager=/usr/bin/less
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

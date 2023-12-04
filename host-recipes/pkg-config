@@ -4,16 +4,14 @@ revision=1
 imagedeps="gcc"
 hostdeps="automake autoconf libtool"
 
-configure() {
+build() {
     "${source_dir}"/configure \
         --prefix="${prefix}"
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
     mkdir -p "${dest_dir}${prefix}/share/pkgconfig/personality.d"
     cat <<EOF >"${dest_dir}${prefix}/share/pkgconfig/personality.d/${OS_TRIPLET}.personality"

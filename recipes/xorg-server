@@ -4,7 +4,7 @@ revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs xorg-util-macros xorg-proto xcb-proto libxtrans libxshmfence libx11 libxxf86vm libxkbfile libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xkbcomp pixman"
 
-configure() {
+build() {
         CFLAGS="-Wno-error=array-bounds ${common_flags}" \
     ${source_dir}/configure \
         --host=${OS_TRIPLET} \
@@ -40,12 +40,10 @@ configure() {
         --disable-libdrm \
         --disable-glamor \
         --disable-glx
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

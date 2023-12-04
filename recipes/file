@@ -4,7 +4,7 @@ revision=1
 hostdeps="gcc autoconf automake libtool pkg-config file"
 deps="core-libs readline"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -16,12 +16,10 @@ configure() {
         --disable-static \
         --disable-bzlib \
         --disable-xzlib
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

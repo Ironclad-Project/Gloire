@@ -4,11 +4,9 @@ revision=1
 hostdeps="gcc pkg-config"
 deps="core-libs zlib xz-utils"
 
-configure() {
-    cp -rp "${source_dir}"/. ./
-}
-
 build() {
+    cp -rp "${source_dir}"/. ./
+
         CC=${OS_TRIPLET}-gcc \
         CXX=${OS_TRIPLET}-g++ \
         AR=${OS_TRIPLET}-ar \
@@ -16,7 +14,7 @@ build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
         CC=${OS_TRIPLET}-gcc \
         DESTDIR="${dest_dir}" \
         PREFIX="${prefix}" \

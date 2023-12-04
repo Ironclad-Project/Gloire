@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs zlib gmp"
 imagedeps="gcc"
 
-configure() {
+build() {
     ${source_dir}/configure           \
         --host=${OS_TRIPLET}           \
         --prefix=${prefix}            \
@@ -19,14 +19,12 @@ configure() {
         --with-gmp=${sysroot_dir}/usr \
         --enable-shared               \
         --enable-host-shared
-}
 
-build() {
         SFRAME_LIB_PATH="-L$(pwd -P)/libsframe/.libs" \
     make -j${parallelism} all
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 
     # Remove unnecessary directory

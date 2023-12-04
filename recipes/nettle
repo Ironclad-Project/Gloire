@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs gmp"
 imagedeps="gcc"
 
-configure() {
+build() {
     ${source_dir}/configure \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
@@ -13,13 +13,11 @@ configure() {
         --localstatedir=/var \
         --disable-documentation \
         --disable-static
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install
 
     ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/*

@@ -5,19 +5,17 @@ imagedeps="gcc"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs gmp mpfr"
 
-configure() {
+build() {
     ${source_dir}/configure           \
         --host=${OS_TRIPLET}           \
         --prefix=${prefix}            \
         --sysconfdir=/etc \
         --localstatedir=/var \
         --disable-static
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

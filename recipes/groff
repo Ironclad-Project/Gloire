@@ -5,7 +5,7 @@ imagedeps="sed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_1 (signbit)"//g lib/math.in.h
@@ -20,12 +20,10 @@ configure() {
         --disable-nls \
         --disable-static \
         --with-doc=no
-}
 
-build() {
     make -j${parallelism} AR="x86_64-ironclad-ar"
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip AR="x86_64-ironclad-ar"
 }

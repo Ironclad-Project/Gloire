@@ -4,19 +4,17 @@ revision=1
 hostdeps="gcc automake autoconf libtool pkg-config"
 deps="core-libs ncurses"
 
-configure() {
+build() {
     ${source_dir}/configure    \
         --host=${OS_TRIPLET}    \
         --prefix=${prefix}     \
         --sysconfdir=/etc \
         --localstatedir=/var \
         --disable-nls
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

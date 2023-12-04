@@ -1,3 +1,5 @@
+JINX_MAJOR_VER=0.2
+
 export CFLAGS="-O2 -pipe -fcf-protection"
 export CXXFLAGS="$CFLAGS"
 

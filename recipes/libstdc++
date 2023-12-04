@@ -5,17 +5,15 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 imagedeps="gcc"
 deps="mlibc libgcc"
 
-configure() {
-    true
-}
-
 build() {
+    true
+
     cd "${base_dir}"/host-builds/gcc/build
 
     make -j${parallelism} all-target-libstdc++-v3
 }
 
-install() {
+package() {
     cd "${base_dir}"/host-builds/gcc/build
 
     rm -rf tmp_libstdc++_dir

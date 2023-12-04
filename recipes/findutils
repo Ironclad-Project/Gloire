@@ -5,7 +5,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 imagedeps="python"
 
-configure() {
+build() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -15,12 +15,10 @@ configure() {
         --localstatedir=/var \
         --disable-nls \
         --without-selinux
-}
 
-build() {
     make -j${parallelism}
 }
 
-install() {
+package() {
     DESTDIR="${dest_dir}" make install-strip
 }

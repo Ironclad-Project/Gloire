@@ -2,15 +2,13 @@ name=base-files
 from_source=base-files
 revision=1
 
-configure() {
-    true
-}
-
 build() {
     true
+
+    true
 }
 
-install() {
+package() {
     cp -prv ${source_dir}/. "${dest_dir}"/
     ln -s /usr/bin "${dest_dir}"/bin
     ln -s /usr/bin "${dest_dir}"/sbin

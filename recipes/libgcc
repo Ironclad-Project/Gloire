@@ -5,17 +5,15 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 imagedeps="gcc"
 deps="mlibc"
 
-configure() {
-    true
-}
-
 build() {
+    true
+
     cd "${base_dir}"/host-builds/gcc/build
 
     make -j${parallelism} all-target-libgcc
 }
 
-install() {
+package() {
     cd "${base_dir}"/host-builds/gcc/build
 
     rm -rf tmp_libgcc_dir

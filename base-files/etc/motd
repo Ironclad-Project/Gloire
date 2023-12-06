@@ -11,12 +11,11 @@
     GJJP
 
 Gloire is an OS built with the [1mIronclad[0m kernel and using [1;31mGNU[0m tools for the userland.
+It is 100% freedom-respecting free/libre software, and distributed following
+the GNU Free System Distribution Guidelines.
+
 Please report any issues at https://github.com/streaksu/Gloire/issues.
 Thanks in advance, and [1;34mhave a nice time around[0m!
-
-The programs included with Gloire are free software; the exact distribution
-terms for each program are described in the individual files in
-/usr/share/doc/*/copyright.
 
 Gloire and Ironclad come with ABSOLUTELY NO WARRANTY, to the extent permitted
 by applicable law.

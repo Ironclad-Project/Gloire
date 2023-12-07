@@ -3,14 +3,13 @@ from_source=tr7
 revision=1
 imagedeps="gcc"
 hostdeps="gcc automake"
-deps=""
+deps="core-libs"
 
 build() {
     cp -rp "${source_dir}"/. ./
 
-    make -j${parallelism}
-
-    make test
+    # Disable <wchar> as mlibc does not support it
+    CC="x86_64-ironclad-gcc" HOSTCC="gcc" make -j${parallelism} FFLAGS="-DNO_WCHAR"
 }
 
 package() {

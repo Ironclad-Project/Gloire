@@ -1,0 +1,23 @@
+name=tr7
+from_source=tr7
+revision=1
+imagedeps="gcc"
+hostdeps="gcc automake"
+deps=""
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    make -j${parallelism}
+
+    make test
+}
+
+package() {
+    DESTDIR="${dest_dir}"
+    install -v -D -t $DESTDIR/usr/local/bin tr7i
+    # install -v -D -t $DESTDIR/usr/local/lib libtr7.so*
+    # install -v -D -t $DESTDIR/usr/local/include tr7libs
+    mkdir -p $DESTDIR/usr/local/include
+    cp -r tr7libs $DESTDIR/usr/local/include
+}

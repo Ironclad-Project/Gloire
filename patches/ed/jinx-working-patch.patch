@@ -143,10 +143,18 @@ index 12c3e99..102d5d6 100644
    for( n = u_idx - 1; n >= 0; --n )
      {
 diff --git ed-clean/configure ed-workdir/configure
-index 5692ef9..4d9304b 100755
+index 5692ef9..b91a628 100755
 --- ed-clean/configure
 +++ ed-workdir/configure
-@@ -21,7 +21,7 @@ datarootdir='$(prefix)/share'
+@@ -14,14 +14,14 @@ srctrigger=doc/${pkgname}.texi
+ LC_ALL=C
+ export LC_ALL
+ srcdir=
+-prefix=/usr/local
++prefix=/usr
+ exec_prefix='$(prefix)'
+ bindir='$(exec_prefix)/bin'
+ datarootdir='$(prefix)/share'
  infodir='$(datarootdir)/info'
  mandir='$(datarootdir)/man'
  program_prefix=

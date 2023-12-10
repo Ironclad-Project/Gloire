@@ -21,4 +21,5 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install-strip
+    mkdir -pv "${dest_dir}"/var/spool/cron
 }

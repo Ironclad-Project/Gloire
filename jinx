@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -273,10 +273,7 @@ run_in_container() {
     if ( [ "$native_mode" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$native_mode" = "yes" ] ); then
         mkdir -p "${imgroot}/sysroot"
 
-        native_mode_mounts=" \
-            --mount "${container_pkgs}":/usr/local:ro \
-            --mount "${sysroot_dir}":/sysroot:ro \
-        "
+        native_mode_mounts=y
 
         run_in_cont_lang=en_US.UTF-8
     else
@@ -294,28 +291,53 @@ run_in_container() {
         run_in_cont_argvar="$run_in_cont_argvar \"$arg\""
     done
 
-    "$JINX_CACHE_DIR/rbrt" \
-        --root "${imgroot}" \
-        --uid $(id -u) \
-        --gid $(id -g) \
-        --env HOME=/root \
-        --env LANG=${run_in_cont_lang} \
-        --env LC_COLLATE=C \
-        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
-        --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-        ${run_in_cont_term} \
-        ${run_in_cont_colorterm} \
-        --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
-        --env JINX_SOURCE_DIR=/base_dir \
-        ${native_mode_mounts} \
-        --mount "${script}":/jinx:ro \
-        --mount "${base_dir}":/base_dir${container_base_dir_ro} \
-        --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-        --mount "${build_dir}":/build_dir \
-        ${unshare_net_flag} \
-        --workdir / \
-        -- \
-        /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
+    if [ -z "${native_mode_mounts}" ]; then
+        "$JINX_CACHE_DIR/rbrt" \
+            --root "${imgroot}" \
+            --uid $(id -u) \
+            --gid $(id -g) \
+            --env HOME=/root \
+            --env LANG=${run_in_cont_lang} \
+            --env LC_COLLATE=C \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            ${run_in_cont_term} \
+            ${run_in_cont_colorterm} \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_SOURCE_DIR=/base_dir \
+            --mount "${script}":/jinx:ro \
+            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
+            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            --mount "${build_dir}":/build_dir \
+            ${unshare_net_flag} \
+            --workdir / \
+            -- \
+            /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
+    else
+        "$JINX_CACHE_DIR/rbrt" \
+            --root "${imgroot}" \
+            --uid $(id -u) \
+            --gid $(id -g) \
+            --env HOME=/root \
+            --env LANG=${run_in_cont_lang} \
+            --env LC_COLLATE=C \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            ${run_in_cont_term} \
+            ${run_in_cont_colorterm} \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_SOURCE_DIR=/base_dir \
+            --mount "${container_pkgs}":/usr/local:ro \
+            --mount "${sysroot_dir}":/sysroot:ro \
+            --mount "${script}":/jinx:ro \
+            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
+            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            --mount "${build_dir}":/build_dir \
+            ${unshare_net_flag} \
+            --workdir / \
+            -- \
+            /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
+    fi
 
     rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }

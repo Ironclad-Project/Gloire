@@ -1,8 +1,8 @@
-name=cronie
-from_source=cronie
+name=tar
+from_source=tar
 revision=1
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs"
+deps="mlibc libgcc libstdc++ libxcrypt"
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -12,14 +12,11 @@ build() {
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
-        --sbindir=/usr/bin \
-        --disable-nls \
-        --disable-static
+        --disable-nls
 
     make -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" make install-strip
-    mkdir -pv "${dest_dir}"/var/spool/cron
 }

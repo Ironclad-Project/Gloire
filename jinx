@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2022-2023, mintsuki
+# Copyright (C) 2022-2023 mintsuki
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -25,8 +25,10 @@
 
 set -e
 
-jinx_version="0.2.0"
 jinx_major_ver="0.2"
+jinx_minor_ver="3"
+
+jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 IFS=" ""	"'
 '
@@ -34,8 +36,17 @@ IFS=" ""	"'
 LC_COLLATE=C
 export LC_COLLATE
 
+die() {
+    echo "$1"
+    exit 1
+}
+
+if ! [ "$(uname -s)" = "Linux" ]; then
+    die "$0: Jinx only supports running on Linux hosts."
+fi
+
 max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 ))"
-parallelism="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || psrinfo -tc 2>/dev/null || echo 1)"
+parallelism="$(nproc 2>/dev/null || echo 1)"
 parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
 build_dir="$(pwd -P)"
 
@@ -69,11 +80,6 @@ fi
 
 pacman_cache="$JINX_CACHE_DIR/pacman"
 
-die() {
-    echo "$1"
-    exit 1
-}
-
 temp_collect=""
 trap 'rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
 
@@ -106,8 +112,8 @@ get_hostdeps_file_run() {
     deps_to_do=""
 
     for hostdep in ${hostrundeps}; do
-        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
+        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf " ${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
@@ -119,8 +125,8 @@ get_hostdeps_file() {
     deps_to_do=""
 
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep "${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf "${hostdep} " >> "${hostdeps_file}"
+        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
+        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf " ${hostdep} " >> "${hostdeps_file}"
     done
 
     for hostdep in ${deps_to_do}; do
@@ -132,8 +138,8 @@ get_builddeps_file() {
     deps_to_do=""
 
     for dep in ${deps} ${builddeps}; do
-        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
-        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
+        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
+        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || printf " ${dep} " >> "${deps_file}"
     done
 
     for dep in ${deps_to_do}; do
@@ -145,8 +151,8 @@ get_deps_file() {
     deps_to_do=""
 
     for dep in ${deps}; do
-        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
-        grep "${dep} " "${deps_file}" >/dev/null 2>&1 || printf "${dep} " >> "${deps_file}"
+        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
+        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || printf " ${dep} " >> "${deps_file}"
     done
 
     for dep in ${deps_to_do}; do
@@ -174,6 +180,7 @@ run_in_container1() {
         --env LANG=en_US.UTF-8 \
         --env LC_COLLATE=C \
         --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+        --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
         ${run_in_cont1_term} \
         ${run_in_cont1_colorterm} \
         --mount "${pacman_cache}":/var/cache/pacman/pkg \
@@ -200,39 +207,45 @@ prepare_container() {
     make_temp -d
     sysroot_dir="${tmp}"
 
-    for hostdep in $(cat "${hostdeps_file}"); do
-        cp -Plrf "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
-    done
-
     for dep in $(cat "${deps_file}"); do
         cp -Plrf "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
-    imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
+    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
 
-    pkgset=""
-    for pkg in ${imagedeps}; do
-        pkgset="${pkgset}${pkg}/"
-
-        if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
-            continue
-        fi
-
-        mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
-
-        cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
-
-        if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
-            die 'Jinx error: Installing an imagedep failed. If the error is not due to a non-existant package, try running `jinx rebuild-cache` and try again.'
-        fi
-
-        # Fix permissions of files
-        for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
-            chmod 755 "$f"
+    if [ "$native_mode" = "yes" ] && [ -z "$cross_compile" ]; then
+        imgroot="${sysroot_dir}"
+    else
+        for hostdep in $(cat "${hostdeps_file}"); do
+            cp -Plrf "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
         done
-    done
 
-    imgroot="$JINX_CACHE_DIR/sets/${pkgset}.image"
+        imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
+
+        pkgset=""
+        for pkg in ${imagedeps}; do
+            pkgset="${pkgset}${pkg}/"
+
+            if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
+                continue
+            fi
+
+            mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
+
+            cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+
+            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
+                die 'Jinx error: Installing an imagedep failed. If the error is not due to a non-existant package, try running `jinx rebuild-cache` and try again.'
+            fi
+
+            # Fix permissions of files
+            for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
+                chmod 755 "$f"
+            done
+        done
+
+        imgroot="$JINX_CACHE_DIR/sets/${pkgset}.image"
+    fi
 }
 
 run_in_container() {
@@ -250,28 +263,83 @@ run_in_container() {
         run_in_cont_colorterm="--env COLORTERM=\"$COLORTERM\""
     fi
 
-    "$JINX_CACHE_DIR/rbrt" \
-        --root "${imgroot}" \
-        --uid $(id -u) \
-        --gid $(id -g) \
-        --env HOME=/root \
-        --env LANG=en_US.UTF-8 \
-        --env LC_COLLATE=C \
-        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
-        ${run_in_cont_term} \
-        ${run_in_cont_colorterm} \
-        --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
-        --env JINX_SOURCE_DIR=/base_dir \
-        --mount "${container_pkgs}":/usr/local:ro \
-        --mount "${sysroot_dir}":/sysroot:ro \
-        --mount "${script}":/jinx:ro \
-        --mount "${base_dir}":/base_dir${container_base_dir_ro} \
-        --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-        --mount "${build_dir}":/build_dir \
-        ${unshare_net_flag} \
-        --workdir /build_dir \
-        -- \
-        /jinx "$@"
+    touch "${imgroot}/jinx"
+    chmod +x "${imgroot}/jinx"
+    mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+
+    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
+
+    native_mode_mounts=""
+    if ( [ "$native_mode" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$native_mode" = "yes" ] ); then
+        mkdir -p "${imgroot}/sysroot"
+
+        native_mode_mounts=y
+
+        run_in_cont_lang=en_US.UTF-8
+    else
+        JINX_NATIVE_LANG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_LANG")"
+
+        if ! [ -z "$JINX_NATIVE_LANG" ]; then
+            run_in_cont_lang="$JINX_NATIVE_LANG"
+        else
+            run_in_cont_lang=C
+        fi
+    fi
+
+    run_in_cont_argvar=""
+    for arg in "$@"; do
+        run_in_cont_argvar="$run_in_cont_argvar \"$arg\""
+    done
+
+    if [ -z "${native_mode_mounts}" ]; then
+        "$JINX_CACHE_DIR/rbrt" \
+            --root "${imgroot}" \
+            --uid $(id -u) \
+            --gid $(id -g) \
+            --env HOME=/root \
+            --env LANG=${run_in_cont_lang} \
+            --env LC_COLLATE=C \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            ${run_in_cont_term} \
+            ${run_in_cont_colorterm} \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_SOURCE_DIR=/base_dir \
+            --mount "${script}":/jinx:ro \
+            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
+            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            --mount "${build_dir}":/build_dir \
+            ${unshare_net_flag} \
+            --workdir / \
+            -- \
+            /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
+    else
+        "$JINX_CACHE_DIR/rbrt" \
+            --root "${imgroot}" \
+            --uid $(id -u) \
+            --gid $(id -g) \
+            --env HOME=/root \
+            --env LANG=${run_in_cont_lang} \
+            --env LC_COLLATE=C \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl \
+            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            ${run_in_cont_term} \
+            ${run_in_cont_colorterm} \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_SOURCE_DIR=/base_dir \
+            --mount "${container_pkgs}":/usr/local:ro \
+            --mount "${sysroot_dir}":/sysroot:ro \
+            --mount "${script}":/jinx:ro \
+            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
+            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            --mount "${build_dir}":/build_dir \
+            ${unshare_net_flag} \
+            --workdir / \
+            -- \
+            /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
+    fi
+
+    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
 
 destroy_container() {
@@ -526,6 +594,7 @@ do_package() {
 precont_patch() {
     [ -f "${base_dir}"/sources/$1.patched ] && return
 
+    cross_compile=yes
     prepare_container
     run_in_container internal-cont-patch $1
     destroy_container
@@ -540,6 +609,7 @@ do_source() {
 
     "${script}" internal-precont-patch $1
 
+    cross_compile=yes
     prepare_container
     run_in_container internal-regenerate $1
     destroy_container
@@ -591,6 +661,7 @@ do_cmd_regenerate() {
 
     rm -rf "${base_dir}"/sources/$1.regenerated
 
+    cross_compile=yes
     prepare_container
     run_in_container internal-regenerate $1
     destroy_container
@@ -607,6 +678,7 @@ do_host_pkg() {
     [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
         "${script}" internal-source "${from_source}"
 
+    cross_compile=yes
     prepare_container
 
     container_sources_ro=":ro"
@@ -1136,11 +1208,6 @@ reinit_container() {
     echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' >> "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
-    mkdir "$JINX_CACHE_DIR/sets/.image/sysroot"
-    mkdir "$JINX_CACHE_DIR/sets/.image/base_dir"
-    mkdir "$JINX_CACHE_DIR/sets/.image/build_dir"
-    touch "$JINX_CACHE_DIR/sets/.image/jinx"
-    chmod +x "$JINX_CACHE_DIR/sets/.image/jinx"
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --init
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --populate archlinux

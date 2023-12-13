@@ -8,11 +8,11 @@ deps="core-libs mpfr gmp readline"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    CC="x86_64-ironclad-gcc" HOSTCC="gcc" ./configure.sh
+    CC="x86_64-ironclad-gcc" HOSTCC="gcc" PREFIX="${prefix}" ./configure.sh
 
     make -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" PREFIX="${prefix}" make install
 }

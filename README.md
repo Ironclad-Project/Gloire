@@ -37,9 +37,17 @@ Where `gloire.img` is your image of choice.
 ### On physical hardware
 
 Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
-one can burn your gloire image (uncompressing it first if downloaded) to either
-a USB drive featuring HDD emulation, a SATA drive, or an ATA drive. USB without
-HDD emulation is not supported as of yet.
+one can burn your gloire image (uncompressing it first if downloaded) to a
+SATA or ATA drive. USB sticks for booting are not supported
+(for now, stay posted!).
+
+## Contributing
+
+Gloire accepts contributions for new packages or any other kind of changes
+using the pull request system baked into Github.
+Please [submit PRs here](https://github.com/streaksu/Gloire/pulls) or read
+our documentation on how to do so and some things to keep in mind porting on
+[the project's wiki](https://github.com/streaksu/Gloire/wiki).
 
 ## Building
 
@@ -51,8 +59,8 @@ The instructions to build are:
 ./build-support/makeiso.sh # Create the image.
 ```
 
-This commands will generate a bootable disk image that can be burned to
-USB mass-storage media or be booted by several emulators.
+These commands will generate a bootable disk image that can be burned to
+storage media or be booted by several emulators.
 
 A list of the tools needed for compilation of the OS are:
 
@@ -61,11 +69,12 @@ A list of the tools needed for compilation of the OS are:
 - Common UNIX tools like `bash`, `coreutils`, `grep`, `find`, etc.
 - `sgdisk` from the `gptfdisk` package for building the image.
 - `qemu` for testing, if wanted.
+- `tar` and `lzip` for extracting packages.
 
 All of said things can be installed in debian-based systems with
 
 ```bash
-sudo apt install libarchive-tools git build-essentials
+sudo apt install lzip libarchive-tools git build-essentials
 ```
 
 ## Licensing

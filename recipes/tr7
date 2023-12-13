@@ -1,22 +1,23 @@
 name=tr7
 from_source=tr7
 revision=1
-imagedeps="gcc"
+imagedeps=""
 hostdeps="gcc automake"
 deps="core-libs"
 
 build() {
     cp -rp "${source_dir}"/. ./
 
+    # FIXME: printing of floats is broken, it always outputs %f.0
     # Disable <wchar> as mlibc does not support it
-    CC="x86_64-ironclad-gcc" HOSTCC="gcc" make -j${parallelism} FFLAGS="-DNO_WCHAR"
+    # Make only tr7i as the .a library fails due to "ar"
+    CC="x86_64-ironclad-gcc" make -j${parallelism} tr7i FFLAGS="-DNO_WCHAR"
 }
 
 package() {
-    DESTDIR="${dest_dir}"
-    install -v -D -t $DESTDIR/usr/local/bin tr7i
-    # install -v -D -t $DESTDIR/usr/local/lib libtr7.so*
-    # install -v -D -t $DESTDIR/usr/local/include tr7libs
-    mkdir -p $DESTDIR/usr/local/include
-    cp -r tr7libs $DESTDIR/usr/local/include
+    install -v -D -t ${prefix}/bin tr7i
+    # FIXME: maybe also compile and install share library?
+    # install -v -D -t ${prefix}/lib libtr7.so*
+    mkdir -p ${prefix}/include
+    cp -r tr7libs ${prefix}/include
 }

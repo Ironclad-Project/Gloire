@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -208,7 +208,7 @@ prepare_container() {
     sysroot_dir="${tmp}"
 
     for dep in $(cat "${deps_file}"); do
-        cp -Plrf "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
+        cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
     native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
@@ -217,7 +217,7 @@ prepare_container() {
         imgroot="${sysroot_dir}"
     else
         for hostdep in $(cat "${hostdeps_file}"); do
-            cp -Plrf "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
+            cp -Pplrn "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
         done
 
         imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
@@ -232,7 +232,7 @@ prepare_container() {
 
             mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
-            cp -Plrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+            cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
             if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
                 die 'Jinx error: Installing an imagedep failed. If the error is not due to a non-existant package, try running `jinx rebuild-cache` and try again.'
@@ -428,13 +428,13 @@ cont_patch() {
         done
     fi
 
-    cp -r "${source_dir}" "${base_dir}"/sources/${name}-clean
+    cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
         patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
     fi
 
-    cp -r "${source_dir}" "${base_dir}"/sources/${name}-workdir
+    cp -rp "${source_dir}" "${base_dir}"/sources/${name}-workdir
 
     cd "${base_dir}"
 
@@ -522,6 +522,9 @@ do_package_host() {
         rm -rvf $i
     done
 
+    # Remove info directory
+    rm -f "${dest_dir}${prefix}/share/info/dir"
+
     touch "${build_dir}"/host-builds/${name}.packaged
 }
 
@@ -587,6 +590,16 @@ do_package() {
     for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
         rm -rvf $i
     done
+
+    # Coalesce info directory
+    if [ -f "${dest_dir}${prefix}/share/info/dir" ]; then
+        if ! [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
+            mv "${dest_dir}${prefix}/share/info/dir" "$JINX_CACHE_DIR/merged-dir"
+        else
+            "$JINX_CACHE_DIR/merge-info" -o "$JINX_CACHE_DIR/merged-dir" "${dest_dir}${prefix}/share/info/dir" "$JINX_CACHE_DIR/merged-dir"
+            rm "${dest_dir}${prefix}/share/info/dir"
+        fi
+    fi
 
     touch "${build_dir}"/builds/${name}.packaged
 }
@@ -656,7 +669,7 @@ do_cmd_regenerate() {
         cd "${base_dir}"
 
         rm -rf "${source_dir}"
-        cp -r "${base_dir}"/sources/$1-workdir "${source_dir}"
+        cp -rp "${base_dir}"/sources/$1-workdir "${source_dir}"
     fi
 
     rm -rf "${base_dir}"/sources/$1.regenerated
@@ -764,8 +777,12 @@ cmd_install() {
         if [ "${ppkg}" = '*' ]; then
             for pkg in "${build_dir}"/pkgs/*; do
                 echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
-                cp -rf "${pkg}"/. "${sysroot}"/
+                cp -rpn "${pkg}"/. "${sysroot}"/
             done
+            if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
+                # inject the merged info dir into sysroot
+                cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
+            fi
             return
         fi
 
@@ -783,8 +800,13 @@ cmd_install() {
 
     for pkg in $(cat "${deps_file}"); do
         echo "* installing ${pkg} to sysroot '${sysroot}'..."
-        cp -rf pkgs/"${pkg}"/. "${sysroot}"/
+        cp -rpn pkgs/"${pkg}"/. "${sysroot}"/
     done
+
+    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
+        # inject the merged info dir into sysroot
+        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
+    fi
 }
 
 rebuild_rbrt() {
@@ -1220,6 +1242,17 @@ reinit_container() {
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
         chmod 755 "$f"
     done
+
+    (
+    set -e
+    cd "$JINX_CACHE_DIR"
+    curl -Lo xstow-1.1.1.tar.gz https://github.com/majorkingleo/xstow/releases/download/1.1.1/xstow-1.1.1.tar.gz
+    tar -xf xstow-1.1.1.tar.gz
+    cd xstow-1.1.1
+    ./configure LDFLAGS="-static"
+    make -j${parallelism}
+    mv src/merge-info "$JINX_CACHE_DIR/"
+    )
 }
 
 first_use() {

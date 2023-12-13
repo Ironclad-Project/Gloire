@@ -14,7 +14,8 @@ build() {
         --prefix=${prefix}     \
         --sysconfdir=/etc \
         --localstatedir=/var \
-        --disable-nls
+        --disable-nls \
+        --enable-no-install-program=uptime
 
     make -j${parallelism}
 }

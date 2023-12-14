@@ -1,5 +1,5 @@
 diff --git mlibc-clean/abis/ironclad/termios.h mlibc-workdir/abis/ironclad/termios.h
-index e8ebffd..4dd5987 100644
+index 42784b7..7102d94 100644
 --- mlibc-clean/abis/ironclad/termios.h
 +++ mlibc-workdir/abis/ironclad/termios.h
 @@ -32,6 +32,9 @@ typedef unsigned int tcflag_t;
@@ -42,6 +42,22 @@ index c42b4f4..011d9c0 100644
  	return false;
  }
  
+diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
+index 76b85dc..80bec3a 100644
+--- mlibc-clean/options/posix/generic/posix_stdlib.cpp
++++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
+@@ -483,9 +483,8 @@ int strcoll_l(const char *, const char *, locale_t) {
+ 	__builtin_unreachable();
+ }
+ 
+-int getloadavg(double *, int) {
+-	__ensure(!"Not implemented");
+-	__builtin_unreachable();
++int getloadavg(double *samples, int nsample) {
++	return nsample;
+ }
+ 
+ char *secure_getenv(const char *name) {
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
 index 9983219..b43929d 100644
 --- mlibc-clean/options/posix/include/fcntl.h
@@ -57,7 +73,7 @@ index 9983219..b43929d 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index f9d7de8..756a71d 100644
+index 6d11154..28fde4e 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
 @@ -94,103 +94,117 @@ extern "C" {
@@ -271,7 +287,7 @@ index f9d7de8..756a71d 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index 973cfbb..96f82ff 100644
+index a0f2bf5..4c3a8c6 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
 @@ -514,18 +514,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
@@ -581,6 +597,88 @@ index ff060e0..227bac0 100644
 +   SYSCALL3(SYSCALL_UMOUNT, target, target_len, flags);
 +   return ret;
  }
+diff --git mlibc-workdir/sysdeps/ironclad/generic/utmpx.cpp mlibc-workdir/sysdeps/ironclad/generic/utmpx.cpp
+new file mode 100644
+index 0000000..ec74e22
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/generic/utmpx.cpp
+@@ -0,0 +1,76 @@
++#include <bits/ensure.h>
++#include <stddef.h>
++#include <errno.h>
++#include <utmpx.h>
++#include <stdio.h>
++#include <time.h>
++#include <paths.h>
++#include <unistd.h>
++#include <fcntl.h>
++
++int utmpx_file = -1;
++
++void updwtmpx(const char *, const struct utmpx *) {
++	// Empty as musl does
++}
++
++void endutxent(void) {
++	if (utmpx_file >= 0) {
++		close(utmpx_file);
++	}
++}
++
++void setutxent(void) {
++	if (utmpx_file < 0) {
++		utmpx_file = open(UTMPX_FILE, O_RDWR | O_CREAT, 0755);
++	} else {
++		lseek(utmpx_file, 0, SEEK_SET);
++	}
++}
++
++struct utmpx returned;
++
++struct utmpx *getutxent(void) {
++	if (utmpx_file < 0) {
++		setutxent();
++		if (utmpx_file < 0) {
++			return NULL;
++		}
++	}
++
++	if (read(utmpx_file, &returned, sizeof(struct utmpx)) != sizeof(struct utmpx)) {
++		return NULL;
++	}
++
++	return &returned;
++}
++
++struct utmpx *pututxline(const struct utmpx *added) {
++	if (utmpx_file < 0) {
++		setutxent();
++		if (utmpx_file < 0) {
++			return NULL;
++		}
++	}
++
++	lseek(utmpx_file, 0, SEEK_END);
++	if (write(utmpx_file, added, sizeof(struct utmpx)) != sizeof(struct utmpx)) {
++		return NULL;
++	}
++
++	return (struct utmpx *)added;
++}
++
++int utmpxname(const char *path) {
++	if (utmpx_file > 0) {
++		close(utmpx_file);
++	}
++
++	utmpx_file = open(path, O_RDWR | O_CREAT, 0755);
++	if (utmpx_file > 0) {
++		lseek(utmpx_file, 0, SEEK_END);
++		return 1;
++	} else {
++		return 0;
++	}
++}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
 index 71ae64d..51263fa 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/mount.h
@@ -785,3 +883,96 @@ index b0227d5..0fac9be 100644
 +#define SYSCALL_TTYNAME             89
  
  #endif // _SYS_SYSCALL_H
+diff --git mlibc-workdir/sysdeps/ironclad/include/utmpx.h mlibc-workdir/sysdeps/ironclad/include/utmpx.h
+new file mode 100644
+index 0000000..2d7d3e1
+--- /dev/null
++++ mlibc-workdir/sysdeps/ironclad/include/utmpx.h
+@@ -0,0 +1,63 @@
++
++#ifndef  _UTMPX_H
++#define  _UTMPX_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <abi-bits/pid_t.h>
++#include <bits/posix/timeval.h>
++
++#define UTMPX_FILE "/var/run/utmp"
++#define WTMPX_FILE "/var/run/wtmp"
++
++// Struct definition taken from musl
++struct utmpx {
++	short ut_type;
++	short __ut_pad1;
++	pid_t ut_pid;
++	char ut_line[32];
++	char ut_id[4];
++	char ut_user[32];
++	char ut_host[256];
++	struct {
++		short __e_termination;
++		short __e_exit;
++	} ut_exit;
++	int ut_session, __ut_pad2;
++	struct timeval ut_tv;
++	unsigned ut_addr_v6[4];
++	char __unused[20];
++};
++
++#ifndef __MLIBC_ABI_ONLY
++
++void updwtmpx(const char *, const struct utmpx *);
++int utmpxname(const char *);
++struct utmpx *pututxline(const struct utmpx *);
++struct utmpx *getutxent(void);
++void setutxent(void);
++void endutxent(void);
++
++#endif /* !__MLIBC_ABI_ONLY */
++
++#define EMPTY           0
++#define RUN_LVL         1
++#define BOOT_TIME       2
++#define NEW_TIME        3
++#define OLD_TIME        4
++#define INIT_PROCESS    5
++#define LOGIN_PROCESS   6
++#define USER_PROCESS    7
++#define DEAD_PROCESS    8
++
++#define __UT_HOSTSIZE 256
++#define __UT_NAMESIZE 32
++#define __UT_LINESIZE 32
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // _UTMPX_H
+diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
+index d12e2e1..b713b0d 100644
+--- mlibc-clean/sysdeps/ironclad/meson.build
++++ mlibc-workdir/sysdeps/ironclad/meson.build
+@@ -14,7 +14,8 @@ libc_sources += files(
+ 	'generic/thread.cpp',
+ 	'generic/mac.cpp',
+ 	'generic/sched2.cpp',
+-	'generic/thread.S'
++	'generic/thread.S',
++	'generic/utmpx.cpp'
+ )
+ 
+ if not no_headers
+@@ -87,7 +88,8 @@ if not no_headers
+ 
+ 	install_headers(
+ 		'include/mntent.h',
+-		'include/pty.h'
++		'include/pty.h',
++		'include/utmpx.h'
+ 	)
+ endif
+ 

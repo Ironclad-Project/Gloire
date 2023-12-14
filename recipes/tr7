@@ -15,9 +15,9 @@ build() {
 }
 
 package() {
-    install -v -D -t ${prefix}/bin tr7i
+    install -v -D -t "${dest_dir}${prefix}"/bin tr7i
     # FIXME: maybe also compile and install share library?
-    # install -v -D -t ${prefix}/lib libtr7.so*
-    mkdir -p ${prefix}/include
-    cp -r tr7libs ${prefix}/include
+    # install -v -D -t "${dest_dir}${prefix}"/lib libtr7.so*
+    mkdir -p "${dest_dir}${prefix}"/include
+    cp -r tr7libs "${dest_dir}${prefix}"/include
 }

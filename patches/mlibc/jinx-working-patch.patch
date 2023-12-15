@@ -321,7 +321,7 @@ index a0f2bf5..4c3a8c6 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 7136150..857a9ac 100644
+index 7136150..c5ef3a1 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -63,7 +63,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
@@ -414,7 +414,7 @@ index 7136150..857a9ac 100644
 -	return ENOSYS;
 +int sys_ttyname(int fd, char *buff, size_t size) {
 +	int ret, errno;
-+	SYSCALL2(SYSCALL_TTYNAME, buff, size);
++	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
 +	return errno;
  }
  
@@ -477,24 +477,36 @@ index 7136150..857a9ac 100644
  #ifndef MLIBC_BUILDING_RTDL
  
  extern "C" void __mlibc_thread_entry();
-@@ -1029,12 +1082,12 @@ int sys_sysconf(int num, long *rret) {
- 	// Translate the number for the POSIX compat of the sysconf.
- 	int translated;
- 	switch (num) {
+@@ -1025,27 +1078,7 @@ int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2
+ 
+ int sys_sysconf(int num, long *rret) {
+ 	long ret, errno;
+-
+-	// Translate the number for the POSIX compat of the sysconf.
+-	int translated;
+-	switch (num) {
 -		case _SC_PAGE_SIZE:		  translated = 1;  break;
-+		case _SC_PAGE_SIZE:		 translated = 1;  break;
- 		case _SC_OPEN_MAX:			translated = 2;  break;
+-		case _SC_OPEN_MAX:			translated = 2;  break;
 -		case _SC_HOST_NAME_MAX:	 translated = 3;  break;
-+		case _SC_HOST_NAME_MAX:  translated = 3;  break;
- 		case _SC_NPROCESSORS_ONLN: translated = 6;  break;
+-		case _SC_NPROCESSORS_ONLN: translated = 6;  break;
 -		case _SC_PHYS_PAGES:		 translated = 7;  break;
 -		case _SC_CHILD_MAX:		  translated = 11; break;
-+		case _SC_PHYS_PAGES:	  translated = 7;  break;
-+		case _SC_CHILD_MAX:		 translated = 11; break;
- 
- 		// These are values that mlibc technically has to provide itself, but
- 		// I personally dont like how ugly the hardcoded warnings look, so I just
-@@ -1165,5 +1218,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+-
+-		// These are values that mlibc technically has to provide itself, but
+-		// I personally dont like how ugly the hardcoded warnings look, so I just
+-		// harcode them myself :)
+-		case _SC_LINE_MAX: *rret = 4096; return 0;
+-
+-		// Default is for mlibc to handle it.
+-		default: return EINVAL;
+-	}
+-
+-	SYSCALL3(SYSCALL_SYSCONF, translated, 0, 0);
++	SYSCALL3(SYSCALL_SYSCONF, num, 0, 0);
+ 	*rret = ret;
+ 	return errno;
+ }
+@@ -1165,5 +1198,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  

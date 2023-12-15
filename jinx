@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -768,6 +768,15 @@ cmd_clean() {
     rm -rf "${build_dir}"/sysroot
 }
 
+cmd_install_finalize() {
+    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
+        # inject the merged info dir into sysroot
+        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
+    fi
+
+    chown -R $(id -u):$(id -g) "${sysroot}"
+}
+
 cmd_install() {
     sysroot="$1"
     shift 1
@@ -779,10 +788,7 @@ cmd_install() {
                 echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
                 cp -rpn "${pkg}"/. "${sysroot}"/
             done
-            if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
-                # inject the merged info dir into sysroot
-                cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
-            fi
+            cmd_install_finalize
             return
         fi
 
@@ -803,10 +809,7 @@ cmd_install() {
         cp -rpn pkgs/"${pkg}"/. "${sysroot}"/
     done
 
-    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
-        # inject the merged info dir into sysroot
-        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
-    fi
+    cmd_install_finalize
 }
 
 rebuild_rbrt() {
@@ -1249,7 +1252,7 @@ reinit_container() {
     curl -Lo xstow-1.1.1.tar.gz https://github.com/majorkingleo/xstow/releases/download/1.1.1/xstow-1.1.1.tar.gz
     tar -xf xstow-1.1.1.tar.gz
     cd xstow-1.1.1
-    ./configure LDFLAGS="-static"
+    ./configure LDFLAGS="-static" --enable-static --enable-merge-info --without-curses
     make -j${parallelism}
     mv src/merge-info "$JINX_CACHE_DIR/"
     )

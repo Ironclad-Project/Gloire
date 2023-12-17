@@ -1,0 +1,12 @@
+name=minimal
+from_source=mlibc
+revision=1
+deps="core-libs bash base-files bc bzip2 coreutils cronie diffutils ed epoch file findutils gcon gwm grep gzip limine man-db patch sed tar texinfo tzdata util-ironclad wget2 xz-utils ironclad"
+
+build() {
+    true
+}
+
+package() {
+    true
+}

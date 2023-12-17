@@ -60,7 +60,9 @@ The instructions to build are:
 ```
 
 These commands will generate a bootable disk image that can be burned to
-storage media or be booted by several emulators.
+storage media or be booted by several emulators. All programs will be built
+and added to the image, if instead, a minimal install is desired, one can
+replace `build-all` with `build minimal`.
 
 A list of the tools needed for compilation of the OS are:
 

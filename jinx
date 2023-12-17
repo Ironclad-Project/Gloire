@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -76,6 +76,12 @@ fi
 
 if [ -z "$JINX_CACHE_DIR" ]; then
     JINX_CACHE_DIR="$build_dir/.jinx-cache"
+else
+    JINX_CACHE_DIR="$(cd $JINX_CACHE_DIR && pwd -P)"
+fi
+
+if ! [ "$script" = "//jinx" ]; then
+    export PATH="$JINX_CACHE_DIR/host-tools/bin:$PATH"
 fi
 
 pacman_cache="$JINX_CACHE_DIR/pacman"
@@ -773,8 +779,6 @@ cmd_install_finalize() {
         # inject the merged info dir into sysroot
         cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
     fi
-
-    chown -R $(id -u):$(id -g) "${sysroot}"
 }
 
 cmd_install() {
@@ -786,7 +790,7 @@ cmd_install() {
         if [ "${ppkg}" = '*' ]; then
             for pkg in "${build_dir}"/pkgs/*; do
                 echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
-                cp -rpn "${pkg}"/. "${sysroot}"/
+                cp -rn --preserve=mode,timestamps "${pkg}"/. "${sysroot}"/
             done
             cmd_install_finalize
             return
@@ -806,7 +810,7 @@ cmd_install() {
 
     for pkg in $(cat "${deps_file}"); do
         echo "* installing ${pkg} to sysroot '${sysroot}'..."
-        cp -rpn pkgs/"${pkg}"/. "${sysroot}"/
+        cp -rn --preserve=mode,timestamps pkgs/"${pkg}"/. "${sysroot}"/
     done
 
     cmd_install_finalize
@@ -1086,6 +1090,12 @@ int main(int argc, char *argv[]) {
             goto errno_error;
         }
 
+        snprintf(target_path, PATH_MAX, "%s/var/tmp", rootfs);
+        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
+            err_msg = "mount() failure at line " TOSTRING(__LINE__);
+            goto errno_error;
+        }
+
         snprintf(target_path, PATH_MAX, "%s/proc", rootfs);
         if (mount(NULL, target_path, "proc", 0, NULL) < 0) {
             err_msg = "mount() failure at line " TOSTRING(__LINE__);
@@ -1255,6 +1265,17 @@ reinit_container() {
     ./configure LDFLAGS="-static" --enable-static --enable-merge-info --without-curses
     make -j${parallelism}
     mv src/merge-info "$JINX_CACHE_DIR/"
+    )
+
+    (
+    set -e
+    cd "$JINX_CACHE_DIR"
+    curl -Lo coreutils-9.4.tar.xz http://ftp.gnu.org/gnu/coreutils/coreutils-9.4.tar.xz
+    tar -xf coreutils-9.4.tar.xz
+    cd coreutils-9.4
+    ./configure --prefix="$JINX_CACHE_DIR/host-tools"
+    make -j${parallelism}
+    make install
     )
 }
 

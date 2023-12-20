@@ -321,7 +321,7 @@ index a0f2bf5..4c3a8c6 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 7136150..c5ef3a1 100644
+index 7136150..b8e63b6 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -63,7 +63,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
@@ -506,7 +506,20 @@ index 7136150..c5ef3a1 100644
  	*rret = ret;
  	return errno;
  }
-@@ -1165,5 +1198,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1126,6 +1159,12 @@ int sys_umask(mode_t mode, mode_t *old) {
+ 	return errno;
+ }
+ 
++int sys_fadvise(int fd, off_t offset, off_t length, int advice) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_FADVISE, fd, offset, length, advice);
++	return errno;
++}
++
+ int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
+ 	ssize_t ret;
+ 	int errno;
+@@ -1165,5 +1204,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -718,10 +731,10 @@ index 71ae64d..51263fa 100644
  #ifdef __cplusplus
  }
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index b0227d5..0fac9be 100644
+index b0227d5..52dd982 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -84,87 +84,95 @@
+@@ -84,87 +84,96 @@
  				  : "rcx", "r11", "memory"); \
  })
  
@@ -893,6 +906,7 @@ index b0227d5..0fac9be 100644
 +#define SYSCALL_GETGROUPS				87
 +#define SYSCALL_SETGROUPS				88
 +#define SYSCALL_TTYNAME             89
++#define SYSCALL_FADVISE             90
  
  #endif // _SYS_SYSCALL_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/utmpx.h mlibc-workdir/sysdeps/ironclad/include/utmpx.h

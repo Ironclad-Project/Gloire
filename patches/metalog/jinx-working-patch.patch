@@ -1,0 +1,158 @@
+diff --git metalog-clean/configure.ac metalog-workdir/configure.ac
+index 07ba1c3..97cc9e5 100644
+--- metalog-clean/configure.ac
++++ metalog-workdir/configure.ac
+@@ -35,23 +35,23 @@ AM_WITH_DMALLOC
+ 
+ AC_MSG_CHECKING([whether syslog names are available])
+ AC_COMPILE_IFELSE(
+-	[AC_LANG_PROGRAM(
+-		[[
+-			#define SYSLOG_NAMES 1
+-			#include <stdio.h>
+-			#include <syslog.h>
+-		]],
+-		[[
+-			(void) facilitynames
+-		]],
+-	)],
+-	[
+-		AC_MSG_RESULT(yes)
+-		AC_DEFINE(HAVE_SYSLOG_NAMES, , [Define if syslog names are defined])
+-	],
+-	[
+-		AC_MSG_RESULT(no)
+-	])
++   [AC_LANG_PROGRAM(
++      [[
++         #define SYSLOG_NAMES 1
++         #include <stdio.h>
++         #include <syslog.h>
++      ]],
++      [[
++         (void) facilitynames
++      ]],
++   )],
++   [
++      AC_MSG_RESULT(yes)
++      AC_DEFINE(HAVE_SYSLOG_NAMES, , [Define if syslog names are defined])
++   ],
++   [
++      AC_MSG_RESULT(no)
++   ])
+ 
+ dnl Checks for libraries.
+ 
+@@ -64,10 +64,10 @@ AC_FUNC_VPRINTF
+ AC_FUNC_GETGROUPS
+ 
+ AC_CHECK_FUNCS_ONCE(m4_flatten([
+-	daemon
+-	klogctl
+-	setproctitle
+-	setprogname
++   daemon
++   klogctl
++   setproctitle
++   setprogname
+ ]))
+ 
+ dnl PCRE2
+@@ -81,32 +81,32 @@ dnl Options
+ AM_WITH_DMALLOC
+ 
+ WFLAGS=""
+-AC_DEFUN([W_CHECK_CFLAG],[AX_CHECK_COMPILE_FLAG([$1],[WFLAGS="$WFLAGS $1"])])
+-W_CHECK_CFLAG([-Wall])
+-W_CHECK_CFLAG([-W])
+-W_CHECK_CFLAG([-Wcast-qual])
+-W_CHECK_CFLAG([-Wcast-align])
+-W_CHECK_CFLAG([-Wmissing-noreturn])
+-W_CHECK_CFLAG([-Wbad-function-cast])
+-W_CHECK_CFLAG([-Wstrict-prototypes])
+-W_CHECK_CFLAG([-Wwrite-strings])
+-W_CHECK_CFLAG([-Wreturn-type])
+-AC_SUBST(WFLAGS, $WFLAGS)
++# AC_DEFUN([W_CHECK_CFLAG],[AX_CHECK_COMPILE_FLAG([$1],[WFLAGS="$WFLAGS $1"])])
++# W_CHECK_CFLAG([-Wall])
++# W_CHECK_CFLAG([-W])
++# W_CHECK_CFLAG([-Wcast-qual])
++# W_CHECK_CFLAG([-Wcast-align])
++# W_CHECK_CFLAG([-Wmissing-noreturn])
++# W_CHECK_CFLAG([-Wbad-function-cast])
++# W_CHECK_CFLAG([-Wstrict-prototypes])
++# W_CHECK_CFLAG([-Wwrite-strings])
++# W_CHECK_CFLAG([-Wreturn-type])
++# AC_SUBST(WFLAGS, $WFLAGS)
+ 
+ AC_ARG_WITH(unicode,
+-	[AS_HELP_STRING([--with-unicode],[Enable unicode support (default no)])])
++   [AS_HELP_STRING([--with-unicode],[Enable unicode support (default no)])])
+ AS_IF([test "x$with_unicode" = "xyes"], [
+-	AC_DEFINE([ACCEPT_UNICODE_CONTROL_CHARS], [1], [Don't scramble unicode])
++   AC_DEFINE([ACCEPT_UNICODE_CONTROL_CHARS], [1], [Don't scramble unicode])
+ ])
+ 
+ AC_CONFIG_FILES(m4_flatten([
+-	Makefile
+-	src/Makefile
+-	man/Makefile
+-	man/metalog.8
+-	man/metalog.conf.5
+-	metalog.spec
+-	metalog.lsm
++   Makefile
++   src/Makefile
++   man/Makefile
++   man/metalog.8
++   man/metalog.conf.5
++   metalog.spec
++   metalog.lsm
+ ]))
+ 
+ AC_OUTPUT
+diff --git metalog-clean/src/metalog.c metalog-workdir/src/metalog.c
+index ea04eb1..8e92001 100644
+--- metalog-clean/src/metalog.c
++++ metalog-workdir/src/metalog.c
+@@ -1783,7 +1783,7 @@ static void setsignals(void)
+     signal(SIGUSR2, sigusr2);
+ }
+ 
+-#ifndef HAVE_DAEMON
++//#ifndef HAVE_DAEMON
+ static int closedesc_all(const int closestdin)
+ {
+     int fodder;
+@@ -1809,12 +1809,12 @@ static int closedesc_all(const int closestdin)
+ 
+     return 0;
+ }
+-#endif
++//#endif
+ 
+ static void dodaemonize(void)
+ {
+     if (daemonize != 0) {
+-#ifndef HAVE_DAEMON
++//#ifndef HAVE_DAEMON
+         pid_t child;
+         if ((child = fork()) == (pid_t) -1) {
+             warnp("Daemonization failed - fork");
+@@ -1828,11 +1828,11 @@ static void dodaemonize(void)
+         }
+         (void) chdir("/");
+         (void) closedesc_all(1);
+-#else
+-        if (daemon(0, 0)) {
+-            errp("Daemonization failed");
+-        }
+-#endif
++//#else
++//        if (daemon(0, 0)) {
++//            errp("Daemonization failed");
++//        }
++//#endif
+     }
+ }
+ 

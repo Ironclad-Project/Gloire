@@ -16,4 +16,5 @@ package() {
     ln -s lib "${dest_dir}"/usr/lib64
     mkdir "${dest_dir}"/tmp
     mkdir -p "${dest_dir}"/var/run
+    mkdir -p "${dest_dir}"/var/log
 }

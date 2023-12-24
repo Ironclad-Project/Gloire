@@ -7,7 +7,7 @@ deps="core-libs pcre2"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    CFLAGS="" ./configure \
+    ./configure \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --sysconfdir=/etc \

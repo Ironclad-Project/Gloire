@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="9"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -45,13 +45,9 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-if [ -z "$JINX_PARALLELISM" ]; then
-    max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 / 2 ))"
-    parallelism="$(nproc 2>/dev/null || echo 1)"
-    parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
-else
-    parallelism="$JINX_PARALLELISM"
-fi
+max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 ))"
+parallelism="$(nproc 2>/dev/null || echo 1)"
+parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
 build_dir="$(pwd -P)"
 
 if [ -z "$JINX_SOURCE_DIR" ]; then
@@ -73,25 +69,19 @@ script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
 if [ -z "$JINX_CONFIG_FILE" ]; then
-    JINX_CONFIG_FILE="${base_dir}/jinx-config"
+    JINX_CONFIG_FILE_PATH="${base_dir}"/jinx-config
+else
+    JINX_CONFIG_FILE_PATH="${base_dir}"/"${JINX_CONFIG_FILE}"
 fi
-if ! [ -d "$(dirname "$JINX_CONFIG_FILE")" ]; then
-    die "$0: cannot access config file directory"
-fi
-JINX_CONFIG_FILE="$(cd "$(dirname "$JINX_CONFIG_FILE")" && pwd -P)"/"$(basename "$JINX_CONFIG_FILE")"
 
 if [ -z "$JINX_CACHE_DIR" ]; then
-    JINX_CACHE_DIR="${build_dir}/.jinx-cache"
+    JINX_CACHE_DIR="$build_dir/.jinx-cache"
+else
+    JINX_CACHE_DIR="$(cd $JINX_CACHE_DIR && pwd -P)"
 fi
-if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
-    die "$0: cannot access cache directory parent"
-fi
-mkdir -p "$JINX_CACHE_DIR"
-JINX_CACHE_DIR="$(cd $JINX_CACHE_DIR && pwd -P)"
 
-in_container=false
-if [ "$script" = "//jinx" ]; then
-    in_container=true
+if ! [ "$script" = "//jinx" ]; then
+    export PATH="$JINX_CACHE_DIR/host-tools/bin:$PATH"
 fi
 
 pacman_cache="$JINX_CACHE_DIR/pacman"
@@ -227,7 +217,9 @@ prepare_container() {
         cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
-    if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
+    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
+
+    if [ "$native_mode" = "yes" ] && [ -z "$cross_compile" ]; then
         imgroot="${sysroot_dir}"
     else
         for hostdep in $(cat "${hostdeps_file}"); do
@@ -279,17 +271,20 @@ run_in_container() {
 
     touch "${imgroot}/jinx"
     chmod +x "${imgroot}/jinx"
-    touch "${imgroot}/jinx-config"
     mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
+    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
+
     native_mode_mounts=""
-    if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
+    if ( [ "$native_mode" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$native_mode" = "yes" ] ); then
         mkdir -p "${imgroot}/sysroot"
 
         native_mode_mounts=y
 
         run_in_cont_lang=en_US.UTF-8
     else
+        JINX_NATIVE_LANG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_LANG")"
+
         if ! [ -z "$JINX_NATIVE_LANG" ]; then
             run_in_cont_lang="$JINX_NATIVE_LANG"
         else
@@ -314,11 +309,9 @@ run_in_container() {
             --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
             ${run_in_cont_term} \
             ${run_in_cont_colorterm} \
-            --env JINX_PARALLELISM="$parallelism" \
-            --env JINX_CONFIG_FILE=/jinx-config \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
             --env JINX_SOURCE_DIR=/base_dir \
             --mount "${script}":/jinx:ro \
-            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
             --mount "${base_dir}":/base_dir${container_base_dir_ro} \
             --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
             --mount "${build_dir}":/build_dir \
@@ -338,13 +331,11 @@ run_in_container() {
             --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
             ${run_in_cont_term} \
             ${run_in_cont_colorterm} \
-            --env JINX_PARALLELISM="$parallelism" \
-            --env JINX_CONFIG_FILE=/jinx-config \
+            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
             --env JINX_SOURCE_DIR=/base_dir \
             --mount "${container_pkgs}":/usr/local:ro \
             --mount "${sysroot_dir}":/sysroot:ro \
             --mount "${script}":/jinx:ro \
-            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
             --mount "${base_dir}":/base_dir${container_base_dir_ro} \
             --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
             --mount "${build_dir}":/build_dir \
@@ -354,7 +345,7 @@ run_in_container() {
             /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
     fi
 
-    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
 
 destroy_container() {
@@ -366,15 +357,11 @@ do_fetch() {
 
     [ -d "${source_dir}" ] && return
 
+    make_temp -d
+    extract_dir="${tmp}"
     tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
-    if ! [ -f "$tarball_path" ]; then
-        make_temp
-        download_path="${tmp}"
-
-        curl -L -o "${download_path}" "${tarball_url}"
-        mv "${download_path}" "${tarball_path}"
-    fi
+    curl -L -o "${tarball_path}" "${tarball_url}"
 
     checksum_verified=no
 
@@ -410,9 +397,6 @@ do_fetch() {
         die "* error: No checksum method specified for ${name}"
     fi
 
-    make_temp -d
-    extract_dir="${tmp}"
-
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
     mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
@@ -432,22 +416,8 @@ get_real_source_dir() {
     fi
 }
 
-default_recipe_steps() {
-    regenerate() {
-        true
-    }
-
-    build() {
-        true
-    }
-
-    package() {
-        true
-    }
-}
-
 cont_patch() {
-    . "${base_dir}/$1"
+    . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
@@ -478,13 +448,13 @@ cont_patch() {
 }
 
 do_regenerate() {
-    default_recipe_steps
-
-    . "${base_dir}/$1"
+    . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
     [ -f "${base_dir}"/sources/${name}.regenerated ] && return
+
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${source_dir}"
     [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
@@ -496,21 +466,15 @@ do_regenerate() {
 }
 
 do_build_host() {
-    default_recipe_steps
-
     . "${base_dir}"/host-recipes/$1
 
     [ -f "${build_dir}"/host-builds/${name}.built ] && return
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
-        source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
-    else
-        from_source="${name}"
-    fi
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     mkdir -p "${build_dir}"/host-builds/${name}
 
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -520,6 +484,8 @@ do_build_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
+
     cd "${build_dir}"/host-builds/${name}
     build
     cd "${base_dir}"
@@ -528,24 +494,18 @@ do_build_host() {
 }
 
 do_package_host() {
-    default_recipe_steps
-
     . "${base_dir}"/host-recipes/$1
 
     [ -f "${build_dir}"/host-builds/${name}.packaged ] && return
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
-        source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
-    else
-        from_source="${name}"
-    fi
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     dest_dir="${build_dir}"/host-pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -556,6 +516,8 @@ do_package_host() {
     sysroot_dir="/sysroot"
 
     mkdir -p "${dest_dir}${prefix}"
+
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${build_dir}"/host-builds/${name}
     package
@@ -573,21 +535,15 @@ do_package_host() {
 }
 
 do_build() {
-    default_recipe_steps
-
     . "${base_dir}"/recipes/$1
 
     [ -f "${build_dir}"/builds/${name}.built ] && return
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
-        source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
-    else
-        from_source="${name}"
-    fi
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     mkdir -p "${build_dir}"/builds/${name}
 
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -597,6 +553,8 @@ do_build() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
+
     cd "${build_dir}"/builds/${name}
     build
     cd "${base_dir}"
@@ -605,24 +563,18 @@ do_build() {
 }
 
 do_package() {
-    default_recipe_steps
-
     . "${base_dir}"/recipes/$1
 
     [ -f "${build_dir}"/builds/${name}.packaged ] && return
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
-        source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
-    else
-        from_source="${name}"
-    fi
+    version=$(. "${base_dir}"/source-recipes/${from_source} && echo "$version")
 
     dest_dir="${build_dir}"/pkgs/${name}
 
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
+    source_dir="$(. "${base_dir}"/source-recipes/${from_source} && echo "$source_dir")"
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${from_source}
     else
@@ -633,6 +585,8 @@ do_package() {
     sysroot_dir="/sysroot"
 
     mkdir -p "${dest_dir}${prefix}"
+
+    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${build_dir}"/builds/${name}
     package
@@ -657,9 +611,7 @@ do_package() {
 }
 
 precont_patch() {
-    . "${base_dir}/$1"
-
-    [ -f "${base_dir}"/sources/${name}.patched ] && return
+    [ -f "${base_dir}"/sources/$1.patched ] && return
 
     cross_compile=yes
     prepare_container
@@ -668,16 +620,7 @@ precont_patch() {
 }
 
 do_source() {
-    . "${base_dir}/$1"
-
-    [ -f "${base_dir}"/sources/${name}.regenerated ] && return
-
-    if [ "$2" = yes ]; then
-        unset deps builddeps hostrundeps
-        imagedeps="${source_imagedeps}"
-        hostdeps="${source_hostdeps}"
-        allow_network="${source_allow_network}"
-    fi
+    . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
@@ -710,9 +653,9 @@ do_cmd_host_rebuild() {
 }
 
 do_cmd_regenerate() {
-    . "${base_dir}/$1"
+    . "${base_dir}"/source-recipes/$1
 
-    [ -f "${base_dir}"/sources/${name}.patched ] || die "cannot regenerate non-built package"
+    [ -f "${base_dir}"/sources/$1.patched ] || die "cannot regenerate non-built package"
 
     get_real_source_dir
 
@@ -722,24 +665,24 @@ do_cmd_regenerate() {
     if ! [ "${is_local_package}" = true ]; then
         cd "${base_dir}"/sources
 
-        git diff --no-index --no-prefix ${name}-clean ${name}-workdir >"${patch_file}" || true
+        git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
 
         if [ -s "${patch_file}" ]; then
-            mkdir -p "${base_dir}"/patches/${name}
-            mv "${patch_file}" "${base_dir}"/patches/${name}/jinx-working-patch.patch
+            mkdir -p "${base_dir}"/patches/$1
+            mv "${patch_file}" "${base_dir}"/patches/$1/jinx-working-patch.patch
         fi
 
         cd "${base_dir}"
 
         rm -rf "${source_dir}"
-        cp -rp "${base_dir}"/sources/${name}-workdir "${source_dir}"
+        cp -rp "${base_dir}"/sources/$1-workdir "${source_dir}"
     fi
 
-    rm -rf "${base_dir}"/sources/${name}.regenerated
+    rm -rf "${base_dir}"/sources/$1.regenerated
 
     cross_compile=yes
     prepare_container
-    run_in_container internal-regenerate ${name}
+    run_in_container internal-regenerate $1
     destroy_container
 }
 
@@ -750,12 +693,9 @@ do_host_pkg() {
 
     echo "* building host package: $name"
 
-    from_source="$(unset from_source && . "${base_dir}"/host-recipes/$1 && echo "$from_source")"
-    if [ -z "${from_source}" ]; then
-        "${script}" internal-source "host-recipes/${name}" yes
-    else
-        "${script}" internal-source "source-recipes/${from_source}"
-    fi
+    from_source="$(. "${base_dir}"/host-recipes/$1 && echo "$from_source")"
+    [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
+        "${script}" internal-source "${from_source}"
 
     cross_compile=yes
     prepare_container
@@ -775,12 +715,9 @@ do_pkg() {
 
     echo "* building package: $name"
 
-    from_source="$(unset from_source && . "${base_dir}"/recipes/$1 && echo "$from_source")"
-    if [ -z "${from_source}" ]; then
-        "${script}" internal-source "recipes/${name}" yes
-    else
-        "${script}" internal-source "source-recipes/${from_source}"
-    fi
+    from_source="$(. "${base_dir}"/recipes/$1 && echo "$from_source")"
+    [ -f "${base_dir}"/sources/${from_source}.regenerated ] || \
+        "${script}" internal-source "${from_source}"
 
     prepare_container
 
@@ -853,7 +790,7 @@ cmd_install() {
         if [ "${ppkg}" = '*' ]; then
             for pkg in "${build_dir}"/pkgs/*; do
                 echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
-                "$JINX_CACHE_DIR/cprp" "${pkg}"/. "${sysroot}"/
+                cp -rn --preserve=mode,timestamps "${pkg}"/. "${sysroot}"/
             done
             cmd_install_finalize
             return
@@ -873,7 +810,7 @@ cmd_install() {
 
     for pkg in $(cat "${deps_file}"); do
         echo "* installing ${pkg} to sysroot '${sysroot}'..."
-        "$JINX_CACHE_DIR/cprp" pkgs/"${pkg}"/. "${sysroot}"/
+        cp -rn --preserve=mode,timestamps pkgs/"${pkg}"/. "${sysroot}"/
     done
 
     cmd_install_finalize
@@ -881,7 +818,7 @@ cmd_install() {
 
 rebuild_rbrt() {
     cat <<'EOF' >"$JINX_CACHE_DIR/rbrt.c"
-// Written by 48cf (iretq@riseup.net)
+// Written by czapek1337 (czapek1337@gmail.com)
 // Inspired heavily by https://github.com/managarm/cbuildrt/
 
 #define _GNU_SOURCE
@@ -1290,245 +1227,6 @@ EOF
     cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
 }
 
-rebuild_cprp() {
-    cat <<'EOF' >"$JINX_CACHE_DIR/cprp.c"
-// Written by 48cf (iretq@riseup.net)
-// A small utility to copy files and directories recursively while
-// preserving their permissions and timestamps.
-
-#define _GNU_SOURCE
-
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/sendfile.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-static char *pathcat(const char *p1, const char *p2) {
-    char *path = malloc(strlen(p1) + strlen(p2) + 2);
-    strcpy(path, p1);
-    strcat(path, "/");
-    strcat(path, p2);
-    return path;
-}
-
-static int copy_dir(const char *src, const char *dest) {
-    DIR *dir = opendir(src);
-    if (!dir) {
-        fprintf(stderr, "Failed to open directory '%s': %s\n",
-            src, strerror(errno));
-        return -1;
-    }
-
-    struct stat statbuf;
-    if (fstat(dirfd(dir), &statbuf) < 0) {
-        fprintf(stderr, "Failed to stat '%s': %s\n", src, strerror(errno));
-        closedir(dir);
-        return -1;
-    }
-
-    DIR *dest_dir = opendir(dest);
-    if (!dest_dir) {
-        if (mkdir(dest, statbuf.st_mode) < 0) {
-            fprintf(stderr, "Failed to create directory '%s': %s\n",
-                dest, strerror(errno));
-            closedir(dir);
-            return -1;
-        }
-
-        dest_dir = opendir(dest);
-    }
-
-    int ret = 0;
-    int dest_dir_fd = dirfd(dest_dir);
-    int src_dir_fd = dirfd(dir);
-    struct dirent *dent;
-    while ((dent = readdir(dir))) {
-        if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
-            continue;
-        }
-
-        if ((ret = fstatat(src_dir_fd, dent->d_name, &statbuf,
-            AT_SYMLINK_NOFOLLOW)) < 0)
-        {
-            fprintf(stderr, "Failed to stat '%s': %s\n", dent->d_name,
-                strerror(errno));
-            goto cleanup;
-        }
-
-        char *src_path = pathcat(src, dent->d_name);
-        char *dest_path = pathcat(dest, dent->d_name);
-        int dest_fd = 0;
-        if (S_ISDIR(statbuf.st_mode)) {
-            if ((ret = mkdirat(dest_dir_fd, dent->d_name,
-                statbuf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0 &&
-                errno != EEXIST)
-            {
-                fprintf(stderr, "Failed to create directory '%s': %s\n",
-                    dest_path, strerror(errno));
-                goto loop_cleanup;
-            }
-
-            dest_fd = openat(dest_dir_fd, dent->d_name, O_DIRECTORY);
-            if ((ret = copy_dir(src_path, dest_path)) < 0) {
-                goto loop_cleanup;
-            }
-        } else if (S_ISREG(statbuf.st_mode)) {
-            int src_fd = openat(src_dir_fd, dent->d_name, O_RDONLY);
-            if (src_fd < 0) {
-                fprintf(stderr, "Failed to open file '%s': %s\n", src_path,
-                    strerror(errno));
-                ret = src_fd;
-                goto loop_cleanup;
-            }
-
-            if ((ret = openat(dest_dir_fd, dent->d_name, O_RDONLY)) > 0) {
-                fprintf(stderr, "Not replacing file '%s'\n", dest_path);
-                close(ret);
-                ret = -EEXIST;
-                goto loop_cleanup;
-            }
-
-            void *buf = NULL;
-
-            if ((ret = openat(dest_dir_fd, dent->d_name, O_CREAT | O_WRONLY,
-                statbuf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0)
-            {
-                fprintf(stderr, "Failed to create file '%s': %s\n",
-                    dest_path, strerror(errno));
-                goto regular_file_cleanup;
-            }
-
-            dest_fd = ret;
-            ret = 0;
-
-            size_t buf_size = (statbuf.st_size + 0xfff) & ~0xfffUL;
-            if (buf_size == 0) {
-                goto regular_file_cleanup;
-            }
-
-            buf = mmap(NULL, buf_size, PROT_READ | PROT_WRITE,
-                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-            if (buf == MAP_FAILED) {
-                fprintf(stderr, "Failed to allocate memory for file '%s': %s\n",
-                    dest_path, strerror(errno));
-                goto regular_file_cleanup;
-            }
-
-            if ((ret = read(src_fd, buf, statbuf.st_size)) < 0) {
-                fprintf(stderr, "Failed to read file '%s': %s\n",
-                    src_path, strerror(errno));
-                goto regular_file_cleanup;
-            }
-
-            if ((ret = write(dest_fd, buf, statbuf.st_size)) < 0) {
-                fprintf(stderr, "Failed to copy file '%s': %s\n",
-                    dest_path, strerror(errno));
-                goto regular_file_cleanup;
-            }
-
-regular_file_cleanup:;
-            close(src_fd);
-
-            if (buf && buf != MAP_FAILED) {
-                munmap(buf, buf_size);
-            }
-
-            if (ret < 0) {
-                goto loop_cleanup;
-            }
-        } else if (S_ISLNK(statbuf.st_mode)) {
-            char link_target[PATH_MAX + 1];
-            if ((ret = readlinkat(src_dir_fd, dent->d_name, link_target,
-                PATH_MAX)) < 0)
-            {
-                fprintf(stderr, "Failed to read link '%s': %s\n",
-                    src_path, strerror(errno));
-                goto loop_cleanup;
-            }
-
-            link_target[ret] = 0;
-            if ((ret = symlinkat(link_target, dest_dir_fd, dent->d_name)) < 0) {
-                fprintf(stderr, "Failed to copy link '%s': %s\n",
-                    src_path, strerror(errno));
-                goto loop_cleanup;
-            }
-
-            dest_fd = openat(dest_dir_fd, dent->d_name, O_RDONLY | O_NOFOLLOW);
-        } else {
-            fprintf(stderr, "Can't copy '%s' because its mode is unhandled\n",
-                src_path);
-            ret = -1;
-            goto loop_cleanup;
-        }
-
-        struct timespec times[2];
-        times[0] = (struct timespec){statbuf.st_atime, 0};
-        times[1] = (struct timespec){statbuf.st_mtime, 0};
-
-        if (S_ISLNK(statbuf.st_mode)) {
-            if ((ret = utimensat(AT_FDCWD, dest_path, times,
-                AT_SYMLINK_NOFOLLOW)) < 0)
-            {
-                fprintf(stderr, "Failed to update timestamps for '%s': %s\n",
-                    dest_path, strerror(errno));
-                goto loop_cleanup;
-            }
-        } else if ((ret = futimens(dest_fd, times)) < 0) {
-            fprintf(stderr, "Failed to update timestamps for '%s': %s\n",
-                dest_path, strerror(errno));
-            goto loop_cleanup;
-        }
-
-        ret = 0;
-
-loop_cleanup:;
-        if (dest_fd != 0) {
-            close(dest_fd);
-        }
-
-        free(src_path);
-        free(dest_path);
-
-        if (ret < 0) {
-            goto cleanup;
-        }
-    }
-
-cleanup:;
-    if (dir) {
-        closedir(dir);
-    }
-
-    if (dest_dir) {
-        closedir(dest_dir);
-    }
-
-    return ret;
-}
-
-int main(int argc, char **argv) {
-    if (argc < 3) {
-        fprintf(stderr, "Usage: %s <source dir> <dest dir>\n", argv[0]);
-        return 1;
-    }
-
-    int ret = copy_dir(argv[1], argv[2]);
-    if (ret < 0) {
-        return 1;
-    }
-
-    return 0;
-}
-EOF
-    cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/cprp.c" -o "$JINX_CACHE_DIR/cprp"
-}
-
 reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
     chmod -R 777 "$JINX_CACHE_DIR/pacman" 2>/dev/null || true
@@ -1568,6 +1266,17 @@ reinit_container() {
     make -j${parallelism}
     mv src/merge-info "$JINX_CACHE_DIR/"
     )
+
+    (
+    set -e
+    cd "$JINX_CACHE_DIR"
+    curl -Lo coreutils-9.4.tar.xz http://ftp.gnu.org/gnu/coreutils/coreutils-9.4.tar.xz
+    tar -xf coreutils-9.4.tar.xz
+    cd coreutils-9.4
+    ./configure --prefix="$JINX_CACHE_DIR/host-tools"
+    make -j${parallelism}
+    make install
+    )
 }
 
 first_use() {
@@ -1576,8 +1285,6 @@ first_use() {
     mkdir -p "$JINX_CACHE_DIR"
 
     rebuild_rbrt
-
-    rebuild_cprp
 
     reinit_container
 
@@ -1600,18 +1307,18 @@ case "$1" in
         ;;
 esac
 
-if ! [ -f "$JINX_CONFIG_FILE" ]; then
-    die "$0: missing Jinx config file '$JINX_CONFIG_FILE'"
+if ! [ -f "$JINX_CONFIG_FILE_PATH" ]; then
+    die "$0: missing Jinx config file in source directory $base_dir"
 fi
 
-. "${JINX_CONFIG_FILE}"
+JINX_MAJOR_VER_CONFIG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_MAJOR_VER")"
 
-if [ -z "$JINX_MAJOR_VER" ]; then
+if [ -z "$JINX_MAJOR_VER_CONFIG" ]; then
     die "$0: required config variable \$JINX_MAJOR_VER missing"
 fi
 
-if ! [ "$JINX_MAJOR_VER" = "$jinx_major_ver" ]; then
-    die "$0: needed major version ($JINX_MAJOR_VER) differs from Jinx-provided major version ($jinx_major_ver)"
+if ! [ "$JINX_MAJOR_VER_CONFIG" = "$jinx_major_ver" ]; then
+    die "$0: needed major version ($JINX_MAJOR_VER_CONFIG) differs from Jinx-provided major version ($jinx_major_ver)"
 fi
 
 if ! [ -d "$JINX_CACHE_DIR" ]; then
@@ -1655,7 +1362,7 @@ case "$1" in
         get_hostdeps_file_run
         ;;
     internal-source)
-        do_source "$2" "$3"
+        do_source "$2"
         ;;
     internal-do-host-pkg)
         do_host_pkg "$2"

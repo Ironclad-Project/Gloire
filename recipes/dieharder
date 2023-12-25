@@ -1,9 +1,19 @@
 name=dieharder
-from_source=dieharder
+version=3.31.1.4
 revision=1
+tarball_url="https://github.com/eddelbuettel/dieharder/archive/refs/tags/3.31.1.4.tar.gz"
+tarball_blake2b="4dd2716a53cb3ed36f64851651b60f29c7d0028ba2a3000bb28cebd22a13b9eb36ce5003412868d4cbadb5e74654bec64157e5d7f453361a4a0613a90380893a"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="gcc"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs gsl"
+
+regenerate() {
+    libtoolize -cfvi && autoreconf -fvi
+    (cd libdieharder && libtoolize -cfvi && autoreconf -fvi)
+    (cd dieharder    && libtoolize -cfvi && autoreconf -fvi)
+    (cd manual       && libtoolize -cfvi && autoreconf -fvi)
+}
 
 build() {
     rm -f ${source_dir}/config.status

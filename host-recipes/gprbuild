@@ -1,7 +1,16 @@
 name=gprbuild
-from_source=gprbuild
+version=22.0.0
 revision=1
+tarball_url="https://github.com/AdaCore/gprbuild/archive/refs/tags/v22.0.0.tar.gz"
+tarball_blake2b="4573855667fe6c352a61ac2fd8218619e0c9fa5c5079fe6854988733b7dac27225177f550b58b8d596516e8d3bf9a279f44864fdcb00514ee9e5776415c78f2d"
+source_imagedeps="git"
+source_allow_network="yes"
 imagedeps="gcc-ada"
+
+regenerate() {
+    git clone https://github.com/AdaCore/xmlada.git --branch=v${version} --depth=1
+    git clone https://github.com/AdaCore/gprconfig_kb.git --branch=v${version} --depth=1
+}
 
 build() {
     cp -rp ${source_dir}/. ./

@@ -1,8 +1,0 @@
-name=hyfetch
-version=dfc3f59323c11526a4c091da361ef84d45a569e5
-tarball_url="https://github.com/hykilpikonna/hyfetch/archive/${version}.tar.gz"
-tarball_blake2b=164f65d1af03207741759eaa71114c2dfef684178ca230a54b3d79ad736cb99cfe2e2a0703fbf69bca6e28a28870527270835929b4ec87c135190593321c26ba
-
-regenerate() {
-        true
-}

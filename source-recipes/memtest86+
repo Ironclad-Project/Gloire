@@ -1,8 +1,0 @@
-name=memtest86+
-version=6.20
-tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="6e3bea4b18049446f27da2cb1313300c578ef7fdb774b6a20df603271b66a6c0066be64a91b0a6d4ffcc63f1e139132942290a8111f6a991cccc0a5586cac966"
-
-regenerate() {
-    true
-}

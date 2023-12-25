@@ -1,8 +1,15 @@
 name=sharutils
-from_source=sharutils
+version=4.15.2
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/sharutils/sharutils-4.15.2.tar.xz"
+tarball_blake2b="e2acae027679ebdf723ecae6f243608f501f5c24685a19223dd27580ccf76bc7d38905a9d202b30cf2633e5580d727821398f1162b170233f03c17f3da683917"
+source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
+
+regenerate() {
+    autotools_recursive_regen
+}
 
 build() {
     cp -rp "${source_dir}"/. ./

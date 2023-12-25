@@ -1,8 +1,10 @@
 name=memtest86+
-from_source=memtest86+
+version=6.20
 revision=1
-hostdeps="gcc"
+tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v6.20.tar.gz"
+tarball_blake2b="6e3bea4b18049446f27da2cb1313300c578ef7fdb774b6a20df603271b66a6c0066be64a91b0a6d4ffcc63f1e139132942290a8111f6a991cccc0a5586cac966"
 imagedeps="nasm gcc mtools dosfstools xorriso git"
+hostdeps="gcc"
 
 build() {
     cp -rp ${source_dir}/. ./

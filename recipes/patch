@@ -1,8 +1,15 @@
 name=patch
-from_source=patch
+version=2.7
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/patch/patch-2.7.tar.xz"
+tarball_blake2b="ec74034dd7d489d093ed410a3b356f050761f913dcb1247a2778607810aaaf9d4275db9aa8a2f056f6448d4a18c86a34df01926127919668b6db47cbfc6f8de9"
+source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
+
+regenerate() {
+    autotools_recursive_regen
+}
 
 build() {
     cp -rp "${source_dir}"/. ./

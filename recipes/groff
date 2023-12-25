@@ -1,9 +1,16 @@
 name=groff
-from_source=groff
+version=1.22.4
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/groff/groff-1.22.4.tar.gz"
+tarball_blake2b="cdda8a7e8e42b8d8991656ecfbffe0cd0ed5d8932467cab2f3c1eecb3365f4a5c03321b6ed929d451c3dfb00a46046a781303a1c55c4aa65eb7d178fb36b1cbc"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="sed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
+
+regenerate() {
+    autotools_recursive_regen
+}
 
 build() {
     cp -rp "${source_dir}"/. ./

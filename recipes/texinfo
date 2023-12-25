@@ -1,9 +1,17 @@
 name=texinfo
-from_source=texinfo
+version=7.0.2
 revision=1
+tarball_url="https://ftp.gnu.org/pub/gnu/texinfo/texinfo-7.0.2.tar.xz"
+tarball_blake2b="23737cc800392c949add14c1d0a01a294e8c224d958c03325c96d6540dcfae49db5c2d4a8c29310c0603f8ac8477f6ee00a14db4aa6caab317b19e776139e617"
+source_hostdeps="automake autoconf libtool pkg-config"
+imagedeps="gcc perl help2man"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs ncurses bash gzip"
-imagedeps="gcc perl help2man"
+
+regenerate() {
+    ( cd tp/Texinfo/XS && libtoolize -cfvi && autoreconf -fvi )
+    libtoolize -cfvi && autoreconf -fvi 
+}
 
 build() {
     cp -rp "${source_dir}"/. ./

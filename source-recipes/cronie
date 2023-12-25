@@ -1,9 +1,0 @@
-name=cronie
-version=1.7.0
-tarball_url="https://github.com/cronie-crond/cronie/releases/download/cronie-${version}/cronie-${version}.tar.gz"
-tarball_blake2b="44745f68dba212da60f3013b10737be2390d8c76186dc641fa1930b1c7d103fa2e3127a63fe73571434683137044f7fda8cc31435c59092a14c0091a372ffead"
-hostdeps="automake autoconf libtool pkg-config"
-
-regenerate() {
-    autotools_recursive_regen
-}

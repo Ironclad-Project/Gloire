@@ -1,0 +1,13 @@
+name=dieharder
+version=3.31.1.4
+source_method=tarball
+tarball_url="https://github.com/eddelbuettel/dieharder/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="4dd2716a53cb3ed36f64851651b60f29c7d0028ba2a3000bb28cebd22a13b9eb36ce5003412868d4cbadb5e74654bec64157e5d7f453361a4a0613a90380893a"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    libtoolize -cfvi && autoreconf -fvi
+    (cd libdieharder && libtoolize -cfvi && autoreconf -fvi)
+    (cd dieharder    && libtoolize -cfvi && autoreconf -fvi)
+    (cd manual       && libtoolize -cfvi && autoreconf -fvi)
+}

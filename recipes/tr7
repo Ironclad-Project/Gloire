@@ -1,8 +1,7 @@
 name=tr7
-version=1.0.8
+from_source=tr7
 revision=1
-tarball_url="https://gitlab.com/jobol/tr7/-/archive/v1.0.8/tr7-v1.0.8.tar.gz"
-tarball_blake2b="57ecca405f7a6a0807b52a07a6c3bd55a5fbea2afdabae801323b96ef14fe8d118af9fe66ed69f5af0bb126f8edb5e0793dce7da13f8720fa03831cd7291f8d2"
+imagedeps=""
 hostdeps="gcc automake"
 deps="core-libs"
 

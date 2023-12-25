@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="10"
+jinx_minor_ver="9"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -837,64 +837,46 @@ cmd_clean() {
     rm -rf "${build_dir}"/sysroot
 }
 
+cmd_install_finalize() {
+    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
+        # inject the merged info dir into sysroot
+        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
+    fi
+}
+
 cmd_install() {
     sysroot="$1"
     shift 1
     mkdir -p "${sysroot}"
 
-    pkgs_to_install=""
-    if [ "$1" = '*' ]; then
-        for pkg in "${build_dir}"/pkgs/*; do
-            pkgs_to_install="${pkgs_to_install} $(basename "${pkg}")"
-        done
-    else
-        for ppkg in "$@"; do
-            for pkg in $(eval echo pkgs/"${ppkg}"); do
-                deps="${deps} $(basename "${pkg}")"
+    for ppkg in "$@"; do
+        if [ "${ppkg}" = '*' ]; then
+            for pkg in "${build_dir}"/pkgs/*; do
+                echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
+                "$JINX_CACHE_DIR/cprp" "${pkg}"/. "${sysroot}"/
             done
+            cmd_install_finalize
+            return
+        fi
+
+        for pkg in $(eval echo pkgs/"${ppkg}"); do
+            deps="${deps} $(basename "${pkg}")"
         done
-
-        make_temp
-        deps_file="${tmp}"
-
-        echo "* resolving dependencies..."
-
-        get_deps_file
-
-        pkgs_to_install="$(cat "${deps_file}")"
-    fi
-
-    make_temp
-    all_files="${tmp}"
-
-    pkg_dirs_to_install=""
-    for pkg in ${pkgs_to_install}; do
-        echo "* installing ${pkg}..."
-        ( cd "${build_dir}"/pkgs/${pkg} && find . ! -type d >>"${all_files}" )
-
-        pkg_dirs_to_install="${pkg_dirs_to_install} ${build_dir}/pkgs/${pkg}/."
     done
 
     make_temp
-    all_files_sorted="${tmp}"
+    deps_file="${tmp}"
 
-    make_temp
-    all_files_uniq="${tmp}"
+    echo "* resolving dependencies..."
 
-    sort <"${all_files}" >"${all_files_sorted}"
-    uniq <"${all_files_sorted}" >"${all_files_uniq}"
-    if ! [ "$(wc -l <"${all_files_sorted}")" = "$(wc -l <"${all_files_uniq}")" ]; then
-        die "* error: duplicate files were found:
-$(comm -23 "${all_files_sorted}" "${all_files_uniq}")"
-    fi
+    get_deps_file
 
-    echo "* synchronising package files to sysroot '${sysroot}'..."
-    rsync -urlptD ${pkg_dirs_to_install} "${sysroot}"/
+    for pkg in $(cat "${deps_file}"); do
+        echo "* installing ${pkg} to sysroot '${sysroot}'..."
+        "$JINX_CACHE_DIR/cprp" pkgs/"${pkg}"/. "${sysroot}"/
+    done
 
-    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
-        # inject the merged info dir into sysroot
-        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
-    fi
+    cmd_install_finalize
 }
 
 rebuild_rbrt() {
@@ -1308,6 +1290,245 @@ EOF
     cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
 }
 
+rebuild_cprp() {
+    cat <<'EOF' >"$JINX_CACHE_DIR/cprp.c"
+// Written by 48cf (iretq@riseup.net)
+// A small utility to copy files and directories recursively while
+// preserving their permissions and timestamps.
+
+#define _GNU_SOURCE
+
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/sendfile.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+static char *pathcat(const char *p1, const char *p2) {
+    char *path = malloc(strlen(p1) + strlen(p2) + 2);
+    strcpy(path, p1);
+    strcat(path, "/");
+    strcat(path, p2);
+    return path;
+}
+
+static int copy_dir(const char *src, const char *dest) {
+    DIR *dir = opendir(src);
+    if (!dir) {
+        fprintf(stderr, "Failed to open directory '%s': %s\n",
+            src, strerror(errno));
+        return -1;
+    }
+
+    struct stat statbuf;
+    if (fstat(dirfd(dir), &statbuf) < 0) {
+        fprintf(stderr, "Failed to stat '%s': %s\n", src, strerror(errno));
+        closedir(dir);
+        return -1;
+    }
+
+    DIR *dest_dir = opendir(dest);
+    if (!dest_dir) {
+        if (mkdir(dest, statbuf.st_mode) < 0) {
+            fprintf(stderr, "Failed to create directory '%s': %s\n",
+                dest, strerror(errno));
+            closedir(dir);
+            return -1;
+        }
+
+        dest_dir = opendir(dest);
+    }
+
+    int ret = 0;
+    int dest_dir_fd = dirfd(dest_dir);
+    int src_dir_fd = dirfd(dir);
+    struct dirent *dent;
+    while ((dent = readdir(dir))) {
+        if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, "..")) {
+            continue;
+        }
+
+        if ((ret = fstatat(src_dir_fd, dent->d_name, &statbuf,
+            AT_SYMLINK_NOFOLLOW)) < 0)
+        {
+            fprintf(stderr, "Failed to stat '%s': %s\n", dent->d_name,
+                strerror(errno));
+            goto cleanup;
+        }
+
+        char *src_path = pathcat(src, dent->d_name);
+        char *dest_path = pathcat(dest, dent->d_name);
+        int dest_fd = 0;
+        if (S_ISDIR(statbuf.st_mode)) {
+            if ((ret = mkdirat(dest_dir_fd, dent->d_name,
+                statbuf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0 &&
+                errno != EEXIST)
+            {
+                fprintf(stderr, "Failed to create directory '%s': %s\n",
+                    dest_path, strerror(errno));
+                goto loop_cleanup;
+            }
+
+            dest_fd = openat(dest_dir_fd, dent->d_name, O_DIRECTORY);
+            if ((ret = copy_dir(src_path, dest_path)) < 0) {
+                goto loop_cleanup;
+            }
+        } else if (S_ISREG(statbuf.st_mode)) {
+            int src_fd = openat(src_dir_fd, dent->d_name, O_RDONLY);
+            if (src_fd < 0) {
+                fprintf(stderr, "Failed to open file '%s': %s\n", src_path,
+                    strerror(errno));
+                ret = src_fd;
+                goto loop_cleanup;
+            }
+
+            if ((ret = openat(dest_dir_fd, dent->d_name, O_RDONLY)) > 0) {
+                fprintf(stderr, "Not replacing file '%s'\n", dest_path);
+                close(ret);
+                ret = -EEXIST;
+                goto loop_cleanup;
+            }
+
+            void *buf = NULL;
+
+            if ((ret = openat(dest_dir_fd, dent->d_name, O_CREAT | O_WRONLY,
+                statbuf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0)
+            {
+                fprintf(stderr, "Failed to create file '%s': %s\n",
+                    dest_path, strerror(errno));
+                goto regular_file_cleanup;
+            }
+
+            dest_fd = ret;
+            ret = 0;
+
+            size_t buf_size = (statbuf.st_size + 0xfff) & ~0xfffUL;
+            if (buf_size == 0) {
+                goto regular_file_cleanup;
+            }
+
+            buf = mmap(NULL, buf_size, PROT_READ | PROT_WRITE,
+                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            if (buf == MAP_FAILED) {
+                fprintf(stderr, "Failed to allocate memory for file '%s': %s\n",
+                    dest_path, strerror(errno));
+                goto regular_file_cleanup;
+            }
+
+            if ((ret = read(src_fd, buf, statbuf.st_size)) < 0) {
+                fprintf(stderr, "Failed to read file '%s': %s\n",
+                    src_path, strerror(errno));
+                goto regular_file_cleanup;
+            }
+
+            if ((ret = write(dest_fd, buf, statbuf.st_size)) < 0) {
+                fprintf(stderr, "Failed to copy file '%s': %s\n",
+                    dest_path, strerror(errno));
+                goto regular_file_cleanup;
+            }
+
+regular_file_cleanup:;
+            close(src_fd);
+
+            if (buf && buf != MAP_FAILED) {
+                munmap(buf, buf_size);
+            }
+
+            if (ret < 0) {
+                goto loop_cleanup;
+            }
+        } else if (S_ISLNK(statbuf.st_mode)) {
+            char link_target[PATH_MAX + 1];
+            if ((ret = readlinkat(src_dir_fd, dent->d_name, link_target,
+                PATH_MAX)) < 0)
+            {
+                fprintf(stderr, "Failed to read link '%s': %s\n",
+                    src_path, strerror(errno));
+                goto loop_cleanup;
+            }
+
+            link_target[ret] = 0;
+            if ((ret = symlinkat(link_target, dest_dir_fd, dent->d_name)) < 0) {
+                fprintf(stderr, "Failed to copy link '%s': %s\n",
+                    src_path, strerror(errno));
+                goto loop_cleanup;
+            }
+
+            dest_fd = openat(dest_dir_fd, dent->d_name, O_RDONLY | O_NOFOLLOW);
+        } else {
+            fprintf(stderr, "Can't copy '%s' because its mode is unhandled\n",
+                src_path);
+            ret = -1;
+            goto loop_cleanup;
+        }
+
+        struct timespec times[2];
+        times[0] = (struct timespec){statbuf.st_atime, 0};
+        times[1] = (struct timespec){statbuf.st_mtime, 0};
+
+        if (S_ISLNK(statbuf.st_mode)) {
+            if ((ret = utimensat(AT_FDCWD, dest_path, times,
+                AT_SYMLINK_NOFOLLOW)) < 0)
+            {
+                fprintf(stderr, "Failed to update timestamps for '%s': %s\n",
+                    dest_path, strerror(errno));
+                goto loop_cleanup;
+            }
+        } else if ((ret = futimens(dest_fd, times)) < 0) {
+            fprintf(stderr, "Failed to update timestamps for '%s': %s\n",
+                dest_path, strerror(errno));
+            goto loop_cleanup;
+        }
+
+        ret = 0;
+
+loop_cleanup:;
+        if (dest_fd != 0) {
+            close(dest_fd);
+        }
+
+        free(src_path);
+        free(dest_path);
+
+        if (ret < 0) {
+            goto cleanup;
+        }
+    }
+
+cleanup:;
+    if (dir) {
+        closedir(dir);
+    }
+
+    if (dest_dir) {
+        closedir(dest_dir);
+    }
+
+    return ret;
+}
+
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <source dir> <dest dir>\n", argv[0]);
+        return 1;
+    }
+
+    int ret = copy_dir(argv[1], argv[2]);
+    if (ret < 0) {
+        return 1;
+    }
+
+    return 0;
+}
+EOF
+    cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/cprp.c" -o "$JINX_CACHE_DIR/cprp"
+}
+
 reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
     chmod -R 777 "$JINX_CACHE_DIR/pacman" 2>/dev/null || true
@@ -1355,6 +1576,8 @@ first_use() {
     mkdir -p "$JINX_CACHE_DIR"
 
     rebuild_rbrt
+
+    rebuild_cprp
 
     reinit_container
 

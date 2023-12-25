@@ -1,17 +1,8 @@
 name=posixtest
-version=85bc70af090303beec8deb1e75a4c70c54ef56ef
+from_source=posixtest
 revision=1
-tarball_url="https://github.com/streaksu/posixtest/archive/85bc70af090303beec8deb1e75a4c70c54ef56ef.tar.gz"
-tarball_blake2b="cc2093e3ededa3699ad4c5dbf7fb085dfce545c5ac4c88e97cc4ca135742232206e8e916c1be5540dae97242fdde1bc5967253d246f31f0f8187460b82ef9f76"
-source_imagedeps="git"
-source_hostdeps="automake autoconf libtool pkg-config"
-source_allow_network="yes"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
-
-regenerate() {
-    ./bootstrap
-}
 
 build() {
     "${source_dir}"/configure \

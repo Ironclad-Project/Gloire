@@ -1,16 +1,9 @@
 name=man-db
-version=2.9.4
+from_source=man-db
 revision=1
-tarball_url="https://download.savannah.nongnu.org/releases/man-db/man-db-2.9.4.tar.xz"
-tarball_blake2b="43427e851f0e661ca1cee55211dd7636f4ffde067c75de7715f525029b22c205728f8e86ac49abff60e47a4a4c9e1fbd78e2c87e70bd37778b88594a3897275f"
-source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="groff"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline libiconv groff less libpipeline gdbm"
-
-regenerate() {
-    autotools_recursive_regen
-}
 
 build() {
     cp -rp "${source_dir}"/. ./

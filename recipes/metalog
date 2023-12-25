@@ -1,15 +1,8 @@
 name=metalog
-version=20230719
+from_source=metalog
 revision=1
-tarball_url="https://github.com/hvisage/metalog/archive/refs/tags/metalog-20230719.tar.gz"
-tarball_blake2b="6088c86fad90185fcb22a96ff88686647eac1fb4216884f43c07dff23274efc748c908f6f98162f743d2528437748f79809dfe6911d8d47e6cf7e58c8f3ca3b4"
-source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs pcre2"
-
-regenerate() {
-    autotools_recursive_regen
-}
 
 build() {
     cp -rp "${source_dir}"/. ./

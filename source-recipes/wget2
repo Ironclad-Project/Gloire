@@ -1,0 +1,9 @@
+name=wget2
+version=2.1.0
+tarball_url="https://ftp.gnu.org/gnu/wget/wget2-${version}.tar.lz"
+tarball_blake2b="de1561b86b608c06e336871ed51c92e01a8e40ad80fe922aefa8a1617fa52c2daad3faad0255c260469217b544af9bbe6365f78ea9c2ed8fc65c56326b83fbb7"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    libtoolize -cfvi && autoreconf -fvi
+}

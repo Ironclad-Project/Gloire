@@ -87,7 +87,7 @@ if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
     die "$0: cannot access cache directory parent"
 fi
 mkdir -p "$JINX_CACHE_DIR"
-JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
+JINX_CACHE_DIR="$(cd $JINX_CACHE_DIR && pwd -P)"
 
 in_container=false
 if [ "$script" = "//jinx" ]; then

@@ -1,7 +1,6 @@
 name=base-files
-version=0.0
+from_source=base-files
 revision=1
-source_dir="base-files"
 
 package() {
     cp -prv ${source_dir}/. "${dest_dir}"/

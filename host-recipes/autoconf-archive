@@ -2,13 +2,9 @@ name=autoconf-archive
 from_source=autoconf-archive
 revision=1
 
-build() {
-    true
-
-    true
-}
-
 package() {
     mkdir -p "${dest_dir}${prefix}"/share/aclocal
     cp -r "${source_dir}"/m4/. "${dest_dir}${prefix}"/share/aclocal/
+
+    post_package_strip
 }

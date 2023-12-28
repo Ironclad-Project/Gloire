@@ -5,11 +5,11 @@ deps="core-libs freetype fontconfig"
 
 build() {
     cp -r ${source_dir}/. ./
-
-    true
 }
 
 package() {
     mkdir -p "${dest_dir}${prefix}/share/fonts/truetype"
     cp -r ttf/* "${dest_dir}${prefix}/share/fonts/truetype/"
+
+    post_package_strip
 }

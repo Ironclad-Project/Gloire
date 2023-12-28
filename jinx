@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="6"
+jinx_minor_ver="11"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -45,9 +45,13 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 ))"
-parallelism="$(nproc 2>/dev/null || echo 1)"
-parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
+if [ -z "$JINX_PARALLELISM" ]; then
+    max_threads_by_mem="$(( $(free | awk '/^Mem:/{print $2}') / 1024 / 1024 / 2 ))"
+    parallelism="$(nproc 2>/dev/null || echo 1)"
+    parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
+else
+    parallelism="$JINX_PARALLELISM"
+fi
 build_dir="$(pwd -P)"
 
 if [ -z "$JINX_SOURCE_DIR" ]; then
@@ -69,19 +73,25 @@ script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
 if [ -z "$JINX_CONFIG_FILE" ]; then
-    JINX_CONFIG_FILE_PATH="${base_dir}"/jinx-config
-else
-    JINX_CONFIG_FILE_PATH="${base_dir}"/"${JINX_CONFIG_FILE}"
+    JINX_CONFIG_FILE="${base_dir}/jinx-config"
 fi
+if ! [ -d "$(dirname "$JINX_CONFIG_FILE")" ]; then
+    die "$0: cannot access config file directory"
+fi
+JINX_CONFIG_FILE="$(cd "$(dirname "$JINX_CONFIG_FILE")" && pwd -P)"/"$(basename "$JINX_CONFIG_FILE")"
 
 if [ -z "$JINX_CACHE_DIR" ]; then
-    JINX_CACHE_DIR="$build_dir/.jinx-cache"
-else
-    JINX_CACHE_DIR="$(cd $JINX_CACHE_DIR && pwd -P)"
+    JINX_CACHE_DIR="${build_dir}/.jinx-cache"
 fi
+if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
+    die "$0: cannot access cache directory parent"
+fi
+mkdir -p "$JINX_CACHE_DIR"
+JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
-if ! [ "$script" = "//jinx" ]; then
-    export PATH="$JINX_CACHE_DIR/host-tools/bin:$PATH"
+in_container=false
+if [ "$script" = "//jinx" ]; then
+    in_container=true
 fi
 
 pacman_cache="$JINX_CACHE_DIR/pacman"
@@ -217,9 +227,7 @@ prepare_container() {
         cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
     done
 
-    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
-
-    if [ "$native_mode" = "yes" ] && [ -z "$cross_compile" ]; then
+    if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
         imgroot="${sysroot_dir}"
     else
         for hostdep in $(cat "${hostdeps_file}"); do
@@ -271,20 +279,17 @@ run_in_container() {
 
     touch "${imgroot}/jinx"
     chmod +x "${imgroot}/jinx"
+    touch "${imgroot}/jinx-config"
     mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
-    native_mode="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_MODE")"
-
     native_mode_mounts=""
-    if ( [ "$native_mode" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$native_mode" = "yes" ] ); then
+    if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
         mkdir -p "${imgroot}/sysroot"
 
         native_mode_mounts=y
 
         run_in_cont_lang=en_US.UTF-8
     else
-        JINX_NATIVE_LANG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_NATIVE_LANG")"
-
         if ! [ -z "$JINX_NATIVE_LANG" ]; then
             run_in_cont_lang="$JINX_NATIVE_LANG"
         else
@@ -309,9 +314,11 @@ run_in_container() {
             --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
             ${run_in_cont_term} \
             ${run_in_cont_colorterm} \
-            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_PARALLELISM="$parallelism" \
+            --env JINX_CONFIG_FILE=/jinx-config \
             --env JINX_SOURCE_DIR=/base_dir \
             --mount "${script}":/jinx:ro \
+            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
             --mount "${base_dir}":/base_dir${container_base_dir_ro} \
             --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
             --mount "${build_dir}":/build_dir \
@@ -331,11 +338,13 @@ run_in_container() {
             --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
             ${run_in_cont_term} \
             ${run_in_cont_colorterm} \
-            --env JINX_CONFIG_FILE="$JINX_CONFIG_FILE" \
+            --env JINX_PARALLELISM="$parallelism" \
+            --env JINX_CONFIG_FILE=/jinx-config \
             --env JINX_SOURCE_DIR=/base_dir \
             --mount "${container_pkgs}":/usr/local:ro \
             --mount "${sysroot_dir}":/sysroot:ro \
             --mount "${script}":/jinx:ro \
+            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
             --mount "${base_dir}":/base_dir${container_base_dir_ro} \
             --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
             --mount "${build_dir}":/build_dir \
@@ -345,7 +354,7 @@ run_in_container() {
             /bin/sh -c "cd /build_dir && /jinx $run_in_cont_argvar"
     fi
 
-    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
 
 destroy_container() {
@@ -357,11 +366,15 @@ do_fetch() {
 
     [ -d "${source_dir}" ] && return
 
-    make_temp -d
-    extract_dir="${tmp}"
     tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
-    curl -L -o "${tarball_path}" "${tarball_url}"
+    if ! [ -f "$tarball_path" ]; then
+        make_temp
+        download_path="${tmp}"
+
+        curl -L -o "${download_path}" "${tarball_url}"
+        mv "${download_path}" "${tarball_path}"
+    fi
 
     checksum_verified=no
 
@@ -397,6 +410,9 @@ do_fetch() {
         die "* error: No checksum method specified for ${name}"
     fi
 
+    make_temp -d
+    extract_dir="${tmp}"
+
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
     mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
@@ -414,6 +430,20 @@ get_real_source_dir() {
         source_dir="${base_dir}"/"${source_dir}"
         is_local_package=true
     fi
+}
+
+default_recipe_steps() {
+    regenerate() {
+        true
+    }
+
+    build() {
+        true
+    }
+
+    package() {
+        true
+    }
 }
 
 cont_patch() {
@@ -448,13 +478,13 @@ cont_patch() {
 }
 
 do_regenerate() {
+    default_recipe_steps
+
     . "${base_dir}"/source-recipes/$1
 
     get_real_source_dir
 
     [ -f "${base_dir}"/sources/${name}.regenerated ] && return
-
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${source_dir}"
     [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
@@ -466,6 +496,8 @@ do_regenerate() {
 }
 
 do_build_host() {
+    default_recipe_steps
+
     . "${base_dir}"/host-recipes/$1
 
     [ -f "${build_dir}"/host-builds/${name}.built ] && return
@@ -484,8 +516,6 @@ do_build_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
-
     cd "${build_dir}"/host-builds/${name}
     build
     cd "${base_dir}"
@@ -494,6 +524,8 @@ do_build_host() {
 }
 
 do_package_host() {
+    default_recipe_steps
+
     . "${base_dir}"/host-recipes/$1
 
     [ -f "${build_dir}"/host-builds/${name}.packaged ] && return
@@ -517,8 +549,6 @@ do_package_host() {
 
     mkdir -p "${dest_dir}${prefix}"
 
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
-
     cd "${build_dir}"/host-builds/${name}
     package
     cd "${base_dir}"
@@ -535,6 +565,8 @@ do_package_host() {
 }
 
 do_build() {
+    default_recipe_steps
+
     . "${base_dir}"/recipes/$1
 
     [ -f "${build_dir}"/builds/${name}.built ] && return
@@ -553,8 +585,6 @@ do_build() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
-
     cd "${build_dir}"/builds/${name}
     build
     cd "${base_dir}"
@@ -563,6 +593,8 @@ do_build() {
 }
 
 do_package() {
+    default_recipe_steps
+
     . "${base_dir}"/recipes/$1
 
     [ -f "${build_dir}"/builds/${name}.packaged ] && return
@@ -585,8 +617,6 @@ do_package() {
     sysroot_dir="/sysroot"
 
     mkdir -p "${dest_dir}${prefix}"
-
-    [ -f "${JINX_CONFIG_FILE_PATH}" ] && . "${JINX_CONFIG_FILE_PATH}"
 
     cd "${build_dir}"/builds/${name}
     package
@@ -774,51 +804,70 @@ cmd_clean() {
     rm -rf "${build_dir}"/sysroot
 }
 
-cmd_install_finalize() {
+cmd_install() {
+    sysroot="$1"
+    shift 1
+    mkdir -p "${sysroot}"
+
+    pkgs_to_install=""
+    if [ "$1" = '*' ]; then
+        for pkg in "${build_dir}"/pkgs/*; do
+            pkgs_to_install="${pkgs_to_install} $(basename "${pkg}")"
+        done
+    else
+        for ppkg in "$@"; do
+            for pkg in $(eval echo pkgs/"${ppkg}"); do
+                deps="${deps} $(basename "${pkg}")"
+            done
+        done
+
+        make_temp
+        deps_file="${tmp}"
+
+        echo "* resolving dependencies..."
+
+        get_deps_file
+
+        pkgs_to_install="$(cat "${deps_file}")"
+    fi
+
+    make_temp
+    all_files="${tmp}"
+
+    pkg_dirs_to_install=""
+    for pkg in ${pkgs_to_install}; do
+        echo "* installing ${pkg}..."
+        ( cd "${build_dir}"/pkgs/${pkg} && find . ! -type d >>"${all_files}" )
+
+        pkg_dirs_to_install="${pkg_dirs_to_install} ${pkg}/."
+    done
+
+    make_temp
+    all_files_sorted="${tmp}"
+
+    make_temp
+    all_files_uniq="${tmp}"
+
+    sort <"${all_files}" >"${all_files_sorted}"
+    uniq <"${all_files_sorted}" >"${all_files_uniq}"
+    if ! [ "$(wc -l <"${all_files_sorted}")" = "$(wc -l <"${all_files_uniq}")" ]; then
+        die "* error: duplicate files were found:
+$(comm -23 "${all_files_sorted}" "${all_files_uniq}")"
+    fi
+
+    echo "* synchronising package files to sysroot '${sysroot}'..."
+    sysroot_abs="$(cd "${sysroot}" && pwd -P)"
+    ( cd "${build_dir}/pkgs" && rsync -urlptD ${pkg_dirs_to_install} "${sysroot_abs}"/ )
+
     if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
         # inject the merged info dir into sysroot
         cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
     fi
 }
 
-cmd_install() {
-    sysroot="$1"
-    shift 1
-    mkdir -p "${sysroot}"
-
-    for ppkg in "$@"; do
-        if [ "${ppkg}" = '*' ]; then
-            for pkg in "${build_dir}"/pkgs/*; do
-                echo "* copying $(basename "${pkg}") to sysroot '${sysroot}'..."
-                cp -rn --preserve=mode,timestamps "${pkg}"/. "${sysroot}"/
-            done
-            cmd_install_finalize
-            return
-        fi
-
-        for pkg in $(eval echo pkgs/"${ppkg}"); do
-            deps="${deps} $(basename "${pkg}")"
-        done
-    done
-
-    make_temp
-    deps_file="${tmp}"
-
-    echo "* resolving dependencies..."
-
-    get_deps_file
-
-    for pkg in $(cat "${deps_file}"); do
-        echo "* installing ${pkg} to sysroot '${sysroot}'..."
-        cp -rn --preserve=mode,timestamps pkgs/"${pkg}"/. "${sysroot}"/
-    done
-
-    cmd_install_finalize
-}
-
 rebuild_rbrt() {
     cat <<'EOF' >"$JINX_CACHE_DIR/rbrt.c"
-// Written by czapek1337 (czapek1337@gmail.com)
+// Written by 48cf (iretq@riseup.net)
 // Inspired heavily by https://github.com/managarm/cbuildrt/
 
 #define _GNU_SOURCE
@@ -1266,17 +1315,6 @@ reinit_container() {
     make -j${parallelism}
     mv src/merge-info "$JINX_CACHE_DIR/"
     )
-
-    (
-    set -e
-    cd "$JINX_CACHE_DIR"
-    curl -Lo coreutils-9.4.tar.xz http://ftp.gnu.org/gnu/coreutils/coreutils-9.4.tar.xz
-    tar -xf coreutils-9.4.tar.xz
-    cd coreutils-9.4
-    ./configure --prefix="$JINX_CACHE_DIR/host-tools"
-    make -j${parallelism}
-    make install
-    )
 }
 
 first_use() {
@@ -1307,18 +1345,18 @@ case "$1" in
         ;;
 esac
 
-if ! [ -f "$JINX_CONFIG_FILE_PATH" ]; then
-    die "$0: missing Jinx config file in source directory $base_dir"
+if ! [ -f "$JINX_CONFIG_FILE" ]; then
+    die "$0: missing Jinx config file '$JINX_CONFIG_FILE'"
 fi
 
-JINX_MAJOR_VER_CONFIG="$(. "$JINX_CONFIG_FILE_PATH" && echo "$JINX_MAJOR_VER")"
+. "${JINX_CONFIG_FILE}"
 
-if [ -z "$JINX_MAJOR_VER_CONFIG" ]; then
+if [ -z "$JINX_MAJOR_VER" ]; then
     die "$0: required config variable \$JINX_MAJOR_VER missing"
 fi
 
-if ! [ "$JINX_MAJOR_VER_CONFIG" = "$jinx_major_ver" ]; then
-    die "$0: needed major version ($JINX_MAJOR_VER_CONFIG) differs from Jinx-provided major version ($jinx_major_ver)"
+if ! [ "$JINX_MAJOR_VER" = "$jinx_major_ver" ]; then
+    die "$0: needed major version ($JINX_MAJOR_VER) differs from Jinx-provided major version ($jinx_major_ver)"
 fi
 
 if ! [ -d "$JINX_CACHE_DIR" ]; then

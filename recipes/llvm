@@ -21,9 +21,11 @@ build() {
         -Wno-dev \
         ${source_dir}/llvm
 
-    ninja
+    ninja -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install/strip
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip
 }

@@ -20,6 +20,8 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install-strip
+    DESTDIR="${dest_dir}" make install
     mkdir -pv "${dest_dir}"/var/spool/cron
+
+    post_package_strip
 }

@@ -14,4 +14,7 @@ package() {
     sed -i 's/elf/ironclad/g'     ./bootstrap/share/gprconfig/compilers.xml
     sed -i 's/freebsd/ironclad/g' ./bootstrap/share/gprconfig/linker.xml
     cp -rv ./bootstrap/. "${dest_dir}${prefix}"/
+
+        strip_command=strip \
+    post_package_strip
 }

@@ -9,11 +9,14 @@ build() {
         --host=${OS_TRIPLET} \
         --sysconfdir=/etc      \
         --localstatedir=/var   \
+        --disable-static \
         --prefix=${prefix}
 
     make -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install-strip
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
 }

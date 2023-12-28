@@ -1,5 +1,5 @@
-name=autoconf
-from_source=autoconf
+name=autoconf-2.69
+from_source=autoconf-2.69
 revision=1
 
 build() {

@@ -18,7 +18,9 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install-strip
+    DESTDIR="${dest_dir}" make install
 
     rm -f "${dest_dir}${prefix}/lib/charset.alias"
+
+    post_package_strip
 }

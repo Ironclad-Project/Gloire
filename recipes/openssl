@@ -26,8 +26,5 @@ package() {
 
     DESTDIR="${dest_dir}" make DESTDIR="${dest_dir}" MANSUFFIX=ssl install
 
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/bin/openssl
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libcrypto.so.1.1
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/libssl.so.1.1
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}"/lib/engines-1.1/*
+    post_package_strip
 }

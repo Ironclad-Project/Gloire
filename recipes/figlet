@@ -12,6 +12,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install prefix="${prefix}"
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}/bin/figlet"
-    ${OS_TRIPLET}-strip "${dest_dir}${prefix}/bin/chkfont"
+
+    post_package_strip
 }

@@ -5,6 +5,6 @@ tarball_blake2b="23737cc800392c949add14c1d0a01a294e8c224d958c03325c96d6540dcfae4
 hostdeps="automake autoconf libtool pkg-config"
 
 regenerate() {
-    ( cd tp/Texinfo/XS && libtoolize -cfvi && autoreconf -fvi )
-    libtoolize -cfvi && autoreconf -fvi 
+    ( cd tp/Texinfo/XS && autoreconf -fvi )
+    autoreconf -fvi 
 }

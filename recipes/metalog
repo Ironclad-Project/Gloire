@@ -18,8 +18,10 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install-strip
+    DESTDIR="${dest_dir}" make install
     mkdir -p "${dest_dir}"/usr/bin
     mv "${dest_dir}"/usr/sbin/metalog "${dest_dir}"/usr/bin/
     rm -rf "${dest_dir}"/usr/sbin
+
+    post_package_strip
 }

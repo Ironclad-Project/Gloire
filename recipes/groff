@@ -25,7 +25,9 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install-strip AR="x86_64-ironclad-ar"
+    DESTDIR="${dest_dir}" make install AR="x86_64-ironclad-ar"
 
     rm -f "${dest_dir}${prefix}/lib/charset.alias"
+
+    post_package_strip
 }

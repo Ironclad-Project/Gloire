@@ -1,13 +1,11 @@
 name=libgcc
 from_source=gcc-host
 revision=1
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf-2.69 automake libtool pkg-config"
 imagedeps="gcc"
 deps="mlibc"
 
 build() {
-    true
-
     cd "${base_dir}"/host-builds/gcc/build
 
     make -j${parallelism} all-target-libgcc
@@ -19,7 +17,7 @@ package() {
     rm -rf tmp_libgcc_dir
     mkdir tmp_libgcc_dir
 
-    DESTDIR="$(realpath tmp_libgcc_dir)" make install-strip-target-libgcc
+    DESTDIR="$(realpath tmp_libgcc_dir)" make install-target-libgcc
 
     mkdir -p "${dest_dir}${prefix}"
 

@@ -11,29 +11,3 @@ index 99e2686..700fd58 100644
  
  # what to make and install
  bin_PROGRAMS = gawk
-diff --git gawk-clean/configure.ac gawk-workdir/configure.ac
-index 18b42bc..1c4169f 100644
---- gawk-clean/configure.ac
-+++ gawk-workdir/configure.ac
-@@ -39,7 +39,7 @@ then
- 	export INSTALL
- fi
- 
--AC_PREREQ([2.71])
-+AC_PREREQ([2.69])
- 
- AC_CONFIG_MACRO_DIR([m4])
- AC_CONFIG_AUX_DIR([build-aux])
-diff --git gawk-clean/extension/configure.ac gawk-workdir/extension/configure.ac
-index 0f86cae..16277de 100644
---- gawk-clean/extension/configure.ac
-+++ gawk-workdir/extension/configure.ac
-@@ -25,7 +25,7 @@ dnl Process this file with autoconf to produce a configure script.
- 
- AC_INIT([GNU Awk Bundled Extensions],[5.2.1],[bug-gawk@gnu.org],[gawk-extensions])
- 
--AC_PREREQ([2.71])
-+AC_PREREQ([2.69])
- 
- AC_CONFIG_MACRO_DIR([../m4])
- AC_CONFIG_AUX_DIR([../build-aux])

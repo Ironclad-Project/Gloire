@@ -16,4 +16,7 @@ package() {
     mkdir -p "${dest_dir}"/boot
     cp memtest.bin "${dest_dir}"/boot/
     cp memtest.efi "${dest_dir}"/boot/
+
+        strip_command=strip \
+    post_package_strip
 }

@@ -14,4 +14,6 @@ package() {
     mkdir -p "${dest_dir}${prefix}"/bin
     cp -r built/sbin/* "${dest_dir}${prefix}"/bin/
     cp -r built/bin/*  "${dest_dir}${prefix}"/bin/
+
+    post_package_strip
 }

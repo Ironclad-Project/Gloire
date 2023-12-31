@@ -14,7 +14,7 @@ build() {
         --localstatedir=/var \
         --disable-nls \
         --disable-static \
-        --enable-libgdbm-compat
+        --disable-libgdbm-compat
 
     make -j${parallelism}
 }

@@ -1,0 +1,39 @@
+diff --git mailutils-clean/libmailutils/base/hostname.c mailutils-workdir/libmailutils/base/hostname.c
+index 0a68151..f367a44 100644
+--- mailutils-clean/libmailutils/base/hostname.c
++++ mailutils-workdir/libmailutils/base/hostname.c
+@@ -26,6 +26,8 @@
+ #include <netdb.h>
+ #include <mailutils/alloc.h>
+ 
++#include <sys/socket.h>
++
+ #ifndef MAXHOSTNAMELEN
+ # define MAXHOSTNAMELEN 64
+ #endif
+diff --git mailutils-clean/libmailutils/string/cstrcasestr.c mailutils-workdir/libmailutils/string/cstrcasestr.c
+index ce2209d..d496b73 100644
+--- mailutils-clean/libmailutils/string/cstrcasestr.c
++++ mailutils-workdir/libmailutils/string/cstrcasestr.c
+@@ -19,6 +19,8 @@
+ # include <config.h>
+ #endif
+ 
++#include <stddef.h>
++
+ #include <unistd.h>
+ #include <mailutils/cctype.h>
+ 
+diff --git mailutils-clean/mh/mh_init.c mailutils-workdir/mh/mh_init.c
+index a14e115..9471c74 100644
+--- mailutils-clean/mh/mh_init.c
++++ mailutils-workdir/mh/mh_init.c
+@@ -30,6 +30,8 @@
+ #include <fnmatch.h>
+ #include <sys/ioctl.h>
+ 
++#include <termios.h>
++
+ void
+ mh_init (void)
+ {

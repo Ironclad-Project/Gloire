@@ -1,0 +1,29 @@
+name=mailutils
+from_source=mailutils
+revision=1
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+build() {
+    cp -rp ${source_dir}/. ./
+
+    ./configure \
+        --host=${OS_TRIPLET} \
+        --prefix=${prefix} \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --with-sysroot=${sysroot_dir} \
+        --disable-nls \
+        --disable-python \
+        --disable-build-imap4d
+
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    ln -s mail "${dest_dir}${prefix}"/bin/mailx
+
+    post_package_strip
+}

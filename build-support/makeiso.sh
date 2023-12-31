@@ -3,8 +3,7 @@
 set -ex
 
 # Build the sysroot with jinx, build limine and memtest86+
-sudo rm -rf sysroot
-./jinx sysroot
+sudo ./jinx sysroot
 ./jinx host-build limine
 ./jinx host-build memtest86+
 

@@ -1,0 +1,32 @@
+name=perl
+from_source=perl
+revision=1
+imagedeps="gcc"
+hostdeps="gcc autoconf automake libtool pkg-config perl-cross"
+deps="core-libs bzip2 libxcrypt zlib"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    cp -rp ${base_dir}/sources/perl-cross/. ./
+
+    # Disabled threading functionality for now
+    #- '-Dusethreads'
+
+    ./configure \
+        --mode=cross \
+        --target=${OS_TRIPLET} \
+        --targetarch=${OS_TRIPLET} \
+        --target-tools-prefix="${OS_TRIPLET}-" \
+        --prefix=${prefix} \
+        --sysroot=${sysroot_dir} \
+        -Dvendorprefix=${prefix}
+
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

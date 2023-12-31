@@ -1,0 +1,48 @@
+diff --git perl-cross-clean/cnf/configure_tool.sh perl-cross-workdir/cnf/configure_tool.sh
+index 32201c0..cc6b93f 100644
+--- perl-cross-clean/cnf/configure_tool.sh
++++ perl-cross-workdir/cnf/configure_tool.sh
+@@ -266,6 +266,10 @@ if not hinted 'osname'; then
+ 			define osname "bsd"
+ 			result "BSD"
+ 			;;
++		*-ironclad*)
++			define osname "ironclad"
++			result "Ironclad"
++			;;
+ 		*)
+ 			result "no"
+ 			;;
+diff --git perl-cross-workdir/cnf/hints/ironclad perl-cross-workdir/cnf/hints/ironclad
+new file mode 100644
+index 0000000..138c5d0
+--- /dev/null
++++ perl-cross-workdir/cnf/hints/ironclad
+@@ -0,0 +1,27 @@
++# Ironclad syscalls
++d_voidsig='define'
++d_nanosleep='define'
++d_clock_gettime='define'
++d_clock_getres='define'
++d_clock_nanosleep='define'
++d_clock='define'
++
++# From the original linux.sh
++usemallocwrap='define'
++
++# libraries to test
++libswanted='m crypt pthread nm ndbm gdbm dbm db dl gdbm_compat'
++
++d_procselfexe='define'
++procselfexe='"/proc/self/exe"'
++
++st_ino_sign=1
++st_ino_size=8
++
++d_fcntl_can_lock='define'
++
++# Define as missing to disable locale bullshit
++d_setlocale='undef'
++
++# Currently bugged with perl, so we say we don't have this and siglongjmp
++d_sigsetjmp='undef'

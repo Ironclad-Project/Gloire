@@ -1,0 +1,9 @@
+name=perl-cross
+version=1.3.3
+tarball_url="https://github.com/arsv/perl-cross/releases/download/${version}/perl-cross-${version}.tar.gz"
+tarball_blake2b="07a2603a81be38e96c5b108bebab834c6c26c263c984ad39ac918ef896aefd53a833be380759079d76e9f80389a860fcc1d29e689a0320d0d339b0288a347f3e"
+hostdeps="automake autoconf libtool pkg-config"
+
+regenerate() {
+    cp -pv /usr/share/libtool/build-aux/config.{sub,guess} cnf/
+}

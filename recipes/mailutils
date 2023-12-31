@@ -12,6 +12,7 @@ build() {
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
+        --sbindir=/usr/bin \
         --with-sysroot=${sysroot_dir} \
         --disable-nls \
         --disable-python \

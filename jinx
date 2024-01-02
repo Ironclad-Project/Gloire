@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2022-2023 mintsuki
+# Copyright (C) 2022-2024 mintsuki
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="12"
+jinx_minor_ver="13"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -223,15 +223,36 @@ prepare_container() {
     make_temp -d
     sysroot_dir="${tmp}"
 
+    rm -rf "$JINX_CACHE_DIR"/saved-info-dir
     for dep in $(cat "${deps_file}"); do
-        cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
+        if [ -f "${build_dir}"/pkgs/${dep}/usr/share/info/dir ]; then
+            mv "${build_dir}"/pkgs/${dep}/usr/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
+        fi
+        copy_failed=0
+        cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/ || copy_failed=1
+        if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
+            mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/pkgs/${dep}/usr/share/info/dir
+        fi
+        if [ "$copy_failed" = 1 ]; then
+            exit 1
+        fi
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
         imgroot="${sysroot_dir}"
     else
         for hostdep in $(cat "${hostdeps_file}"); do
-            cp -Pplrn "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
+            if [ -f "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir ]; then
+                mv "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
+            fi
+            copy_failed=0
+            cp -Pplrn "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/ || copy_failed=1
+            if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
+                mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir
+            fi
+            if [ "$copy_failed" = 1 ]; then
+                exit 1
+            fi
         done
 
         imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
@@ -564,9 +585,6 @@ do_package_host() {
         rm -rvf $i
     done
 
-    # Remove info directory
-    rm -f "${dest_dir}${prefix}/share/info/dir"
-
     touch "${build_dir}"/host-builds/${name}.packaged
 }
 
@@ -638,16 +656,6 @@ do_package() {
     for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
         rm -rvf $i
     done
-
-    # Coalesce info directory
-    if [ -f "${dest_dir}${prefix}/share/info/dir" ]; then
-        if ! [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
-            mv "${dest_dir}${prefix}/share/info/dir" "$JINX_CACHE_DIR/merged-dir"
-        else
-            "$JINX_CACHE_DIR/merge-info" -o "$JINX_CACHE_DIR/merged-dir" "${dest_dir}${prefix}/share/info/dir" "$JINX_CACHE_DIR/merged-dir"
-            rm "${dest_dir}${prefix}/share/info/dir"
-        fi
-    fi
 
     touch "${build_dir}"/builds/${name}.packaged
 }
@@ -873,9 +881,20 @@ cmd_install() {
 
     dup_elements="$(comm -23 "${all_files_sorted}" "${all_files_uniq}" | uniq)"
 
+    rm -f "$JINX_CACHE_DIR/merged-info-dir"
+
     for pkg in ${pkgs_to_install}; do
         for elem in ${dup_elements}; do
             if [ -f "${build_dir}"/pkgs/${pkg}/${elem} ] || [ -L "${build_dir}"/pkgs/${pkg}/${elem} ]; then
+                if [ "${elem}" = "./usr/share/info/dir" ]; then
+                    # Coalesce info directory
+                    if ! [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
+                        cp "${build_dir}"/pkgs/${pkg}/${elem} "$JINX_CACHE_DIR/merged-info-dir"
+                    else
+                        "$JINX_CACHE_DIR/merge-info" -o "$JINX_CACHE_DIR/merged-info-dir" "${build_dir}"/pkgs/${pkg}/${elem} "$JINX_CACHE_DIR/merged-info-dir"
+                    fi
+                    continue
+                fi
                 die "* error: duplicate files were found in package '${pkg}': ${elem}"
             fi
         done
@@ -885,9 +904,13 @@ cmd_install() {
     sysroot_abs="$(cd "${sysroot}" && pwd -P)"
     ( cd "${build_dir}/pkgs" && rsync -urlptD ${pkg_dirs_to_install} "${sysroot_abs}"/ )
 
-    if [ -f "$JINX_CACHE_DIR/merged-dir" ]; then
-        # inject the merged info dir into sysroot
-        cp "$JINX_CACHE_DIR/merged-dir" "${sysroot}"/usr/share/info/dir
+    # inject the merged info dir into sysroot
+    if [ -f "${sysroot}"/usr/share/info/dir ] && [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
+        "$JINX_CACHE_DIR/merge-info" -o "${sysroot}"/usr/share/info/dir "$JINX_CACHE_DIR/merged-info-dir" "${sysroot}"/usr/share/info/dir
+    else
+        if [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
+            cp "$JINX_CACHE_DIR/merged-info-dir" "${sysroot}"/usr/share/info/dir
+        fi
     fi
 }
 

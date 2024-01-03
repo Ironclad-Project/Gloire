@@ -43,18 +43,26 @@ index c42b4f4..011d9c0 100644
  }
  
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index 76b85dc..80bec3a 100644
+index 76b85dc..d267b53 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-@@ -483,9 +483,8 @@ int strcoll_l(const char *, const char *, locale_t) {
+@@ -483,9 +483,16 @@ int strcoll_l(const char *, const char *, locale_t) {
  	__builtin_unreachable();
  }
  
 -int getloadavg(double *, int) {
 -	__ensure(!"Not implemented");
 -	__builtin_unreachable();
++#include <sys/syscall.h>
++
 +int getloadavg(double *samples, int nsample) {
-+	return nsample;
++	int ret;
++	int samples2[3];
++	SYSCALL3(SYSCALL_SYSCONF, 19, samples2, sizeof(samples2));
++	for (int i = 0; i < 3; i++) {
++		samples[i] = samples2[i] / 100.0;
++	}
++	return 3;
  }
  
  char *secure_getenv(const char *name) {

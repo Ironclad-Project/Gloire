@@ -1,6 +1,8 @@
 name=epoch
-from_source=epoch
+version=1.3.0
 revision=1
+tarball_url="https://github.com/Subsentient/epoch/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="f38b756344289f585848d408e361d090e7e2cadd38bea1481acf534908727d4163a9b556940a30a194dc52c50cb9bb723ecd6a0c8e18256f6c115eb66c9b052b"
 hostdeps="gcc autoconf automake libtool"
 deps="core-libs"
 

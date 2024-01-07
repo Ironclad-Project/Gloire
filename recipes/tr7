@@ -1,6 +1,8 @@
 name=tr7
-from_source=tr7
+version=1.0.8
 revision=1
+tarball_url="https://gitlab.com/jobol/tr7/-/archive/v${version}/tr7-v${version}.tar.gz"
+tarball_blake2b="57ecca405f7a6a0807b52a07a6c3bd55a5fbea2afdabae801323b96ef14fe8d118af9fe66ed69f5af0bb126f8edb5e0793dce7da13f8720fa03831cd7291f8d2"
 hostdeps="gcc"
 deps="core-libs"
 
@@ -10,7 +12,7 @@ build() {
     # FIXME: printing of floats is broken, it always outputs %f.0
     # Disable <wchar> as mlibc does not support it
     # Make only tr7i as the .a library fails due to "ar"
-    CC="x86_64-ironclad-gcc" make -j${parallelism} tr7i FFLAGS="-DNO_WCHAR"
+    CC="${OS_TRIPLET}-gcc" make -j${parallelism} tr7i FFLAGS="-DNO_WCHAR"
 }
 
 package() {

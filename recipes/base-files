@@ -1,16 +1,8 @@
 name=base-files
-from_source=base-files
+version=0.0
 revision=1
+source_dir="base-files"
 
 package() {
-    cp -prv ${source_dir}/. "${dest_dir}"/
-    ln -s usr/bin "${dest_dir}"/bin
-    ln -s usr/bin "${dest_dir}"/sbin
-    ln -s usr/lib "${dest_dir}"/lib
-    ln -s usr/lib "${dest_dir}"/lib64
-    ln -s bin "${dest_dir}"/usr/sbin
-    ln -s lib "${dest_dir}"/usr/lib64
-    mkdir "${dest_dir}"/tmp
-    mkdir -p "${dest_dir}"/var/run
-    mkdir -p "${dest_dir}"/var/log
+    cp -rpv ${source_dir}/. "${dest_dir}"/
 }

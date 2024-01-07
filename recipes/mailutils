@@ -1,20 +1,21 @@
 name=mailutils
-from_source=mailutils
+version=3.16
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/mailutils/mailutils-${version}.tar.xz"
+tarball_blake2b="dfef95ffd197bfc7279118472272c4c0d5b363cbe9d26499b6fb383638e9cb94da67832124dfd5948d718e170830c38a3d7eaf0cb77b0f1fde92eae808eb2930"
+source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
+
+regenerate() {
+    autoreconf -fvi
+}
 
 build() {
     cp -rp ${source_dir}/. ./
 
-    ./configure \
-        --host=${OS_TRIPLET} \
-        --prefix=${prefix} \
-        --sysconfdir=/etc \
-        --localstatedir=/var \
-        --sbindir=/usr/bin \
-        --with-sysroot=${sysroot_dir} \
-        --disable-nls \
+        configure_script_path=./configure \
+    autotools_configure \
         --disable-python \
         --disable-build-imap4d
 

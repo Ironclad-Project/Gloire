@@ -1,6 +1,8 @@
 name=bzip2
-from_source=bzip2
+version=1.0.8
 revision=1
+tarball_url="https://sourceware.org/ftp/bzip2/bzip2-${version}.tar.gz"
+tarball_blake2b="22ab3acd84f4db8c3d6f59340c252faedfd4447cea00dafbd652e65b6cf8a20adf6835c22e58563004cfafdb15348c924996230b4b23cae42da5e25eeac4bdad"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
@@ -17,6 +19,9 @@ package() {
     mkdir -p "${dest_dir}${prefix}/bin" "${dest_dir}${prefix}/lib" "${dest_dir}${prefix}/lib/pkgconfig" "${dest_dir}${prefix}/include"
     install bzip2-shared "${dest_dir}${prefix}/bin/bzip2"
     install bzip2recover "${dest_dir}${prefix}/bin/"
+    install bzdiff "${dest_dir}${prefix}/bin/"
+    install bzgrep "${dest_dir}${prefix}/bin/"
+    install bzmore "${dest_dir}${prefix}/bin/"
     install libbz2.so.1.0.8 "${dest_dir}${prefix}/lib/"
     install -m 644 bzlib.h "${dest_dir}${prefix}/include/"
     ln -sf libbz2.so.1.0.8 "${dest_dir}${prefix}/lib/libbz2.so.1.0"

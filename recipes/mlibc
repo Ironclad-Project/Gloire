@@ -1,24 +1,22 @@
 name=mlibc
-from_source=mlibc
+version=b5627685013748f0faff3c16ebc2569f958f3cb5
 revision=1
+tarball_url="https://github.com/mintsuki/mlibc/archive/${version}.tar.gz"
+tarball_blake2b="c98c20c03647f0f5828bc95d82217ece8e5d0eee1bbb293dc809d1b39bd8219064d68ab8499c5f7e26c7377a8829cccdeeca1974bdd574cd3d85166e56c7622d"
 imagedeps="meson ninja"
 hostdeps="gcc pkg-config libgcc-binaries"
 deps="mlibc-headers cxxshim frigg"
 
 build() {
         LDFLAGS="-Wl,/usr/local/libgcc-binaries/libgcc-x86_64.a" \
-    meson setup \
-        --cross-file ${base_dir}/build-support/cross_file.txt \
-        --prefix=${prefix} \
-        --libdir=lib \
+    meson_configure \
         --buildtype=debugoptimized \
         -Dmlibc_no_headers=true \
         -Ddefault_library=both \
         -Ddisable_crypt_option=true \
         -Ddisable_iconv_option=true \
         -Ddisable_intl_option=true \
-        -Ddisable_libgcc_dependency=true \
-        ${source_dir}
+        -Ddisable_libgcc_dependency=true
 
     ninja -j${parallelism}
 }

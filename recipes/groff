@@ -1,9 +1,16 @@
 name=groff
-from_source=groff
+version=1.22.4
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/groff/groff-${version}.tar.gz"
+tarball_blake2b="cdda8a7e8e42b8d8991656ecfbffe0cd0ed5d8932467cab2f3c1eecb3365f4a5c03321b6ed929d451c3dfb00a46046a781303a1c55c4aa65eb7d178fb36b1cbc"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="sed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
+
+regenerate() {
+    autotools_recursive_regen
+}
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -12,13 +19,9 @@ build() {
     sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_2 (signbit)"//g lib/math.in.h
     sed -i s/"#   undef signbit"//g lib/math.in.h
 
-    PAGE="A4" ./configure \
-        --host=${OS_TRIPLET} \
-        --prefix=${prefix} \
-        --sysconfdir=/etc \
-        --localstatedir=/var \
-        --disable-nls \
-        --disable-static \
+        PAGE="A4" \
+        configure_script_path=./configure \
+    autotools_configure \
         --with-doc=no
 
     make -j${parallelism} AR="x86_64-ironclad-ar"

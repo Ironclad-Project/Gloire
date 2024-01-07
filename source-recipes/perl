@@ -1,9 +1,0 @@
-name=perl
-version=5.30.2
-tarball_url="https://www.cpan.org/src/5.0/perl-${version}.tar.gz"
-tarball_blake2b="dfc6374973252722b2a0fde0cffc9c6f965378dbda162d64ebda82152471f213fc66ead56311ac0a38d07199d721d3d99c5749698370da25641714e003fe9d73"
-hostdeps="automake autoconf libtool pkg-config"
-
-regenerate() {
-    true
-}

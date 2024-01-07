@@ -1,16 +1,18 @@
 name=gsl
-from_source=gsl
+version=2.7.1
 revision=1
+tarball_url="https://ftp.gnu.org/gnu/gsl/gsl-${version}.tar.gz"
+tarball_blake2b="dd216c2fdb536e57b6e29613e46e1a05183fd18c47434039caac68fefffc0390cfe2f21eb117347d4bbdf9004de837ef2db02c17c01eaea4b615e3e45a4fd90f"
+source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc automake autoconf libtool pkg-config"
 deps="core-libs"
 
+regenerate() {
+    autoreconf -fvi
+}
+
 build() {
-    ${source_dir}/configure    \
-        --host=${OS_TRIPLET} \
-        --sysconfdir=/etc      \
-        --localstatedir=/var   \
-        --disable-static \
-        --prefix=${prefix}
+    autotools_configure
 
     make -j${parallelism}
 }

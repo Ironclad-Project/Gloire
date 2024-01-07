@@ -1,6 +1,8 @@
 name=ed
-from_source=ed
+version=1.19
 revision=1
+tarball_url="https://ftp.nluug.nl/pub/gnu/ed/ed-${version}.tar.lz"
+tarball_blake2b="139305a1d64e96f7eadcb462325918e5eee18de229ec8e1b3fac29dc9b8ef58ceea4cd7ffdbd3674fd7f421d90bc0c9e3557318eb57830d7cd46e579828fa95d"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 

@@ -1,9 +1,0 @@
-name=file
-version=5.45
-tarball_url="https://astron.com/pub/file/file-${version}.tar.gz"
-tarball_blake2b="30fc77c091e6624f2e9a950f4c6fe69ea6aa46d4a8ad9f20d49320a3675617c5bfbc9ff1ebba5eeb2cf4435c38d71b47b8beeb5146c9f55fe3bac11fe65e89bd"
-hostdeps="automake autoconf libtool pkg-config"
-
-regenerate() {
-    autotools_recursive_regen
-}

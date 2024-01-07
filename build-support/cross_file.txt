@@ -2,9 +2,10 @@
 c = 'x86_64-ironclad-gcc'
 cpp = 'x86_64-ironclad-g++'
 ar = 'x86_64-ironclad-ar'
+nm = 'x86_64-ironclad-nm'
 strip = 'x86_64-ironclad-strip'
 pkg-config = 'x86_64-ironclad-pkg-config'
-# sed adds binaries here.
+llvm-config = '/base_dir/build-support/cross-llvm-config'
 
 [host_machine]
 system = 'ironclad'

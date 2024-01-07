@@ -1,9 +1,16 @@
 name=bc
-from_source=bc
+version=6.7.3
 revision=1
+tarball_url="https://github.com/gavinhoward/bc/releases/download/${version}/bc-${version}.tar.gz"
+tarball_blake2b="88333b87ef44a7a5a36d71692585901b83d1aee4e782310b574a122a660536ff0f5a194d925c81a2b984ba85bf264df32427e5e951f8bc50d284755bdf4193e9"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="gcc"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
+
+regenerate() {
+    autotools_recursive_regen
+}
 
 build() {
     cp -rp "${source_dir}"/. ./

@@ -67,3 +67,4 @@ for command in args.command:
 	result = command()
 	print("cross-llvm-config yields:", result, file=sys.stderr)
 	print(result)
+

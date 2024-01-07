@@ -1,12 +1,22 @@
 name=ironclad
-from_source=ironclad
+version=2ed6c52ab4155acab883717f564ea134779a5ce0
 revision=1
+tarball_url="https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz"
+tarball_blake2b="0709696b25c16c88fe4ec0c7d943a701da73b796cf17f2bece7971cab1f1098ec1f9b8f10673580421592b7c340dbb0e0e37b8df938f31276c60dfc3d0a94e3e"
+source_imagedeps="git"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="texinfo binutils"
 hostdeps="gcc binutils autoconf automake libtool pkg-config gprbuild"
 
+regenerate() {
+    ./bootstrap
+    autotools_recursive_regen
+}
+
 build() {
-    GPRBUILD="gprbuild --target=${OS_TRIPLET}" \
-    "${source_dir}"/configure --prefix="${prefix}" --target=x86_64-multiboot2-elf
+        GPRBUILD="gprbuild --target=${OS_TRIPLET}" \
+    autotools_configure \
+        --target=x86_64-multiboot2-elf
 
     make all -j${parallelism}
 }

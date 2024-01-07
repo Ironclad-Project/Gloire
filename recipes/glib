@@ -1,20 +1,17 @@
 name=glib
-from_source=glib
+version=2.78.1
 revision=1
+tarball_url="https://download.gnome.org/sources/glib/2.78/glib-${version}.tar.xz"
+tarball_blake2b="af8f2e83600dfb3ec84702399cb00a3aaedbc80087e35dc7cc2e2374d4fe5fdf82707ac8c911da1c53eb7b027c9da9ecfc1c0a8f56b39431fa4cf44cad5b10f7"
+imagedeps="meson ninja"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 libffi zlib"
-imagedeps="meson ninja"
 
 build() {
-    meson setup \
-        --cross-file ${base_dir}/build-support/cross_file.txt \
-        --prefix=${prefix} \
-        --libdir=lib \
-        --buildtype=release \
-        -Dxattr=false \
-        ${source_dir}
+    meson_configure \
+        -Dxattr=false
 
-    ninja
+    ninja -j${parallelism}
 }
 
 package() {

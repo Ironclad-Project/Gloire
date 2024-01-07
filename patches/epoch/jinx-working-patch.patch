@@ -1997,6 +1997,417 @@ index 8130386..9cb938b 100644
  	struct
  	{
  		unsigned char *Status;
+diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
+index b52068c..472a63c 100644
+--- epoch-clean/src/modes.c
++++ epoch-workdir/src/modes.c
+@@ -23,7 +23,7 @@ pid_t getsid(pid_t);
+ ReturnCode SendPowerControl(const char *MembusCode)
+ { /*Client side to send a request to halt/reboot/power off/disable or enable CAD/etc.*/
+ 	char InitsResponse[MEMBUS_MSGSIZE], *PCode[2], *PErrMsg;
+-	
++
+ 	if (!strcmp(MembusCode, MEMBUS_CODE_HALT))
+ 	{
+ 		PCode[0] = MEMBUS_CODE_ACKNOWLEDGED " " MEMBUS_CODE_HALT;
+@@ -59,17 +59,17 @@ ReturnCode SendPowerControl(const char *MembusCode)
+ 		SpitError("Invalid MEMBUS_CODE passed to SendPowerControl().");
+ 		return FAILURE;
+ 	}
+-	
++
+ 	if (!MemBus_Write(MembusCode, false))
+ 	{
+ 		SpitError("Failed to write to membus.");
+ 		return FAILURE;
+ 	}
+-	
++
+ 	while (!MemBus_Read(InitsResponse, false)) usleep(1000); /*0.001 secs.*/
+-	
++
+ 	MemBus_Write(MembusCode, false); /*Tells init it can shut down the membus.*/
+-	
++
+ 	if (!strcmp(InitsResponse, PCode[0]))
+ 	{
+ 		ShutdownMemBus(false);
+@@ -79,10 +79,10 @@ ReturnCode SendPowerControl(const char *MembusCode)
+ 	{ /*Nothing uses this right now.*/
+ 		SpitError(PErrMsg);
+ 		ShutdownMemBus(false);
+-		
++
+ 		return FAILURE;
+ 	}
+-	
++
+ 	return SUCCESS;
+ }
+ 
+@@ -91,28 +91,28 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
+ 	char RemoteResponse[MEMBUS_MSGSIZE];
+ 	char OutMsg[MEMBUS_MSGSIZE];
+ 	char PossibleResponses[4][MEMBUS_MSGSIZE];
+-	
++
+ 	snprintf(OutMsg, sizeof OutMsg, "%s %s", MemBusSignal, ObjectID);
+-	
++
+ 	if (!MemBus_Write(OutMsg, false))
+ 	{
+ 		return FAILURE;
+ 	}
+-	
++
+ 	while (!MemBus_Read(RemoteResponse, false)) usleep(1000); /*0.001 secs*/
+-	
++
+ 	snprintf(PossibleResponses[0], sizeof PossibleResponses[0], "%s %s %s",
+ 		MEMBUS_CODE_ACKNOWLEDGED, MemBusSignal, ObjectID);
+-		
++
+ 	snprintf(PossibleResponses[1], sizeof PossibleResponses[1], "%s %s %s",
+ 		MEMBUS_CODE_FAILURE, MemBusSignal, ObjectID);
+-		
++
+ 	snprintf(PossibleResponses[2], sizeof PossibleResponses[2], "%s %s",
+ 		MEMBUS_CODE_BADPARAM, OutMsg);
+ 
+ 	snprintf(PossibleResponses[3], sizeof PossibleResponses[3], "%s %s %s",
+ 		MEMBUS_CODE_WARNING, MemBusSignal, ObjectID);
+-		
++
+ 	if (!strcmp(RemoteResponse, PossibleResponses[0]))
+ 	{
+ 		return SUCCESS;
+@@ -137,6 +137,19 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
+ 	}
+ }
+ 
++#include <sys/syscall.h>
++#include <errno.h>
++#define SC_LIST_PROCS 8
++
++struct procinfo {
++    char     id[20];
++    uint16_t id_len;
++    uint16_t ppid;
++    uint16_t pid;
++    uint32_t uid;
++    uint32_t flags;
++} __attribute__((packed));
++
+ ReturnCode EmulKillall5(unsigned InSignal)
+ { /*Used as the killall5 utility.*/
+ 	DIR *ProcDir;
+@@ -148,42 +161,29 @@ ReturnCode EmulKillall5(unsigned InSignal)
+ 	{
+ 		SpitError("EmulKillall5() Bad value for unsigned InSignal.");
+ 	}
+-	
+-	/*We get everything from /proc.*/
+-	if (!(ProcDir = opendir("/proc/")))
+-	{
+-		return FAILURE;
+-	}
+-	
++
+ 	/*Stop everything.*/
+ 	kill(-1, SIGSTOP);
+-	
+-	while ((CurDir = readdir(ProcDir)))
+-	{
+-		if (AllNumeric(CurDir->d_name) && CurDir->d_type == 4)
+-		{			
+-			CurPID = atol(CurDir->d_name); /*Convert the new PID to a true number.*/
+-			
+-			if (CurPID == 1 || CurPID == OurPID)
+-			{ /*Don't try to kill init, or us.*/
+-				continue;
+-			}
+-			
+-			
+-			if (getsid(CurPID) == OurSID)
+-			{ /*It's in our session ID, so don't touch it.*/
+-				continue;
+-			}
+-			
+-			/*We made it this far, must be safe to nuke this process.*/
+-			kill(CurPID, InSignal); /*Actually send the kill, stop, whatever signal.*/
++
++	int ret;
++	struct procinfo *buffer = malloc(50 * sizeof(struct procinfo));
++	SYSCALL3(SYSCALL_SYSCONF, SC_LIST_PROCS, buffer, 50 * sizeof(struct procinfo));
++	if (ret == -1) {
++		return FAILURE;
++	} else if (ret > 50) {
++		return FAILURE;
++	}
++
++	for (int i = 0; i < ret; i++) {
++		if (buffer[i].pid != 1 && buffer[i].pid != OurPID && getsid(CurPID) != OurSID) {
++			kill(buffer[i].pid, InSignal);
+ 		}
+ 	}
+-	closedir(ProcDir);
+-	
++
++
+ 	/*Start it up again.*/
+ 	kill(-1, SIGCONT);
+-	
++
+ 	return SUCCESS;
+ }
+ 
+@@ -199,44 +199,44 @@ void EmulWall(const char *InStream, Bool ShowUser)
+ 	struct dirent *DirPtr;
+ 	char FileNameBuf[MAX_LINE_SIZE];
+ 	int FileDescriptor = 0;
+-	
++
+ 	if (getuid() != 0)
+ 	{ /*Not root?*/
+ 		SpitWarning("You are not root. Only sending to ttys you have privileges on.");
+ 	}
+-	
++
+ 	GetCurrentTime(HMS[0], HMS[1], HMS[2], MDY[0], MDY[1], MDY[2]);
+-	
++
+ 	snprintf(OutBuf, 64, "\007\n%s[%s:%s:%s | %s-%s-%s]%s ", CONSOLE_COLOR_RED, HMS[0], HMS[1], HMS[2],
+ 		MDY[0], MDY[1], MDY[2], CONSOLE_ENDCOLOR);
+-	
++
+ 	if (ShowUser)
+ 	{
+-		int HostnameLen = 0;		
++		int HostnameLen = 0;
+ 		if (gethostname(OurHostname, sizeof OurHostname / 2) != 0)
+ 		{
+ 			strncpy(OurHostname, "(unknown)", sizeof "(unknown)");
+ 		}
+-		
++
+ 		HostnameLen = strlen(OurHostname);
+-		
++
+ 		if (getdomainname(OurHostname + HostnameLen + 1, sizeof OurHostname / 2 - 1) == 0 &&
+ 			strcmp(OurHostname + HostnameLen + 1, "(none)") != 0 &&
+ 			strcmp(OurHostname + HostnameLen + 1, "") != 0)
+ 		{ /*If we DO have a domain name, set it.*/
+ 			OurHostname[HostnameLen] = '.';
+ 		}
+-			
++
+ 		/*I really enjoy pulling stuff off like the line below.*/
+ 		snprintf(&OutBuf[strlen(OutBuf)], sizeof OutBuf - strlen(OutBuf), "Broadcast message from %s@%s: ",
+ 				(OurUser != NULL ? OurUser : "(unknown)"), OurHostname);
+-		
++
+ 	}
+ 	else
+ 	{
+ 		snprintf(&OutBuf[strlen(OutBuf)], sizeof OutBuf - strlen(OutBuf), "%s", "Broadcast message: ");
+ 	}
+-	
++
+ 	snprintf(&OutBuf[strlen(OutBuf)], sizeof OutBuf - strlen(OutBuf), "\n%s\n\n", InStream);
+ 	if ((DevDir = opendir("/dev/")))
+ 	{ /*Now write to the ttys.*/
+@@ -248,20 +248,20 @@ void EmulWall(const char *InStream, Bool ShowUser)
+ 				atoi(DirPtr->d_name + sizeof "tty" - 1) > 0)
+ 			{
+ 				snprintf(FileNameBuf, MAX_LINE_SIZE, "/dev/%s", DirPtr->d_name);
+-				
++
+ 				if ((FileDescriptor = open(FileNameBuf, O_WRONLY | O_NONBLOCK)) == -1)
+ 				{ /*Screw it, we don't care.*/
+ 					continue;
+ 				}
+-				
++
+ 				write(FileDescriptor, OutBuf, strlen(OutBuf));
+-				
++
+ 				close(FileDescriptor); FileDescriptor = 0;
+ 			}
+ 		}
+ 		closedir(DevDir);
+ 	}
+-	
++
+ 	if ((PtsDir = opendir("/dev/pts/")))
+ 	{
+ 		while ((DirPtr = readdir(PtsDir)))
+@@ -269,12 +269,12 @@ void EmulWall(const char *InStream, Bool ShowUser)
+ 			if (isdigit(DirPtr->d_name[0]))
+ 			{
+ 				snprintf(FileNameBuf, MAX_LINE_SIZE, "/dev/pts/%s", DirPtr->d_name);
+-				
++
+ 				if ((FileDescriptor = open(FileNameBuf, O_WRONLY | O_NONBLOCK)) == -1)
+ 				{
+ 					continue;
+ 				}
+-				
++
+ 				write(FileDescriptor, OutBuf, strlen(OutBuf));
+ 				close(FileDescriptor); FileDescriptor = 0;
+ 			}
+@@ -293,7 +293,7 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 	short Inc = 0;
+ 	short TimeIsSet = 0, HaltModeSet = 0;
+ 	Bool AbortingShutdown = false, ImmediateHalt = false;
+-	
++
+ 	for (; Inc != (ArgumentCount - 1); ++TPtr, ++Inc)
+ 	{
+ 		if (!strcmp(*TPtr, "-h") || !strcmp(*TPtr, "--halt") || !strcmp(*TPtr, "-H"))
+@@ -323,18 +323,18 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 		else if (strchr(*TPtr, ':') && **TPtr != '-')
+ 		{
+ 			struct _HaltParams TempParams;
+-			
++
+ 			if (sscanf(*TPtr, "%u:%u", &TargetHr, &TargetMin) != 2)
+ 			{
+ 				puts("Bad time format. Please enter in the format of \"hh:mm\"");
+ 				return FAILURE;
+ 			}
+-			
++
+ 			DateDiff(TargetHr, TargetMin, &TempParams.TargetMonth, &TempParams.TargetDay, &TempParams.TargetYear);
+-			
++
+ 			snprintf(TimeFormat, sizeof TimeFormat, "%u:%u:%d %u/%u/%u",
+ 					TargetHr, TargetMin, 0, TempParams.TargetMonth, TempParams.TargetDay, TempParams.TargetYear);
+-					
++
+ 			++TimeIsSet;
+ 		}
+ 		else if (**TPtr == '+' && AllNumeric(*TPtr + 1))
+@@ -343,17 +343,17 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 			const char *TArg = *TPtr + 1; /*Targ manure!*/
+ 			time_t TTime;
+ 			struct tm TimeStruct;
+-			
++
+ 			MinsToDate(atoi(TArg), &TempParams.TargetHour, &TempParams.TargetMin, &TempParams.TargetMonth,
+ 						&TempParams.TargetDay, &TempParams.TargetYear);
+-						
++
+ 			time(&TTime); /*Get this for the second.*/
+ 			localtime_r(&TTime, &TimeStruct);
+-			
++
+ 			snprintf(TimeFormat, sizeof TimeFormat, "%u:%u:%d %u/%u/%u",
+ 					TempParams.TargetHour, TempParams.TargetMin, (int)TimeStruct.tm_sec, TempParams.TargetMonth,
+ 					TempParams.TargetDay, TempParams.TargetYear);
+-					
++
+ 			++TimeIsSet;
+ 		}
+ 		else if (!strcmp(*TPtr, "now"))
+@@ -370,11 +370,11 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 			"-r -R --reboot: Reboot the system.\n"
+ 			"-c --cancel: Cancel a pending shutdown.\n\n"
+ 			"Specify time in hh:mm, +m, or \"now\".\n";
+-			
++
+ 			puts(HelpMsg);
+ 			return SUCCESS;
+ 		}
+-			
++
+ 		else
+ 		{
+ 			fprintf(stderr, "Invalid argument %s. See --help for usage.\n", *TPtr);
+@@ -382,7 +382,7 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 		}
+ 
+ 	}
+-	
++
+ 	if (!AbortingShutdown)
+ 	{
+ 		if (HaltModeSet == 0)
+@@ -390,62 +390,62 @@ ReturnCode EmulShutdown(int ArgumentCount, const char **ArgStream)
+ 			fprintf(stderr, "%s\n", "You must specify one of -hrp.");
+ 			return FAILURE;
+ 		}
+-		
++
+ 		if (HaltModeSet > 1)
+ 		{
+ 			fprintf(stderr, "%s\n", "Please specify only ONE of -hrp.");
+ 			return FAILURE;
+ 		}
+-		
++
+ 		if (!TimeIsSet)
+ 		{
+ 			fprintf(stderr, "%s\n", "You must specify a time in the format of hh:mm: or +m.");
+ 			return FAILURE;
+ 		}
+-		
++
+ 		if (TimeIsSet > 1)
+ 		{
+ 			fprintf(stderr, "%s\n", "Multiple time arguments specified. Please specify only one.");
+ 			return FAILURE;
+ 		}
+-		
++
+ 		if (!ImmediateHalt)
+ 		{
+ 			snprintf(TmpBuf, sizeof TmpBuf, "%s %s", THalt, TimeFormat);
+ 		}
+ 	}
+-	
++
+ 	if (ImmediateHalt)
+ 	{
+ 		snprintf(TmpBuf, sizeof TmpBuf, "%s", THalt);
+ 	}
+-	
++
+ 	snprintf(PossibleResponses[0], MEMBUS_MSGSIZE, "%s %s", MEMBUS_CODE_ACKNOWLEDGED, TmpBuf);
+ 	snprintf(PossibleResponses[1], MEMBUS_MSGSIZE, "%s %s", MEMBUS_CODE_FAILURE, TmpBuf);
+ 	snprintf(PossibleResponses[2], MEMBUS_MSGSIZE, "%s %s", MEMBUS_CODE_BADPARAM, TmpBuf);
+-	
++
+ 	if (!InitMemBus(false))
+ 	{
+ 		SpitError("Failed to connect to membus.");
+ 		return FAILURE;
+ 	}
+-	
++
+ 	if (!MemBus_Write(TmpBuf, false))
+ 	{
+ 		SpitError("Failed to write to membus.");
+ 		ShutdownMemBus(false);
+ 		return FAILURE;
+ 	}
+-	
++
+ 	while (!MemBus_Read(InRecv, false)) usleep(1000); /*Wait for a response.*/
+-	
++
+ 	if (ImmediateHalt) MemBus_Write(" ", false); /*Tells init it can shut down the membus.*/
+-	
++
+ 	if (!ShutdownMemBus(false))
+ 	{
+ 		SpitError("Failed to shut down membus! This could spell serious issues.");
+ 	}
+-	
++
+ 	if (!strcmp(InRecv, PossibleResponses[0]))
+ 	{
+ 		return SUCCESS;
 diff --git epoch-clean/src/parse.c epoch-workdir/src/parse.c
 index 84d97b9..90ff438 100644
 --- epoch-clean/src/parse.c

@@ -20,7 +20,7 @@ package() {
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 
-    # zlib.so.${version} is created without soname... fix that
+    # libz.so.${version} is created without soname... fix that
     patchelf --set-soname libz.so.${version} "${dest_dir}${prefix}/lib/libz.so.${version}"
 
     post_package_strip

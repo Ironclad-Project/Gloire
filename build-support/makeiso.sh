@@ -8,6 +8,9 @@ sudo ./jinx sysroot
 ./jinx host-build memtest86+
 
 # Ensure permissions are set.
+sudo mkdir -p sysroot/tmp || true
+sudo mkdir -p sysroot/var/run || true
+sudo mkdir -p sysroot/var/log || true
 sudo chown -R root:root sysroot/*
 sudo chown -R 1000:1000 sysroot/home/user
 sudo chmod 700 sysroot/root

@@ -1,9 +1,0 @@
-name=libgcrypt
-version=1.10.1
-tarball_url="https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${version}.tar.gz"
-tarball_blake2b="46f2958c79584be02910feb9c1192aa34998b089fc1580ce48c6ba1db30a0206b7581fab8983e258541f04fd1e49d01c3711df6982af744a9dcfe07cbf95f0c9"
-hostdeps="automake autoconf libtool pkg-config"
-
-regenerate() {
-    autotools_recursive_regen
-}

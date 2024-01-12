@@ -1,20 +1,22 @@
 name=libgcrypt
-from_source=libgcrypt
+version=1.10.1
 revision=1
+tarball_url="https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${version}.tar.gz"
+tarball_blake2b="46f2958c79584be02910feb9c1192aa34998b089fc1580ce48c6ba1db30a0206b7581fab8983e258541f04fd1e49d01c3711df6982af744a9dcfe07cbf95f0c9"
+source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="gcc"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libgpg-error"
 
+regenerate() {
+    autotools_recursive_regen
+}
+
 build() {
     cp -rp "${source_dir}"/. ./
 
-    ./configure \
-        --host=${OS_TRIPLET} \
-        --prefix=${prefix} \
-        --sysconfdir=/etc \
-        --localstatedir=/var \
-        --disable-nls \
-        --disable-doc \
+        configure_script_path=./configure \
+    autotools_configure \
         --disable-dev-random \
         --disable-asm \
         --with-libgpg-error-prefix=${sysroot_dir}/${prefix}

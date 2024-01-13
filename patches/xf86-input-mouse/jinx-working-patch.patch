@@ -1,5 +1,5 @@
 diff --git xf86-input-mouse-clean/configure.ac xf86-input-mouse-workdir/configure.ac
-index 6c453cd..7ed1521 100644
+index 1d871b2..3aff36a 100644
 --- xf86-input-mouse-clean/configure.ac
 +++ xf86-input-mouse-workdir/configure.ac
 @@ -62,7 +62,7 @@ AC_SUBST(inputdir)
@@ -23,10 +23,10 @@ index 6c453cd..7ed1521 100644
  
 diff --git xf86-input-mouse-workdir/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
 new file mode 100644
-index 0000000..8de8a7f
+index 0000000..e9b08ed
 --- /dev/null
 +++ xf86-input-mouse-workdir/src/ironclad_mouse.c
-@@ -0,0 +1,119 @@
+@@ -0,0 +1,115 @@
 +#ifdef HAVE_XORG_CONFIG_H
 +#include <xorg-config.h>
 +#endif
@@ -55,25 +55,27 @@ index 0000000..8de8a7f
 +#define MOUSE_FLAG_RB (1 << 1)
 +#define MOUSE_FLAG_MB (1 << 2)
 +
-+struct mouse_packet {
-+    uint8_t flags;
-+    int32_t x_mov;
-+    int32_t y_mov;
++struct ironclad_mouse_data {
++   int  x_variation;
++   int  y_variation;
++   bool is_left;
++   bool is_right;
++   bool is_middle;
 +};
 +
 +static void ironcladReadInput(InputInfoPtr pInfo) {
 +    MouseDevPtr mouse = pInfo->private;
-+    struct mouse_packet packet;
++    struct ironclad_mouse_data packet;
 +
-+    if (read(pInfo->fd, &packet, sizeof(struct mouse_packet)) == sizeof(struct mouse_packet)) {
++    if (read(pInfo->fd, &packet, sizeof(struct ironclad_mouse_data))) {
 +        int b = mouse->lastButtons;
 +        b &= ~0x7;
 +
-+        b |= (packet.flags & MOUSE_FLAG_RB) ? 1 : 0;
-+        b |= (packet.flags & MOUSE_FLAG_MB) ? 2 : 0;
-+        b |= (packet.flags & MOUSE_FLAG_LB) ? 4 : 0;
++        b |= packet.is_right ? 1 : 0;
++        b |= packet.is_middle ? 2 : 0;
++        b |= packet.is_left ? 4 : 0;
 +
-+        mouse->PostEvent(pInfo, b, packet.x_mov, -packet.y_mov, 0, 0);
++        mouse->PostEvent(pInfo, b, packet.x_variation, packet.y_variation, 0, 0);
 +    }
 +}
 +
@@ -97,16 +99,10 @@ index 0000000..8de8a7f
 +    return true;
 +}
 +
-+#define DEVPATH "/dev/mouse"
++#define DEVPATH "/dev/ps2mouse"
 +
 +static const char *getdevice(InputInfoPtr pInfo, const char *proto, int flag){
-+    struct stat st;
-+
-+    if (stat(DEVPATH, &st) == -1)
-+        return NULL;
-+
 +    pInfo->options = xf86AddNewOption(pInfo->options, "Device", DEVPATH);
-+
 +    return DEVPATH;
 +}
 +

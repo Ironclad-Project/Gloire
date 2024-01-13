@@ -375,7 +375,7 @@ index d6e9118..cdbf039 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 7136150..3afc8df 100644
+index 7136150..88c4a9c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -63,7 +63,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
@@ -561,7 +561,42 @@ index 7136150..3afc8df 100644
  #ifndef MLIBC_BUILDING_RTDL
  
  extern "C" void __mlibc_thread_entry();
-@@ -1025,27 +1089,7 @@ int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2
+@@ -835,10 +899,13 @@ int sys_shutdown(int sockfd, int how) {
+ 	return errno;
+ }
+ 
++int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
++	 return ENOSYS;
++}
++
+ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+ 	if (hdr->msg_control != NULL) {
+-		mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
+-		return EINVAL;
++		// mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
+ 	}
+ 
+ 	int ret;
+@@ -860,8 +927,7 @@ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+ 
+ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+ 	if (hdr->msg_control != NULL) {
+-		mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
+-		return EINVAL;
++		// mlibc::infoLogger() << "mlibc: recv() msg_control not supported!" << frg::endlog;
+ 	}
+ 
+ 	int ret;
+@@ -904,7 +970,7 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
+ 	struct timespec ts;
+ 	ts.tv_sec = timeout / 1000;
+ 	ts.tv_nsec = (timeout % 1000) * 1000000;
+-	return sys_ppoll(fds, count, timeout < 0 ? NULL : &ts, NULL, num_events);
++	return sys_ppoll(fds, count, timeout == -1 ? NULL : &ts, NULL, num_events);
+ }
+ 
+ int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
+@@ -1025,27 +1091,7 @@ int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2
  
  int sys_sysconf(int num, long *rret) {
  	long ret, errno;
@@ -590,7 +625,7 @@ index 7136150..3afc8df 100644
  	*rret = ret;
  	return errno;
  }
-@@ -1126,6 +1170,12 @@ int sys_umask(mode_t mode, mode_t *old) {
+@@ -1126,6 +1172,12 @@ int sys_umask(mode_t mode, mode_t *old) {
  	return errno;
  }
  
@@ -603,7 +638,7 @@ index 7136150..3afc8df 100644
  int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
  	ssize_t ret;
  	int errno;
-@@ -1165,5 +1215,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1165,5 +1217,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -611,9 +646,9 @@ index 7136150..3afc8df 100644
 +struct mountinfo {
 +	 uint32_t type;
 +	 uint32_t flags;
-+	 char	source[20];
++	 char source[20];
 +	 uint32_t source_length;
-+	 char	location[20];
++	 char location[20];
 +	 uint32_t location_length;
 +	 uint64_t block_size;
 +	 uint64_t fragment_size;

@@ -1,7 +1,25 @@
 diff --git xorg-server-clean/configure.ac xorg-server-workdir/configure.ac
-index 0909cc5..f551571 100644
+index 0909cc5..91e4863 100644
 --- xorg-server-clean/configure.ac
 +++ xorg-server-workdir/configure.ac
+@@ -1353,7 +1353,7 @@ AM_CONDITIONAL(INT10MODULE, test "x$INT10MODULE" = xyes)
+ AC_DEFINE(SHAPE, 1, [Support SHAPE extension])
+ 
+ if test "x$XKBPATH" = "xauto"; then
+-    XKBPATH=$(pkg-config --variable datadir xkbcomp || echo ${datadir})/X11/xkb
++    XKBPATH=$($PKG_CONFIG --variable datadir xkbcomp || echo ${datadir})/X11/xkb
+ fi
+ 
+ AC_DEFINE_DIR(XKB_BASE_DIRECTORY, XKBPATH, [Path to XKB data])
+@@ -1363,7 +1363,7 @@ AC_ARG_WITH(xkb-bin-directory,
+ 				[XKB_BIN_DIRECTORY="auto"])
+ 
+ if test "x$XKB_BIN_DIRECTORY" = "xauto"; then
+-    XKB_BIN_DIRECTORY=$(pkg-config --variable bindir xkbcomp || echo ${bindir})
++    XKB_BIN_DIRECTORY=$($PKG_CONFIG --variable bindir xkbcomp || echo ${bindir})
+ fi
+ 
+ AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN_DIRECTORY, [Path to XKB bin dir])
 @@ -1966,6 +1966,8 @@ if test "x$XORG" = xyes; then
  	if test "x$DRM" = xyes; then
  		XORG_DRIVER_MODESETTING=yes
@@ -11,6 +29,15 @@ index 0909cc5..f551571 100644
  
  	AC_SUBST([XORG_LIBS])
  	AC_SUBST([XORG_SYS_LIBS])
+@@ -2156,7 +2158,7 @@ dnl XWin requires OpenGL spec files in order to generate wrapper code for native
+            AC_MSG_RESULT(yes)
+            if test "x$KHRONOS_SPEC_DIR" = "xauto" ; then
+ 		PKG_CHECK_MODULES([KHRONOS_OPENGL_REGISTRY], [khronos-opengl-registry])
+-		KHRONOS_SPEC_DIR=`pkg-config khronos-opengl-registry --variable=specdir`
++		KHRONOS_SPEC_DIR=`$PKG_CONFIG khronos-opengl-registry --variable=specdir`
+            fi
+            AC_SUBST(KHRONOS_SPEC_DIR)
+ 	fi
 diff --git xorg-server-clean/hw/xfree86/common/xf86Bus.c xorg-server-workdir/hw/xfree86/common/xf86Bus.c
 index a8f1073..1b1120a 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Bus.c

@@ -1,0 +1,36 @@
+diff --git hsetroot-clean/Makefile hsetroot-workdir/Makefile
+index fe86d9a..e09cf95 100644
+--- hsetroot-clean/Makefile
++++ hsetroot-workdir/Makefile
+@@ -5,6 +5,7 @@ CFLAGS?=-g -O2 -Wall
+ LDFLAGS?=
+ 
+ PREFIX?=/usr/local
++DESTDIR?=
+ 
+ # arch hardening
+ #CPPFLAGS+=-D_FORTIFY_SOURCE=2
+@@ -12,7 +13,11 @@ PREFIX?=/usr/local
+ #LDFLAGS+=-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+ 
+ # arch & debian hardening workaround
+-LDFLAGS+=-Wl,--no-as-needed
++UNAME_S := $(shell uname -s)
++ifeq ($(UNAME_S),Linux)
++	LDFLAGS+=-Wl,--no-as-needed
++endif
++
+ 
+ CFLAGS+=$(shell $(PKG_CONFIG) x11 --cflags)
+ LDFLAGS+=$(shell $(PKG_CONFIG) x11 --libs)
+@@ -30,8 +35,8 @@ hsetroot: hsetroot.o
+ hsr-outputs: hsr-outputs.o
+ 
+ install: hsetroot hsr-outputs
+-	install -st $(PREFIX)/bin/ hsetroot
+-	install -st $(PREFIX)/bin/ hsr-outputs
++	install -Dt $(DESTDIR)$(PREFIX)/bin/ hsetroot
++	install -Dt $(DESTDIR)$(PREFIX)/bin/ hsr-outputs
+ 
+ clean:
+ 	rm -f *.o hsetroot hsr-outputs

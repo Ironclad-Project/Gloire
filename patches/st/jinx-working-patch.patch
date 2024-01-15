@@ -12,7 +12,7 @@ index 470ac86..25611af 100644
  
  uninstall:
 diff --git st-clean/st.c st-workdir/st.c
-index 62def59..1c4e6e6 100644
+index 62def59..2a92792 100644
 --- st-clean/st.c
 +++ st-workdir/st.c
 @@ -16,17 +16,12 @@
@@ -77,3 +77,12 @@ index 62def59..1c4e6e6 100644
  		if (s > 2)
  			close(s);
  #ifdef __OpenBSD__
+@@ -1124,7 +1138,7 @@ tnewline(int first_col)
+ 	} else {
+ 		y++;
+ 	}
+-	tmoveto(first_col ? 0 : term.c.x, y);
++	tmoveto(0, y);
+ }
+ 
+ void

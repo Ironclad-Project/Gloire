@@ -61,7 +61,7 @@ menu "defops"
 "Show Iconmgr" f.showiconmgr
 "Hide Iconmgr" f.hideiconmgr
 ""    f.nop
-"st"     f.exec "exec st &"
+"st"     f.exec "exec st bash --login &"
 ""    f.nop
 "Kill"      f.destroy
 "Delete" f.delete

@@ -20,6 +20,6 @@ build() {
 
 package() {
     make DESTDIR=${dest_dir} install
-
+    rm -rf "${dest_dir}"/usr/share/X11/twm/system.twmrc
     post_package_strip
 }

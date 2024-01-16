@@ -1,12 +1,12 @@
 name=xorg-server
-version=1.20.14
+version=21.1.11
 revision=1
 tarball_url="https://www.x.org/releases/individual/xserver/xorg-server-${version}.tar.xz"
-tarball_blake2b="e60cbb6f3023639598d518fb53e3df3a2aced8f8950279f3a1642ad0a9545bea756574c4d41383cba966dc76c317859065b2290c8420668547f26f1d6e508da3"
+tarball_blake2b="0a18840979bb8b20b02eca9d737f20ddcf92a4771386074c38692df8a1c9b0f471af2211f3006f845ad0dd887b3844b7e7aac761bc12fc4e4177f1ada32ec503"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="xtrans xorg-font-util xorg-util-macros"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libxinerama xorg-proto xcb-proto xtrans libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman"
+deps="core-libs xorg-proto xcb-proto xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman"
 
 regenerate() {
     autotools_recursive_regen
@@ -23,9 +23,7 @@ build() {
         --enable-xv \
         --enable-xvfb \
         --disable-xephyr \
-        --disable-xwayland \
         --disable-xnest \
-        --disable-dmx \
         --disable-suid-wrapper \
         --disable-pciaccess \
         --disable-dpms \
@@ -38,7 +36,6 @@ build() {
         --disable-dri \
         --disable-dri2 \
         --disable-dri3 \
-        --disable-vbe \
         --disable-int10-module \
         --disable-vgahw \
         --disable-libdrm \

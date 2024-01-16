@@ -1,8 +1,8 @@
 diff --git xorg-server-clean/configure.ac xorg-server-workdir/configure.ac
-index 0909cc5..91e4863 100644
+index 7ac669f..792940f 100644
 --- xorg-server-clean/configure.ac
 +++ xorg-server-workdir/configure.ac
-@@ -1353,7 +1353,7 @@ AM_CONDITIONAL(INT10MODULE, test "x$INT10MODULE" = xyes)
+@@ -1341,7 +1341,7 @@ AM_CONDITIONAL(INT10MODULE, test "x$INT10MODULE" = xyes)
  AC_DEFINE(SHAPE, 1, [Support SHAPE extension])
  
  if test "x$XKBPATH" = "xauto"; then
@@ -11,17 +11,17 @@ index 0909cc5..91e4863 100644
  fi
  
  AC_DEFINE_DIR(XKB_BASE_DIRECTORY, XKBPATH, [Path to XKB data])
-@@ -1363,7 +1363,7 @@ AC_ARG_WITH(xkb-bin-directory,
+@@ -1351,7 +1351,7 @@ AC_ARG_WITH(xkb-bin-directory,
  				[XKB_BIN_DIRECTORY="auto"])
  
  if test "x$XKB_BIN_DIRECTORY" = "xauto"; then
--    XKB_BIN_DIRECTORY=$(pkg-config --variable bindir xkbcomp || echo ${bindir})
-+    XKB_BIN_DIRECTORY=$($PKG_CONFIG --variable bindir xkbcomp || echo ${bindir})
- fi
- 
- AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN_DIRECTORY, [Path to XKB bin dir])
-@@ -1966,6 +1966,8 @@ if test "x$XORG" = xyes; then
- 	if test "x$DRM" = xyes; then
+-    XKB_BIN_DIRECTORY=$(pkg-config --variable bindir xkbcomp)
++    XKB_BIN_DIRECTORY=$($PKG_CONFIG --variable bindir xkbcomp)
+     if test -z $XKB_BIN_DIRECTORY; then
+         XKB_BIN_DIRECTORY="$bindir"
+     fi
+@@ -1946,6 +1946,8 @@ if test "x$XORG" = xyes; then
+ 	if test "x$DRM" = xyes -a "x$DRI2" = xyes; then
  		XORG_DRIVER_MODESETTING=yes
  	fi
 +	
@@ -29,7 +29,7 @@ index 0909cc5..91e4863 100644
  
  	AC_SUBST([XORG_LIBS])
  	AC_SUBST([XORG_SYS_LIBS])
-@@ -2156,7 +2158,7 @@ dnl XWin requires OpenGL spec files in order to generate wrapper code for native
+@@ -2127,7 +2129,7 @@ dnl XWin requires OpenGL spec files in order to generate wrapper code for native
             AC_MSG_RESULT(yes)
             if test "x$KHRONOS_SPEC_DIR" = "xauto" ; then
  		PKG_CHECK_MODULES([KHRONOS_OPENGL_REGISTRY], [khronos-opengl-registry])
@@ -39,10 +39,10 @@ index 0909cc5..91e4863 100644
             AC_SUBST(KHRONOS_SPEC_DIR)
  	fi
 diff --git xorg-server-clean/hw/xfree86/common/xf86Bus.c xorg-server-workdir/hw/xfree86/common/xf86Bus.c
-index a8f1073..1b1120a 100644
+index fd144db..6eb018c 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Bus.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Bus.c
-@@ -536,6 +536,7 @@ xf86GetDevFromEntity(int entityIndex, int instance)
+@@ -556,6 +556,7 @@ xf86GetDevFromEntity(int entityIndex, int instance)
  void
  xf86PostProbe(void)
  {
@@ -50,16 +50,16 @@ index a8f1073..1b1120a 100644
      if (fbSlotClaimed && (
  #if (defined(__sparc__) || defined(__sparc)) && !defined(__OpenBSD__)
                               sbusSlotClaimed ||
-@@ -551,6 +552,7 @@ xf86PostProbe(void)
+@@ -571,6 +572,7 @@ xf86PostProbe(void)
          ))
          FatalError("Cannot run in framebuffer mode. Please specify busIDs "
                     "       for all framebuffer devices\n");
 +*/
  }
  
- int
+ Bool
 diff --git xorg-server-clean/hw/xfree86/common/xf86Config.c xorg-server-workdir/hw/xfree86/common/xf86Config.c
-index 09d27ec..83be062 100644
+index 5d814c1..14ebfe6 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Config.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Config.c
 @@ -49,6 +49,8 @@
@@ -72,7 +72,7 @@ index 09d27ec..83be062 100644
  #include "xf86Modes.h"
  #include "xf86Parser.h"
 diff --git xorg-server-clean/hw/xfree86/common/xf86Configure.c xorg-server-workdir/hw/xfree86/common/xf86Configure.c
-index 44e7591..86d48d5 100644
+index 4347f6d..52594c6 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Configure.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Configure.c
 @@ -27,6 +27,8 @@
@@ -85,7 +85,7 @@ index 44e7591..86d48d5 100644
  #include "xf86Config.h"
  #include "xf86_OSlib.h"
 diff --git xorg-server-clean/hw/xfree86/common/xf86Events.c xorg-server-workdir/hw/xfree86/common/xf86Events.c
-index 8a800bd..ec5d33d 100644
+index 395bbc7..4bf86cb 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Events.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Events.c
 @@ -53,6 +53,8 @@
@@ -98,7 +98,7 @@ index 8a800bd..ec5d33d 100644
  #include <X11/Xproto.h>
  #include <X11/Xatom.h>
 diff --git xorg-server-clean/hw/xfree86/common/xf86Helper.c xorg-server-workdir/hw/xfree86/common/xf86Helper.c
-index 42a51dd..64af1dc 100644
+index 0389945..b53b1a7 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Helper.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Helper.c
 @@ -38,6 +38,8 @@
@@ -108,10 +108,10 @@ index 42a51dd..64af1dc 100644
 +#include <sys/stat.h>
 +
  #include <X11/X.h>
+ #include "mi.h"
  #include "os.h"
- #include "servermd.h"
 diff --git xorg-server-clean/hw/xfree86/common/xf86Init.c xorg-server-workdir/hw/xfree86/common/xf86Init.c
-index 2ec6b2f..c1d9c24 100644
+index 5695e71..96c2d15 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Init.c
 +++ xorg-server-workdir/hw/xfree86/common/xf86Init.c
 @@ -37,6 +37,8 @@
@@ -156,7 +156,7 @@ index 75235b3..5aaa682 100644
  
  static inline InputDriverPtr
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
-index 9508951..bce130c 100644
+index 3d8b92e..f7be685 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c
 +++ xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
 @@ -10,12 +10,12 @@
@@ -196,7 +196,7 @@ index 9508951..bce130c 100644
      /* only touch non-PCI devices on this path */
 +/*
      {
-         char buf[PATH_MAX];
+         char buf[PATH_MAX] = {0};
          char *sysfs_path = NULL;
 @@ -344,6 +347,7 @@ fbdev_open(int scrnIndex, const char *dev, char **namep)
          }
@@ -293,7 +293,7 @@ index 0cb9788..e8cac5d 100644
  #include <xserver_poll.h>
  #include "xf86.h"
 diff --git xorg-server-clean/hw/xfree86/os-support/shared/sigio.c xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
-index 247bec7..216e8cd 100644
+index ad8af60..6f81278 100644
 --- xorg-server-clean/hw/xfree86/os-support/shared/sigio.c
 +++ xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
 @@ -56,6 +56,9 @@
@@ -307,19 +307,19 @@ index 247bec7..216e8cd 100644
  #include <xserver_poll.h>
  #include "xf86.h"
 diff --git xorg-server-clean/include/os.h xorg-server-workdir/include/os.h
-index 2a1c29e..2a7fc76 100644
+index 7db2408..8862645 100644
 --- xorg-server-clean/include/os.h
 +++ xorg-server-workdir/include/os.h
-@@ -51,6 +51,7 @@ SOFTWARE.
- #include <stdarg.h>
- #include <stdint.h>
+@@ -54,6 +54,7 @@ SOFTWARE.
+ #include <stdlib.h>       /* for reallocarray */
+ #endif
  #include <string.h>
 +#include <strings.h>
  #ifdef MONOTONIC_CLOCK
  #include <time.h>
  #endif
 diff --git xorg-server-clean/mi/mibitblt.c xorg-server-workdir/mi/mibitblt.c
-index 43d9bd9..740c0d2 100644
+index 0b13e49..aff6539 100644
 --- xorg-server-clean/mi/mibitblt.c
 +++ xorg-server-workdir/mi/mibitblt.c
 @@ -49,6 +49,8 @@ SOFTWARE.
@@ -332,15 +332,15 @@ index 43d9bd9..740c0d2 100644
  #include <X11/Xprotostr.h>
  
 diff --git xorg-server-clean/os/access.c xorg-server-workdir/os/access.c
-index 9724616..25ed1bd 100644
+index 61ee8e3..5d69a4e 100644
 --- xorg-server-clean/os/access.c
 +++ xorg-server-workdir/os/access.c
-@@ -117,7 +117,7 @@ SOFTWARE.
- #endif
+@@ -120,7 +120,7 @@ SOFTWARE.
+ #include <sys/un.h>
  #endif
  
 -#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__)
-+#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__ironclad__)
++#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__vinix__)
  #include <sys/utsname.h>
  #endif
  #if defined(SYSV) &&  defined(__i386__)
@@ -363,10 +363,10 @@ index c68aabc..a3217dc 100644
  #if !HAVE_OSPOLL
  #include "xserver_poll.h"
 diff --git xorg-server-clean/os/utils.c xorg-server-workdir/os/utils.c
-index 2ba1c80..63dedc6 100644
+index 92a66e8..646722e 100644
 --- xorg-server-clean/os/utils.c
 +++ xorg-server-workdir/os/utils.c
-@@ -1402,7 +1402,7 @@ System(const char *command)
+@@ -1403,7 +1403,7 @@ System(const char *command)
          return -1;
      }
  
@@ -375,7 +375,7 @@ index 2ba1c80..63dedc6 100644
  }
  
  static struct pid {
-@@ -1632,7 +1632,7 @@ Pclose(void *iop)
+@@ -1633,7 +1633,7 @@ Pclose(void *iop)
      }
  #endif
  

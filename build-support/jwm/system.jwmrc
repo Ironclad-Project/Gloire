@@ -5,8 +5,8 @@
     <RootMenu onroot="12">
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
         <Menu icon="folder" label="Applications">
-            <Program icon="calc" label="Calculator">xcalc</Program>
-            <Program icon="system-file-manager" label="ROX">rox ~</Program>
+            <Program label="xeyes">xeyes</Program>
+            <Program label="xclock">xclock</Program>
         </Menu>
         <Menu icon="folder" label="Utilities">
             <Program icon="font" label="Fonts">xfontsel</Program>
@@ -18,46 +18,37 @@
             </Program>
         </Menu>
         <Separator/>
-        <Program icon="lock" label="Lock">
-           xscreensaver-command -lock
+        <Program icon="view-refresh" label="Reboot">
+           poweroff
+        </Program>
+        <Program icon="system-shutdown" label="Shutdown">
+           reboot
         </Program>
         <Separator/>
-        <Restart label="Restart" icon="reload"/>
+        <Restart label="Restart WM" icon="reload"/>
         <Exit label="Exit" confirm="true" icon="exit"/>
     </RootMenu>
 
     <!-- Options for program groups. -->
     <Group>
-        <Option>tiled</Option>
-    </Group>
-    <Group>
-        <Name>xterm</Name>
-        <Option>vmax</Option>
-    </Group>
-    <Group>
-        <Name>xclock</Name>
+        <Name>xeyes</Name>
         <Option>drag</Option>
         <Option>notitle</Option>
+        <Option>noborder</Option>
     </Group>
 
-    <!-- Tray at the bottom. -->
-    <Tray x="0" y="-1" autohide="off" delay="1000">
-
+    <!-- Tray at the top. -->
+    <Tray x="0" y="0" autohide="off" delay="1000">
         <TrayButton icon="ironcladseal">root:1</TrayButton>
         <Spacer width="2"/>
-        <TrayButton label="_">showdesktop</TrayButton>
-        <Spacer width="2"/>
-
-        <Pager labeled="true"/>
-
         <TaskList maxwidth="256"/>
+        <Pager labeled="true"/>
         <Dock/>
         <Clock format="%l:%M %p" />
-
     </Tray>
 
     <!-- Visual Styles -->
-    <WindowStyle decorations="motif">
+    <WindowStyle decorations="flat">
         <Font>Sans-12:bold</Font>
         <Width>4</Width>
         <Corner>0</Corner>
@@ -70,7 +61,7 @@
             <Opacity>1.0</Opacity>
         </Active>
     </WindowStyle>
-    <TrayStyle decorations="motif">
+    <TrayStyle decorations="flat">
         <Font>Sans-12</Font>
         <Background>#333333</Background>
         <Foreground>#FFFFFF</Foreground>
@@ -94,7 +85,7 @@
             <Background>#004488</Background>
         </Active>
     </PagerStyle>
-    <MenuStyle decorations="motif">
+    <MenuStyle decorations="flat">
         <Font>Sans-12</Font>
         <Foreground>#FFFFFF</Foreground>
         <Background>#333333</Background>

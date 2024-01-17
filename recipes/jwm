@@ -24,6 +24,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
-
+	cp -v "${base_dir}"/build-support/jwm/system.jwmrc "${dest_dir}"/etc/
     post_package_strip
 }

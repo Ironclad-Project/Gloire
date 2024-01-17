@@ -7,6 +7,7 @@
         <Menu icon="folder" label="Applications">
             <Program label="xeyes">xeyes</Program>
             <Program label="xclock">xclock</Program>
+            <Program label="glxgears">glxgears</Program>
         </Menu>
         <Menu icon="folder" label="Utilities">
             <Program icon="font" label="Fonts">xfontsel</Program>
@@ -18,12 +19,8 @@
             </Program>
         </Menu>
         <Separator/>
-        <Program icon="view-refresh" label="Reboot">
-           poweroff
-        </Program>
-        <Program icon="system-shutdown" label="Shutdown">
-           reboot
-        </Program>
+        <Program icon="view-refresh" label="Reboot">reboot</Program>
+        <Program icon="system-shutdown" label="Shutdown">poweroff</Program>
         <Separator/>
         <Restart label="Restart WM" icon="reload"/>
         <Exit label="Exit" confirm="true" icon="exit"/>

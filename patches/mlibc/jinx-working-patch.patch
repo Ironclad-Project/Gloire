@@ -1,3 +1,15 @@
+diff --git mlibc-clean/abis/ironclad/statvfs.h mlibc-workdir/abis/ironclad/statvfs.h
+index 7a75d3a..d4fc416 100644
+--- mlibc-clean/abis/ironclad/statvfs.h
++++ mlibc-workdir/abis/ironclad/statvfs.h
+@@ -23,6 +23,7 @@ struct statvfs {
+ 	unsigned long f_fsid;
+ 	unsigned long f_flag;
+ 	unsigned long f_namemax;
++	char f_basetype[80];
+ };
+ 
+ #endif /* _ABIBITS_STATVFS_H */
 diff --git mlibc-clean/abis/ironclad/termios.h mlibc-workdir/abis/ironclad/termios.h
 index e8ebffd..4dd5987 100644
 --- mlibc-clean/abis/ironclad/termios.h
@@ -12,6 +24,20 @@ index e8ebffd..4dd5987 100644
  
  // bitwise flags for c_oflag in struct termios
  #define OPOST   0x0001
+diff --git mlibc-clean/options/ansi/generic/time-stubs.cpp mlibc-workdir/options/ansi/generic/time-stubs.cpp
+index 887a7d3..547bb10 100644
+--- mlibc-clean/options/ansi/generic/time-stubs.cpp
++++ mlibc-workdir/options/ansi/generic/time-stubs.cpp
+@@ -242,7 +242,8 @@ size_t strftime(char *__restrict dest, size_t max_size,
+ 			c++;
+ 			break;
+ 		}
+-		case 'I': {
++		case 'I':
++		case 'l': {
+ 			int hour = tm->tm_hour;
+ 			if(!hour)
+ 				hour = 12;
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -340,6 +366,37 @@ index 4cc7507..caefe10 100644
  
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
+diff --git mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
+index b4a6e1b..ba4be1c 100644
+--- mlibc-clean/options/posix/meson.build
++++ mlibc-workdir/options/posix/meson.build
+@@ -37,7 +37,7 @@ libc_sources += files(
+ 	'generic/sys-select-stubs.cpp',
+ 	'generic/sys-shm.cpp',
+ 	'generic/sys-socket-stubs.cpp',
+-	'generic/sys-statfs-stubs.cpp',
++	#'generic/sys-statfs-stubs.cpp',
+ 	'generic/sys-stat-stubs.cpp',
+ 	'generic/sys-statvfs-stubs.cpp',
+ 	'generic/sys-times.cpp',
+@@ -135,7 +135,7 @@ if not no_headers
+ 		'include/sys/sem.h',
+ 		'include/sys/shm.h',
+ 		'include/sys/socket.h',
+-		'include/sys/statfs.h',
++		#'include/sys/statfs.h',
+ 		'include/sys/stat.h',
+ 		'include/sys/statvfs.h',
+ 		'include/sys/termios.h',
+@@ -146,7 +146,7 @@ if not no_headers
+ 		'include/sys/uio.h',
+ 		'include/sys/un.h',
+ 		'include/sys/utsname.h',
+-		'include/sys/vfs.h',
++		#'include/sys/vfs.h',
+ 		'include/sys/wait.h',
+ 		'include/sys/syslog.h',
+ 		subdir: 'sys'
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
 index d6e9118..cdbf039 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
@@ -375,9 +432,20 @@ index d6e9118..cdbf039 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 7136150..ae9165a 100644
+index 7136150..0206f27 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -54,8 +54,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 	int path_len = strlen (path);
+ 	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
+ 	if (ret != -1 && (flags & O_EXCL)) {
+-		 SYSCALL1(SYSCALL_CLOSE, ret);
+-		 return EEXIST;
++		SYSCALL1(SYSCALL_CLOSE, ret);
++		return EEXIST;
+ 	}
+ 
+ 	if (ret == -1 && (flags & O_CREAT)) {
 @@ -63,7 +63,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
  		 if (ret == -1) {
  			  return errno;
@@ -654,7 +722,7 @@ index 7136150..ae9165a 100644
  int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
  	ssize_t ret;
  	int errno;
-@@ -1165,5 +1218,55 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1165,5 +1218,66 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -676,6 +744,12 @@ index 7136150..ae9165a 100644
 +	 uint64_t free_inodes_user;
 +	 uint64_t max_filename;
 +};
++
++#include <sys/mount.h>
++
++int sys_fstatvfs(int fd, struct statvfs *out) {
++	return sys_statvfs("/", out);
++}
 +
 +int sys_statvfs(const char *path, struct statvfs *out) {
 +	long ret, errno;
@@ -702,6 +776,11 @@ index 7136150..ae9165a 100644
 +			out->f_fsid = 0;
 +			out->f_flag = buffer[i].flags;
 +			out->f_namemax = buffer[i].max_filename;
++			if (buffer[i].type == MNT_EXT) {
++				strcpy(out->f_basetype, "ext");
++			} else {
++				strcpy(out->f_basetype, "fat");
++			}
 +			return 0;
 +		}
 +	}

@@ -4,7 +4,7 @@ revision=1
 tarball_url="https://dl.suckless.org/st/st-${version}.tar.gz"
 tarball_blake2b="f6713b565b785549a571b3775346351c6db79dfbb1a93e29aadd722f30e957e9f77d1644b150cd11f0993dec5accad9d825e6d6b380b4c84c5f526b6589d1b15"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libx11 libxcb libxext libxi libxmu libxrender libxt libxft freetype"
+deps="core-libs libx11 libxcb libxext libxi libxmu libxrender libxt libxft freetype2"
 
 build() {
     cp -rp "${source_dir}"/. ./

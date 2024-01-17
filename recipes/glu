@@ -1,0 +1,23 @@
+name=glu
+version=9.0.2
+tarball_url="https://archive.mesa3d.org/glu/glu-${version}.tar.xz"
+tarball_blake2b="90485938e4809ce7bb56da25bd60be9f3f7b7f40d511ea6635e40d749e519d1dca6241d891224d3cf331b911f545df4ef9aa2101baf4e3b18df69244edbcb8a4"
+revision=1
+source_hostdeps="automake autoconf libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs mesa"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install-strip
+    post_package_strip
+}

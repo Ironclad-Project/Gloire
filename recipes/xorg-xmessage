@@ -1,0 +1,24 @@
+name=xorg-xmessage
+version=1.0.6
+revision=1
+tarball_url="https://www.x.org/pub/individual/app/xmessage-${version}.tar.xz"
+tarball_blake2b="f818af4d7a17c2da6e00fbc00622606153b74bccb809ccc42226a0be3d6f19840c3a20278fe2d73f4af1e624b37a4c086c81650ab9262a1692e6d3ab5d5b1764"
+source_hostdeps="autoconf automake libtool pkg-config"
+source_deps="xorg-util-macros"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs libxmu libxaw"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    make DESTDIR=${dest_dir} install
+    post_package_strip
+}

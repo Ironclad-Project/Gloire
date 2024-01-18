@@ -1,0 +1,24 @@
+name=xorg-xprop
+version=1.2.6
+revision=1
+tarball_url="https://www.x.org/pub/individual/app/xprop-${version}.tar.gz"
+tarball_blake2b="69feac251d2e54c63705aa4c1b4e91355d5739e096c962674104dbd8eb7aa7ac21e11517d62e03c491f9e96ac3b04e74cf87087fd6acdda22cce7d3e3e7f1b46"
+source_hostdeps="autoconf automake libtool pkg-config"
+source_deps="xorg-util-macros"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs libxmu libxaw"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    make DESTDIR=${dest_dir} install
+    post_package_strip
+}

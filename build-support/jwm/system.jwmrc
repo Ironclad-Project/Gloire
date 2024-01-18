@@ -1,15 +1,29 @@
 <?xml version="1.0"?>
 <JWM>
-
     <!-- The root menu. -->
     <RootMenu onroot="12">
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
-        <Menu icon="folder" label="Applications">
+        <Menu icon="applications-other" label="Applications">
             <Program label="xeyes">xeyes</Program>
             <Program label="xclock">xclock</Program>
             <Program label="glxgears">glxgears</Program>
         </Menu>
-        <Menu icon="folder" label="Utilities">
+        <Menu icon="applications-games" label="Games">
+            <Program label="canfield">canfield</Program>
+            <Program label="mastermind">mastermind</Program>
+            <Program label="pegged">pegged</Program>
+            <Program label="spider">spider</Program>
+            <Program label="thornq">thornq</Program>
+            <Program label="freecell">freecell</Program>
+            <Program label="merlin">merlin</Program>
+            <Program label="penguins">penguins</Program>
+            <Program label="taipedit">taipedit</Program>
+            <Program label="golf">golf</Program>
+            <Program label="minesweeper">minesweeper</Program>
+            <Program label="solitaire">solitaire</Program>
+            <Program label="taipei">taipei</Program>
+        </Menu>
+        <Menu icon="applications-system" label="System utilities">
             <Program icon="font" label="Fonts">xfontsel</Program>
             <Program icon="info" label="Window Properties">
                 xprop | xmessage -file -
@@ -36,7 +50,7 @@
 
     <!-- Tray at the top. -->
     <Tray x="0" y="0" autohide="off" delay="1000">
-        <TrayButton icon="ironcladseal">root:1</TrayButton>
+        <TrayButton icon="ironcladseal" label="Applications">root:1</TrayButton>
         <Spacer width="2"/>
         <TaskList maxwidth="256"/>
         <Pager labeled="true"/>
@@ -98,36 +112,20 @@
         <Background>#999999</Background>
     </PopupStyle>
 
-    <!-- Path where icons can be found.
-         IconPath can be listed multiple times to allow searching
-         for icons in multiple paths.
-      -->
-    <IconPath>
-      /usr/share/icons/ironclad
-    </IconPath>
-    <IconPath>
-      /usr/share/icons/mate/256x256/actions
-    </IconPath>
-    <IconPath>
-      /usr/share/icons/mate/256x256/apps
-    </IconPath>
-    <IconPath>
-      /usr/share/icons/mate/256x256/places
-    </IconPath>
-    <IconPath>
-      /usr/share/icons/mate/256x256/status
-    </IconPath>
-    <IconPath>
-      /usr/share/icons/mate/256x256/mimetypes
-    </IconPath>
+    <!-- Path where icons can be found. -->
+    <IconPath>/usr/share/icons/ironclad</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/actions</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/apps</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/categories</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/devices</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/emblems</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/emotes</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/mimetypes</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/places</IconPath>
+    <IconPath>/usr/share/icons/mate/32x32/status</IconPath>
 
     <!-- Virtual Desktops -->
-    <!-- Desktop tags can be contained within Desktops for desktop names. -->
     <Desktops width="4" height="1">
-        <!-- Default background. Note that a Background tag can be
-              contained within a Desktop tag to give a specific background
-              for that desktop.
-         -->
         <Background type="image">/etc/background.png</Background>
     </Desktops>
 

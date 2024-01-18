@@ -12,10 +12,10 @@ OS from the ground up.
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
 
-![Gloire running its window manager, GWM](artwork/screenshot1.png)
-*Gloire running its window manager, GWM.*
-![Gloire generating an RSA key and running neofetch](artwork/screenshot2.png)
-*Gloire generating an RSA key and running neofetch.*
+![Gloire running the JWM window manager, a terminal emulator, xeyes, and a game](artwork/screenshot1.png)
+*Gloire running the JWM window manager, a terminal emulator, xeyes, and a game*
+![Gloire generating an RSA key and running neofetch in its fallback shell](artwork/screenshot2.png)
+*Gloire generating an RSA key and running neofetch in its fallback shell.*
 
 ## Downloading
 

@@ -5,11 +5,22 @@ tarball_url="https://pub.mate-desktop.org/releases/1.27/mate-icon-theme-${versio
 tarball_blake2b="d86603cad3ddb3df40fadcc752ac43bf1271cb2e860eb37906fbf12c6eb2e3dd19b6600769374910a22ad41fa72481efa52f13d2235fb3e9ea1fe773fb15de0d"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
-imagedeps="icon-naming-utils"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs mpfr gmp readline"
+deps="core-libs"
+
+regenerate() {
+    autoreconf -fvi -I/sysroot/usr/share/aclocal
+}
+
+build() {
+    autotools_configure \
+      --disable-icon-mapping
+
+    make -j${parallelism}
+}
 
 package() {
-    mkdir -pv "${dest_dir}"/usr/share/icons
-    cp -r "${source_dir}"/mate "${dest_dir}"/usr/share/icons/
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
 }

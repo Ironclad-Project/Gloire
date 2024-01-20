@@ -3,6 +3,7 @@
     <!-- The root menu. -->
     <RootMenu onroot="12">
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
+        <Program icon="system-file-manager" label="File Manager">xfe</Program>
         <Menu icon="applications-other" label="Applications">
          <Program label="xedit" icon="accessories-text-editor">xedit</Program>
             <Program label="xeyes">xeyes</Program>
@@ -115,15 +116,15 @@
 
     <!-- Path where icons can be found. -->
     <IconPath>/usr/share/icons/ironclad</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/actions</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/apps</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/categories</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/devices</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/emblems</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/emotes</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/mimetypes</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/places</IconPath>
-    <IconPath>/usr/share/icons/mate/32x32/status</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/actions</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/apps</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/categories</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/devices</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/emblems</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/emotes</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/mimetypes</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/places</IconPath>
+    <IconPath>/usr/share/icons/mate/48x48/status</IconPath>
 
     <!-- Virtual Desktops -->
     <Desktops width="4" height="1">

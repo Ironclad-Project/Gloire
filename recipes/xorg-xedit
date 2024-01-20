@@ -1,0 +1,26 @@
+name=xorg-xedit
+version=1.2.3
+revision=1
+tarball_url="https://www.x.org/pub/individual/app/xedit-${version}.tar.xz"
+tarball_blake2b="15dabc6952228246b2fcd67c33298ce75ebd3a943e930d3e5110c4b32a8c5b7340f5127b64d9bda9819fa3bcb4bebe870e4bcca0ecf5310f4b765f488d88c61d"
+source_hostdeps="autoconf automake libtool pkg-config"
+source_deps="xorg-util-macros"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs libxmu libxaw"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    make DESTDIR=${dest_dir} install
+    mkdir -pv ${dest_dir}/etc/X11
+    cp -r ${source_dir}/app-defaults ${dest_dir}/etc/X11/
+    post_package_strip
+}

@@ -4,6 +4,7 @@
     <RootMenu onroot="12">
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
         <Menu icon="applications-other" label="Applications">
+         <Program label="xedit" icon="accessories-text-editor">xedit</Program>
             <Program label="xeyes">xeyes</Program>
             <Program label="xclock">xclock</Program>
             <Program label="glxgears">glxgears</Program>
@@ -24,11 +25,11 @@
             <Program label="taipei">taipei</Program>
         </Menu>
         <Menu icon="applications-system" label="System utilities">
-            <Program icon="font" label="Fonts">xfontsel</Program>
-            <Program icon="info" label="Window Properties">
+            <Program icon="preferences-desktop-font" label="Fonts">xfontsel</Program>
+            <Program icon="preferences-system-windows" label="Window Properties">
                 xprop | xmessage -file -
             </Program>
-            <Program icon="info" label="Window Information">
+            <Program icon="preferences-system-windows" label="Window Information">
                 xwininfo | xmessage -file -
             </Program>
         </Menu>

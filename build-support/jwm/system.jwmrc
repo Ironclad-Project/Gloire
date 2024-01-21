@@ -5,7 +5,9 @@
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
         <Program icon="system-file-manager" label="File Manager">xfe</Program>
         <Menu icon="applications-other" label="Applications">
-         <Program label="xedit" icon="accessories-text-editor">xedit</Program>
+            <Program label="Text Editor" icon="accessories-text-editor">xfw</Program>
+            <Program label="Image Viewer" icon="applets-screenshooter">xfi</Program>
+            <Program label="Package Manager" icon="system-software-install">xfp</Program>
             <Program label="xeyes">xeyes</Program>
             <Program label="xclock">xclock</Program>
             <Program label="glxgears">glxgears</Program>
@@ -62,7 +64,7 @@
 
     <!-- Visual Styles -->
     <WindowStyle decorations="flat">
-        <Font>Sans-12:bold</Font>
+        <Font>Sans-10:bold</Font>
         <Width>4</Width>
         <Corner>0</Corner>
         <Foreground>#FFFFFF</Foreground>
@@ -75,13 +77,13 @@
         </Active>
     </WindowStyle>
     <TrayStyle decorations="flat">
-        <Font>Sans-12</Font>
+        <Font>Sans-10</Font>
         <Background>#333333</Background>
         <Foreground>#FFFFFF</Foreground>
         <Opacity>0.75</Opacity>
     </TrayStyle>
     <TaskListStyle list="all" group="true">
-      <Font>Sans-12</Font>
+      <Font>Sans-10</Font>
       <Active>
         <Foreground>#FFFFFF</Foreground>
         <Background>#555555</Background>
@@ -99,7 +101,7 @@
         </Active>
     </PagerStyle>
     <MenuStyle decorations="flat">
-        <Font>Sans-12</Font>
+        <Font>Sans-10</Font>
         <Foreground>#FFFFFF</Foreground>
         <Background>#333333</Background>
         <Active>
@@ -109,7 +111,7 @@
         <Opacity>0.85</Opacity>
     </MenuStyle>
     <PopupStyle>
-        <Font>Sans-12</Font>
+        <Font>Sans-10</Font>
         <Foreground>#000000</Foreground>
         <Background>#999999</Background>
     </PopupStyle>

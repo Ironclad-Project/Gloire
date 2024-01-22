@@ -10,7 +10,7 @@ hostdeps="gcc autoconf automake pkg-config libtool"
 deps="core-libs libx11 libxpm libpng zlib"
 
 regenerate() {
-    autoreconf -fvi
+    autotools_recursive_regen
 }
 
 build() {

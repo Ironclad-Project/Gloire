@@ -17,7 +17,6 @@ regenerate() {
 build() {
     autotools_configure \
         --target=${OS_TRIPLET} \
-        --with-sysroot=/ \
         --with-build-sysroot=${sysroot_dir} \
         --enable-cet \
         --enable-colored-disassembly \

@@ -3,8 +3,8 @@ version=3.4.0
 revision=1
 tarball_url="https://github.com/FreeGLUTProject/freeglut/releases/download/v${version}/freeglut-${version}.tar.gz"
 tarball_blake2b="47b073c4e81473417358452ede3891b6fc36e324f66eec42fcbbadebb2144680e3b52caded504135239e170fd8f30a1fe8b6666a746b06d48cd7226c98a8114e"
-imagedeps="gcc ninja python git cmake"
-hostdeps="gcc pkg-config"
+imagedeps="gcc ninja python git"
+hostdeps="gcc cmake pkg-config"
 deps="core-libs libxi mesa glu"
 
 build() {

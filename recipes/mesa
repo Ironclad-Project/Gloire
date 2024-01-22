@@ -1,17 +1,16 @@
 name=mesa
-version=21.3.9
+version=23.3.3
 revision=1
 tarball_url="https://archive.mesa3d.org/mesa-${version}.tar.xz"
-tarball_blake2b="79669f9492c505b1729c526adf5a8261737b6088bdf01db654a0dca8ba22600ec985b574edfeee3a28c76e6e0f815782362973876e1d75b58f4417f45df70add"
+tarball_blake2b="6b57e99356abccf398c5fb84953fc1490ddf516dbeed1feca8d16344a04c1c15183325752717447a34a61dd4cdda897147e3194f869d8dbadfa5c45a0c95dab5"
 imagedeps="binutils meson ninja python-mako"
 hostdeps="gcc pkg-config"
 deps="core-libs llvm zlib libxshmfence libxrandr libxdamage libxxf86vm libxfixes libx11 libxext libxcb libexpat"
 
 build() {
     meson_configure \
-        -Dglx=gallium-xlib \
+        -Dglx=xlib \
         -Dplatforms=x11 \
-        -Ddri-drivers= \
         -Dgallium-drivers=swrast \
         -Dvulkan-drivers= \
         -Dllvm=enabled

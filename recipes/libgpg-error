@@ -9,6 +9,8 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
 regenerate() {
+    cp -v src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.ironclad.h
+
     autotools_recursive_regen
 }
 

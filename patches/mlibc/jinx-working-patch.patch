@@ -473,10 +473,40 @@ index d6e9118..cdbf039 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 7136150..db3f9bf 100644
+index 7136150..bcc274b 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -54,8 +54,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+@@ -15,6 +15,7 @@
+ #include <sys/mman.h>
+ #include <unistd.h>
+ #include <sys/file.h>
++#include <mlibc/tcb.hpp>
+ 
+ namespace mlibc {
+ 
+@@ -44,6 +45,21 @@ int sys_tcb_set(void *pointer) {
+ 	return errno;
+ }
+ 
++int sys_thread_getname(void *tcb, char *name, size_t size) {
++	int ret, errno;
++	auto t = reinterpret_cast<Tcb *>(tcb);
++	SYSCALL3(SYSCALL_GETTIDID, t->tid, name, size);
++	return errno;
++}
++
++int sys_thread_setname(void *tcb, const char *name) {
++	int ret, errno;
++	size_t len = strlen(name);
++	auto t = reinterpret_cast<Tcb *>(tcb);
++	SYSCALL3(SYSCALL_SETTIDID, t->tid, name, len);
++	return errno;
++}
++
+ int sys_open(const char *path, int flags, mode_t mode, int *fd) {
+ 	return sys_openat(AT_FDCWD, path, flags, mode, fd);
+ }
+@@ -54,8 +70,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
  	int path_len = strlen (path);
  	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
  	if (ret != -1 && (flags & O_EXCL)) {
@@ -487,7 +517,7 @@ index 7136150..db3f9bf 100644
  	}
  
  	if (ret == -1 && (flags & O_CREAT)) {
-@@ -63,7 +63,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+@@ -63,7 +79,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
  		 if (ret == -1) {
  			  return errno;
  		 }
@@ -496,7 +526,7 @@ index 7136150..db3f9bf 100644
  	} else if (ret != -1 && (flags & O_TRUNC)) {
  		// If the file cannot be truncated, dont sweat it, some software
  		// depends on some things being truncate-able that ironclad does not
-@@ -177,13 +177,14 @@ int sys_ftruncate (int fd, size_t size) {
+@@ -177,13 +193,14 @@ int sys_ftruncate (int fd, size_t size) {
  }
  
  int sys_flock(int fd, int options) {
@@ -512,7 +542,7 @@ index 7136150..db3f9bf 100644
  		case LOCK_SH:
  			lock.l_type = F_RDLCK;
  			break;
-@@ -202,6 +203,19 @@ int sys_flock(int fd, int options) {
+@@ -202,6 +219,19 @@ int sys_flock(int fd, int options) {
  	return errno;
  }
  
@@ -532,7 +562,7 @@ index 7136150..db3f9bf 100644
  int sys_getrusage(int scope, struct rusage *usage) {
  	int ret, errno;
  	SYSCALL2(SYSCALL_GETRUSAGE, scope, usage);
-@@ -231,65 +245,15 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+@@ -231,65 +261,15 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  }
  
  int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
@@ -604,7 +634,7 @@ index 7136150..db3f9bf 100644
  }
  
  int sys_vm_unmap(void *pointer, size_t size) {
-@@ -303,6 +267,12 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -303,6 +283,12 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -617,7 +647,7 @@ index 7136150..db3f9bf 100644
  int sys_vm_protect(void *pointer, size_t size, int prot) {
  	int ret;
  	int errno;
-@@ -313,6 +283,11 @@ int sys_vm_protect(void *pointer, size_t size, int prot) {
+@@ -313,6 +299,11 @@ int sys_vm_protect(void *pointer, size_t size, int prot) {
  	return 0;
  }
  
@@ -629,7 +659,7 @@ index 7136150..db3f9bf 100644
  pid_t sys_getpid() {
  	pid_t ret;
  	int errno;
-@@ -327,6 +302,19 @@ pid_t sys_getppid() {
+@@ -327,6 +318,19 @@ pid_t sys_getppid() {
  	return ret;
  }
  
@@ -649,7 +679,7 @@ index 7136150..db3f9bf 100644
  int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
  	return 0;
  }
-@@ -358,16 +346,6 @@ int sys_isatty(int fd) {
+@@ -358,16 +362,6 @@ int sys_isatty(int fd) {
  	}
  }
  
@@ -666,7 +696,7 @@ index 7136150..db3f9bf 100644
  int sys_getpgid(pid_t pid, pid_t *pgid) {
  	(void)pid;
  	// FIXME: Stub needed by mlibc.
-@@ -457,12 +435,13 @@ int sys_uname(struct utsname *buf) {
+@@ -457,12 +451,13 @@ int sys_uname(struct utsname *buf) {
  int sys_setpgid(pid_t pid, pid_t pgid) {
  	(void)pid;
  	(void)pgid;
@@ -683,7 +713,7 @@ index 7136150..db3f9bf 100644
  }
  
  int sys_sethostname(const char *buff, size_t size) {
-@@ -510,6 +489,13 @@ int sys_fchdir(int fd) {
+@@ -510,6 +505,13 @@ int sys_fchdir(int fd) {
  int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	int ret, errno;
  
@@ -697,7 +727,7 @@ index 7136150..db3f9bf 100644
  	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
  
  	if (ret == -1) {
-@@ -548,11 +534,12 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -548,11 +550,12 @@ int sys_dup(int fd, int flags, int *newfd) {
  }
  
  int sys_dup2(int fd, int flags, int newfd) {
@@ -713,7 +743,7 @@ index 7136150..db3f9bf 100644
  	if (flags & O_CLOEXEC) {
  		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD_CLOEXEC, newfd);
  	} else {
-@@ -708,11 +695,7 @@ uid_t sys_geteuid() {
+@@ -708,11 +711,7 @@ uid_t sys_geteuid() {
  
  int sys_setuid(uid_t uid) {
  	int ret, errno;
@@ -726,7 +756,7 @@ index 7136150..db3f9bf 100644
  	return ret;
  }
  
-@@ -722,6 +705,44 @@ int sys_seteuid(uid_t euid) {
+@@ -722,6 +721,44 @@ int sys_seteuid(uid_t euid) {
  	return ret;
  }
  
@@ -771,7 +801,7 @@ index 7136150..db3f9bf 100644
  #ifndef MLIBC_BUILDING_RTDL
  
  extern "C" void __mlibc_thread_entry();
-@@ -835,10 +856,13 @@ int sys_shutdown(int sockfd, int how) {
+@@ -835,10 +872,13 @@ int sys_shutdown(int sockfd, int how) {
  	return errno;
  }
  
@@ -787,7 +817,7 @@ index 7136150..db3f9bf 100644
  	}
  
  	int ret;
-@@ -860,8 +884,7 @@ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -860,8 +900,7 @@ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
  
  int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
  	if (hdr->msg_control != NULL) {
@@ -797,7 +827,7 @@ index 7136150..db3f9bf 100644
  	}
  
  	int ret;
-@@ -904,7 +927,7 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
+@@ -904,7 +943,7 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
  	struct timespec ts;
  	ts.tv_sec = timeout / 1000;
  	ts.tv_nsec = (timeout % 1000) * 1000000;
@@ -806,7 +836,7 @@ index 7136150..db3f9bf 100644
  }
  
  int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
-@@ -1025,27 +1048,7 @@ int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2
+@@ -1025,27 +1064,7 @@ int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2
  
  int sys_sysconf(int num, long *rret) {
  	long ret, errno;
@@ -835,7 +865,7 @@ index 7136150..db3f9bf 100644
  	*rret = ret;
  	return errno;
  }
-@@ -1126,6 +1129,12 @@ int sys_umask(mode_t mode, mode_t *old) {
+@@ -1126,6 +1145,12 @@ int sys_umask(mode_t mode, mode_t *old) {
  	return errno;
  }
  
@@ -848,7 +878,7 @@ index 7136150..db3f9bf 100644
  int sys_readlink(const char *path, void *buffer, size_t max_size, ssize_t *length) {
  	ssize_t ret;
  	int errno;
-@@ -1165,5 +1174,66 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1165,5 +1190,66 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -1113,10 +1143,10 @@ index 71ae64d..51263fa 100644
  #ifdef __cplusplus
  }
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index b0227d5..6baeaef 100644
+index b0227d5..59c8cb3 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -84,87 +84,102 @@
+@@ -84,87 +84,104 @@
  				  : "rcx", "r11", "memory"); \
  })
  
@@ -1155,41 +1185,41 @@ index b0227d5..6baeaef 100644
 -#define SYSCALL_GETRANDOM            32
 -#define SYSCALL_MPROTECT             33
 -#define SYSCALL_SYNC                 34
-+#define SYSCALL_EXIT						0
-+#define SYSCALL_ARCH_PRCTL				1
-+#define SYSCALL_OPEN						2
++#define SYSCALL_EXIT					 0
++#define SYSCALL_ARCH_PRCTL			 1
++#define SYSCALL_OPEN					 2
 +#define SYSCALL_CLOSE					  3
-+#define SYSCALL_READ						4
++#define SYSCALL_READ					 4
 +#define SYSCALL_WRITE					  5
-+#define SYSCALL_SEEK						6
-+#define SYSCALL_MMAP						7
-+#define SYSCALL_MUNMAP					 8
-+#define SYSCALL_GETPID					 9
-+#define SYSCALL_GETPPID				  10
-+#define SYSCALL_EXEC					  11
++#define SYSCALL_SEEK					 6
++#define SYSCALL_MMAP					 7
++#define SYSCALL_MUNMAP					8
++#define SYSCALL_GETPID					9
++#define SYSCALL_GETPPID				10
++#define SYSCALL_EXEC					11
 +#define SYSCALL_CLONE					 12
-+#define SYSCALL_WAIT					  13
-+#define SYSCALL_SOCKET					14
++#define SYSCALL_WAIT					13
++#define SYSCALL_SOCKET				  14
 +#define SYSCALL_SETHOSTNAME			 15
-+#define SYSCALL_UNLINK					16
-+#define SYSCALL_STAT					  17
-+#define SYSCALL_GETCWD					18
++#define SYSCALL_UNLINK				  16
++#define SYSCALL_STAT					17
++#define SYSCALL_GETCWD				  18
 +#define SYSCALL_CHDIR					 19
 +#define SYSCALL_IOCTL					 20
 +#define SYSCALL_SCHED_YIELD			 21
-+#define SYSCALL_DELETE_TCLUSTER		22
-+#define SYSCALL_PIPE					  23
-+#define SYSCALL_GETUID					24
-+#define SYSCALL_RENAME					25
-+#define SYSCALL_SYSCONF				  26
++#define SYSCALL_DELETE_TCLUSTER	  22
++#define SYSCALL_PIPE					23
++#define SYSCALL_GETUID				  24
++#define SYSCALL_RENAME				  25
++#define SYSCALL_SYSCONF				26
 +#define SYSCALL_SPAWN					 27
-+#define SYSCALL_GETTID					28
-+#define SYSCALL_MANAGE_TCLUSTER		29
++#define SYSCALL_GETTID				  28
++#define SYSCALL_MANAGE_TCLUSTER	  29
 +#define SYSCALL_FCNTL					 30
 +#define SYSCALL_EXIT_THREAD			 31
-+#define SYSCALL_GETRANDOM				32
++#define SYSCALL_GETRANDOM			  32
 +#define SYSCALL_MPROTECT				 33
-+#define SYSCALL_SYNC					  34
++#define SYSCALL_SYNC					34
  #define SYSCALL_SET_MAC_CAPABILITIES 35
  #define SYSCALL_GET_MAC_CAPABILITIES 36
  #define SYSCALL_ADD_MAC_PERMISSIONS  37
@@ -1238,63 +1268,65 @@ index b0227d5..6baeaef 100644
 -#define SYSCALL_SIGNALPOST           80
 -#define SYSCALL_SEND_SIGNAL          81
 +#define SYSCALL_MOUNT					 39
-+#define SYSCALL_UMOUNT					40
++#define SYSCALL_UMOUNT				  40
 +#define SYSCALL_READLINK				 41
 +#define SYSCALL_GETDENTS				 42
 +#define SYSCALL_MAKENODE				 43
 +#define SYSCALL_TRUNCATE				 44
-+#define SYSCALL_BIND					  45
-+#define SYSCALL_SYMLINK				  46
-+#define SYSCALL_CONNECT				  47
-+#define SYSCALL_OPENPTY				  48
++#define SYSCALL_BIND					45
++#define SYSCALL_SYMLINK				46
++#define SYSCALL_CONNECT				47
++#define SYSCALL_OPENPTY				48
 +#define SYSCALL_FSYNC					 49
-+#define SYSCALL_LINK					  50
-+#define SYSCALL_PTRACE					51
-+#define SYSCALL_LISTEN					52
-+#define SYSCALL_ACCEPT					53
-+#define SYSCALL_GETRLIMIT				54
-+#define SYSCALL_SETRLIMIT				55
-+#define SYSCALL_ACCESS					56
-+#define SYSCALL_POLL					  57
-+#define SYSCALL_GETEUID				  58
-+#define SYSCALL_SETUIDS				  59
-+#define SYSCALL_FCHMOD					60
++#define SYSCALL_LINK					50
++#define SYSCALL_PTRACE				  51
++#define SYSCALL_LISTEN				  52
++#define SYSCALL_ACCEPT				  53
++#define SYSCALL_GETRLIMIT			  54
++#define SYSCALL_SETRLIMIT			  55
++#define SYSCALL_ACCESS				  56
++#define SYSCALL_POLL					57
++#define SYSCALL_GETEUID				58
++#define SYSCALL_SETUIDS				59
++#define SYSCALL_FCHMOD				  60
 +#define SYSCALL_UMASK					 61
-+#define SYSCALL_REBOOT					62
-+#define SYSCALL_FCHOWN					63
++#define SYSCALL_REBOOT				  62
++#define SYSCALL_FCHOWN				  63
 +#define SYSCALL_PREAD					 64
-+#define SYSCALL_PWRITE					65
++#define SYSCALL_PWRITE				  65
 +#define SYSCALL_GETSOCKNAME			 66
 +#define SYSCALL_GETPEERNAME			 67
 +#define SYSCALL_SHUTDOWN				 68
 +#define SYSCALL_FUTEX					 69
 +#define SYSCALL_CLOCK					 70
-+#define SYSCALL_CLOCK_NANOSLEEP		71
-+#define SYSCALL_GETRUSAGE				72
++#define SYSCALL_CLOCK_NANOSLEEP	  71
++#define SYSCALL_GETRUSAGE			  72
 +#define SYSCALL_RECVFROM				 73
-+#define SYSCALL_SENDTO					74
-+#define SYSCALL_CONFIG_NETINTER		75
-+#define SYSCALL_UTIMES					76
-+#define SYSCALL_CREATE_TCLUSTER		77
-+#define SYSCALL_SWITCH_TCLUSTER		78
-+#define SYSCALL_ACTUALLY_KILL		  79
-+#define SYSCALL_SIGNALPOST			  80
++#define SYSCALL_SENDTO				  74
++#define SYSCALL_CONFIG_NETINTER	  75
++#define SYSCALL_UTIMES				  76
++#define SYSCALL_CREATE_TCLUSTER	  77
++#define SYSCALL_SWITCH_TCLUSTER	  78
++#define SYSCALL_ACTUALLY_KILL		79
++#define SYSCALL_SIGNALPOST			80
 +#define SYSCALL_SEND_SIGNAL			 81
-+#define SYSCALL_GETPRIO				  82
-+#define SYSCALL_SETPRIO				  83
-+#define SYSCALL_GETGID					84
-+#define SYSCALL_GETEGID				  85
-+#define SYSCALL_SETGIDS				  86
-+#define SYSCALL_GETGROUPS				87
-+#define SYSCALL_SETGROUPS				88
-+#define SYSCALL_TTYNAME             89
-+#define SYSCALL_FADVISE             90
-+#define SYSCALL_SHMAT             91
-+#define SYSCALL_SHMCTL             92
-+#define SYSCALL_SHMDT             93
-+#define SYSCALL_SHMGET             94
-+#define SYSCALL_GETSOCKOPT         95
-+#define SYSCALL_SETSOCKOPT         96
++#define SYSCALL_GETPRIO				82
++#define SYSCALL_SETPRIO				83
++#define SYSCALL_GETGID				  84
++#define SYSCALL_GETEGID				85
++#define SYSCALL_SETGIDS				86
++#define SYSCALL_GETGROUPS			  87
++#define SYSCALL_SETGROUPS			  88
++#define SYSCALL_TTYNAME				 89
++#define SYSCALL_FADVISE				 90
++#define SYSCALL_SHMAT				 91
++#define SYSCALL_SHMCTL				 92
++#define SYSCALL_SHMDT				 93
++#define SYSCALL_SHMGET				 94
++#define SYSCALL_GETSOCKOPT			95
++#define SYSCALL_SETSOCKOPT			96
++#define SYSCALL_GETTIDID			  97
++#define SYSCALL_SETTIDID			  98
  
  #endif // _SYS_SYSCALL_H
 diff --git mlibc-workdir/sysdeps/ironclad/include/utmpx.h mlibc-workdir/sysdeps/ironclad/include/utmpx.h

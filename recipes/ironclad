@@ -1,5 +1,5 @@
 name=ironclad
-version=138792cb96aaeb70c139d5cc3c6af00330e5b860
+version=570f52f71f61bba000451d1bc2f68f597891de69
 revision=1
 tarball_url="https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz"
 tarball_blake2b="b2f8115d43bcb7dbe3651c825459921d851f02a91abf583ed202a93cf11bf303fa3557e91665e4685a4fab13b8f5069d2690c7dc553ffddc4f0150a25e1b9a4e"

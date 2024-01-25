@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gfortran -ffixed-form -ffixed-line-length-none "$@"

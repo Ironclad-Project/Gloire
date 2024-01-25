@@ -26,7 +26,7 @@ build() {
         --target=${OS_TRIPLET} \
         --with-sysroot=/ \
         --with-build-sysroot=${sysroot_dir} \
-        --enable-languages=c,c++,lto \
+        --enable-languages=c,c++,fortran,lto \
         --enable-initfini-array \
         --disable-multilib \
         --with-system-zlib \
@@ -37,8 +37,17 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install-gcc
+    DESTDIR="${dest_dir}" make -C gcc fortran.install-{common,man,info}
 
     ln -s gcc "${dest_dir}${prefix}"/bin/cc
+    ln -s gfortran "${dest_dir}${prefix}"/bin/f95
+    cp -v "${base_dir}"/build-support/gcc/c89 "${dest_dir}${prefix}"/bin/
+    cp -v "${base_dir}"/build-support/gcc/c99 "${dest_dir}${prefix}"/bin/
+    cp -v "${base_dir}"/build-support/gcc/f77 "${dest_dir}${prefix}"/bin/
+    chmod +x "${dest_dir}${prefix}"/bin/c89
+    chmod +x "${dest_dir}${prefix}"/bin/c99
+    chmod +x "${dest_dir}${prefix}"/bin/f77
+
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 

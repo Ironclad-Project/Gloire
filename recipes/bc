@@ -1,10 +1,10 @@
 name=bc
-version=6.7.3
+version=1.07.1
 revision=1
-tarball_url="https://github.com/gavinhoward/bc/releases/download/${version}/bc-${version}.tar.gz"
-tarball_blake2b="88333b87ef44a7a5a36d71692585901b83d1aee4e782310b574a122a660536ff0f5a194d925c81a2b984ba85bf264df32427e5e951f8bc50d284755bdf4193e9"
+tarball_url="https://ftp.gnu.org/gnu/bc/bc-${version}.tar.gz"
+tarball_blake2b="dcedc193be5521aa0fa3a19746233ed65bc1fe8ef12e15155341706de6fbeecb6dd7ee4ab11e2d4b3aca2ae7097cce89e389b3573493bbc893e00b4ed3239594"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="gcc"
+imagedeps="gcc ed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 
@@ -15,7 +15,8 @@ regenerate() {
 build() {
     cp -rp "${source_dir}"/. ./
 
-    CC="x86_64-ironclad-gcc" HOSTCC="gcc" PREFIX="${prefix}" ./configure.sh
+        configure_script_path=./configure \
+    autotools_configure
 
     make -j${parallelism}
 }

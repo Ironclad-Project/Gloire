@@ -1,0 +1,12 @@
+name=ironclad-branding
+version=0.0
+revision=1
+source_dir="ironclad-branding"
+
+package() {
+    mkdir -pv "${dest_dir}"/usr/share/icons/ironclad
+    mkdir -pv "${dest_dir}"/etc
+
+    cp -rpv "${source_dir}"/ironcladseal.png "${dest_dir}"/usr/share/icons/ironclad/
+    cp -rpv "${source_dir}"/background.png   "${dest_dir}"/etc/
+}

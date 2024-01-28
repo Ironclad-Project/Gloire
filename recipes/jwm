@@ -6,7 +6,7 @@ tarball_blake2b="d0b0ff1088ab3390a90c054162ea2c2fe782b61f28b3fdb28464ace362143fd
 source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libx11 libxft libjpeg-turbo libxpm libxinerama libpng librsvg"
+deps="core-libs libx11 libxft libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fribidi libxmu"
 
 regenerate() {
         AUTOMAKE=true \
@@ -16,8 +16,7 @@ regenerate() {
 build() {
     cp -rp "${source_dir}"/. ./
 
-    autotools_configure \
-        --disable-fribidi
+    autotools_configure
 
     make -j${parallelism}
 }

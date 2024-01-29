@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="16"
+jinx_minor_ver="18"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1380,7 +1380,7 @@ reinit_container() {
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Sy archlinux-keyring
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -S pacman pacman-mirrorlist
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils flex gettext inetutils libtool m4 make patch perl python texinfo which
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils docbook-xsl doxygen flex gettext inetutils libtool libxslt m4 make patch perl python texinfo w3m which xmlto
 
     # Fix permissions of files
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do

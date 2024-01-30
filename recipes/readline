@@ -26,7 +26,8 @@ regenerate() {
         patch -p0 < $f
     done
 
-    AUTOHEADER=true autoreconf -fvi
+        AUTOHEADER=true \
+    autotools_recursive_regen
 }
 
 build() {

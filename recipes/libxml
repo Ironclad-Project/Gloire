@@ -8,7 +8,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs zlib icu readline"
 
 regenerate() {
-    autoreconf -fvi
+    autotools_recursive_regen
 }
 
 build() {

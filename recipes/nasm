@@ -8,7 +8,7 @@ hostdeps="gcc automake autoconf libtool pkg-config"
 deps="core-libs"
 
 regenerate() {
-    autoreconf -fvi -I$(realpath ./autoconf)
+    autotools_recursive_regen -I$(realpath ./autoconf)
 }
 
 build() {

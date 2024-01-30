@@ -1,11 +1,11 @@
 name=patch
-version=2.7
+version=2.7.6
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/patch/patch-${version}.tar.xz"
-tarball_blake2b="ec74034dd7d489d093ed410a3b356f050761f913dcb1247a2778607810aaaf9d4275db9aa8a2f056f6448d4a18c86a34df01926127919668b6db47cbfc6f8de9"
+tarball_blake2b="e3dd2d155a94c39cb60eafc26677e84de14c3a6d5814dff69de091ded52f21862490970254297795f2c42a0c3203f7e88a8f65bb66968f8dfd6e066bf53f2dfb"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs mpfr gmp readline"
+deps="core-libs"
 
 regenerate() {
     autotools_recursive_regen

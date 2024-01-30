@@ -1,30 +1,24 @@
 name=cairo
-version=1.16.0
+version=1.18.0
 revision=1
 tarball_url="https://cairographics.org/releases/cairo-${version}.tar.xz"
-tarball_blake2b="aa37edf7fdf0c952484fd0adc9281724227db93958d6e4919216b30e9017fab670bc2340e3b975737080f1f67dec24025fe0e4680e275ab7703cfb9235eb1fe0"
-source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="binutils"
-hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs freetype2 fontconfig libpng pixman libxcb libx11 libxext mesa libxrender glib"
-
-regenerate() {
-        GTKDOCIZE=true \
-    autotools_recursive_regen
-}
+tarball_blake2b="6f6abedb2614e3dd1eed7fcb97cd11296584fb2072617ab3d532bee94e6a83db003ce770d39ba1df84c96a9f6880f4de357f78a22904daf1bb874c9570abd336"
+imagedeps="meson ninja binutils"
+hostdeps="gcc pkg-config"
+deps="core-libs freetype2 fontconfig libpng pixman libxcb libx11 libxext mesa libxrender glib zlib"
 
 build() {
-    autotools_configure \
-        --enable-xlib-xcb \
-        --enable-xml \
-        --enable-tee \
-        --enable-gl
+    meson_configure \
+        -Dxlib-xcb=enabled \
+        -Dzlib=enabled \
+        -Dtee=enabled \
+        -Dtests=disabled
 
-    make -j${parallelism}
+    ninja -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" ninja install
 
     post_package_strip
 }

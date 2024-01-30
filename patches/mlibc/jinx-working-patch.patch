@@ -407,37 +407,6 @@ index 4cc7507..caefe10 100644
  
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
-diff --git mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
-index b4a6e1b..ba4be1c 100644
---- mlibc-clean/options/posix/meson.build
-+++ mlibc-workdir/options/posix/meson.build
-@@ -37,7 +37,7 @@ libc_sources += files(
- 	'generic/sys-select-stubs.cpp',
- 	'generic/sys-shm.cpp',
- 	'generic/sys-socket-stubs.cpp',
--	'generic/sys-statfs-stubs.cpp',
-+	#'generic/sys-statfs-stubs.cpp',
- 	'generic/sys-stat-stubs.cpp',
- 	'generic/sys-statvfs-stubs.cpp',
- 	'generic/sys-times.cpp',
-@@ -135,7 +135,7 @@ if not no_headers
- 		'include/sys/sem.h',
- 		'include/sys/shm.h',
- 		'include/sys/socket.h',
--		'include/sys/statfs.h',
-+		#'include/sys/statfs.h',
- 		'include/sys/stat.h',
- 		'include/sys/statvfs.h',
- 		'include/sys/termios.h',
-@@ -146,7 +146,7 @@ if not no_headers
- 		'include/sys/uio.h',
- 		'include/sys/un.h',
- 		'include/sys/utsname.h',
--		'include/sys/vfs.h',
-+		#'include/sys/vfs.h',
- 		'include/sys/wait.h',
- 		'include/sys/syslog.h',
- 		subdir: 'sys'
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
 index d6e9118..cdbf039 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp

@@ -1,8 +1,8 @@
 name=mesa
-version=23.3.3
+version=23.3.4
 revision=1
 tarball_url="https://archive.mesa3d.org/mesa-${version}.tar.xz"
-tarball_blake2b="6b57e99356abccf398c5fb84953fc1490ddf516dbeed1feca8d16344a04c1c15183325752717447a34a61dd4cdda897147e3194f869d8dbadfa5c45a0c95dab5"
+tarball_blake2b="85687793853675a43da5135f41d0512cb4729f3dd824e2ad28d9bda129258adb00dd7da1e75e76cae71c1148e6a2ede84e1efda640c11aff233e5e12b0cea554"
 imagedeps="binutils meson ninja python-mako"
 hostdeps="gcc pkg-config"
 deps="core-libs llvm-libs zlib libxshmfence libxrandr libxdamage libxxf86vm libxfixes libx11 libxext libxcb libexpat"

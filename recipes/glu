@@ -1,24 +1,21 @@
 name=glu
-version=9.0.2
+version=9.0.3
 revision=1
 tarball_url="https://archive.mesa3d.org/glu/glu-${version}.tar.xz"
-tarball_blake2b="90485938e4809ce7bb56da25bd60be9f3f7b7f40d511ea6635e40d749e519d1dca6241d891224d3cf331b911f545df4ef9aa2101baf4e3b18df69244edbcb8a4"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+tarball_blake2b="a6fc842004dcca4243ef285e26806afdfb931d21985ad8f9a3f03f438e66b810718bf04e588044ed8db99990e49f806d346dc2ce69cfa91450f046a4dfa39136"
+imagedeps="meson ninja"
+hostdeps="gcc pkg-config"
 deps="core-libs mesa"
 
-regenerate() {
-    autotools_recursive_regen
-}
-
 build() {
-    autotools_configure
+    meson_configure \
+        -Dgl_provider=gl
 
-    make -j${parallelism}
+    ninja -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" ninja install
 
     post_package_strip
 }

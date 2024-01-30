@@ -23,7 +23,7 @@ index 1d871b2..3aff36a 100644
  
 diff --git xf86-input-mouse-workdir/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
 new file mode 100644
-index 0000000..e9b08ed
+index 0000000..b83cad1
 --- /dev/null
 +++ xf86-input-mouse-workdir/src/ironclad_mouse.c
 @@ -0,0 +1,115 @@
@@ -51,16 +51,15 @@ index 0000000..e9b08ed
 +
 +#include <sys/stat.h>
 +
-+#define MOUSE_FLAG_LB (1 << 0)
-+#define MOUSE_FLAG_RB (1 << 1)
-+#define MOUSE_FLAG_MB (1 << 2)
-+
 +struct ironclad_mouse_data {
 +   int  x_variation;
 +   int  y_variation;
++   int  z_variation;
 +   bool is_left;
 +   bool is_right;
 +   bool is_middle;
++   bool is_4th;
++   bool is_5th;
 +};
 +
 +static void ironcladReadInput(InputInfoPtr pInfo) {
@@ -71,11 +70,12 @@ index 0000000..e9b08ed
 +        int b = mouse->lastButtons;
 +        b &= ~0x7;
 +
-+        b |= packet.is_right ? 1 : 0;
-+        b |= packet.is_middle ? 2 : 0;
-+        b |= packet.is_left ? 4 : 0;
-+
-+        mouse->PostEvent(pInfo, b, packet.x_variation, packet.y_variation, 0, 0);
++        b |= packet.is_right  ? 0b00001 : 0;
++        b |= packet.is_middle ? 0b00010 : 0;
++        b |= packet.is_left   ? 0b00100 : 0;
++        b |= packet.is_4th    ? 0b01000 : 0;
++        b |= packet.is_5th    ? 0b10000 : 0;
++        mouse->PostEvent(pInfo, b, packet.x_variation, packet.y_variation, packet.z_variation, 0);
 +    }
 +}
 +

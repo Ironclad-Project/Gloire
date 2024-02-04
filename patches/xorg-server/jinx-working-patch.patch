@@ -340,7 +340,7 @@ index 61ee8e3..5d69a4e 100644
  #endif
  
 -#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__)
-+#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__vinix__)
++#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__ironclad__)
  #include <sys/utsname.h>
  #endif
  #if defined(SYSV) &&  defined(__i386__)

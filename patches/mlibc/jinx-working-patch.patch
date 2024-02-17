@@ -25,10 +25,10 @@ index e8ebffd..4dd5987 100644
  // bitwise flags for c_oflag in struct termios
  #define OPOST   0x0001
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 9902f9a..c167562 100644
+index 72d0a14..7ff028b 100644
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
-@@ -237,6 +237,7 @@ mlibc_conf.set10('__MLIBC_GLIBC_OPTION', not disable_glibc_option)
+@@ -246,6 +246,7 @@ mlibc_conf.set10('__MLIBC_GLIBC_OPTION', not disable_glibc_option)
  mlibc_conf.set10('__MLIBC_CRYPT_OPTION', not disable_crypt_option)
  mlibc_conf.set10('__MLIBC_BSD_OPTION', not disable_bsd_option)
  mlibc_conf.set10('__MLIBC_SYSDEP_HAS_BITS_SYSCALL_H', provides_bits_syscall_h)
@@ -162,10 +162,10 @@ index 9983219..b43929d 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index 4cc7507..caefe10 100644
+index d29257d..8cabdf6 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
-@@ -94,103 +94,117 @@ extern "C" {
+@@ -94,104 +94,118 @@ extern "C" {
  
  // MISSING: _PC macros
  // For now, use the Linux ABI for _PC constants.
@@ -283,6 +283,7 @@ index 4cc7507..caefe10 100644
 -#define _SC_MQ_PRIO_MAX 78
 -#define _SC_RTSIG_MAX 79
 -#define _SC_SIGQUEUE_MAX 80
+-#define _SC_IOV_MAX 81
 +#define _SC_TOTAL_PAGES      7
 +#define _SC_LIST_PROCS       8
 +#define _SC_LIST_MOUNTS      9
@@ -372,14 +373,15 @@ index 4cc7507..caefe10 100644
 +#define _SC_MQ_PRIO_MAX                  89
 +#define _SC_RTSIG_MAX                    90
 +#define _SC_SIGQUEUE_MAX                 91
++#define _SC_IOV_MAX                      92
  
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index 92ebadb..63244c3 100644
+index db03129..23b8549 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
-@@ -515,18 +515,25 @@ void ObjectRepository::_fetchFromFile(SharedObject *object, int fd) {
+@@ -545,18 +545,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -388,24 +390,23 @@ index 92ebadb..63244c3 100644
  						MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, -1, 0, &map_pointer))
  					__ensure(!"sys_vm_map failed");
  
- 				seekOrDie(fd, phdr->p_offset);
- 				readExactlyOrDie(fd, reinterpret_cast<char *>(map_address) + misalign,
- 						phdr->p_filesz);
+ 				__ensure(trySeek(fd, phdr->p_offset));
+ 				__ensure(tryReadExactly(fd, reinterpret_cast<char *>(map_address) + misalign,
+ 						phdr->p_filesz));
 +
 +				if (prot & PROT_EXEC) {
-+				   prot = PROT_READ | PROT_EXEC;
-+			   }
-+				if (mlibc::sys_vm_protect (reinterpret_cast<void *>(map_address),
-+				      total_map_size, prot))
-+				   __ensure(!"vm_protect not feeling all there");
++					prot = PROT_READ | PROT_EXEC;
++				}
++				if (mlibc::sys_vm_protect(reinterpret_cast<void *>(map_address), total_map_size, prot)) {
++					__ensure(!"vm_protect not feeling all there");
++				}
  			#endif
  			// Take care of removing superfluous permissions.
--			if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
--				if(mlibc::sys_vm_protect(map_pointer, total_map_size, prot))
--					mlibc::infoLogger() << "mlibc: sys_vm_protect() failed in ld.so" << frg::endlog;
-+			//if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
-+			//	if(mlibc::sys_vm_protect(map_pointer, total_map_size, prot))
-+			//		mlibc::infoLogger() << "mlibc: sys_vm_protect() failed in ld.so" << frg::endlog;
++			/*
+ 			if(mlibc::sys_vm_protect && ((prot & PROT_WRITE) == 0))
+ 				if(mlibc::sys_vm_protect(map_pointer, total_map_size, prot))
+ 					mlibc::infoLogger() << "mlibc: sys_vm_protect() failed in ld.so" << frg::endlog;
++			*/
  		}else if(phdr->p_type == PT_TLS) {
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;

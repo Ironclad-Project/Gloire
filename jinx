@@ -26,9 +26,12 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="19"
+jinx_minor_ver="20"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
+
+archlinux_snapshot_date="2024.02.01"
+archlinux_snapshot_b2sum=e453387c25aef7f4818729aec44281d57f5f7fca68dbcd8cac5942063c7813c7d2ea704bc31f9e0929c5ba2d639e648788711eafb993df7bb971d3e808def2f8
 
 IFS=" ""	"'
 '
@@ -45,9 +48,15 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-if [ "$(id -u)" = "0" ]; then
-    die "$0: Jinx does not support running as root."
-fi
+case "$1" in
+    install|sysroot)
+        ;;
+    *)
+        if [ "$(id -u)" = "0" ]; then
+            die "$0: Jinx does not support running as root."
+        fi
+        ;;
+esac
 
 if [ -z "$JINX_PARALLELISM" ]; then
     max_threads_by_mem="$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))"
@@ -1369,13 +1378,15 @@ reinit_container() {
 
     mkdir -p "${pacman_cache}"
 
-    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://mirror.osbeck.com/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz
+    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://archive.archlinux.org/iso/${archlinux_snapshot_date}/archlinux-bootstrap-x86_64.tar.gz
+    if ! b2sum "$JINX_CACHE_DIR/arch-root.tar.gz" | grep "${archlinux_snapshot_b2sum}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify Arch Linux bootstrap tarball"
+    fi
     ( cd "$JINX_CACHE_DIR" && bsdtar -zxf arch-root.tar.gz )
     mkdir -p "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
-    echo 'Server = https://mirror.osbeck.com/archlinux/$repo/os/$arch' > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
-    echo 'Server = https://mirror.netcologne.de/archlinux/$repo/os/$arch' >> "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
+    echo "Server = https://archive.archlinux.org/repos/$(echo ${archlinux_snapshot_date} | sed 's|\.|/|g')/\$repo/os/\$arch" > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen

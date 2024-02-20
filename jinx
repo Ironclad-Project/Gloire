@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="18"
+jinx_minor_ver="19"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -43,6 +43,10 @@ die() {
 
 if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
+fi
+
+if [ "$(id -u)" = "0" ]; then
+    die "$0: Jinx does not support running as root."
 fi
 
 if [ -z "$JINX_PARALLELISM" ]; then

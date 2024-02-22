@@ -1,3 +1,82 @@
+diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
+index 2d20315..c04c421 100644
+--- mlibc-clean/abis/ironclad/signal.h
++++ mlibc-workdir/abis/ironclad/signal.h
+@@ -32,41 +32,41 @@ typedef void (*__sighandler) (int);
+ #define SIG_DFL ((__sighandler)(void *)(-2))
+ #define SIG_IGN ((__sighandler)(void *)(-3))
+ 
+-#define SIGHUP 1
+-#define SIGINT 2
+-#define SIGQUIT 3
+-#define SIGILL 4
+-#define SIGTRAP 5
+-#define SIGABRT 6
+-#define SIGBUS 7
+-#define SIGFPE 8
+-#define SIGKILL 9
+-#define SIGUSR1 10
+-#define SIGSEGV 11
+-#define SIGUSR2 12
+-#define SIGPIPE 13
+-#define SIGALRM 14
++#define SIGABRT 1
++#define SIGALRM 2
++#define SIGBUS  3
++#define SIGCHLD 4
++#define SIGCONT 5
++#define SIGFPE  6
++#define SIGHUP  7
++#define SIGILL  8
++#define SIGINT  9
++#define SIGKILL 10
++#define SIGPIPE 11
++#define SIGQUIT 12
++#define SIGSEGV 13
++#define SIGSTOP 14
+ #define SIGTERM 15
+-#define SIGSTKFLT 16
+-#define SIGCHLD 17
+-#define SIGCONT 18
+-#define SIGSTOP 19
+-#define SIGTSTP 20
+-#define SIGTTIN 21
+-#define SIGTTOU 22
+-#define SIGURG 23
+-#define SIGXCPU 24
+-#define SIGXFSZ 25
++#define SIGTSTP 16
++#define SIGTTIN 17
++#define SIGTTOU 18
++#define SIGUSR1 19
++#define SIGUSR2 20
++#define SIGPOLL 21
++#define SIGPROF 22
++#define SIGSYS  23
++#define SIGTRAP 24
++#define SIGURG  25
+ #define SIGVTALRM 26
+-#define SIGPROF 27
+-#define SIGWINCH 28
+-#define SIGIO 29
+-#define SIGPOLL SIGIO
+-#define SIGPWR 30
+-#define SIGSYS 31
+-#define SIGRTMIN 32
+-#define SIGRTMAX 33
+-#define SIGCANCEL SIGSYS
++#define SIGXCPU 27
++#define SIGXFSZ 28
++
++// These values are not kernel-related, and are emulated for userland by the
++// libc, we will map them to SIGUSR2, which userland wont be able to use.
++#define SIGCANCEL SIGUSR2
++#define SIGWINCH SIGUSR2
++#define SIGIO    SIGUSR2
++#define SIGPWR   SIGUSR2
+ 
+ // siginfo->si_info constants
+ // SIGBUS
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -29,7 +108,7 @@ index c42b4f4..011d9c0 100644
  }
  
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index 95a4fa5..debf210 100644
+index 4010998..5eada7b 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
 @@ -487,9 +487,16 @@ int strcoll_l(const char *, const char *, locale_t) {
@@ -52,6 +131,27 @@ index 95a4fa5..debf210 100644
  }
  
  char *secure_getenv(const char *name) {
+diff --git mlibc-clean/options/posix/generic/posix_string.cpp mlibc-workdir/options/posix/generic/posix_string.cpp
+index d0bc7b5..7bddcc7 100644
+--- mlibc-clean/options/posix/generic/posix_string.cpp
++++ mlibc-workdir/options/posix/generic/posix_string.cpp
+@@ -94,8 +94,6 @@ char *strsignal(int sig) {
+ 	CASE_FOR(SIGSEGV)
+ 	CASE_FOR(SIGTERM)
+ 	CASE_FOR(SIGPROF)
+-	CASE_FOR(SIGIO)
+-	CASE_FOR(SIGPWR)
+ 	CASE_FOR(SIGALRM)
+ 	CASE_FOR(SIGBUS)
+ 	CASE_FOR(SIGCHLD)
+@@ -116,7 +114,6 @@ char *strsignal(int sig) {
+ 	CASE_FOR(SIGVTALRM)
+ 	CASE_FOR(SIGXCPU)
+ 	CASE_FOR(SIGXFSZ)
+-	CASE_FOR(SIGWINCH)
+ 	default:
+ 		mlibc::infoLogger() << "mlibc: Unknown signal number " << sig << frg::endlog;
+ 		s = "Unknown signal number";
 diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
 index 3af7e90..a02d4a2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp
@@ -329,10 +429,10 @@ index d29257d..8cabdf6 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
-index db03129..23b8549 100644
+index a519c35..cb88a45 100644
 --- mlibc-clean/options/rtdl/generic/linker.cpp
 +++ mlibc-workdir/options/rtdl/generic/linker.cpp
-@@ -545,18 +545,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
+@@ -546,18 +546,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -361,3 +461,101 @@ index db03129..23b8549 100644
  		}else if(phdr->p_type == PT_TLS) {
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index 3d15365..822a9d6 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -1,4 +1,3 @@
+-#include <mlibc-config.h>
+ #include <bits/ensure.h>
+ #include <mlibc/debug.hpp>
+ #include <mlibc/all-sysdeps.hpp>
+@@ -71,8 +70,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 	int path_len = strlen (path);
+ 	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
+ 	if (ret != -1 && (flags & O_EXCL)) {
+-		 SYSCALL1(SYSCALL_CLOSE, ret);
+-		 return EEXIST;
++		SYSCALL1(SYSCALL_CLOSE, ret);
++		return EEXIST;
+ 	}
+ 
+ 	if (ret == -1 && (flags & O_CREAT)) {
+@@ -80,7 +79,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 		 if (ret == -1) {
+ 			  return errno;
+ 		 }
+-		 SYSCALL4(SYSCALL_OPEN,	AT_FDCWD, path, path_len, flags);
++		 SYSCALL4(SYSCALL_OPEN, AT_FDCWD, path, path_len, flags);
+ 	} else if (ret != -1 && (flags & O_TRUNC)) {
+ 		// If the file cannot be truncated, dont sweat it, some software
+ 		// depends on some things being truncate-able that ironclad does not
+@@ -333,7 +332,9 @@ int sys_setgroups(size_t size, const gid_t *list) {
+ }
+ 
+ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
+-	return 0;
++	int ret, errno;
++	SYSCALL3(SYSCALL_SIGACTION, signum, act, oldact);
++	return errno;
+ }
+ 
+ int sys_ptrace(long req, pid_t pid, void *addr, void *data, long *out) {
+@@ -351,7 +352,9 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
+ }
+ 
+ int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
+-	return 0;
++	int ret, errno;
++	SYSCALL3(SYSCALL_SIGPROCMASK, how, set, retrieve);
++	return errno;
+ }
+ 
+ int sys_isatty(int fd) {
+@@ -530,12 +533,7 @@ void sys_yield(void) {
+ 
+ int sys_kill(int pid, int sig) {
+ 	int ret, errno;
+-	if (sig == SIGKILL) {
+-		SYSCALL1(SYSCALL_ACTUALLY_KILL, pid);
+-	} else {
+-		SYSCALL2(SYSCALL_SEND_SIGNAL, pid, sig);
+-	}
+-
++	SYSCALL2(SYSCALL_SEND_SIGNAL, pid, sig);
+ 	return errno;
+ }
+ 
+@@ -767,7 +765,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+ }
+ 
+ int sys_setsid(pid_t *sid) {
+-	return 0;
++	 return 0;
+ }
+ 
+ #ifndef MLIBC_BUILDING_RTDL
+@@ -884,7 +882,7 @@ int sys_shutdown(int sockfd, int how) {
+ }
+ 
+ int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
+-	return ENOSYS;
++	 return ENOSYS;
+ }
+ 
+ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+index 01ab016..6cbe1b2 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -163,8 +163,8 @@
+ #define SYSCALL_UTIMES               76
+ #define SYSCALL_CREATE_TCLUSTER      77
+ #define SYSCALL_SWITCH_TCLUSTER      78
+-#define SYSCALL_ACTUALLY_KILL        79
+-#define SYSCALL_SIGNALPOST           80
++#define SYSCALL_SIGPROCMASK          79
++#define SYSCALL_SIGACTION            80
+ #define SYSCALL_SEND_SIGNAL          81
+ #define SYSCALL_GETPRIO              82
+ #define SYSCALL_SETPRIO              83

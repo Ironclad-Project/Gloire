@@ -1,0 +1,171 @@
+diff --git slim-clean/app.cpp slim-workdir/app.cpp
+index 237477d..67b69a8 100644
+--- slim-clean/app.cpp
++++ slim-workdir/app.cpp
+@@ -23,6 +23,7 @@
+ #include <sstream>
+ #include <vector>
+ #include <algorithm>
++#include <crypt.h>
+ 
+ #include "const.h"
+ #include "log.h"
+@@ -95,7 +96,7 @@ int conv(int num_msg, const struct pam_message **msg,
+ 			case PAM_ERROR_MSG:
+ 			case PAM_TEXT_INFO:
+ 				/* We simply write these to the log
+-				   TODO: Maybe we should show them. In particular, if you 
++				   TODO: Maybe we should show them. In particular, if you
+ 				         have a fingerprint reader, PAM passes instructions
+ 				         in PAM_TEXT_INFO messages */
+ 				logStream << APPNAME << ": " << msg[i]->msg << endl;
+@@ -164,7 +165,7 @@ App::App(int argc, char** argv)
+ 	int tmp;
+ 	mcookie = string(App::mcookiesize, 'a');
+ 	char * win_size = 0;
+-	
++
+ 	/* Parse command line
+ 	   Note: we allow an arg for the -n option to handle "-nodaemon" as
+ 			 originally quoted in the docs. However, the parser has never
+@@ -374,11 +375,18 @@ void App::Run()
+ 		/* Daemonize */
+ 		if (daemonmode)
+ 		{
+-			if (daemon(0, 0) == -1)
+-			{
+-				logStream << APPNAME << ": " << strerror(errno) << endl;
+-				exit(ERR_EXIT);
+-			}
++        pid_t child;
++        if ((child = fork()) == (pid_t) -1) {
++            logStream << "Daemonization failed : fork" << endl;
++            return;
++        }
++        else if (child != (pid_t) 0) {
++            _exit(EXIT_SUCCESS);
++        }
++        else if (setsid() == (pid_t) -1) {
++            logStream << "Daemonization failed : setsid" << endl;
++        }
++        (void) chdir("/");
+ 		}
+ 
+ 		OpenLog();
+@@ -990,14 +998,14 @@ void App::RestartServer()
+ 	else
+ 	{
+ 		while (waitpid(-1, NULL, WNOHANG) > 0); /* Collects all dead children */
+-		Run();
++		//Run();
+ 	}
+ }
+ 
+ 
+ /*
+  * Iterates over the list of all windows declared as children of Root and
+- * kills the clients. Since Root is the root window of the screen, all 
++ * kills the clients. Since Root is the root window of the screen, all
+  * running applications (of the logged-in session) should be caught by this
+  */
+ void App::KillAllClients(Bool top)
+diff --git slim-clean/slim.conf slim-workdir/slim.conf
+index 3e946d9..ce4a7cb 100644
+--- slim-clean/slim.conf
++++ slim-workdir/slim.conf
+@@ -7,12 +7,11 @@ default_xserver     /usr/bin/X
+ xserver_arguments   -nolisten tcp -deferglyphs 16
+ 
+ # Full path to the xauth binary
+-xauth_path         /usr/bin/xauth 
++xauth_path         /usr/bin/xauth
+ 
+ # Xauth file for server
+ authfile           /var/run/slim.auth
+ 
+-
+ # Commands for halt, login, etc.
+ halt_cmd            /sbin/shutdown -h now
+ reboot_cmd          /sbin/shutdown -r now
+@@ -21,11 +20,11 @@ console_cmd         /usr/bin/xterm -C -fg white -bg black +sb -T "Console login"
+ 
+ # Activate numlock when slim starts. Valid values: on|off
+ # Default is to not change it
+-#numlock             on
++numlock             on
+ 
+ # Hide the mouse cursor (note: does not work with some WMs).
+ # Valid values: true|false
+-#hidecursor          false
++hidecursor          false
+ 
+ # This command is executed after a succesful login.
+ # You can place the %session and %theme variables to handle launching of
+@@ -43,8 +42,8 @@ login_cmd           exec /bin/bash -login ~/.xinitrc %session
+ #
+ # sessionstart_cmd	some command
+ # sessionstop_cmd	some command
+-sessionstart_cmd	/usr/bin/sessreg -a -l "$DISPLAY" %user
+-sessionstop_cmd     /usr/bin/sessreg -d -l "$DISPLAY" %user
++# sessionstart_cmd	/usr/bin/sessreg -a -l "$DISPLAY" %user
++# sessionstop_cmd     /usr/bin/sessreg -d -l "$DISPLAY" %user
+ 
+ # Start in daemon mode. Valid values: yes | no
+ # Note that this can be overridden by the command line options "-d" and "-n"
+@@ -66,28 +65,28 @@ daemon	yes
+ # path to the session executable!
+ #sessiondir     /usr/share/xsessions
+ 
+-
+ # Executed when pressing F11 (requires imagemagick)
+ screenshot_cmd      import -window root /slim.png
++
+ # Alternative using scrot.
+ #screenshot_cmd      scrot /root/slim.png
+ 
+ # Delay after failed authentication before allowing another attempt
+ # NOTE: This delay is additional to the time PAM takes to fail, and
+-#       the feedback message remains after this delay. While the 
++#       the feedback message remains after this delay. While the
+ #       default value is 2 seconds, it's quite reasonable to set it
+ #       to zero.
+-wrong_passwd_timeout            0
++wrong_passwd_timeout            2
+ 
+ # Whether to sound the bell on failed login
+-#bell		0
++bell		0
+ 
+-# Whether to leave the username intact if authorisation fails. For 
++# Whether to leave the username intact if authorisation fails. For
+ # users who mistype their password, 1 is better.
+-#keep_user_on_fail       0
++keep_user_on_fail       1
+ 
+ # default user, leave blank to not pre-load the username.
+-#default_user        simone
++default_user        user
+ 
+ # Focus the password field on start when default_user is set
+ # Set to "yes" to enable this feature
+@@ -98,9 +97,9 @@ wrong_passwd_timeout            0
+ #auto_login          no
+ 
+ 
+-# current theme, use comma separated list to specify a set to 
++# current theme, use comma separated list to specify a set to
+ # randomly choose from
+-current_theme       default
++current_theme       ironclad
+ 
+ # Lock file
+ lockfile            /run/slim.pid
+@@ -117,7 +116,7 @@ logfile             /var/log/slim.log
+ welcome_msg         Welcome to %host
+ 
+ # Session message. Prepended to the session name when pressing F1
+-#session_msg         Session: 
++#session_msg         Session:
+ 
+ # shutdown / reboot messages
+ shutdown_msg       The system is halting...

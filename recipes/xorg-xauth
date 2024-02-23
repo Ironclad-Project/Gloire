@@ -1,0 +1,24 @@
+name=xorg-xauth
+version=1.1.2
+revision=1
+tarball_url="https://www.x.org/pub/individual/app/xauth-${version}.tar.xz"
+tarball_blake2b="2ba168229bdf0c1d0fdd4c352e434abfc6f527cbafce35abac8d403a0dea91f00fd858f91f177128d13a0e618d1d95061c71ef32a3e12ac91b72a257dcfcd12b"
+source_hostdeps="autoconf automake libtool pkg-config"
+source_deps="xtrans xorg-util-macros libiconv gettext"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs libxmu libxaw libiconv xtrans"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    make DESTDIR=${dest_dir} install
+    post_package_strip
+}

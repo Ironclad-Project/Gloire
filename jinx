@@ -26,18 +26,22 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="20"
+jinx_minor_ver="21"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 archlinux_snapshot_date="2024.02.01"
 archlinux_snapshot_b2sum=e453387c25aef7f4818729aec44281d57f5f7fca68dbcd8cac5942063c7813c7d2ea704bc31f9e0929c5ba2d639e648788711eafb993df7bb971d3e808def2f8
 
+XSTOW_VERSION=1.1.1
+
 IFS=" ""	"'
 '
 
 LC_COLLATE=C
 export LC_COLLATE
+
+umask 0022
 
 die() {
     echo "$1"
@@ -47,6 +51,20 @@ die() {
 if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
+
+make_dir() {
+    for d in "$@"; do
+        mkdir -p "$d"
+        dn="$d"
+        while true; do
+            if [ "$dn" = "$base_dir" ] || [ "$dn" = "$build_dir" ] || [ "$dn" = "/" ]; then
+                break
+            fi
+            chmod 755 "$dn"
+            dn="$(dirname "$dn")"
+        done
+    done
+}
 
 case "$1" in
     install|sysroot)
@@ -100,12 +118,16 @@ fi
 if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
     die "$0: cannot access cache directory parent"
 fi
-mkdir -p "$JINX_CACHE_DIR"
+make_dir "$JINX_CACHE_DIR"
 JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
 in_container=false
 if [ "$script" = "//jinx" ]; then
     in_container=true
+fi
+
+if [ "$in_container" = "false" ]; then
+    make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
 
 pacman_cache="$JINX_CACHE_DIR/pacman"
@@ -114,8 +136,12 @@ temp_collect=""
 trap 'rm -rf $temp_collect; trap - EXIT; exit' EXIT INT TERM QUIT HUP
 
 make_temp() {
-    tmp="$(mktemp $1 "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
+    tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
     temp_collect="${temp_collect} ${tmp}"
+    if [ "$1" = "-d" ]; then
+        rm -f "${tmp}"
+        make_dir "${tmp}"
+    fi
 }
 
 build_hostdeps() {
@@ -218,6 +244,14 @@ run_in_container1() {
         "$@"
 }
 
+check_duplicates() {
+    for elem in $(cd "$1" && find .); do
+        if [ -f "$2"/${elem} ] || [ -L "$2"/${elem} ]; then
+            return 1
+        fi
+    done
+}
+
 prepare_container() {
     cd "${build_dir}"
 
@@ -243,12 +277,13 @@ prepare_container() {
             mv "${build_dir}"/pkgs/${dep}/usr/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
         fi
         copy_failed=0
-        cp -Pplrn "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/ || copy_failed=1
+        check_duplicates "${build_dir}"/pkgs/${dep} "${sysroot_dir}" || copy_failed=1
+        cp -Pplr "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
         if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
             mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/pkgs/${dep}/usr/share/info/dir
         fi
         if [ "$copy_failed" = 1 ]; then
-            exit 1
+            die "jinx: error: Dependency '${dep}' contains file confilcts"
         fi
     done
 
@@ -260,12 +295,13 @@ prepare_container() {
                 mv "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
             fi
             copy_failed=0
-            cp -Pplrn "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/ || copy_failed=1
+            check_duplicates "${build_dir}"/host-pkgs/${hostdep}/usr/local "${container_pkgs}" || copy_failed=1
+            cp -Pplr "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
             if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
                 mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir
             fi
             if [ "$copy_failed" = 1 ]; then
-                exit 1
+                die "jinx: error: Dependency '${hostdep}' contains file confilcts"
             fi
         done
 
@@ -279,7 +315,7 @@ prepare_container() {
                 continue
             fi
 
-            mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
+            make_dir "$JINX_CACHE_DIR/sets/${pkgset}"
 
             cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
@@ -315,11 +351,11 @@ run_in_container() {
     touch "${imgroot}/jinx"
     chmod +x "${imgroot}/jinx"
     touch "${imgroot}/jinx-config"
-    mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    make_dir "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
     native_mode_mounts=""
     if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
-        mkdir -p "${imgroot}/sysroot"
+        make_dir "${imgroot}/sysroot"
 
         native_mode_mounts=y
 
@@ -397,7 +433,7 @@ destroy_container() {
 }
 
 do_fetch() {
-    mkdir -p "${base_dir}"/sources
+    make_dir "${base_dir}"/sources
 
     [ -d "${source_dir}" ] && return
 
@@ -432,7 +468,7 @@ do_fetch() {
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_blake2b}" ]; then
-        actual_blake2b="$(b2sum "${tarball_path}" | awk '{print $1;}')"
+        actual_blake2b="$("$JINX_CACHE_DIR/b2sum" "${tarball_path}" | awk '{print $1;}')"
         if ! [ ${actual_blake2b} = ${tarball_blake2b} ]; then
             die "* error: Failed to verify BLAKE2B for ${name}.
   Expected '${tarball_blake2b}';
@@ -451,7 +487,7 @@ do_fetch() {
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
     mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
-        mkdir -p "${base_dir}"/sources/${name}
+        make_dir "${base_dir}"/sources/${name}
         mv "${extract_dir}"/* "${base_dir}"/sources/${name}/
     )
 
@@ -504,8 +540,8 @@ cont_patch() {
 
     get_real_source_dir
 
-    patch_trash="/tmp/patch_trash"
-    mkdir -p "$patch_trash"
+    make_temp
+    patch_trash="${tmp}"
 
     cd "${source_dir}"
 
@@ -558,7 +594,7 @@ do_build_host() {
 
     [ -f "${build_dir}"/host-builds/${name}.built ] && return
 
-    mkdir -p "${build_dir}"/host-builds/${name}
+    make_dir "${build_dir}"/host-builds/${name}
 
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -592,7 +628,7 @@ do_package_host() {
     dest_dir="${build_dir}"/host-pkgs/${name}
 
     rm -rf "${dest_dir}"
-    mkdir -p "${dest_dir}"
+    make_dir "${dest_dir}"
 
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -608,7 +644,7 @@ do_package_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
-    mkdir -p "${dest_dir}${prefix}"
+    make_dir "${dest_dir}${prefix}"
 
     cd "${build_dir}"/host-builds/${name}
     package
@@ -630,7 +666,7 @@ do_build() {
 
     [ -f "${build_dir}"/builds/${name}.built ] && return
 
-    mkdir -p "${build_dir}"/builds/${name}
+    make_dir "${build_dir}"/builds/${name}
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
@@ -668,7 +704,7 @@ do_package() {
     dest_dir="${build_dir}"/pkgs/${name}
 
     rm -rf "${dest_dir}"
-    mkdir -p "${dest_dir}"
+    make_dir "${dest_dir}"
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
@@ -688,7 +724,7 @@ do_package() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
-    mkdir -p "${dest_dir}${prefix}"
+    make_dir "${dest_dir}${prefix}"
 
     cd "${build_dir}"/builds/${name}
     package
@@ -760,7 +796,7 @@ do_cmd_regenerate() {
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
 
         if [ -s "${patch_file}" ]; then
-            mkdir -p "${base_dir}"/patches/$1
+            make_dir "${base_dir}"/patches/$1
             mv "${patch_file}" "${base_dir}"/patches/$1/jinx-working-patch.patch
         fi
 
@@ -879,7 +915,7 @@ cmd_clean() {
 cmd_install() {
     sysroot="$1"
     shift 1
-    mkdir -p "${sysroot}"
+    make_dir "${sysroot}"
 
     pkgs_to_install=""
     if [ "$1" = '*' ]; then
@@ -958,6 +994,257 @@ cmd_install() {
             cp "$JINX_CACHE_DIR/merged-info-dir" "${sysroot}"/usr/share/info/dir
         fi
     fi
+}
+
+rebuild_b2sum() {
+    cat <<'EOF' >"$JINX_CACHE_DIR/b2sum.c"
+// This blake2b implementation comes from the GNU coreutils project.
+// https://github.com/coreutils/coreutils/blob/master/src/blake2/blake2b-ref.c
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLAKE2B_OUT_BYTES 64
+#define BLAKE2B_BLOCK_BYTES 128
+#define BLAKE2B_KEY_BYTES 64
+#define BLAKE2B_SALT_BYTES 16
+#define BLAKE2B_PERSONAL_BYTES 16
+
+static const uint64_t blake2b_iv[8] = {
+    0x6a09e667f3bcc908,
+    0xbb67ae8584caa73b,
+    0x3c6ef372fe94f82b,
+    0xa54ff53a5f1d36f1,
+    0x510e527fade682d1,
+    0x9b05688c2b3e6c1f,
+    0x1f83d9abfb41bd6b,
+    0x5be0cd19137e2179,
+};
+
+static const uint8_t blake2b_sigma[12][16] = {
+    {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
+    { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
+    { 11,  8, 12,  0,  5,  2, 15, 13, 10, 14,  3,  6,  7,  1,  9,  4 },
+    {  7,  9,  3,  1, 13, 12, 11, 14,  2,  6,  5, 10,  4,  0, 15,  8 },
+    {  9,  0,  5,  7,  2,  4, 10, 15, 14,  1, 11, 12,  6,  8,  3, 13 },
+    {  2, 12,  6, 10,  0, 11,  8,  3,  4, 13,  7,  5, 15, 14,  1,  9 },
+    { 12,  5,  1, 15, 14, 13,  4, 10,  0,  7,  6,  3,  9,  2,  8, 11 },
+    { 13, 11,  7, 14, 12,  1,  3,  9,  5,  0, 15,  4,  8,  6,  2, 10 },
+    {  6, 15, 14,  9, 11,  3,  0,  8, 12,  2, 13,  7,  1,  4, 10,  5 },
+    { 10,  2,  8,  4,  7,  6,  1,  5, 15, 11,  9, 14,  3, 12, 13,  0 },
+    {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
+    { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
+};
+
+struct blake2b_state {
+    uint64_t h[8];
+    uint64_t t[2];
+    uint64_t f[2];
+    uint8_t buf[BLAKE2B_BLOCK_BYTES];
+    size_t buf_len;
+    uint8_t last_node;
+};
+
+struct blake2b_param {
+    uint8_t digest_length;
+    uint8_t key_length;
+    uint8_t fan_out;
+    uint8_t depth;
+    uint32_t leaf_length;
+    uint32_t node_offset;
+    uint32_t xof_length;
+    uint8_t node_depth;
+    uint8_t inner_length;
+    uint8_t reserved[14];
+    uint8_t salt[BLAKE2B_SALT_BYTES];
+    uint8_t personal[BLAKE2B_PERSONAL_BYTES];
+} __attribute__((packed));
+
+static void blake2b_increment_counter(struct blake2b_state *state, uint64_t inc) {
+    state->t[0] += inc;
+    state->t[1] += state->t[0] < inc;
+}
+
+static inline uint64_t rotr64(uint64_t w, unsigned c) {
+    return (w >> c) | (w << (64 - c));
+}
+
+#define G(r, i, a, b, c, d) do { \
+        a = a + b + m[blake2b_sigma[r][2 * i + 0]]; \
+        d = rotr64(d ^ a, 32); \
+        c = c + d; \
+        b = rotr64(b ^ c, 24); \
+        a = a + b + m[blake2b_sigma[r][2 * i + 1]]; \
+        d = rotr64(d ^ a, 16); \
+        c = c + d; \
+        b = rotr64(b ^ c, 63); \
+    } while (0)
+
+#define ROUND(r) do { \
+        G(r, 0, v[0], v[4], v[8], v[12]); \
+        G(r, 1, v[1], v[5], v[9], v[13]); \
+        G(r, 2, v[2], v[6], v[10], v[14]); \
+        G(r, 3, v[3], v[7], v[11], v[15]); \
+        G(r, 4, v[0], v[5], v[10], v[15]); \
+        G(r, 5, v[1], v[6], v[11], v[12]); \
+        G(r, 6, v[2], v[7], v[8], v[13]); \
+        G(r, 7, v[3], v[4], v[9], v[14]); \
+    } while (0)
+
+static void blake2b_compress(struct blake2b_state *state, const uint8_t block[static BLAKE2B_BLOCK_BYTES]) {
+    uint64_t m[16];
+    uint64_t v[16];
+
+    for (int i = 0; i < 16; i++) {
+        m[i] = *(uint64_t *)(block + i * sizeof(m[i]));
+    }
+
+    for (int i = 0; i < 8; i++) {
+        v[i] = state->h[i];
+    }
+
+    v[8] = blake2b_iv[0];
+    v[9] = blake2b_iv[1];
+    v[10] = blake2b_iv[2];
+    v[11] = blake2b_iv[3];
+    v[12] = blake2b_iv[4] ^ state->t[0];
+    v[13] = blake2b_iv[5] ^ state->t[1];
+    v[14] = blake2b_iv[6] ^ state->f[0];
+    v[15] = blake2b_iv[7] ^ state->f[1];
+
+    ROUND(0);
+    ROUND(1);
+    ROUND(2);
+    ROUND(3);
+    ROUND(4);
+    ROUND(5);
+    ROUND(6);
+    ROUND(7);
+    ROUND(8);
+    ROUND(9);
+    ROUND(10);
+    ROUND(11);
+
+    for (int i = 0; i < 8; i++) {
+        state->h[i] = state->h[i] ^ v[i] ^ v[i + 8];
+    }
+}
+
+#undef G
+#undef ROUND
+
+static void blake2b_init(struct blake2b_state *state) {
+    struct blake2b_param param;
+    memset(&param, 0, sizeof(struct blake2b_param));
+
+    param.digest_length = BLAKE2B_OUT_BYTES;
+    param.fan_out = 1;
+    param.depth = 1;
+
+    memset(state, 0, sizeof(struct blake2b_state));
+
+    for (int i = 0; i < 8; i++) {
+        state->h[i] = blake2b_iv[i];
+    }
+
+    for (int i = 0; i < 8; i++) {
+        state->h[i] ^= *(uint64_t *)((void *)&param + sizeof(state->h[i]) * i);
+    }
+}
+
+static void blake2b_update(struct blake2b_state *state, const void *in, size_t in_len) {
+    if (in_len == 0) {
+        return;
+    }
+
+    size_t left = state->buf_len;
+    size_t fill = BLAKE2B_BLOCK_BYTES - left;
+
+    if (in_len > fill) {
+        state->buf_len = 0;
+
+        memcpy(state->buf + left, in, fill);
+        blake2b_increment_counter(state, BLAKE2B_BLOCK_BYTES);
+        blake2b_compress(state, state->buf);
+
+        in += fill;
+        in_len -= fill;
+
+        while (in_len > BLAKE2B_BLOCK_BYTES) {
+            blake2b_increment_counter(state, BLAKE2B_BLOCK_BYTES);
+            blake2b_compress(state, in);
+
+            in += fill;
+            in_len -= fill;
+        }
+    }
+
+    memcpy(state->buf + state->buf_len, in, in_len);
+    state->buf_len += in_len;
+}
+
+static void blake2b_final(struct blake2b_state *state, void *out) {
+    uint8_t buffer[BLAKE2B_OUT_BYTES] = {0};
+
+    blake2b_increment_counter(state, state->buf_len);
+    state->f[0] = (uint64_t)-1;
+    memset(state->buf + state->buf_len, 0, BLAKE2B_BLOCK_BYTES - state->buf_len);
+    blake2b_compress(state, state->buf);
+
+    for (int i = 0; i < 8; i++) {
+        *(uint64_t *)(buffer + sizeof(state->h[i]) * i) = state->h[i];
+    }
+
+    memcpy(out, buffer, BLAKE2B_OUT_BYTES);
+    memset(buffer, 0, sizeof(buffer));
+}
+
+static void blake2b(void *out, const void *in, size_t in_len) {
+    struct blake2b_state state = {0};
+
+    blake2b_init(&state);
+    blake2b_update(&state, in, in_len);
+    blake2b_final(&state, out);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        return EXIT_FAILURE;
+    }
+
+    FILE *f = fopen(argv[1], "r");
+    if (f == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    fseek(f, 0, SEEK_END);
+    size_t f_size = ftell(f);
+    rewind(f);
+
+    void *mem = malloc(f_size);
+    if (mem == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    if (fread(mem, f_size, 1, f) != 1) {
+        return EXIT_FAILURE;
+    }
+
+    uint8_t out_buf[BLAKE2B_OUT_BYTES];
+    blake2b(out_buf, mem, f_size);
+
+    for (size_t i = 0; i < BLAKE2B_OUT_BYTES; i++) {
+        printf("%02x", out_buf[i]);
+    }
+
+    printf("  %s\n", argv[1]);
+}
+EOF
+    cc -static -O2 -pipe -fno-strict-aliasing -Wall -Wextra "$JINX_CACHE_DIR/b2sum.c" -o "$JINX_CACHE_DIR/b2sum"
 }
 
 rebuild_rbrt() {
@@ -1368,7 +1655,7 @@ cleanup:
     return ok;
 }
 EOF
-    cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
+    cc -static -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
 }
 
 reinit_container() {
@@ -1376,19 +1663,20 @@ reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/pacman" 2>/dev/null || true
     rm -rf "$JINX_CACHE_DIR/arch-root.tar.gz" "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/pacman"
 
-    mkdir -p "${pacman_cache}"
+    make_dir "${pacman_cache}"
 
     curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://archive.archlinux.org/iso/${archlinux_snapshot_date}/archlinux-bootstrap-x86_64.tar.gz
-    if ! b2sum "$JINX_CACHE_DIR/arch-root.tar.gz" | grep "${archlinux_snapshot_b2sum}" >/dev/null 2>&1; then
+    if ! "$JINX_CACHE_DIR/b2sum" "$JINX_CACHE_DIR/arch-root.tar.gz" | grep "${archlinux_snapshot_b2sum}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify Arch Linux bootstrap tarball"
     fi
     ( cd "$JINX_CACHE_DIR" && bsdtar -zxf arch-root.tar.gz )
-    mkdir -p "$JINX_CACHE_DIR/sets"
+    rm "$JINX_CACHE_DIR/arch-root.tar.gz"
+    make_dir "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
     echo "Server = https://archive.archlinux.org/repos/$(echo ${archlinux_snapshot_date} | sed 's|\.|/|g')/\$repo/os/\$arch" > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
-    mkdir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
+    make_dir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --init
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman-key --populate archlinux
@@ -1402,23 +1690,24 @@ reinit_container() {
         chmod 755 "$f"
     done
 
-    (
-    set -e
-    cd "$JINX_CACHE_DIR"
-    curl -Lo xstow-1.1.1.tar.gz https://github.com/majorkingleo/xstow/releases/download/1.1.1/xstow-1.1.1.tar.gz
-    tar -xf xstow-1.1.1.tar.gz
-    cd xstow-1.1.1
-    ./configure LDFLAGS="-static" --enable-static --enable-merge-info --without-curses
-    make -j${parallelism}
-    mv src/merge-info "$JINX_CACHE_DIR/"
-    )
+    # Build xstow
+    XSTOW_BUILDENV="$JINX_CACHE_DIR/xstow_buildenv"
+    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XSTOW_BUILDENV}/"
+    curl -Lo "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}.tar.gz" https://github.com/majorkingleo/xstow/releases/download/${XSTOW_VERSION}/xstow-${XSTOW_VERSION}.tar.gz
+    ( cd "${XSTOW_BUILDENV}" && tar -xf xstow-${XSTOW_VERSION}.tar.gz )
+    run_in_container1 "${XSTOW_BUILDENV}" pacman --needed --noconfirm -S base-devel
+    run_in_container1 "${XSTOW_BUILDENV}" sh -c "cd /xstow-${XSTOW_VERSION} && ./configure LDFLAGS='-static' --enable-static --enable-merge-info --without-curses && make -j${parallelism}"
+    mv "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}/src/merge-info" "$JINX_CACHE_DIR/"
+    chmod -R 777 "$XSTOW_BUILDENV"
+    rm -rf "$XSTOW_BUILDENV"
 }
 
 first_use() {
     echo "* preparing Jinx cache..."
 
-    mkdir -p "$JINX_CACHE_DIR"
+    make_dir "$JINX_CACHE_DIR"
 
+    rebuild_b2sum
     rebuild_rbrt
 
     reinit_container

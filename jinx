@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="21"
+jinx_minor_ver="22"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -55,7 +55,7 @@ fi
 make_dir() {
     for d in "$@"; do
         mkdir -p "$d"
-        dn="$d"
+        dn="$(cd "$d" && pwd -P)"
         while true; do
             if [ "$dn" = "$base_dir" ] || [ "$dn" = "$build_dir" ] || [ "$dn" = "/" ]; then
                 break

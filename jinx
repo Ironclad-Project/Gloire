@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="22"
+jinx_minor_ver="23"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -311,7 +311,7 @@ prepare_container() {
         for pkg in ${imagedeps}; do
             pkgset="${pkgset}${pkg}/"
 
-            if [ -d "$JINX_CACHE_DIR/sets/${pkgset}.image" ]; then
+            if [ -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid" ]; then
                 continue
             fi
 
@@ -320,13 +320,15 @@ prepare_container() {
             cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
             if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
-                die 'Jinx error: Installing an imagedep failed. If the error is not due to a non-existant package, try running `jinx rebuild-cache` and try again.'
+                die 'Jinx error: Installing an imagedep failed.'
             fi
 
             # Fix permissions of files
             for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
                 chmod 755 "$f"
             done
+
+            touch "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
         done
 
         imgroot="$JINX_CACHE_DIR/sets/${pkgset}.image"

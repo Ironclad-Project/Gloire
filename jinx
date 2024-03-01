@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="23"
+jinx_minor_ver="24"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -318,6 +318,8 @@ prepare_container() {
             make_dir "$JINX_CACHE_DIR/sets/${pkgset}"
 
             cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+
+            rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
 
             if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" pacman --needed --noconfirm -S "${pkg}"; then
                 die 'Jinx error: Installing an imagedep failed.'

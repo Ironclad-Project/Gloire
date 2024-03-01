@@ -159,7 +159,7 @@ index 5692ef9..b91a628 100755
  mandir='$(datarootdir)/man'
  program_prefix=
 -CC=gcc
-+CC=x86_64-ironclad-gcc
++CC=x86_64-pc-ironclad-mlibc-gcc
  CPPFLAGS=
  CFLAGS='-Wall -W -O2'
  LDFLAGS=

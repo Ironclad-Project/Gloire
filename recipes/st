@@ -8,11 +8,11 @@ deps="core-libs libx11 libxcb libxext libxi libxmu libxrender libxt libxft freet
 
 build() {
     cp -rp "${source_dir}"/. ./
-    make CC=x86_64-ironclad-gcc PKG_CONFIG=x86_64-ironclad-pkg-config -j${parallelism}
+    make CC=x86_64-pc-ironclad-mlibc-gcc PKG_CONFIG=x86_64-pc-ironclad-mlibc-pkg-config -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make CC=x86_64-ironclad-gcc PREFIX="${prefix}" PKG_CONFIG=x86_64-ironclad-pkg-config install
+    DESTDIR="${dest_dir}" make CC=x86_64-pc-ironclad-mlibc-gcc PREFIX="${prefix}" PKG_CONFIG=x86_64-pc-ironclad-mlibc-pkg-config install
 
     post_package_strip
 }

@@ -13,7 +13,7 @@ build() {
     cmake \
         -GNinja \
         -DCMAKE_TOOLCHAIN_FILE=${base_dir}/build-support/CMakeToolchain.txt \
-        -DPKG_CONFIG_EXECUTABLE="/usr/local/bin/x86_64-ironclad-pkg-config" \
+        -DPKG_CONFIG_EXECUTABLE="/usr/local/bin/x86_64-pc-ironclad-mlibc-pkg-config" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_BUILD_TYPE=Release \
         -DUSE_CONSOLEKIT=OFF \

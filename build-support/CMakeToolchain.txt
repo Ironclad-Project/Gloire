@@ -2,8 +2,8 @@ set(CMAKE_SYSTEM_NAME Ironclad)
 
 set(CMAKE_FIND_ROOT_PATH /sysroot)
 
-set(CMAKE_C_COMPILER x86_64-ironclad-gcc)
-set(CMAKE_CXX_COMPILER x86_64-ironclad-g++)
+set(CMAKE_C_COMPILER x86_64-pc-ironclad-mlibc-gcc)
+set(CMAKE_CXX_COMPILER x86_64-pc-ironclad-mlibc-g++)
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

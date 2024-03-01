@@ -1,11 +1,11 @@
-diff --git llvm-libs-clean/clang/lib/Basic/Targets/OSTargets.h llvm-libs-workdir/clang/lib/Basic/Targets/OSTargets.h
-index cf8cc8e..fd9969e 100644
---- llvm-libs-clean/clang/lib/Basic/Targets/OSTargets.h
-+++ llvm-libs-workdir/clang/lib/Basic/Targets/OSTargets.h
+diff --git llvm-clean/clang/lib/Basic/Targets/OSTargets.h llvm-workdir/clang/lib/Basic/Targets/OSTargets.h
+index cf8cc8e..37a9ac9 100644
+--- llvm-clean/clang/lib/Basic/Targets/OSTargets.h
++++ llvm-workdir/clang/lib/Basic/Targets/OSTargets.h
 @@ -922,6 +922,34 @@ public:
    }
  };
-
+ 
 +// Ironclad Target
 +template <typename Target>
 +class LLVM_LIBRARY_VISIBILITY IroncladTargetInfo : public OSTargetInfo<Target> {
@@ -37,10 +37,10 @@ index cf8cc8e..fd9969e 100644
  // WebAssembly target
  template <typename Target>
  class LLVM_LIBRARY_VISIBILITY WebAssemblyOSTargetInfo
-diff --git llvm-libs-clean/clang/lib/Basic/Targets.cpp llvm-libs-workdir/clang/lib/Basic/Targets.cpp
-index 636b59f..47615ce 100644
---- llvm-libs-clean/clang/lib/Basic/Targets.cpp
-+++ llvm-libs-workdir/clang/lib/Basic/Targets.cpp
+diff --git llvm-clean/clang/lib/Basic/Targets.cpp llvm-workdir/clang/lib/Basic/Targets.cpp
+index 636b59f..e56e5ca 100644
+--- llvm-clean/clang/lib/Basic/Targets.cpp
++++ llvm-workdir/clang/lib/Basic/Targets.cpp
 @@ -590,6 +590,8 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
      }
      case llvm::Triple::Haiku:
@@ -50,10 +50,10 @@ index 636b59f..47615ce 100644
      case llvm::Triple::RTEMS:
        return std::make_unique<RTEMSX86_32TargetInfo>(Triple, Opts);
      case llvm::Triple::NaCl:
-diff --git llvm-libs-clean/clang/lib/Driver/CMakeLists.txt llvm-libs-workdir/clang/lib/Driver/CMakeLists.txt
-index a6bd2d4..2114a98 100644
---- llvm-libs-clean/clang/lib/Driver/CMakeLists.txt
-+++ llvm-libs-workdir/clang/lib/Driver/CMakeLists.txt
+diff --git llvm-clean/clang/lib/Driver/CMakeLists.txt llvm-workdir/clang/lib/Driver/CMakeLists.txt
+index a6bd2d4..0c82dd3 100644
+--- llvm-clean/clang/lib/Driver/CMakeLists.txt
++++ llvm-workdir/clang/lib/Driver/CMakeLists.txt
 @@ -76,6 +76,7 @@ add_clang_library(clangDriver
    ToolChains/Myriad.cpp
    ToolChains/NaCl.cpp
@@ -62,10 +62,10 @@ index a6bd2d4..2114a98 100644
    ToolChains/OHOS.cpp
    ToolChains/OpenBSD.cpp
    ToolChains/PS4CPU.cpp
-diff --git llvm-libs-clean/clang/lib/Driver/Driver.cpp llvm-libs-workdir/clang/lib/Driver/Driver.cpp
-index bdbdad9..c57c738 100644
---- llvm-libs-clean/clang/lib/Driver/Driver.cpp
-+++ llvm-libs-workdir/clang/lib/Driver/Driver.cpp
+diff --git llvm-clean/clang/lib/Driver/Driver.cpp llvm-workdir/clang/lib/Driver/Driver.cpp
+index bdbdad9..422a3dd 100644
+--- llvm-clean/clang/lib/Driver/Driver.cpp
++++ llvm-workdir/clang/lib/Driver/Driver.cpp
 @@ -20,6 +20,7 @@
  #include "ToolChains/Contiki.h"
  #include "ToolChains/CrossWindows.h"
@@ -84,24 +84,24 @@ index bdbdad9..c57c738 100644
      case llvm::Triple::Solaris:
        TC = std::make_unique<toolchains::Solaris>(*this, Target, Args);
        break;
-diff --git llvm-libs-clean/clang/lib/Driver/ToolChains/Gnu.cpp llvm-libs-workdir/clang/lib/Driver/ToolChains/Gnu.cpp
-index 40038dc..2eadaaa 100644
---- llvm-libs-clean/clang/lib/Driver/ToolChains/Gnu.cpp
-+++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Gnu.cpp
+diff --git llvm-clean/clang/lib/Driver/ToolChains/Gnu.cpp llvm-workdir/clang/lib/Driver/ToolChains/Gnu.cpp
+index 40038dc..198c4d5 100644
+--- llvm-clean/clang/lib/Driver/ToolChains/Gnu.cpp
++++ llvm-workdir/clang/lib/Driver/ToolChains/Gnu.cpp
 @@ -2328,7 +2328,7 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
        "x86_64-redhat-linux",    "x86_64-suse-linux",
        "x86_64-manbo-linux-gnu", "x86_64-linux-gnu",
        "x86_64-slackware-linux", "x86_64-unknown-linux",
 -      "x86_64-amazon-linux"};
-+      "x86_64-amazon-linux", "x86_64-ironclad"};
++      "x86_64-amazon-linux", "x86_64-pc-ironclad-mlibc"};
    static const char *const X32Triples[] = {"x86_64-linux-gnux32",
                                             "x86_64-pc-linux-gnux32"};
    static const char *const X32LibDirs[] = {"/libx32", "/lib"};
-diff --git llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
+diff --git llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
 new file mode 100644
-index 0000000..dc1e732
+index 0000000..d180195
 --- /dev/null
-+++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
++++ llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
 @@ -0,0 +1,432 @@
 +//===------- Ironclad.cpp - Ironclad ToolChain Implementations --------*- C++ -*-===//
 +//
@@ -147,11 +147,11 @@ index 0000000..dc1e732
 +
 +  case llvm::Triple::x86_64:
 +    // We don't want this for x32, otherwise it will match x86_64 libs
-+    return "x86_64-ironclad";
++    return "x86_64-pc-ironclad-mlibc";
 +  case llvm::Triple::aarch64:
-+    return "aarch64-ironclad";
++    return "aarch64-ironclad-mlibc";
 +  case llvm::Triple::riscv64:
-+    return "riscv64-ironclad";
++    return "riscv64-ironclad-mlibc";
 +  }
 +  return TargetTriple.str();
 +}
@@ -349,10 +349,10 @@ index 0000000..dc1e732
 +std::string Ironclad::getDynamicLinker(const ArgList &Args) const {
 +  switch (getTriple().getArch()) {
 +  case llvm::Triple::aarch64:
-+    return "/usr/lib/aarch64-ironclad/ld.so";
++    return "/usr/lib/aarch64-ironclad-mlibc/ld.so";
 +  case llvm::Triple::riscv64: {
 +    StringRef ABIName = tools::riscv::getRISCVABI(Args, getTriple());
-+    return ("/usr/lib/riscv64-ironclad/ld-riscv64-" + ABIName + ".so").str();
++    return ("/usr/lib/riscv64-ironclad-mlibc/ld-riscv64-" + ABIName + ".so").str();
 +  }
 +  case llvm::Triple::x86_64:
 +    return "/usr/lib/ld.so";
@@ -410,11 +410,11 @@ index 0000000..dc1e732
 +
 +  // Implement generic Debian multiarch support.
 +  const StringRef AArch64MultiarchIncludeDirs[] = {
-+      "/usr/include/aarch64-ironclad-gnu"};
++      "/usr/include/aarch64-ironclad-mlibc"};
 +  const StringRef X86_64MultiarchIncludeDirs[] = {
-+      "/usr/include/x86_64-ironclad-gnu"};
++      "/usr/include/x86_64-pc-ironclad-mlibc"};
 +  const StringRef X86MultiarchIncludeDirs[] = {
-+      "/usr/include/i386-ironclad-gnu"};
++      "/usr/include/i386-pc-ironclad-mlibc"};
 +  ArrayRef<StringRef> MultiarchIncludeDirs;
 +  switch (getTriple().getArch()) {
 +  case llvm::Triple::aarch64:
@@ -535,11 +535,11 @@ index 0000000..dc1e732
 +    Res |= SanitizerKind::MemTag;
 +  return Res;
 +}
-diff --git llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
+diff --git llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.h llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.h
 new file mode 100644
-index 0000000..1ccac2e
+index 0000000..37af855
 --- /dev/null
-+++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
++++ llvm-workdir/clang/lib/Driver/ToolChains/Ironclad.h
 @@ -0,0 +1,49 @@
 +//===------- Ironclad.h - Ironclad ToolChain Implementations ----------*- C++ -*-===//
 +//
@@ -590,10 +590,10 @@ index 0000000..1ccac2e
 +} // end namespace clang
 +
 +#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_IRONCLAD_H
-diff --git llvm-libs-clean/llvm/cmake/modules/CrossCompile.cmake llvm-libs-workdir/llvm/cmake/modules/CrossCompile.cmake
+diff --git llvm-clean/llvm/cmake/modules/CrossCompile.cmake llvm-workdir/llvm/cmake/modules/CrossCompile.cmake
 index 6af47b5..78983fa 100644
---- llvm-libs-clean/llvm/cmake/modules/CrossCompile.cmake
-+++ llvm-libs-workdir/llvm/cmake/modules/CrossCompile.cmake
+--- llvm-clean/llvm/cmake/modules/CrossCompile.cmake
++++ llvm-workdir/llvm/cmake/modules/CrossCompile.cmake
 @@ -17,8 +17,8 @@ function(llvm_create_cross_target project_name target_name toolchain buildtype)
        -DCMAKE_TOOLCHAIN_FILE=\"${LLVM_MAIN_SRC_DIR}/cmake/platforms/${toolchain}.cmake\")
    elseif (NOT CMAKE_CROSSCOMPILING)
@@ -605,23 +605,23 @@ index 6af47b5..78983fa 100644
        )
    endif()
    set(CROSS_TOOLCHAIN_FLAGS_${target_name} ${CROSS_TOOLCHAIN_FLAGS_INIT}
-diff --git llvm-libs-clean/llvm/include/llvm/Support/SwapByteOrder.h llvm-libs-workdir/llvm/include/llvm/Support/SwapByteOrder.h
-index 1bbc2e2..b333836 100644
---- llvm-libs-clean/llvm/include/llvm/Support/SwapByteOrder.h
-+++ llvm-libs-workdir/llvm/include/llvm/Support/SwapByteOrder.h
+diff --git llvm-clean/llvm/include/llvm/Support/SwapByteOrder.h llvm-workdir/llvm/include/llvm/Support/SwapByteOrder.h
+index 1bbc2e2..0df141c 100644
+--- llvm-clean/llvm/include/llvm/Support/SwapByteOrder.h
++++ llvm-workdir/llvm/include/llvm/Support/SwapByteOrder.h
 @@ -20,7 +20,7 @@
  #include <type_traits>
-
+ 
  #if defined(__linux__) || defined(__GNU__) || defined(__HAIKU__) ||            \
 -    defined(__Fuchsia__) || defined(__EMSCRIPTEN__)
 +    defined(__Fuchsia__) || defined(__EMSCRIPTEN__) || defined(__ironclad__)
  #include <endian.h>
  #elif defined(_AIX)
  #include <sys/machine.h>
-diff --git llvm-libs-clean/llvm/include/llvm/TargetParser/Triple.h llvm-libs-workdir/llvm/include/llvm/TargetParser/Triple.h
-index 79ccd64..fc4728e 100644
---- llvm-libs-clean/llvm/include/llvm/TargetParser/Triple.h
-+++ llvm-libs-workdir/llvm/include/llvm/TargetParser/Triple.h
+diff --git llvm-clean/llvm/include/llvm/TargetParser/Triple.h llvm-workdir/llvm/include/llvm/TargetParser/Triple.h
+index 79ccd64..9526721 100644
+--- llvm-clean/llvm/include/llvm/TargetParser/Triple.h
++++ llvm-workdir/llvm/include/llvm/TargetParser/Triple.h
 @@ -197,6 +197,7 @@ public:
      Lv2,        // PS3
      MacOSX,
@@ -630,19 +630,19 @@ index 79ccd64..fc4728e 100644
      OpenBSD,
      Solaris,
      UEFI,
-diff --git llvm-libs-clean/llvm/lib/Support/Unix/Path.inc llvm-libs-workdir/llvm/lib/Support/Unix/Path.inc
-index e2aece4..b20a915 100644
---- llvm-libs-clean/llvm/lib/Support/Unix/Path.inc
-+++ llvm-libs-workdir/llvm/lib/Support/Unix/Path.inc
-@@ -506,7 +506,7 @@ static bool is_local_impl(struct STATVFS &Vfs) {
- #elif defined(__HAIKU__)
-   // Haiku doesn't expose this information.
+diff --git llvm-clean/llvm/lib/Support/Unix/Path.inc llvm-workdir/llvm/lib/Support/Unix/Path.inc
+index e2aece4..2c9ea5a 100644
+--- llvm-clean/llvm/lib/Support/Unix/Path.inc
++++ llvm-workdir/llvm/lib/Support/Unix/Path.inc
+@@ -497,7 +497,7 @@ static bool is_local_impl(struct STATVFS &Vfs) {
+ #elif defined(__CYGWIN__)
+   // Cygwin doesn't expose this information; would need to use Win32 API.
    return false;
--#elif defined(__sun)
-+#elif defined(__sun) || defined(__ironclad__)
-   // statvfs::f_basetype contains a null-terminated FSType name of the mounted
-   // target
-   StringRef fstype(Vfs.f_basetype);
+-#elif defined(__Fuchsia__)
++#elif defined(__Fuchsia__) || defined(__ironclad__)
+   // Fuchsia doesn't yet support remote filesystem mounts.
+   return true;
+ #elif defined(__EMSCRIPTEN__)
 @@ -875,7 +875,7 @@ void mapped_file_region::dontNeedImpl() {
    assert(Mode == mapped_file_region::readonly);
    if (!Mapping)
@@ -652,10 +652,10 @@ index e2aece4..b20a915 100644
      // If we don't have madvise, or it isn't beneficial, treat this as a no-op.
  #elif defined(POSIX_MADV_DONTNEED)
    ::posix_madvise(Mapping, Size, POSIX_MADV_DONTNEED);
-diff --git llvm-libs-clean/llvm/lib/Support/Unix/Program.inc llvm-libs-workdir/llvm/lib/Support/Unix/Program.inc
+diff --git llvm-clean/llvm/lib/Support/Unix/Program.inc llvm-workdir/llvm/lib/Support/Unix/Program.inc
 index 897e227..02f74d7 100644
---- llvm-libs-clean/llvm/lib/Support/Unix/Program.inc
-+++ llvm-libs-workdir/llvm/lib/Support/Unix/Program.inc
+--- llvm-clean/llvm/lib/Support/Unix/Program.inc
++++ llvm-workdir/llvm/lib/Support/Unix/Program.inc
 @@ -41,6 +41,7 @@
  #if HAVE_UNISTD_H
  #include <unistd.h>
@@ -663,11 +663,11 @@ index 897e227..02f74d7 100644
 +#undef HAVE_POSIX_SPAWN
  #ifdef HAVE_POSIX_SPAWN
  #include <spawn.h>
-
-diff --git llvm-libs-clean/llvm/lib/TargetParser/Triple.cpp llvm-libs-workdir/llvm/lib/TargetParser/Triple.cpp
-index a3d6a06..95f6bb2 100644
---- llvm-libs-clean/llvm/lib/TargetParser/Triple.cpp
-+++ llvm-libs-workdir/llvm/lib/TargetParser/Triple.cpp
+ 
+diff --git llvm-clean/llvm/lib/TargetParser/Triple.cpp llvm-workdir/llvm/lib/TargetParser/Triple.cpp
+index a3d6a06..bff67c6 100644
+--- llvm-clean/llvm/lib/TargetParser/Triple.cpp
++++ llvm-workdir/llvm/lib/TargetParser/Triple.cpp
 @@ -219,6 +219,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
    case Emscripten: return "emscripten";
    case FreeBSD: return "freebsd";
@@ -677,17 +677,17 @@ index a3d6a06..95f6bb2 100644
    case HermitCore: return "hermit";
    case Hurd: return "hurd";
 @@ -575,6 +576,7 @@ static Triple::VendorType parseVendor(StringRef VendorName) {
-
+ 
  static Triple::OSType parseOS(StringRef OSName) {
    return StringSwitch<Triple::OSType>(OSName)
 +    .StartsWith("ironclad", Triple::Ironclad)
      .StartsWith("ananas", Triple::Ananas)
      .StartsWith("cloudabi", Triple::CloudABI)
      .StartsWith("darwin", Triple::Darwin)
-diff --git llvm-libs-clean/llvm/tools/llvm-shlib/CMakeLists.txt llvm-libs-workdir/llvm/tools/llvm-shlib/CMakeLists.txt
-index 8ace190..ec5101e 100644
---- llvm-libs-clean/llvm/tools/llvm-shlib/CMakeLists.txt
-+++ llvm-libs-workdir/llvm/tools/llvm-shlib/CMakeLists.txt
+diff --git llvm-clean/llvm/tools/llvm-shlib/CMakeLists.txt llvm-workdir/llvm/tools/llvm-shlib/CMakeLists.txt
+index 8ace190..47dd871 100644
+--- llvm-clean/llvm/tools/llvm-shlib/CMakeLists.txt
++++ llvm-workdir/llvm/tools/llvm-shlib/CMakeLists.txt
 @@ -41,6 +41,7 @@ if(LLVM_BUILD_LLVM_DYLIB)
       OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "OpenBSD")
       OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")

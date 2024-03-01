@@ -1,10 +1,10 @@
 [binaries]
-c = 'x86_64-ironclad-gcc'
-cpp = 'x86_64-ironclad-g++'
-ar = 'x86_64-ironclad-ar'
-nm = 'x86_64-ironclad-nm'
-strip = 'x86_64-ironclad-strip'
-pkg-config = 'x86_64-ironclad-pkg-config'
+c = 'x86_64-pc-ironclad-mlibc-gcc'
+cpp = 'x86_64-pc-ironclad-mlibc-g++'
+ar = 'x86_64-pc-ironclad-mlibc-ar'
+nm = 'x86_64-pc-ironclad-mlibc-nm'
+strip = 'x86_64-pc-ironclad-mlibc-strip'
+pkg-config = 'x86_64-pc-ironclad-mlibc-pkg-config'
 llvm-config = '/base_dir/build-support/cross-llvm-config'
 
 [host_machine]

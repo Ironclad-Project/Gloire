@@ -3,7 +3,7 @@ JINX_MAJOR_VER=0.2
 export CFLAGS="-O2 -pipe -march=x86-64 -mtune=generic -fcf-protection"
 export CXXFLAGS="${CFLAGS}"
 
-OS_TRIPLET=x86_64-ironclad
+OS_TRIPLET=x86_64-pc-ironclad-mlibc
 
 post_package_strip() {
     if [ -z "$strip_command" ]; then

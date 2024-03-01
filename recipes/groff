@@ -24,11 +24,11 @@ build() {
     autotools_configure \
         --with-doc=no
 
-    make -j${parallelism} AR="x86_64-ironclad-ar"
+    make -j${parallelism} AR="x86_64-pc-ironclad-mlibc-ar"
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install AR="x86_64-ironclad-ar"
+    DESTDIR="${dest_dir}" make install AR="x86_64-pc-ironclad-mlibc-ar"
 
     rm -f "${dest_dir}${prefix}/lib/charset.alias"
 

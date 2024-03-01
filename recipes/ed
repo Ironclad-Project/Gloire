@@ -9,7 +9,7 @@ deps="core-libs mpfr gmp readline"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    CC="x86_64-ironclad-gcc" ./configure
+    CC="x86_64-pc-ironclad-mlibc-gcc" ./configure
 
     make -j${parallelism}
 }

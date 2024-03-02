@@ -7,7 +7,7 @@ source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
 imagedeps="gcc ninja python git"
 hostdeps="gcc cmake autoconf automake libtool pkg-config"
-deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fontconfig"
+deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fontconfig xorg-xauth"
 
 build() {
     cmake \

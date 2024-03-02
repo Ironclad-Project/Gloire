@@ -1,5 +1,5 @@
 diff --git slim-clean/app.cpp slim-workdir/app.cpp
-index 237477d..67b69a8 100644
+index 237477d..9576290 100644
 --- slim-clean/app.cpp
 +++ slim-workdir/app.cpp
 @@ -23,6 +23,7 @@
@@ -69,6 +69,19 @@ index 237477d..67b69a8 100644
   * running applications (of the logged-in session) should be caught by this
   */
  void App::KillAllClients(Bool top)
+@@ -1155,10 +1163,12 @@ int App::StartServer()
+ 		}
+ 	}
+ 
++	/*
+ 	if (!hasVtSet && daemonmode)
+ 	{
+ 		server[argc++] = (char*)"vt07";
+ 	}
++	*/
+ 	server[argc] = NULL;
+ 
+ 	switch (ServerPID) {
 diff --git slim-clean/slim.conf slim-workdir/slim.conf
 index 3e946d9..ce4a7cb 100644
 --- slim-clean/slim.conf

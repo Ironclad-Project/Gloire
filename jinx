@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="24"
+jinx_minor_ver="25"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -919,7 +919,7 @@ cmd_clean() {
 cmd_install() {
     sysroot="$1"
     shift 1
-    make_dir "${sysroot}"
+    mkdir -m 755 -p "${sysroot}"
 
     pkgs_to_install=""
     if [ "$1" = '*' ]; then

@@ -8,6 +8,8 @@
             <Program label="Text Editor" icon="accessories-text-editor">xfw</Program>
             <Program label="Image Viewer" icon="applets-screenshooter">xfi</Program>
             <Program label="Package Manager" icon="system-software-install">xfp</Program>
+            <Program label="Calculator" icon="accessories-calculator">calculator</Program>
+            <Program label="Screenshooter" icon="applets-screenshooter">shutterbug</Program>
             <Program label="xeyes">xeyes</Program>
             <Program label="xclock">xclock</Program>
             <Program label="glxgears">glxgears</Program>

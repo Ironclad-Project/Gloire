@@ -428,10 +428,10 @@ index d29257d..8cabdf6 100644
  
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
-diff --git mlibc-clean/options/rtdl/generic/linker.cpp mlibc-workdir/options/rtdl/generic/linker.cpp
+diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
 index a519c35..cb88a45 100644
---- mlibc-clean/options/rtdl/generic/linker.cpp
-+++ mlibc-workdir/options/rtdl/generic/linker.cpp
+--- mlibc-clean/options/rtld/generic/linker.cpp
++++ mlibc-workdir/options/rtld/generic/linker.cpp
 @@ -546,18 +546,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
@@ -534,7 +534,7 @@ index 3d15365..822a9d6 100644
 +	 return 0;
  }
  
- #ifndef MLIBC_BUILDING_RTDL
+ #ifndef MLIBC_BUILDING_RTLD
 @@ -884,7 +882,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  

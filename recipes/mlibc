@@ -1,8 +1,8 @@
 name=mlibc
-version=471702a69a0cbc1f252a28863aecf2466246b7d0
+version=ff967f3ad7bbc2ac3d18ca182f37c3bfdc53bece
 revision=1
 tarball_url="https://github.com/managarm/mlibc/archive/${version}.tar.gz"
-tarball_blake2b="3e1630535544a4799f960aa53451651dd275b79f17fbdc28ec475f26489c4fb400936ed7022ff8f7ce52551d8679bfe56364dd0125b7add21e6bed1e6630f0fc"
+tarball_blake2b="10a4cc0ac1010fd82f4048c7a291bf037ad08c5a50759b64362d5bdd8fd27db4de0c4320519a16d72d601f38f095365d05530de8a2edfa3f3e0418f31635c93a"
 imagedeps="meson ninja"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="cshim cxxshim frigg"

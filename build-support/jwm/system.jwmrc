@@ -69,53 +69,53 @@
         <Font>Sans-10:bold</Font>
         <Width>4</Width>
         <Corner>2</Corner>
-        <Foreground>#FFFFFF</Foreground>
-        <Background>#555555</Background>
+        <Foreground>#000000</Foreground>
+        <Background>#FFFFFF</Background>
         <Opacity>0.5</Opacity>
         <Active>
-            <Foreground>#FFFFFF</Foreground>
-            <Background>#0077CC</Background>
+            <Foreground>#000000</Foreground>
+            <Background>#D0DEE5</Background>
             <Opacity>1.0</Opacity>
         </Active>
     </WindowStyle>
     <TrayStyle decorations="flat">
         <Font>Sans-10</Font>
-        <Background>#333333</Background>
-        <Foreground>#FFFFFF</Foreground>
+        <Foreground>#000000</Foreground>
+        <Background>#FFFFFF</Background>
         <Opacity>0.75</Opacity>
     </TrayStyle>
     <TaskListStyle list="all" group="true">
       <Font>Sans-10</Font>
       <Active>
-        <Foreground>#FFFFFF</Foreground>
-        <Background>#555555</Background>
+        <Foreground>#000000</Foreground>
+        <Background>#D0DEE5</Background>
       </Active>
-      <Foreground>#FFFFFF</Foreground>
-      <Background>#333333</Background>
+      <Foreground>#000000</Foreground>
+      <Background>#FFFFFF</Background>
     </TaskListStyle>
     <PagerStyle>
-        <Foreground>#555555</Foreground>
-        <Background>#333333</Background>
-        <Text>#FFFFFF</Text>
+        <Foreground>#D0DEE5</Foreground>
+        <Background>#A7AAAC</Background>
+        <Text>#000000</Text>
         <Active>
             <Foreground>#0077CC</Foreground>
-            <Background>#004488</Background>
+            <Background>#4376C7</Background>
         </Active>
     </PagerStyle>
     <MenuStyle decorations="flat">
         <Font>Sans-10</Font>
-        <Foreground>#FFFFFF</Foreground>
-        <Background>#333333</Background>
+        <Foreground>#000000</Foreground>
+        <Background>#FFFFFF</Background>
         <Active>
-            <Foreground>#FFFFFF</Foreground>
-            <Background>#0077CC</Background>
+            <Foreground>#000000</Foreground>
+            <Background>#D0DEE5</Background>
         </Active>
         <Opacity>0.85</Opacity>
     </MenuStyle>
     <PopupStyle>
         <Font>Sans-10</Font>
         <Foreground>#000000</Foreground>
-        <Background>#999999</Background>
+        <Background>#D0DEE5</Background>
     </PopupStyle>
 
     <!-- Path where icons can be found. -->
@@ -142,7 +142,7 @@
     <DoubleClickDelta>2</DoubleClickDelta>
 
     <!-- The focus model (sloppy or click) -->
-    <FocusModel>sloppy</FocusModel>
+    <FocusModel>click</FocusModel>
 
     <!-- The snap mode (none, screen, or border) -->
     <SnapMode distance="10">border</SnapMode>

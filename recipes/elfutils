@@ -1,0 +1,24 @@
+name=elfutils
+version=0.191
+revision=1
+tarball_url="https://sourceware.org/elfutils/ftp/${version}/elfutils-${version}.tar.bz2"
+tarball_blake2b="2a7ad251369eca7ba609ab8644181fd479ad8596ee58dc068398ca22be25a978e96b81a10a92a5555d7574fd1b9227c8d54fb41dceb4025aedfc6ae32870bbca"
+source_hostdeps="automake autoconf libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs zlib"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

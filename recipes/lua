@@ -1,0 +1,20 @@
+name=lua
+version=5.4.6
+revision=1
+tarball_url="https://www.lua.org/ftp/lua-${version}.tar.gz"
+tarball_blake2b="b5d8dbc4b3ec1708b715be438c1a1f48d4f5f226885992af147c1aa6a8823bed318f77ef7cc92b265dadd26cf6088f0f39784fbfd2f9887c35de8e9def2c0558"
+imagedeps="gcc ninja python git nasm"
+hostdeps="gcc cmake pkg-config"
+deps="core-libs"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+    sed -i 's|^#define LUA_ROOT "/usr/local/"$|#define LUA_ROOT "/usr/"|' src/luaconf.h
+
+    make generic CC=${OS_TRIPLET}-gcc AR="${OS_TRIPLET}-ar rcu" RANLIB=${OS_TRIPLET}-ranlib -j${parallelism}
+}
+
+package() {
+    make install INSTALL_TOP="${dest_dir}"/usr
+    post_package_strip
+}

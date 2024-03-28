@@ -49,10 +49,10 @@ index 52f5f4d..45b0d0f 100644
 +EXTRA_DIST = $(IRONCLAD_SRCS) $(BSD_SRCS) $(HURD_SRCS) $(SOLARIS_SRCS)
 diff --git xf86-input-keyboard-workdir/src/ironclad_kbd.c xf86-input-keyboard-workdir/src/ironclad_kbd.c
 new file mode 100644
-index 0000000..a11d8b2
+index 0000000..a473dbb
 --- /dev/null
 +++ xf86-input-keyboard-workdir/src/ironclad_kbd.c
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,124 @@
 +#ifdef HAVE_CONFIG_H
 +#include <config.h>
 +#endif
@@ -83,18 +83,20 @@ index 0000000..a11d8b2
 +}
 +
 +static int KbdOff(InputInfoPtr pInfo, int what) {
-+    printf("aero::kbdOff: is a stub!\n");
++    printf("kbdOff is a stub!\n");
 +    return -1;
 +}
 +
 +static void SoundKbdBell(InputInfoPtr pInfo, int loudness, int pitch, int duration) {
-+    printf("aero::SoundKbdBell: is a stub!\n");
++    printf("SoundKbdBell is a stub!\n");
 +}
 +
-+static void SetKbdLeds(InputInfoPtr pInfo, int leds) { printf("aero::SetKbdLeds: is a stub!\n"); }
++static void SetKbdLeds(InputInfoPtr pInfo, int leds) {
++    printf("SetKbdLeds: is a stub!\n");
++}
 +
 +static int GetKbdLeds(InputInfoPtr pInfo) {
-+    printf("aero::GetKbdLeds: is a stub!\n");
++    printf("GetKbdLeds is a stub!\n");
 +    return -1;
 +}
 +
@@ -105,20 +107,33 @@ index 0000000..a11d8b2
 +}
 +
 +static void KbdGetMapping(InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap) {
-+    printf("aero::KbdGetMapping: is a stub!\n");
++    printf("KbdGetMapping is a stub!\n");
 +}
 +
 +static void ReadInput(InputInfoPtr pInfo) {
 +    KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
 +
 +    for(;;) {
-+        uint8_t scancode;
-+        size_t result = read(pInfo->fd, &scancode, sizeof(uint8_t));
++        uint8_t scancodes[2];
++        size_t result = read(pInfo->fd, scancodes, sizeof(scancodes));
 +
-+        if (result == sizeof(uint8_t)) {
-+            pKbd->PostEvent(pInfo, scancode & 0x7f /* scancode */, scancode & 0x80 ? FALSE : TRUE /* released */);
-+        } else {
++        if (result == 0 || result == -1) {
 +            return;
++        }
++
++        if (result == 1) {
++            pKbd->PostEvent(pInfo, scancodes[0] & 0x7f /* scancode */, scancodes[0] & 0x80 ? FALSE : TRUE /* released */);
++        } else {
++            switch (scancodes[1]) {
++                case 0x48: pKbd->PostEvent(pInfo, KEY_Up, TRUE);     break;
++                case 0xC8: pKbd->PostEvent(pInfo, KEY_Up, FALSE);    break;
++                case 0x4B: pKbd->PostEvent(pInfo, KEY_Left, TRUE);   break;
++                case 0xCB: pKbd->PostEvent(pInfo, KEY_Left, FALSE);  break;
++                case 0x4D: pKbd->PostEvent(pInfo, KEY_Right, TRUE);  break;
++                case 0xCD: pKbd->PostEvent(pInfo, KEY_Right, FALSE); break;
++                case 0x50: pKbd->PostEvent(pInfo, KEY_Down, TRUE);   break;
++                case 0xD0: pKbd->PostEvent(pInfo, KEY_Down, FALSE);  break;
++            }
 +        }
 +    }
 +}

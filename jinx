@@ -26,12 +26,13 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="25"
+jinx_minor_ver="26"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-archlinux_snapshot_date="2024.02.01"
-archlinux_snapshot_b2sum=e453387c25aef7f4818729aec44281d57f5f7fca68dbcd8cac5942063c7813c7d2ea704bc31f9e0929c5ba2d639e648788711eafb993df7bb971d3e808def2f8
+archlinux_snapshot_date="2024.04.01"
+archlinux_snapshot_b2sum=b04e93a871446a0fa01c12e37e998b5808c8205810c38a9bc6471095f91719d2635edb7ba9b37b0ce23cdb891f5a9a78632435bb39b4a0ea019787a00340af9a
+archlinux_snapshot_repo_date="2024/04/10"
 
 XSTOW_VERSION=1.1.1
 
@@ -1678,7 +1679,7 @@ reinit_container() {
     make_dir "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 
-    echo "Server = https://archive.archlinux.org/repos/$(echo ${archlinux_snapshot_date} | sed 's|\.|/|g')/\$repo/os/\$arch" > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
+    echo "Server = https://archive.archlinux.org/repos/${archlinux_snapshot_repo_date}/\$repo/os/\$arch" > "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/mirrorlist"
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     make_dir "$JINX_CACHE_DIR/sets/.image/etc/pacman.d/gnupg"
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
@@ -1687,12 +1688,29 @@ reinit_container() {
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Sy archlinux-keyring
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -S pacman pacman-mirrorlist
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --noconfirm -Syu
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils docbook-xsl doxygen flex gettext inetutils libtool libxslt m4 make patch perl python texinfo w3m which xmlto
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" sed -i "s/ check / !check /g" /etc/makepkg.conf
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j${parallelism}\"/g" /etc/makepkg.conf
 
     # Fix permissions of files
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
         chmod 755 "$f"
     done
+
+    # Build our own doxygen since upstream wants clang/LLVM now and we don't
+    DOXYGEN_BUILDENV="$JINX_CACHE_DIR/doxygen_buildenv"
+    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${DOXYGEN_BUILDENV}/"
+    mkdir -p "${DOXYGEN_BUILDENV}/doxygen"
+    curl -Lo "${DOXYGEN_BUILDENV}/doxygen/PKGBUILD" https://gitlab.archlinux.org/archlinux/packaging/packages/doxygen/-/raw/adf80b73b4f16d53f4a1d69ca63921d195a3dcf9/PKGBUILD
+    run_in_container1 "${DOXYGEN_BUILDENV}" pacman --needed --noconfirm -S base-devel cmake ghostscript graphviz python qt6-base texlive-fontsrecommended texlive-fontutils texlive-latexextra texlive-plaingeneric
+    run_in_container1 "${DOXYGEN_BUILDENV}" sh -c "sed -i 's/exit \$E_ROOT//g' /usr/bin/makepkg && cd /doxygen && sed -i 's/pkgrel=1/pkgrel=99/g' PKGBUILD && makepkg -s --noconfirm"
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/doxygen"
+    mv "${DOXYGEN_BUILDENV}"/doxygen/*.tar.zst "$JINX_CACHE_DIR/sets/.image/doxygen/"
+    chmod -R 777 "$DOXYGEN_BUILDENV"
+    rm -rf "$DOXYGEN_BUILDENV"
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" sh -c "pacman --needed --noconfirm -U /doxygen/*"
+    rm -rf "$JINX_CACHE_DIR/sets/.image/doxygen"
+
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils docbook-xsl flex gettext inetutils libtool libxslt m4 make patch perl python texinfo w3m which xmlto
 
     # Build xstow
     XSTOW_BUILDENV="$JINX_CACHE_DIR/xstow_buildenv"

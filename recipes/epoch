@@ -14,8 +14,9 @@ build() {
 
 package() {
     mkdir -p "${dest_dir}${prefix}"/bin
+    mkdir -p "${dest_dir}"/etc/epoch
     cp -r built/sbin/* "${dest_dir}${prefix}"/bin/
     cp -r built/bin/*  "${dest_dir}${prefix}"/bin/
-
+    cp -v "${base_dir}"/build-support/epoch/epoch.conf "${dest_dir}"/etc/epoch/
     post_package_strip
 }

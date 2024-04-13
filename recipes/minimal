@@ -1,5 +1,5 @@
 name=minimal
 revision=1
 deps="core-libs bash base-files bc bzip2 coreutils cronie diffutils ed epoch
-   file findutils gcon grep gzip limine mailutils man-db patch sed tar texinfo
+   file findutils grep gzip limine mailutils man-db patch sed tar texinfo
    tzdata util-ironclad wget2 xz ironclad metalog perl sharutils"

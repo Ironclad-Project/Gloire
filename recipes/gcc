@@ -27,6 +27,8 @@ build() {
         --with-sysroot=/ \
         --with-build-sysroot=${sysroot_dir} \
         --enable-languages=c,c++,fortran,lto \
+        --enable-default-pie \
+        --enable-default-ssp \
         --enable-initfini-array \
         --disable-multilib \
         --with-system-zlib \

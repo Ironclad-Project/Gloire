@@ -1,8 +1,8 @@
 name=xz
-version=5.4.5
+version=5.4.6
 revision=1
-tarball_url="http://deb.debian.org/debian/pool/main/x/xz-utils/xz-utils_5.6.1+really5.4.5.orig.tar.xz"
-tarball_blake2b="08d9afebd927ea5d155515a4c9eedda4d1a249f2b1ab6ada11f50e5b7a3c90b389b32378ab1c0872c7f4627de8dff37149d85e49f7f4d30614add37320ec4f3e"
+tarball_url="https://github.com/tukaani-project/xz/releases/download/v${version}/xz-${version}.tar.xz"
+tarball_blake2b="d609590f1e9f13404988050e1bfdc623b996794b603cf2e39d2fd592be1967c97d8beaba9196eae4a0d448a432b1d7499986b7f669e736b65ec67590a04af9f7"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"

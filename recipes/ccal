@@ -1,0 +1,20 @@
+name=ccal
+version=4.0
+revision=1
+tarball_url="https://deb.debian.org/debian/pool/main/c/cal/cal_${version}.orig.tar.gz"
+tarball_blake2b="de65b25422a5fe3efaab04530ef5fb8f4ccd5a4a8603b6032e77f8132a492d6f50f04434c95acfce239001ae2d0984eefe4fc2ee975e782657bcaecc19d1a11a"
+hostdeps="gcc autoconf automake libtool"
+deps="core-libs"
+
+build() {
+    cp -rp ${source_dir}/. ./
+
+    make -C src -f makefile.unx CC=${OS_TRIPLET}-gcc CFLAGS="-DNO_EXECINFO ${CFLAGS}"
+}
+
+package() {
+    mkdir -p "${dest_dir}/usr/share/man/man1"
+    mkdir -p "${dest_dir}/usr/bin"
+    make -C src -f makefile.unx BINDIR="${dest_dir}/usr/bin" MANDIR="${dest_dir}/usr/share/man" CC=${OS_TRIPLET}-gcc CFLAGS="-DNO_EXECINFO ${CFLAGS}" install
+    post_package_strip
+}

@@ -19,6 +19,8 @@ build() {
         --disable-nls \
         --disable-libada \
         --enable-languages=c,c++,lto,ada \
+        --enable-default-pie \
+        --enable-default-ssp \
         --disable-multilib \
         --enable-initfini-array \
         --enable-shared \

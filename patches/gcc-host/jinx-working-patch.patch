@@ -23,18 +23,18 @@ index 0000000..ca776e9
 +#define LIB_SPEC "-lc"
 +
 +#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared:crtbeginS.o%s;:crtbegin.o%s}"
++#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
 +
 +#undef ENDFILE_SPEC
-+#define ENDFILE_SPEC "%{shared:crtendS.o%s;:crtend.o%s} crtn.o%s"
++#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 +
 +#define GNU_USER_LINK_EMULATION32 "elf_i386"
 +#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
 +#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
 +
-+#define GNU_USER_DYNAMIC_LINKER32 "/usr/lib/ld_i386.so"
++#define GNU_USER_DYNAMIC_LINKER32 "/does_not_exist"
 +#define GNU_USER_DYNAMIC_LINKER64 "/usr/lib/ld.so"
-+#define GNU_USER_DYNAMIC_LINKERX32 "/usr/lib/ld32.so"
++#define GNU_USER_DYNAMIC_LINKERX32 "/does_not_exist"
 +
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS()         \

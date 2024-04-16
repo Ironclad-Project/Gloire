@@ -1,8 +1,8 @@
 name=libarchive
-version=3.7.2
+version=3.7.3
 revision=1
 tarball_url="https://github.com/libarchive/libarchive/releases/download/v${version}/libarchive-${version}.tar.xz"
-tarball_blake2b="7221db4811a965ee61d879a2603480363628a19995a351b572d099be9f35576d76f0b0822f9a5a47d9929bc094d4444fd8eafcb4a073e39bb3aa797d4b926ca5"
+tarball_blake2b="c53672c8cdbe8f406f00bf4fc6b36e4dffcd23a33909dbec6ef06b86dceefc6062840eff629ba3bd19c36121720e16a8ba10dfa1a35ebed186cc92eb144f55d0"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs zlib xz zstd libexpat libxml"

@@ -15,7 +15,7 @@ build() {
         -DCMAKE_BUILD_TYPE=Release \
         ${source_dir}
 
-    ninja
+    ninja -j${parallelism}
 }
 
 package() {

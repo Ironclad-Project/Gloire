@@ -6,8 +6,8 @@
 
 Gloire is an OS built with the [Ironclad](https://ironclad.cx)
 kernel and using GNU tools for the userland, along with some original
-applications like `gwm`. This repository holds scripts and tools to build the
-OS from the ground up.
+applications like `util-ironclad`. This repository holds scripts and tools to
+build the OS from the ground up on a Linux-based system.
 
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
@@ -60,9 +60,7 @@ The instructions to build are:
 ```
 
 These commands will generate a bootable disk image that can be burned to
-storage media or be booted by several emulators. All programs will be built
-and added to the image, if instead, a minimal install is desired, one can
-replace `build-all` with `build minimal`.
+storage media or be booted by several emulators.
 
 A list of the tools needed for compilation of the OS are:
 

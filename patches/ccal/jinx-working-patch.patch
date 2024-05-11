@@ -1,0 +1,12 @@
+diff --git ccal-clean/src/cal.c ccal-workdir/src/cal.c
+index 5f740a6..605d01f 100644
+--- ccal-clean/src/cal.c
++++ ccal-workdir/src/cal.c
+@@ -164,6 +164,7 @@ BASIC DATA STRUCTURE:                                          specialdays()
+ #include <time.h>
+ #include <ctype.h>
+ #include <string.h>
++#include <strings.h>
+ #include <sys/types.h>
+ #ifndef UNIX
+  #include <io.h>  /* for isatty() */

@@ -123,38 +123,6 @@ index 5695e71..96c2d15 100644
  #undef HAS_UTSNAME
  #if !defined(WIN32)
  #define HAS_UTSNAME 1
-diff --git xorg-server-clean/hw/xfree86/common/xf86Xinput.c xorg-server-workdir/hw/xfree86/common/xf86Xinput.c
-index 75235b3..5aaa682 100644
---- xorg-server-clean/hw/xfree86/common/xf86Xinput.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Xinput.c
-@@ -824,6 +824,16 @@ xf86InputDevicePostInit(DeviceIntPtr dev)
-     return Success;
- }
- 
-+static unsigned int __mlibc_dev_major(
-+		unsigned long long int __dev) {
-+  return ((__dev >> 8) & 0xfff) | ((unsigned int)(__dev >> 32) & ~0xfff);
-+}
-+
-+static unsigned int __mlibc_dev_minor(
-+		unsigned long long int __dev) {
-+  return (__dev & 0xff) | ((unsigned int)(__dev >> 12) & ~0xff);
-+}
-+
- static void
- xf86stat(const char *path, int *maj, int *min)
- {
-@@ -832,8 +842,8 @@ xf86stat(const char *path, int *maj, int *min)
-     if (stat(path, &st) == -1)
-         return;
- 
--    *maj = major(st.st_rdev);
--    *min = minor(st.st_rdev);
-+    *maj = __mlibc_dev_major(st.st_rdev);
-+    *min = __mlibc_dev_minor(st.st_rdev);
- }
- 
- static inline InputDriverPtr
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
 index 3d8b92e..f7be685 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c

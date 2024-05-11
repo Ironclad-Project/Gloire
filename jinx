@@ -26,13 +26,13 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="26"
+jinx_minor_ver="27.0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-archlinux_snapshot_date="2024.04.01"
-archlinux_snapshot_b2sum=b04e93a871446a0fa01c12e37e998b5808c8205810c38a9bc6471095f91719d2635edb7ba9b37b0ce23cdb891f5a9a78632435bb39b4a0ea019787a00340af9a
-archlinux_snapshot_repo_date="2024/04/10"
+archlinux_snapshot_date="2024.05.01"
+archlinux_snapshot_b2sum=fbc9f2e9bdadae804901ff63bbf6ba7d98ce95e98ea37e9d3f5de1fc0fbefdf0714c0d75a6f05aad4c45f85aa4cc27dad1d9b1c817c93c96e8c60f62659d82bb
+archlinux_snapshot_repo_date="2024/05/09"
 
 XSTOW_VERSION=1.1.1
 
@@ -1666,16 +1666,16 @@ EOF
 reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
     chmod -R 777 "$JINX_CACHE_DIR/pacman" 2>/dev/null || true
-    rm -rf "$JINX_CACHE_DIR/arch-root.tar.gz" "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/pacman"
+    rm -rf "$JINX_CACHE_DIR/arch-root.tar.zst" "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/pacman"
 
     make_dir "${pacman_cache}"
 
-    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.gz" https://archive.archlinux.org/iso/${archlinux_snapshot_date}/archlinux-bootstrap-x86_64.tar.gz
-    if ! "$JINX_CACHE_DIR/b2sum" "$JINX_CACHE_DIR/arch-root.tar.gz" | grep "${archlinux_snapshot_b2sum}" >/dev/null 2>&1; then
+    curl -L -o "$JINX_CACHE_DIR/arch-root.tar.zst" https://archive.archlinux.org/iso/${archlinux_snapshot_date}/archlinux-bootstrap-x86_64.tar.zst
+    if ! "$JINX_CACHE_DIR/b2sum" "$JINX_CACHE_DIR/arch-root.tar.zst" | grep "${archlinux_snapshot_b2sum}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify Arch Linux bootstrap tarball"
     fi
-    ( cd "$JINX_CACHE_DIR" && bsdtar -zxf arch-root.tar.gz )
-    rm "$JINX_CACHE_DIR/arch-root.tar.gz"
+    ( cd "$JINX_CACHE_DIR" && zstdcat arch-root.tar.zst | bsdtar -xf - )
+    rm "$JINX_CACHE_DIR/arch-root.tar.zst"
     make_dir "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/root.x86_64" "$JINX_CACHE_DIR/sets/.image"
 

@@ -26,13 +26,13 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="27.0"
+jinx_minor_ver="27.1"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 archlinux_snapshot_date="2024.05.01"
 archlinux_snapshot_b2sum=fbc9f2e9bdadae804901ff63bbf6ba7d98ce95e98ea37e9d3f5de1fc0fbefdf0714c0d75a6f05aad4c45f85aa4cc27dad1d9b1c817c93c96e8c60f62659d82bb
-archlinux_snapshot_repo_date="2024/05/09"
+archlinux_snapshot_repo_date="2024/05/13"
 
 XSTOW_VERSION=1.1.1
 
@@ -240,7 +240,7 @@ run_in_container1() {
         --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
         ${run_in_cont1_term} \
         ${run_in_cont1_colorterm} \
-        --mount "${pacman_cache}":/var/cache/pacman/pkg \
+        -m"${pacman_cache}":/var/cache/pacman/pkg \
         -- \
         "$@"
 }
@@ -378,6 +378,18 @@ run_in_container() {
         run_in_cont_argvar="$run_in_cont_argvar \"$arg\""
     done
 
+    shadow_git_dir_build=""
+    if [ -d "${build_dir}"/.git ]; then
+        make_temp -d
+        shadow_git_dir_build="-m${tmp}:/build_dir/.git"
+    fi
+
+    shadow_git_dir_base=""
+    if [ -d "${base_dir}"/.git ]; then
+        make_temp -d
+        shadow_git_dir_base="-m${tmp}:/base_dir/.git"
+    fi
+
     if [ -z "${native_mode_mounts}" ]; then
         "$JINX_CACHE_DIR/rbrt" \
             --root "${imgroot}" \
@@ -393,11 +405,13 @@ run_in_container() {
             --env JINX_PARALLELISM="$parallelism" \
             --env JINX_CONFIG_FILE=/jinx-config \
             --env JINX_SOURCE_DIR=/base_dir \
-            --mount "${script}":/jinx:ro \
-            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
-            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
-            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-            --mount "${build_dir}":/build_dir \
+            -m"${script}":/jinx:ro \
+            -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
+            -m"${base_dir}":/base_dir${container_base_dir_ro} \
+            "${shadow_git_dir_base}" \
+            -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            -m"${build_dir}":/build_dir \
+            "${shadow_git_dir_build}" \
             ${unshare_net_flag} \
             --workdir / \
             -- \
@@ -417,13 +431,15 @@ run_in_container() {
             --env JINX_PARALLELISM="$parallelism" \
             --env JINX_CONFIG_FILE=/jinx-config \
             --env JINX_SOURCE_DIR=/base_dir \
-            --mount "${container_pkgs}":/usr/local:ro \
-            --mount "${sysroot_dir}":/sysroot:ro \
-            --mount "${script}":/jinx:ro \
-            --mount "${JINX_CONFIG_FILE}":/jinx-config:ro \
-            --mount "${base_dir}":/base_dir${container_base_dir_ro} \
-            --mount "${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-            --mount "${build_dir}":/build_dir \
+            -m"${container_pkgs}":/usr/local:ro \
+            -m"${sysroot_dir}":/sysroot:ro \
+            -m"${script}":/jinx:ro \
+            -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
+            -m"${base_dir}":/base_dir${container_base_dir_ro} \
+            "${shadow_git_dir_base}" \
+            -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+            -m"${build_dir}":/build_dir \
+            "${shadow_git_dir_build}" \
             ${unshare_net_flag} \
             --workdir / \
             -- \
@@ -1344,12 +1360,7 @@ int main(int argc, char *argv[]) {
             }
 
             i += 2;
-        } else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mount") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
-                goto cleanup;
-            }
-
+        } else if (strncmp(argv[i], "-m", 2) == 0) {
             if (mount_count == mounts_size) {
                 mounts_size = mounts_size == 0 ? 16 : mounts_size * 2;
                 char **tmp_mounts = realloc(mounts, sizeof(char *) * mounts_size);
@@ -1360,7 +1371,7 @@ int main(int argc, char *argv[]) {
                 mounts = tmp_mounts;
             }
 
-            char *target = argv[i + 1];
+            char *target = argv[i] + 2;
             while (*target && *target != ':') {
                 target++;
             }
@@ -1370,8 +1381,8 @@ int main(int argc, char *argv[]) {
                 goto cleanup;
             }
 
-            mounts[mount_count++] = argv[i + 1];
-            i += 2;
+            mounts[mount_count++] = argv[i] + 2;
+            i += 1;
         } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--env") == 0) {
             if (i == argc - 1) {
                 fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);

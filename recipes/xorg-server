@@ -27,7 +27,7 @@ build() {
         --disable-suid-wrapper \
         --disable-pciaccess \
         --disable-dpms \
-        --disable-screensaver \
+        --enable-screensaver \
         --disable-xres \
         --disable-xvmc \
         --disable-systemd-logind \
@@ -46,8 +46,10 @@ build() {
 }
 
 package() {
-    mkdir -p "${dest_dir}"/etc/X11
     DESTDIR="${dest_dir}" make install
+
+    mkdir -p "${dest_dir}"/etc/X11
     cp -v "${base_dir}"/build-support/xorg-server/xorg.conf "${dest_dir}"/etc/X11/
+
     post_package_strip
 }

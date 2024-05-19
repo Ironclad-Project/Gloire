@@ -26,7 +26,7 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="27.1"
+jinx_minor_ver="28"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1265,7 +1265,7 @@ int main(int argc, char *argv[]) {
     printf("  %s\n", argv[1]);
 }
 EOF
-    cc -static -O2 -pipe -fno-strict-aliasing -Wall -Wextra "$JINX_CACHE_DIR/b2sum.c" -o "$JINX_CACHE_DIR/b2sum"
+    cc -O2 -pipe -fno-strict-aliasing -Wall -Wextra "$JINX_CACHE_DIR/b2sum.c" -o "$JINX_CACHE_DIR/b2sum"
 }
 
 rebuild_rbrt() {
@@ -1671,7 +1671,7 @@ cleanup:
     return ok;
 }
 EOF
-    cc -static -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
+    cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
 }
 
 reinit_container() {
@@ -1727,7 +1727,7 @@ reinit_container() {
     XSTOW_BUILDENV="$JINX_CACHE_DIR/xstow_buildenv"
     cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XSTOW_BUILDENV}/"
     curl -Lo "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}.tar.gz" https://github.com/majorkingleo/xstow/releases/download/${XSTOW_VERSION}/xstow-${XSTOW_VERSION}.tar.gz
-    ( cd "${XSTOW_BUILDENV}" && tar -xf xstow-${XSTOW_VERSION}.tar.gz )
+    ( cd "${XSTOW_BUILDENV}" && gunzip < xstow-${XSTOW_VERSION}.tar.gz | tar -xf - )
     run_in_container1 "${XSTOW_BUILDENV}" pacman --needed --noconfirm -S base-devel
     run_in_container1 "${XSTOW_BUILDENV}" sh -c "cd /xstow-${XSTOW_VERSION} && ./configure LDFLAGS='-static' --enable-static --enable-merge-info --without-curses && make -j${parallelism}"
     mv "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}/src/merge-info" "$JINX_CACHE_DIR/"

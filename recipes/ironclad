@@ -1,8 +1,8 @@
 name=ironclad
-version=6746f095399aebe9f88b8f9e9b34464888289793
+version=42df7eed67ffeb5d6bce3de8704b913c9f466c1c
 revision=1
 tarball_url="https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz"
-tarball_blake2b="89fa488b677b0e7faea9aea9782d4edf7289bdccb1e0235502842fce9884c9cdecc0aed19f85cbcd733516811c078df7067e131573b24644b7072b9ee3083528"
+tarball_blake2b="feb0ee68802363af7989e969fe5c20b1420b8138643be6979ac6f588f79a16268d70a424409945629d78ee2cadec94f31af42be70182e8292a711f5abcac40cb"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="texinfo binutils"

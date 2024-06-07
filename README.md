@@ -75,7 +75,7 @@ A list of the tools needed for compilation of the OS are:
 All of said things can be installed in debian-based systems with
 
 ```bash
-sudo apt install lzip libarchive-tools git build-essentials
+sudo apt install lzip libarchive-tools git build-essentials rsync
 ```
 
 ## Licensing

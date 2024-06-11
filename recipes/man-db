@@ -1,21 +1,18 @@
 name=man-db
-version=2.9.4
+version=2.12.1
 revision=1
 tarball_url="https://download.savannah.nongnu.org/releases/man-db/man-db-${version}.tar.xz"
-tarball_blake2b="43427e851f0e661ca1cee55211dd7636f4ffde067c75de7715f525029b22c205728f8e86ac49abff60e47a4a4c9e1fbd78e2c87e70bd37778b88594a3897275f"
+tarball_blake2b="b06c48431608cf798659d19df754d992dca8ba31842613a3326e376e80fe74d913146f45a7f3c5e70c421a2401aeabdb091de78ebb3102b9d70c194286c245a7"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="groff"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs mpfr gmp readline libiconv groff less libpipeline gdbm"
+deps="core-libs bash gdbm groff less libpipeline zlib"
 
 regenerate() {
     autotools_recursive_regen
 }
 
 build() {
-    cp -rp "${source_dir}"/. ./
-
-        configure_script_path=./configure \
     autotools_configure \
         --disable-setuid \
         --with-systemdtmpfilesdir= \

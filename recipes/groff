@@ -1,10 +1,10 @@
 name=groff
-version=1.22.4
+version=1.23.0
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/groff/groff-${version}.tar.gz"
-tarball_blake2b="cdda8a7e8e42b8d8991656ecfbffe0cd0ed5d8932467cab2f3c1eecb3365f4a5c03321b6ed929d451c3dfb00a46046a781303a1c55c4aa65eb7d178fb36b1cbc"
+tarball_blake2b="9fc5a2302f034761a17f0639a04b82c536ba8a7db15b062dd736e0011fc5a27fddcaf035af128d09f06762825d9bb965e8f5561e4be7a9fea3fe86ca5f6cb2dd"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="sed"
+imagedeps="groff"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
@@ -13,22 +13,13 @@ regenerate() {
 }
 
 build() {
-    cp -rp "${source_dir}"/. ./
+    autotools_configure
 
-    sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_1 (signbit)"//g lib/math.in.h
-    sed -i s/"_GL_MATH_CXX_REAL_FLOATING_DECL_2 (signbit)"//g lib/math.in.h
-    sed -i s/"#   undef signbit"//g lib/math.in.h
-
-        PAGE="A4" \
-        configure_script_path=./configure \
-    autotools_configure \
-        --with-doc=no
-
-    make -j${parallelism} AR="x86_64-pc-ironclad-mlibc-ar"
+    make -j${parallelism} GROFFBIN=/usr/bin/groff
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install AR="x86_64-pc-ironclad-mlibc-ar"
+    DESTDIR="${dest_dir}" make install
 
     rm -f "${dest_dir}${prefix}/lib/charset.alias"
 

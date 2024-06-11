@@ -16,7 +16,7 @@ build() {
 
         configure_script_path=./configure \
     autotools_configure \
-        --disable-libgdbm-compat
+        --enable-libgdbm-compat
 
     make -j${parallelism}
 }

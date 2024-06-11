@@ -10,7 +10,7 @@ build() {
     cp -rp "${source_dir}"/. ./
     mkdir build && cd build
 
-        CXXFLAGS_FOR_TARGET="$CFLAGS" \
+        CXXFLAGS_FOR_TARGET="$CXXFLAGS" \
         CFLAGS_FOR_TARGET="$CFLAGS" \
     ../configure \
         --prefix="${prefix}" \

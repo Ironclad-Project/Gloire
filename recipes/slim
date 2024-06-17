@@ -25,5 +25,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" ninja install
+    cp -v "${base_dir}"/build-support/slim/slim.conf "${dest_dir}"/etc/
     post_package_strip
 }

@@ -1,20 +1,22 @@
 name=lua
 version=5.4.6
 revision=1
-tarball_url="https://www.lua.org/ftp/lua-${version}.tar.gz"
-tarball_blake2b="b5d8dbc4b3ec1708b715be438c1a1f48d4f5f226885992af147c1aa6a8823bed318f77ef7cc92b265dadd26cf6088f0f39784fbfd2f9887c35de8e9def2c0558"
+tarball_url="https://github.com/lua/lua/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="19ee0b0e17224f23d5cd2bc75e005b03b6f338de5d9df3167a92f5d3c9b48d91da0125c2108a14ba01ac1f54267af5b8150d5e825b5372f5eb90e4719fd67b44"
 imagedeps="gcc ninja python git nasm"
 hostdeps="gcc cmake pkg-config"
-deps="core-libs"
+deps="core-libs readline"
 
 build() {
     cp -rp "${source_dir}"/. ./
-    sed -i 's|^#define LUA_ROOT "/usr/local/"$|#define LUA_ROOT "/usr/"|' src/luaconf.h
+    sed -i 's|^#define LUA_ROOT "/usr/local/"$|#define LUA_ROOT "/usr/"|' luaconf.h
 
-    make generic CC=${OS_TRIPLET}-gcc AR="${OS_TRIPLET}-ar rcu" RANLIB=${OS_TRIPLET}-ranlib -j${parallelism}
+    make MYLIBS="-lreadline -lncursesw -ltinfow" CFLAGS="$CFLAGS -DLUA_USE_POSIX -DLUA_USE_DLOPEN -DLUA_USE_READLINE" MYLDFLAGS="$LDFLAGS" CC=${OS_TRIPLET}-gcc AR="${OS_TRIPLET}-ar rcu" RANLIB=${OS_TRIPLET}-ranlib -j${parallelism}
 }
 
 package() {
-    make install INSTALL_TOP="${dest_dir}"/usr
+    mkdir -p "${dest_dir}${prefix}"/bin
+    cp lua "${dest_dir}${prefix}"/bin/
+
     post_package_strip
 }

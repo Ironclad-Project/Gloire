@@ -1,0 +1,15 @@
+diff --git cvs-clean/configure.in cvs-workdir/configure.in
+index bea30e8..0af6647 100644
+--- cvs-clean/configure.in
++++ cvs-workdir/configure.in
+@@ -511,7 +511,9 @@ AC_FUNC_UTIME_NULL
+ AC_SYS_LONG_FILE_NAMES
+ 
+ dnl for debugging code
+-CVS_FUNC_PRINTF_PTR
++AC_DEFINE(HAVE_PRINTF_PTR, 1,
++            [Define to 1 if the `printf' function supports the %p format
++	     for printing pointers.])
+ 
+ # Try to find connect and gethostbyname.
+ AC_CHECK_LIB(nsl, main)

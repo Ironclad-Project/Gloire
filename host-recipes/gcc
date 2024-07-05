@@ -17,6 +17,8 @@ build() {
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot_dir}" \
         --disable-nls \
+        --with-linker-hash-style=gnu \
+        --enable-linker-build-id \
         --disable-libada \
         --enable-languages=c,c++,lto,ada \
         --enable-default-pie \

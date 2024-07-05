@@ -26,13 +26,13 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="29"
+jinx_minor_ver="30"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-archlinux_snapshot_date="2024.06.01"
-archlinux_snapshot_b2sum=15eb4cf7be1677c12885e5aa10ba0f00c1e427083e258e6a954e48e57ca74394b8ad0669a251afd521269e13f8781ba7ca68acd684e2a5de92bdf4346ddb18b0
-archlinux_snapshot_repo_date="2024/06/01"
+archlinux_snapshot_date="2024.07.01"
+archlinux_snapshot_b2sum=7b7e83f7141b90b5586502a2fe46c043cb4acc84efca4cd668a6644725b515c0ba0fe2e5de76ea53be6128134ae6556508a63a8ec8909fa8903ab8d97886bf22
+archlinux_snapshot_repo_date="2024/07/02"
 
 XSTOW_VERSION=1.1.1
 
@@ -1706,20 +1706,6 @@ reinit_container() {
     for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
         chmod 755 "$f"
     done
-
-    # Build our own doxygen since upstream wants clang/LLVM now and we don't
-    DOXYGEN_BUILDENV="$JINX_CACHE_DIR/doxygen_buildenv"
-    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${DOXYGEN_BUILDENV}/"
-    mkdir -p "${DOXYGEN_BUILDENV}/doxygen"
-    curl -Lo "${DOXYGEN_BUILDENV}/doxygen/PKGBUILD" https://gitlab.archlinux.org/archlinux/packaging/packages/doxygen/-/raw/adf80b73b4f16d53f4a1d69ca63921d195a3dcf9/PKGBUILD
-    run_in_container1 "${DOXYGEN_BUILDENV}" pacman --needed --noconfirm -S base-devel cmake ghostscript graphviz python qt6-base texlive-fontsrecommended texlive-fontutils texlive-latexextra texlive-plaingeneric
-    run_in_container1 "${DOXYGEN_BUILDENV}" sh -c "sed -i 's/exit \$E_ROOT//g' /usr/bin/makepkg && cd /doxygen && sed -i 's/pkgrel=1/pkgrel=99/g' PKGBUILD && makepkg -s --noconfirm"
-    mkdir -p "$JINX_CACHE_DIR/sets/.image/doxygen"
-    mv "${DOXYGEN_BUILDENV}"/doxygen/*.tar.zst "$JINX_CACHE_DIR/sets/.image/doxygen/"
-    chmod -R 777 "$DOXYGEN_BUILDENV"
-    rm -rf "$DOXYGEN_BUILDENV"
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" sh -c "pacman --needed --noconfirm -U /doxygen/*"
-    rm -rf "$JINX_CACHE_DIR/sets/.image/doxygen"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" pacman --needed --noconfirm -S bison diffutils docbook-xsl flex gettext inetutils libtool libxslt m4 make patch perl python texinfo w3m which xmlto
 

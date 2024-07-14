@@ -1,10 +1,9 @@
 name=rsync
 version=3.3.0
 revision=1
-tarball_url="https://github.com/RsyncProject/rsync/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="4ea746a1adebffa6702329e4cd8f45917740c2f39c14abfe5fa758d47f50f6494a9d6f85ded0c77a9a28e4a8a6cf1fc8aa8a1739af2707eaac70a268c2980ac5"
+tarball_url="https://www.samba.org/ftp/rsync/src/rsync-${version}.tar.gz"
+tarball_blake2b="75a3cc50452086aebd16f42d7a309c173cbc1ea156227afb10d2106d0b9043e973676995b8199d22840775ae3df8db97d1c0de5f3aa58afa130c5b1348c3f825"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="gperf"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs openssl zstd xz xxhash lz4"
 
@@ -16,8 +15,7 @@ build() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
-    autotools_configure \
-        --disable-md2man
+    autotools_configure
 
     make -j${parallelism} reconfigure
     make -j${parallelism}

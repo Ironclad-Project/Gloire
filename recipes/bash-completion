@@ -1,0 +1,27 @@
+name=bash-completion
+version=2.14.0
+revision=1
+tarball_url="https://github.com/scop/bash-completion/releases/download/${version}/bash-completion-${version}.tar.xz"
+tarball_blake2b="c28ec0cd348a3954461f7a865823a358e47c4b479c7812baa6d54aef856c958510967806550e62784955f9daf233a0b01edade19884e534df857472a3196e63e"
+source_hostdeps="automake autoconf libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="bash"
+
+regenerate() {
+    autotools_recursive_regen
+}
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+        configure_script_path=./configure \
+    autotools_configure
+
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

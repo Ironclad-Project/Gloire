@@ -5,11 +5,13 @@ imagedeps="gcc"
 hostdeps="autoconf-2.69 automake libtool pkg-config"
 
 build() {
+    # --enable-separate-code makes libxcb fail to load my mlibc, please
+    # dig why this happens! Its probably kernel side.
+
     "${source_dir}"/configure \
         --prefix="${prefix}" \
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot_dir}" \
-        --enable-separate-code \
         --enable-cet \
         --enable-default-execstack=no \
         --enable-deterministic-archives \

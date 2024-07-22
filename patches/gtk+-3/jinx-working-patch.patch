@@ -7,7 +7,7 @@ index 7f0e520..3bf670c 100644
  _gtk_accessibility_init (void)
  {
 +// We don't care about a11y at this point in time and dbus isn't working, so let's just not start that.
-+#ifdef __vinix__
++#ifdef __ironclad__
 +  return;
 +#else
    if (initialized)

@@ -2,7 +2,7 @@ name=lz4
 version=1.9.4
 revision=1
 tarball_url="https://github.com/lz4/lz4/releases/download/v${version}/lz4-${version}.tar.gz"
-tarball_blake2b="735408256240760778fa516e01bed428f04837eb4e059c512e924f13e4a96db6cacbbefb04dea65a37b0f25b52cf13c4927a6e7870dc8c0d45b1b955d4ba3da1"
+tarball_blake2b="2289cdce36acd35283bf2f02ef4d6d8f4805563be6d5a3492f3d6ea7975fb6bd14e1ac2e505df9747776edf8bcf0da7ba4ae7084b150e3ec08a52a9885f92ad5"
 hostdeps="gcc"
 deps="core-libs"
 

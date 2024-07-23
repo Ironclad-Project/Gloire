@@ -108,10 +108,10 @@ index c42b4f4..011d9c0 100644
  }
  
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index 176f6f3..98639c4 100644
+index 6cced1a..0e50b6b 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-@@ -487,9 +487,16 @@ int strcoll_l(const char *, const char *, locale_t) {
+@@ -518,9 +518,16 @@ int strcoll_l(const char *, const char *, locale_t) {
  	__builtin_unreachable();
  }
  
@@ -130,7 +130,7 @@ index 176f6f3..98639c4 100644
 +	return 3;
  }
  
- char *secure_getenv(const char *name) {
+ int getsubopt(char **__restrict__, char *const *__restrict__, char **__restrict__) {
 diff --git mlibc-clean/options/posix/generic/posix_string.cpp mlibc-workdir/options/posix/generic/posix_string.cpp
 index d0bc7b5..7bddcc7 100644
 --- mlibc-clean/options/posix/generic/posix_string.cpp
@@ -199,10 +199,10 @@ index 3af7e90..a02d4a2 100644
 +	return ret;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index 1989f24..b893a5e 100644
+index fe0904d..123d146 100644
 --- mlibc-clean/options/posix/include/fcntl.h
 +++ mlibc-workdir/options/posix/include/fcntl.h
-@@ -60,9 +60,6 @@ ssize_t vmsplice(int fd, const struct iovec *iov, size_t nr_segs, unsigned int f
+@@ -71,9 +71,6 @@ ssize_t vmsplice(int fd, const struct iovec *iov, size_t nr_segs, unsigned int f
  #define SPLICE_F_MORE 4
  #define SPLICE_F_GIFT 8
  
@@ -213,7 +213,7 @@ index 1989f24..b893a5e 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index afef0da..bead0ee 100644
+index 627f33a..54f4b4c 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
 @@ -107,135 +107,105 @@ extern "C" {
@@ -484,7 +484,7 @@ index b5f42af..6c265d0 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index ac6bd2d..b0a8e29 100644
+index ac6bd2d..b919ced 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -534,6 +534,15 @@ index ac6bd2d..b0a8e29 100644
  }
  
  int sys_isatty(int fd) {
+@@ -389,7 +392,7 @@ int sys_fork(pid_t *child) {
+ 	pid_t ret;
+ 	int errno;
+ 
+-	SYSCALL6(SYSCALL_CLONE, 0, 0, 0, 0, 0, 1);
++	SYSCALL5(SYSCALL_CLONE, 0, 0, 0, 0, 0);
+ 
+ 	if (ret == -1) {
+ 		return errno;
 @@ -530,12 +533,7 @@ void sys_yield(void) {
  
  int sys_kill(int pid, int sig) {
@@ -557,6 +566,15 @@ index ac6bd2d..b0a8e29 100644
  }
  
  #ifndef MLIBC_BUILDING_RTLD
+@@ -776,7 +774,7 @@ extern "C" void __mlibc_thread_entry();
+ 
+ int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
+ 	 int ret, errno;
+-	 SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
++	 SYSCALL5(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb);
+ 
+ 	 if (ret == -1) {
+ 		  return errno;
 @@ -884,7 +882,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  

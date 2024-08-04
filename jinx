@@ -26,13 +26,13 @@
 set -e
 
 jinx_major_ver="0.2"
-jinx_minor_ver="30"
+jinx_minor_ver="31"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-archlinux_snapshot_date="2024.07.01"
-archlinux_snapshot_b2sum=7b7e83f7141b90b5586502a2fe46c043cb4acc84efca4cd668a6644725b515c0ba0fe2e5de76ea53be6128134ae6556508a63a8ec8909fa8903ab8d97886bf22
-archlinux_snapshot_repo_date="2024/07/02"
+archlinux_snapshot_date="2024.08.01"
+archlinux_snapshot_b2sum=5ef11678ec6745ae61d74ed3223d1f69cc4413e9975a7bbd9c8e8c52acef1f1c20618db8a6786fe7cb7b3fc2b6471c279fa02f39430e087ea13abb0fb5d75bb0
+archlinux_snapshot_repo_date="2024/08/03"
 
 XSTOW_VERSION=1.1.1
 

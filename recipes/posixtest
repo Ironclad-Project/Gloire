@@ -1,8 +1,8 @@
 name=posixtest
-version=85bc70af090303beec8deb1e75a4c70c54ef56ef
+version=46902f1c88bf31294dd4d6a17176f72c3ab63d94
 revision=1
 tarball_url="https://github.com/streaksu/posixtest/archive/${version}.tar.gz"
-tarball_blake2b="cc2093e3ededa3699ad4c5dbf7fb085dfce545c5ac4c88e97cc4ca135742232206e8e916c1be5540dae97242fdde1bc5967253d246f31f0f8187460b82ef9f76"
+tarball_blake2b="04db0a16984de83607db1cc5763dcb2c2dc6c9a58e67f03d88b6d59c452f214afb9e7e689fba094298f840d9a5a5873f5e7864a83fffdb5ec468bf3bcddf402e"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_allow_network="yes"

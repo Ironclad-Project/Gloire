@@ -1,8 +1,8 @@
 name=util-ironclad
-version=1ea87ce3ff379eaf68fdaa47e845d670e460282f
+version=27e9e941f85c4fb2f1224300b758a74ebbfe4e8e
 revision=1
 tarball_url="https://git.savannah.nongnu.org/cgit/ironclad/util-ironclad.git/snapshot/util-ironclad-${version}.tar.gz"
-tarball_blake2b="325124aaeb434403bf320de5297af4585699306cb6fc0cceea4c3e27165d63711f00c3771417742554a3af0c1e7dbd1442c1d6a1c0a44d09e599ed2069d26d59"
+tarball_blake2b="9ad5faa8637780a050b90a865a527bc69831fe223b01e9a5087f7f592281baddfc7d4bc90837b53744d6926bfab9454c0dfa452461d6de9836c054ed3a4fd1f4"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libgcrypt"

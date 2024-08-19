@@ -1,8 +1,8 @@
 name=ironclad
-version=36e83706f8e655318f1ca1e30a0eb11537311ed1
+version=226887e5e9963df34278219e21d4a150809018e3
 revision=1
 tarball_url="https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad-${version}.tar.gz"
-tarball_blake2b="df386a9e2cbdb5f086a6ed140fcf6035d582b79662dff1eb4c3238b5bd6dbfa79a65f66b1ef8fa2f1f174f875cb70872a3ee27b22f3a8ea04b03363e5eae57fc"
+tarball_blake2b="f099b04c2bdb6d57141a81c0bb08c9febe181e3ad05cfcf0ec750b5740fd88d81a1930e6ee2b52ce6678add454b79eb0cf829337b2914235a189c339a50fe2b9"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="texinfo binutils"
@@ -16,7 +16,7 @@ regenerate() {
 build() {
         GPRBUILD="gprbuild --target=${OS_TRIPLET}" \
     autotools_configure \
-        --target=x86_64-multiboot2-elf
+        --target=x86_64-limine-elf
 
     make all -j${parallelism}
 }

@@ -1,5 +1,5 @@
 diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
-index 2d20315..c04c421 100644
+index 2d20315..25122a5 100644
 --- mlibc-clean/abis/ironclad/signal.h
 +++ mlibc-workdir/abis/ironclad/signal.h
 @@ -32,41 +32,41 @@ typedef void (*__sighandler) (int);
@@ -77,6 +77,15 @@ index 2d20315..c04c421 100644
  
  // siginfo->si_info constants
  // SIGBUS
+@@ -160,7 +160,7 @@ struct sigaction {
+ 	int sa_flags;
+ };
+ 
+-#if defined(__x86_64__) || defined(__aarch64__)
++#if defined(__x86_64__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64)
+ // TODO: This is wrong for AArch64.
+ 
+ typedef struct {
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -584,6 +593,28 @@ index ac6bd2d..b919ced 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+diff --git mlibc-clean/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
+index 47ab6a9..c18fefe 100644
+--- mlibc-clean/sysdeps/ironclad/generic/thread.S
++++ mlibc-workdir/sysdeps/ironclad/generic/thread.S
+@@ -1,3 +1,4 @@
++#if defined(__x86_64__)
+ .section .text
+ .global __mlibc_thread_entry
+ __mlibc_thread_entry:
+@@ -5,5 +6,12 @@ __mlibc_thread_entry:
+ 	pop %rsi
+ 	pop %rdx
+ 	call __mlibc_thread_trampoline
++#elif (defined(__riscv) && __riscv_xlen == 64)
++.section .text
++.global __mlibc_thread_entry
++__mlibc_thread_entry:
++#else
++#error "Missing architecture specific code."
++#endif
+ 
+ .section .note.GNU-stack,"",%progbits
 diff --git mlibc-clean/sysdeps/ironclad/generic/thread.cpp mlibc-workdir/sysdeps/ironclad/generic/thread.cpp
 index 1b2f040..94f08c2 100644
 --- mlibc-clean/sysdeps/ironclad/generic/thread.cpp
@@ -620,10 +651,70 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 01ab016..6cbe1b2 100644
+index 01ab016..f8d92ab 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -163,8 +163,8 @@
+@@ -3,6 +3,7 @@
+ 
+ #include <stddef.h>
+ 
++#if defined(__x86_64__)
+ #define SYSCALL0(NUM) ({ \
+ 	asm volatile ("syscall" \
+ 				  : "=a"(ret), "=d"(errno) \
+@@ -50,17 +51,6 @@
+ 				  : "rcx", "r11", "memory"); \
+ })
+ 
+-#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
+-	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+-	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
+-	register __typeof(ARG5) arg_r9 asm("r9") = ARG5; \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
+-					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+ #define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
+ 	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+ 	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
+@@ -83,6 +73,33 @@
+ 					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
+ 				  : "rcx", "r11", "memory"); \
+ })
++#elif (defined(__riscv) && __riscv_xlen == 64)
++#define SYSCALL0(NUM) ({ \
++})
++
++#define SYSCALL1(NUM, ARG0) ({ \
++})
++
++#define SYSCALL2(NUM, ARG0, ARG1) ({ \
++})
++
++#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
++})
++
++#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
++})
++
++#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
++})
++
++#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
++})
++#else
++#error "Missing architecture specific code."
++#endif
+ 
+ #define SYSCALL_EXIT                  0
+ #define SYSCALL_ARCH_PRCTL            1
+@@ -163,8 +180,8 @@
  #define SYSCALL_UTIMES               76
  #define SYSCALL_CREATE_TCLUSTER      77
  #define SYSCALL_SWITCH_TCLUSTER      78

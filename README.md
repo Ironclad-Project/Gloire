@@ -26,13 +26,30 @@ One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/
 ### On virtual machines
 
 One can run either the downloaded disk image (uncompressing it first) or a
-built image with a command as such:
+built image with an emulator like QEMU, for using QEMU with an x86_64
+image, one can do:
 
 ```bash
 qemu-system-x86_64 -enable-kvm -m 2G -M q35 -hda gloire.img
 ```
 
 Where `gloire.img` is your image of choice.
+
+To do the same with a riscv64 image, you can do:
+
+```bash
+qemu-system-riscv64 -M virt -cpu rv64 -device ramfb -device qemu-xhci            \
+   -device usb-kbd -m 2G -drive if=pflash,unit=0,format=raw,file=<firmware path> \
+   -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd0                     \
+   -drive id=hd0,format=raw,file=gloire.img
+```
+
+For riscv64, firmware can be obtained [from the EDK2 project](https://retrage.github.io/edk2-nightly/bin/RELEASERISCV64_VIRT_CODE.fd),
+and must be prepared as per QEMU with a
+
+```bash
+dd if=/dev/zero of=<firmware path> bs=1 count=0 seek=33554432
+```
 
 ### On physical hardware
 
@@ -52,14 +69,21 @@ our documentation on how to do so and some things to keep in mind porting on
 ## Building
 
 The project uses `jinx` as its build system, which is included in the tree.
-The instructions to build are:
+The instructions to build an x86_64 system are:
 
 ```bash
 ./jinx build-all           # Build all packages.
 ./build-support/makeiso.sh # Create the image.
 ```
 
-These commands will generate a bootable disk image that can be burned to
+To build the very experimental riscv64 port, one can instead use:
+
+```bash
+JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build-all           # Build all packages.
+KINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+```
+
+Both routes will generate a bootable disk image that can be burned to
 storage media or be booted by several emulators.
 
 A list of the tools needed for compilation of the OS are:

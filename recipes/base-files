@@ -5,4 +5,12 @@ source_dir="base-files"
 
 package() {
     cp -rpv ${source_dir}/. "${dest_dir}"/
+
+    if [ "$ARCHITECTURE" = "riscv64" ]; then
+        rm -rf "${dest_dir}"/boot/limine-x86_64.conf
+        mv "${dest_dir}"/boot/limine-riscv64.conf "${dest_dir}"/boot/limine.conf
+    else
+        rm -rf "${dest_dir}"/boot/limine-riscv64.conf
+        mv "${dest_dir}"/boot/limine-x86_64.conf "${dest_dir}"/boot/limine.conf
+    fi
 }

@@ -10,7 +10,7 @@ deps="core-libs"
 build() {
     cmake \
         -GNinja \
-        -DCMAKE_TOOLCHAIN_FILE=${base_dir}/build-support/CMakeToolchain.txt \
+        -DCMAKE_TOOLCHAIN_FILE=${base_dir}/build-support/CMakeToolchain-$ARCHITECTURE.txt \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_BUILD_TYPE=Release \
         ${source_dir}

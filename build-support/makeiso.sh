@@ -2,10 +2,15 @@
 
 set -ex
 
-# Build the sysroot with jinx, build limine and memtest86+
+# Build the sysroot with jinx, and make sure the packages the particular
+# target needs.
 sudo ./jinx sysroot
-./jinx host-build limine
-./jinx host-build memtest86+
+if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
+    ./jinx host-build limine
+else
+    ./jinx host-build limine
+    ./jinx host-build memtest86+
+fi
 
 # Ensure permissions are set.
 sudo chown -R root:root sysroot/*
@@ -38,18 +43,28 @@ sudo cp -r sysroot/boot/* mount_dir/boot/
 sudo cp -r artwork/background.bmp              mount_dir/boot/
 sudo cp -r sysroot/usr/share/ironclad/ironclad mount_dir/boot/
 
-# Install the limine and memtest86+ binaries.
-sudo mkdir -pv mount_dir/boot/EFI/BOOT
-sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
-sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
-sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-sudo cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI            mount_dir/boot/EFI/BOOT/
-sudo cp -r host-pkgs/memtest86+/boot/memtest.bin                     mount_dir/boot/
+# Install the boot binaries required by the target.
+if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
+    sudo mkdir -pv mount_dir/boot/EFI/BOOT
+    sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
+    sudo cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI             mount_dir/boot/EFI/BOOT/
+else
+    sudo mkdir -pv mount_dir/boot/EFI/BOOT
+    sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
+    sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
+    sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
+    sudo cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI             mount_dir/boot/EFI/BOOT/
+    sudo cp -r host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
+fi
 
 sync
 sudo umount -R mount_dir
 sudo rm -rf mount_dir
 sudo losetup -d ${LOOPBACK_DEV}
 
-# Install limine.
-host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+# Post installation triggers on the whole image.
+if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
+    true
+else
+    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+fi

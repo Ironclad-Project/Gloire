@@ -16,7 +16,7 @@ build() {
         --pkgconfigdir="${sysroot_dir}${prefix}/lib" \
         -Wnoerror
 
-    make AR="x86_64-pc-ironclad-mlibc-ar" RANLIB="x86_64-pc-ironclad-mlibc-ranlib" -j${parallelism}
+    make AR="$ARCHITECTURE-pc-ironclad-mlibc-ar" RANLIB="$ARCHITECTURE-pc-ironclad-mlibc-ranlib" -j${parallelism}
 }
 
 package() {

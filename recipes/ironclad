@@ -16,7 +16,7 @@ regenerate() {
 build() {
         GPRBUILD="gprbuild --target=${OS_TRIPLET}" \
     autotools_configure \
-        --target=x86_64-limine-elf
+        --target=$ARCHITECTURE-limine-elf
 
     make all -j${parallelism}
 }

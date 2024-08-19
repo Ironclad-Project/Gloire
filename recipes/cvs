@@ -19,7 +19,7 @@ build() {
     EDITOR=nano autotools_configure \
         --with-editor
 
-    make AR=x86_64-pc-ironclad-mlibc-ar -j${parallelism}
+    make AR=$ARCHITECTURE-pc-ironclad-mlibc-ar -j${parallelism}
 }
 
 package() {

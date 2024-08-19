@@ -1,0 +1,13 @@
+[binaries]
+c = 'riscv64-pc-ironclad-mlibc-gcc'
+cpp = 'riscv64-pc-ironclad-mlibc-g++'
+ar = 'riscv64-pc-ironclad-mlibc-ar'
+nm = 'riscv64-pc-ironclad-mlibc-nm'
+strip = 'riscv64-pc-ironclad-mlibc-strip'
+pkg-config = 'riscv64-pc-ironclad-mlibc-pkg-config'
+
+[host_machine]
+system = 'ironclad'
+cpu_family = 'riscv64'
+cpu = 'riscv64'
+endian = 'little'

@@ -9,7 +9,7 @@ builddeps="cshim cxxshim frigg"
 deps="mlibc-headers"
 
 build() {
-        LDFLAGS="-Wl,/usr/local/libgcc-binaries/libgcc-x86_64.a" \
+        LDFLAGS="-Wl,/usr/local/libgcc-binaries/libgcc-$ARCHITECTURE.a" \
     meson_configure \
         --buildtype=debugoptimized \
         -Dmlibc_no_headers=true \

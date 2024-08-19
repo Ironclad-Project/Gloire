@@ -34,7 +34,13 @@ package() {
     make install DESTDIR="${dest_dir}"
 
     # As we build ncurses with wide character support, make some compatibility links
-    for lib in ncurses ncurses++ form panel menu tinfo ; do
+    if [ "$ARCHITECTURE" = "riscv64" ]; then
+        TARGETS_TO_RENAME="ncurses form panel menu tinfo"
+    else
+        TARGETS_TO_RENAME="ncurses ncurses++ form panel menu tinfo"
+    fi
+
+    for lib in $TARGETS_TO_RENAME ; do
        rm -vf                    "${dest_dir}${prefix}"/lib/lib${lib}.so
        echo "INPUT(-l${lib}w)" > "${dest_dir}${prefix}"/lib/lib${lib}.so
        ln -sfv ${lib}w.pc        "${dest_dir}${prefix}"/lib/pkgconfig/${lib}.pc

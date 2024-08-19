@@ -30,7 +30,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -m 2G -M q35 -hda gloire.img
+qemu-system-x86_64 -enable-kvm -m 2G -M q35 -hda gloire.img -serial stdio
 ```
 
 Where `gloire.img` is your image of choice.
@@ -41,7 +41,7 @@ To do the same with a riscv64 image, you can do:
 qemu-system-riscv64 -M virt -cpu rv64 -device ramfb -device qemu-xhci            \
    -device usb-kbd -m 2G -drive if=pflash,unit=0,format=raw,file=<firmware path> \
    -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd0                     \
-   -drive id=hd0,format=raw,file=gloire.img
+   -drive id=hd0,format=raw,file=gloire.img -serial stdio
 ```
 
 For riscv64, firmware can be obtained [from the EDK2 project](https://retrage.github.io/edk2-nightly/bin/RELEASERISCV64_VIRT_CODE.fd),
@@ -83,7 +83,11 @@ JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build-all           # Build all pack
 KINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
 ```
 
-Both routes will generate a bootable disk image that can be burned to
+Regardless of architecture, if instead of building all packages, building
+a minimal command-line only environment is desired, instead of `build-all`, one
+can do `build base`.
+
+Any of those routes will generate a bootable disk image that can be burned to
 storage media or be booted by several emulators.
 
 A list of the tools needed for compilation of the OS are:

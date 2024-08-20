@@ -1,0 +1,33 @@
+name: Gloire CI
+
+on: [push]
+
+jobs:
+  ci_build:
+    name: On-Push x86_64-limine
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    strategy:
+      matrix:
+        target_arch: [riscv64-limine, x86_64-limine]
+
+    steps:
+      - name: Install dependencies
+        run: pacman --noconfirm -Syu && pacman --needed --noconfirm -S gcc make findutils curl git libarchive zstd rsync xorriso
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Build base
+        run: |
+          set -ex
+
+          case "${{matrix.target_arch}}" in \
+            riscv64-limine) \
+              JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build base ;; \
+            x86_64-limine) \
+              ./jinx build base ;; \
+          esac

@@ -80,7 +80,7 @@ To build the very experimental riscv64 port, one can instead use:
 
 ```bash
 JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build-all           # Build all packages.
-KINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
 ```
 
 Regardless of architecture, if instead of building all packages, building

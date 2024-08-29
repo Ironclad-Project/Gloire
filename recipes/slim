@@ -3,22 +3,15 @@ version=1.4.0
 revision=1
 tarball_url="https://downloads.sourceforge.net/project/slim-fork/slim-${version}.tar.gz"
 tarball_blake2b="507f22d09a3449b870bb5fd5a5f0ab1002ceee5372c82f702582809a5fc442088c17d79fedff6712e198cee672696388479604a194e5729c7bc12139770c833d"
-source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
-imagedeps="gcc ninja python git"
-hostdeps="gcc cmake autoconf automake libtool pkg-config"
+imagedeps="build-essential cmake ninja-build git"
+hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fontconfig xorg-xauth"
 
 build() {
-    cmake \
-        -GNinja \
-        -DCMAKE_TOOLCHAIN_FILE=${base_dir}/build-support/CMakeToolchain-$ARCHITECTURE.txt \
-        -DPKG_CONFIG_EXECUTABLE="/usr/local/bin/$ARCHITECTURE-pc-ironclad-mlibc-pkg-config" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_BUILD_TYPE=Release \
+    cmake_configure \
         -DUSE_CONSOLEKIT=OFF \
-        -DUSE_PAM=OFF \
-        ${source_dir}
+        -DUSE_PAM=OFF
 
     ninja -j${parallelism}
 }

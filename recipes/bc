@@ -4,7 +4,7 @@ revision=1
 tarball_url="https://ftp.gnu.org/gnu/bc/bc-${version}.tar.gz"
 tarball_blake2b="dcedc193be5521aa0fa3a19746233ed65bc1fe8ef12e15155341706de6fbeecb6dd7ee4ab11e2d4b3aca2ae7097cce89e389b3573493bbc893e00b4ed3239594"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="gcc ed"
+imagedeps="build-essential ed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 
@@ -15,6 +15,9 @@ regenerate() {
 build() {
     cp -rp "${source_dir}"/. ./
 
+        CFLAGS_FOR_BUILD="$HOST_CFLAGS" \
+        CPPFLAGS_FOR_BUILD="$HOST_CPPFLAGS" \
+        LDFLAGS_FOR_BUILD="$HOST_LDFLAGS" \
         configure_script_path=./configure \
     autotools_configure
 

@@ -1,17 +1,28 @@
 name=gcc
 from_source=gcc-host
 revision=1
-imagedeps="gcc gcc-ada"
+imagedeps="build-essential gnat-14"
 hostdeps="autoconf-2.69 automake libtool pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
 
 build() {
-    cp -rp "${source_dir}"/. ./
-    mkdir build && cd build
+    TMPPATH=$(mktemp -d)
 
-        CXXFLAGS_FOR_TARGET="$CXXFLAGS" \
-        CFLAGS_FOR_TARGET="$CFLAGS" \
+    export PATH=$TMPPATH:$PATH
+
+    for i in gnat gnatbind gnatchop gnatclean gnathtml gnatkr gnatlink gnatls gnatmake gnatname gnatprep; do
+        ln -s /usr/bin/$i-14 $TMPPATH/$i
+    done
+
+    cp -rp "${source_dir}"/. ./
+    mkdir -p build && cd build
+
+        CFLAGS="$HOST_CFLAGS" \
+        CXXFLAGS="$HOST_CXXFLAGS" \
+        LDFLAGS="$HOST_LDFLAGS" \
+        CFLAGS_FOR_TARGET="$TARGET_CFLAGS" \
+        CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS" \
     ../configure \
         --prefix="${prefix}" \
         --target=${OS_TRIPLET} \

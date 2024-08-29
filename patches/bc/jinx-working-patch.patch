@@ -1,5 +1,5 @@
 diff --git bc-clean/bc/Makefile.am bc-workdir/bc/Makefile.am
-index d9d412e..fdef633 100644
+index d9d412e..1e49430 100644
 --- bc-clean/bc/Makefile.am
 +++ bc-workdir/bc/Makefile.am
 @@ -17,6 +17,7 @@ MAINTAINERCLEANFILES = Makefile.in bc.c bc.h scan.c \
@@ -10,20 +10,28 @@ index d9d412e..fdef633 100644
  LIBL = @LEXLIB@
  LDADD = $(LIBBC) $(LIBL) @READLINELIB@
  
-@@ -29,12 +30,20 @@ $(PROGRAMS): libmath.h $(LIBBC)
+@@ -24,17 +25,28 @@ AM_YFLAGS = -d
+ 
+ AM_CFLAGS = @CFLAGS@
+ 
++CC_FOR_BUILD = @CC_FOR_BUILD@
++CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
++CPPFLAGS_FOR_BUILD = -I. -I.. -I./../h @CPPFLAGS_FOR_BUILD@
++LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
++
+ $(PROGRAMS): libmath.h $(LIBBC)
+ 
  scan.o: bc.h
  global.o: libmath.h
-+
-+main_host.c : main.c
-+	cp $< $@
  
 -fbcOBJ = main.o bc.o scan.o execute.o load.o storage.o util.o warranty.o
++main_host.c : main.c
++	cp $< $@
++
 +fbcOBJ = $(addsuffix _host,main.o bc.o scan.o execute.o load.o storage.o util.o warranty.o)
 +
-+%.o_host : CC:=$(CC_FOR_BUILD)
-+
 +%.o_host : %.c
-+	$(COMPILE) -c $(CFLAGS) $(INCLUDES) -o $@ $<
++	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(CPPFLAGS_FOR_BUILD) $(INCLUDES) -c -o $@ $<
  
 -libmath.h: libmath.b $(fbcOBJ) $(LIBBC)
 +libmath.h: libmath.b $(fbcOBJ) $(LIBBC_HOST)
@@ -31,12 +39,12 @@ index d9d412e..fdef633 100644
 -	$(MAKE) global.o
 -	$(LINK) -o fbc $(fbcOBJ) global.o $(LIBBC) $(LIBL) $(READLINELIB) $(LIBS)
 +	$(MAKE) global.o_host
-+	$(CC_FOR_BUILD) -o fbc $(fbcOBJ) global.o_host $(LIBBC_HOST) $(LIBL) ${READLINELIB} $(LIBS)
++	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o fbc $(fbcOBJ) global.o_host $(LIBBC_HOST) $(LIBL) ${READLINELIB} $(LIBS)
  	./fbc -c $(srcdir)/libmath.b </dev/null >libmath.h
  	$(srcdir)/fix-libmath_h
  	rm -f ./fbc ./global.o
 diff --git bc-clean/configure.ac bc-workdir/configure.ac
-index fc74573..5cabb73 100644
+index fc74573..e7a1895 100644
 --- bc-clean/configure.ac
 +++ bc-workdir/configure.ac
 @@ -20,6 +20,7 @@ m4_define([dc_version], 1.4.1)
@@ -47,16 +55,22 @@ index fc74573..5cabb73 100644
  AM_INIT_AUTOMAKE([dist-bzip2])
  AC_CONFIG_HEADERS(config.h)
  
-@@ -35,6 +36,7 @@ AC_DEFINE([DC_COPYRIGHT],
+@@ -35,8 +36,13 @@ AC_DEFINE([DC_COPYRIGHT],
  	  [Define the dc copyright line.])
  
  AC_PROG_CC
 +AX_CC_FOR_BUILD
  AC_USE_SYSTEM_EXTENSIONS
  
++AC_ARG_VAR([CFLAGS_FOR_BUILD], [CFLAGS for host])
++AC_ARG_VAR([CPPFLAGS_FOR_BUILD], [CPPFLAGS for host])
++AC_ARG_VAR([LDFLAGS_FOR_BUILD], [LDFLAGS for host])
++
  AM_PROG_LEX
+ AM_PROG_AR
+ AC_PROG_YACC
 diff --git bc-clean/lib/Makefile.am bc-workdir/lib/Makefile.am
-index ec4bf59..c670f5b 100644
+index ec4bf59..ba5ab33 100644
 --- bc-clean/lib/Makefile.am
 +++ bc-workdir/lib/Makefile.am
 @@ -1,5 +1,5 @@
@@ -66,19 +80,30 @@ index ec4bf59..c670f5b 100644
  
  AM_CPPFLAGS = -I. -I.. -I$(srcdir)/../h
  
-@@ -24,3 +24,11 @@ testmul: testmul.o number.o
+@@ -12,6 +12,11 @@ AM_CFLAGS = @CFLAGS@
+ MAINTAINERCLEANFILES = Makefile.in number.c
+ CLEANFILES = testmul specialnumber muldigits.h
+ 
++CC_FOR_BUILD = @CC_FOR_BUILD@
++CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
++CPPFLAGS_FOR_BUILD = -I. -I.. -I./../h @CPPFLAGS_FOR_BUILD@
++LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
++
+ newnumber.o: number.c muldigits.h
+ 	$(CC) $(CFLAGS) $(INCLUDES) -c -DMULDIGITS -o newnumber.o $(srcdir)/number.c
+ 
+@@ -24,3 +29,10 @@ testmul: testmul.o number.o
  
  specialnumber: newnumber.o
  	cp newnumber.o number.o
 +
-+%.o_host : CC:=$(CC_FOR_BUILD)
 +%.o_host : %.c
-+	$(COMPILE) -c $(CFLAGS) $(INCLUDES) -o $@ $<
++	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(CPPFLAGS_FOR_BUILD) $(INCLUDES) -c -o $@ $<
 +
 +libbc_host.a : $(addsuffix _host,$(libbc_a_OBJECTS))
 +	ar cru $@ $+
 +	ranlib $@
-diff --git bc-clean/m4/cc_for_build.m4 bc-workdir/m4/cc_for_build.m4
+diff --git bc-workdir/m4/cc_for_build.m4 bc-workdir/m4/cc_for_build.m4
 new file mode 100644
 index 0000000..c62ffad
 --- /dev/null

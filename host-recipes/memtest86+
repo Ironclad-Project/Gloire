@@ -2,7 +2,7 @@ name=memtest86+
 from_source=memtest86+
 revision=1
 hostdeps="gcc"
-imagedeps="nasm gcc mtools dosfstools xorriso git"
+imagedeps="nasm build-essential mtools dosfstools xorriso git"
 
 build() {
     if [ "$ARCHITECTURE" != "x86_64" ]; then

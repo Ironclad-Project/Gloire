@@ -4,7 +4,7 @@ revision=1
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="c4cd765cea326cd00b5cfe306e2937d820603b42f07a714ceb1349d36ddba0d45c3e125599dadf290d97954035c381781067155600ed87066e494cb9c4b34b45"
 source_hostdeps="autoconf-2.69 automake libtool pkg-config"
-imagedeps="gcc"
+imagedeps="build-essential"
 hostdeps="gcc autoconf-2.69 automake libtool pkg-config"
 deps="core-libs zlib zstd"
 

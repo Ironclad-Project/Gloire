@@ -14,9 +14,11 @@ regenerate() {
 build() {
     cp -rp "${source_dir}"/. ./
 
-        CFLAGS+=' -fcommon' \
+        CFLAGS="$TARGET_CFLAGS -fcommon" \
+        CXXFLAGS="$TARGET_CXXFLAGS" \
+        LDFLAGS="$TARGET_LDFLAGS" \
         configure_script_path=./configure \
-    autotools_configure \
+    autotools_configure_noflags \
         --disable-dependency-tracking
 
     make -j${parallelism}

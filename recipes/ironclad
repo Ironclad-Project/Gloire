@@ -5,8 +5,8 @@ tarball_url="https://git.savannah.nongnu.org/cgit/ironclad.git/snapshot/ironclad
 tarball_blake2b="4e0f3f8bd2ddb1106f2c095001dd0141a8dc80a828478b4fb912e28e1f7fd27e86d34ade041e7f3a0c888120de007b9dc318498a20792bc57d5e33aca517c2f1"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="texinfo binutils"
-hostdeps="gcc binutils autoconf automake libtool pkg-config gprbuild"
+imagedeps="texinfo gprbuild binutils"
+hostdeps="gcc autoconf automake libtool pkg-config"
 
 regenerate() {
     ./bootstrap
@@ -14,7 +14,7 @@ regenerate() {
 }
 
 build() {
-        GPRBUILD="gprbuild --target=${OS_TRIPLET}" \
+        GPRBUILD="gprbuild --target=${OS_TRIPLET} --db /base_dir/build-support/gprconfig" \
     autotools_configure \
         --target=$ARCHITECTURE-limine-elf
 

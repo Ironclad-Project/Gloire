@@ -44,7 +44,7 @@ qemu-system-riscv64 -M virt -cpu rv64 -device ramfb -device qemu-xhci           
    -drive id=hd0,format=raw,file=gloire.img -serial stdio
 ```
 
-For riscv64, firmware can be obtained [from the EDK2 project](https://retrage.github.io/edk2-nightly/bin/RELEASERISCV64_VIRT_CODE.fd),
+For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/limine-bootloader/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
 and must be prepared as per QEMU with a
 
 ```bash

@@ -30,14 +30,3 @@ jobs:
             x86_64-limine) \
               ./jinx build base ;; \
           esac
-
-      - name: Build base
-        run: |
-          set -ex
-
-          case "${{matrix.target_arch}}" in \
-            riscv64-limine) \
-              JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build base ;; \
-            x86_64-limine) \
-              ./jinx build base ;; \
-          esac

@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.3"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1729,7 +1729,8 @@ reinit_container() {
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     echo 'APT::Install-Suggests "0";
 APT::Install-Recommends "0";
-APT::Sandbox::User "root";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
+APT::Sandbox::User "root";
+Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get update
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y locales

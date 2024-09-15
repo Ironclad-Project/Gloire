@@ -93,7 +93,7 @@ storage media or be booted by several emulators.
 A list of the tools needed for compilation of the OS are:
 
 - `git` for cloning packages.
-- `curl` and `bsdtar` for setting up jinx.
+- `curl` and a working C compiler (as `cc`) for setting up jinx.
 - Common UNIX tools like `bash`, `coreutils`, `grep`, `find`, etc.
 - `sgdisk` from the `gptfdisk` package for building the image.
 - `qemu` for testing, if wanted.
@@ -103,7 +103,7 @@ A list of the tools needed for compilation of the OS are:
 All of said things can be installed in debian-based systems with
 
 ```bash
-sudo apt install lzip libarchive-tools git build-essentials rsync
+sudo apt install lzip git build-essentials rsync
 ```
 
 ## Licensing

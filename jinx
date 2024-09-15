@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.3"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1721,7 +1721,7 @@ reinit_container() {
     if ! "$JINX_CACHE_DIR/b2sum" "$JINX_CACHE_DIR/debian-rootfs.tar.xz" | grep "${debian_rootfs_b2sum}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify Debian rootfs tarball"
     fi
-    ( cd "$JINX_CACHE_DIR" && xzcat debian-rootfs.tar.xz | bsdtar -xf - )
+    ( cd "$JINX_CACHE_DIR" && xzcat debian-rootfs.tar.xz | tar -xf - )
     rm "$JINX_CACHE_DIR/debian-rootfs.tar.xz"
     make_dir "$JINX_CACHE_DIR/sets"
     mv "$JINX_CACHE_DIR/debian-rootfs-${debian_architecture}" "$JINX_CACHE_DIR/sets/.image"

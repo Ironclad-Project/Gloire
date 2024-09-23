@@ -5,7 +5,7 @@ tarball_blake2b="4573855667fe6c352a61ac2fd8218619e0c9fa5c5079fe6854988733b7dac27
 imagedeps="git"
 allow_network="yes"
 
-regenerate() {
+prepare() {
     git clone https://github.com/AdaCore/xmlada.git --branch=v${version} --depth=1
     git clone https://github.com/AdaCore/gprconfig_kb.git --branch=v${version} --depth=1
 }

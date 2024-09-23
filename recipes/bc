@@ -8,11 +8,11 @@ imagedeps="build-essential ed"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         CFLAGS_FOR_BUILD="$HOST_CFLAGS" \
@@ -20,7 +20,9 @@ build() {
         LDFLAGS_FOR_BUILD="$HOST_LDFLAGS" \
         configure_script_path=./configure \
     autotools_configure
+}
 
+build() {
     make -j${parallelism}
 }
 

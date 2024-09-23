@@ -8,14 +8,16 @@ source_deps="xorg-util-macros"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libxmu libxaw"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     autotools_configure \
         --with-appdefaultdir=/etc/X11/app-defaults
+}
 
+build() {
     make -j${parallelism}
 }
 

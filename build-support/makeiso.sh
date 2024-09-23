@@ -2,14 +2,27 @@
 
 set -ex
 
+if [ -z "$PKGS_TO_INSTALL" ]; then
+    PKGS_TO_INSTALL=base
+fi
+
 # Build the sysroot with jinx, and make sure the packages the particular
 # target needs.
-sudo ./jinx sysroot
+set -f
+sudo rm -rf sysroot
+./jinx install "sysroot" $PKGS_TO_INSTALL
+set +f
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    ./jinx host-build limine
+    if ! [ -d host-pkgs/limine ]; then
+        ./jinx host-build limine
+    fi
 else
-    ./jinx host-build limine
-    ./jinx host-build memtest86+
+    if ! [ -d host-pkgs/limine ]; then
+        ./jinx host-build limine
+    fi
+    if ! [ -d host-pkgs/memtest86+ ]; then
+        ./jinx host-build memtest86+
+    fi
 fi
 
 # Ensure permissions are set.

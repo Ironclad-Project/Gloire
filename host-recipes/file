@@ -3,7 +3,7 @@ from_source=file
 revision=1
 imagedeps="file build-essential"
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         CFLAGS="$HOST_CFLAGS" \
@@ -15,7 +15,9 @@ build() {
         --localstatedir=/var \
         --disable-nls \
         --disable-static
+}
 
+build() {
     make -j${parallelism}
 }
 

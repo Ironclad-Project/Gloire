@@ -7,13 +7,15 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc pkg-config automake autoconf libtool"
 deps="core-libs openssl pcre2"
 
-regenerate() {
+prepare() {
     autoreconf -fvi
 }
 
-build() {
+configure() {
     autotools_configure
+}
 
+build() {
     make -j${parallelism}
 }
 

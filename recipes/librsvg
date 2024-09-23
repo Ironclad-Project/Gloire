@@ -9,11 +9,11 @@ imagedeps="libgdk-pixbuf-2.0 gtk-doc-tools gobject-introspection pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs gdk-pixbuf cairo pango libcroco"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         GDK_PIXBUF_QUERYLOADERS=/usr/lib/*/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders \
@@ -22,7 +22,9 @@ build() {
         --enable-introspection=no \
         --disable-tools \
         --disable-gtk-doc-html
+}
 
+build() {
     make -j${parallelism}
 }
 

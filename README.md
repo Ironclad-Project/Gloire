@@ -72,20 +72,18 @@ The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
 ```bash
-./jinx build-all           # Build all packages.
-./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
 ```
 
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash
-JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build-all           # Build all packages.
-JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
 ```
 
-Regardless of architecture, if instead of building all packages, building
-a minimal command-line only environment is desired, instead of `build-all`, one
-can do `build base`.
+Regardless of architecture, if, instead of building all packages, building
+a minimal command-line only environment is desired, instead of `*`, one
+can pass `base` (or a list of desired packages) as `PKGS_TO_INSTALL`.
 
 Any of those routes will generate a bootable disk image that can be burned to
 storage media or be booted by several emulators.

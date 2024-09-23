@@ -6,7 +6,7 @@ tarball_blake2b="cabe5676eb1611271f255c75f4439f3ef4ea6096d6fc26f0982da471556e1fd
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libarchive openssl"
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
     ./configure \
@@ -15,7 +15,9 @@ build() {
         --prefix="${prefix}" \
         --pkgconfigdir="${sysroot_dir}${prefix}/lib" \
         -Wnoerror
+}
 
+build() {
     make AR="$ARCHITECTURE-pc-ironclad-mlibc-ar" RANLIB="$ARCHITECTURE-pc-ironclad-mlibc-ranlib" -j${parallelism}
 }
 

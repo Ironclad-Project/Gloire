@@ -7,18 +7,20 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
-regenerate() {
+prepare() {
     echo 'AM_GNU_GETTEXT_VERSION(0.22.5)' >> ${source_dir}/configure.in
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
     EDITOR=nano autotools_configure \
         --with-editor
+}
 
+build() {
     make AR=$ARCHITECTURE-pc-ironclad-mlibc-ar -j${parallelism}
 }
 

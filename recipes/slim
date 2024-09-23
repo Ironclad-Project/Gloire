@@ -8,11 +8,13 @@ imagedeps="build-essential cmake ninja-build git"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fontconfig xorg-xauth"
 
-build() {
+configure() {
     cmake_configure \
         -DUSE_CONSOLEKIT=OFF \
         -DUSE_PAM=OFF
+}
 
+build() {
     ninja -j${parallelism}
 }
 

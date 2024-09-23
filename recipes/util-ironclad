@@ -8,13 +8,15 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libgcrypt"
 imagedeps="git"
 
-regenerate() {
+prepare() {
     ./bootstrap
 }
 
-build() {
+configure() {
     autotools_configure
+}
 
+build() {
     make -j${parallelism}
 }
 

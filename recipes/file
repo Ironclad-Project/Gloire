@@ -7,18 +7,20 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config file"
 deps="core-libs readline"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
     autotools_configure \
         --disable-bzlib \
         --disable-xzlib
+}
 
+build() {
     make -j${parallelism}
 }
 

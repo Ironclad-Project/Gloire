@@ -7,17 +7,20 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs openssl zstd xz xxhash lz4"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
     autotools_configure
 
     make -j${parallelism} reconfigure
+}
+
+build() {
     make -j${parallelism}
 }
 

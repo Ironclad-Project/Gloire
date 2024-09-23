@@ -8,14 +8,16 @@ source_deps="gettext"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
-regenerate() {
+prepare() {
     autoreconf -fvi -I/sysroot/usr/share/aclocal
 }
 
-build() {
+configure() {
     autotools_configure \
       --disable-icon-mapping
+}
 
+build() {
     make -j${parallelism}
 }
 

@@ -9,7 +9,7 @@ imagedeps="build-essential help2man"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs ncurses bash gzip"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 
     ./configure \
@@ -21,7 +21,7 @@ regenerate() {
     make -C info makedoc
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
@@ -30,7 +30,9 @@ build() {
 
     mkdir -p tools/info
     cp -v "${source_dir}"/info/makedoc tools/info/
+}
 
+build() {
     make -j${parallelism}
 }
 

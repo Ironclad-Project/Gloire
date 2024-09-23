@@ -8,16 +8,18 @@ source_deps="gettext"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding"
 
-regenerate() {
+prepare() {
         AUTOMAKE=true \
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
     autotools_configure
+}
 
+build() {
     make -j${parallelism}
 }
 

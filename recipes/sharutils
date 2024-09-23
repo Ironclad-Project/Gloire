@@ -7,11 +7,11 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs mpfr gmp readline"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         CFLAGS="$TARGET_CFLAGS -fcommon" \
@@ -20,7 +20,9 @@ build() {
         configure_script_path=./configure \
     autotools_configure_noflags \
         --disable-dependency-tracking
+}
 
+build() {
     make -j${parallelism}
 }
 

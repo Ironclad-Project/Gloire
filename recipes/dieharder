@@ -8,14 +8,14 @@ imagedeps="build-essential"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs gsl"
 
-regenerate() {
+prepare() {
     autoreconf -fvi
     (cd libdieharder && autoreconf -fvi)
     (cd dieharder    && autoreconf -fvi)
     (cd manual       && autoreconf -fvi)
 }
 
-build() {
+configure() {
     rm -f ${source_dir}/config.status
     rm -f ${source_dir}/dieharder/config.status
     rm -f ${source_dir}/libdieharder/config.status
@@ -23,7 +23,9 @@ build() {
     autotools_configure
 
     sed -i 's|-I${prefix}/include||g' dieharder/Makefile
+}
 
+build() {
     make -j1
 }
 

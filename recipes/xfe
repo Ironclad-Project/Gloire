@@ -9,17 +9,19 @@ imagedeps="libxml-parser-perl"
 hostdeps="gcc autoconf automake libtool pkg-config intltool"
 deps="core-libs fox libx11 libxft libxcb xcb-util"
 
-regenerate() {
+prepare() {
     autotools_recursive_regen
 }
 
-build() {
+configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
     autotools_configure \
        --with-x
+}
 
+build() {
     make -j${parallelism}
 }
 

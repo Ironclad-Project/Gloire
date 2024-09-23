@@ -6,7 +6,7 @@ hostdeps="autoconf-2.69 automake libtool pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
 
-build() {
+configure() {
     TMPPATH=$(mktemp -d)
 
     export PATH=$TMPPATH:$PATH
@@ -38,7 +38,18 @@ build() {
         --enable-initfini-array \
         --enable-shared \
         --enable-host-shared
+}
 
+build() {
+    TMPPATH=$(mktemp -d)
+
+    export PATH=$TMPPATH:$PATH
+
+    for i in gnat gnatbind gnatchop gnatclean gnathtml gnatkr gnatlink gnatls gnatmake gnatname gnatprep; do
+        ln -s /usr/bin/$i-14 $TMPPATH/$i
+    done
+
+    cd build
     make -j${parallelism} all-gcc
     make -j${parallelism} -C gcc cross-gnattools ada.all.cross
 }

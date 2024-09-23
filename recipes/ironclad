@@ -8,16 +8,17 @@ source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="texinfo gprbuild binutils"
 hostdeps="gcc autoconf automake libtool pkg-config"
 
-regenerate() {
+prepare() {
     ./bootstrap
-    autotools_recursive_regen
 }
 
-build() {
+configure() {
         GPRBUILD="gprbuild --target=${OS_TRIPLET} --db /base_dir/build-support/gprconfig" \
     autotools_configure \
         --target=$ARCHITECTURE-limine-elf
+}
 
+build() {
     make all -j${parallelism}
 }
 

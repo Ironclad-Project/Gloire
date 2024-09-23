@@ -4,7 +4,7 @@ revision=1
 imagedeps="build-essential"
 hostdeps="autoconf-2.69 automake libtool pkg-config"
 
-build() {
+configure() {
     # --enable-separate-code makes libxcb fail to load my mlibc, please
     # dig why this happens! Its probably kernel side.
 
@@ -27,7 +27,9 @@ build() {
         --disable-nls \
         --disable-werror \
         --with-pic
+}
 
+build() {
     make -j${parallelism}
 }
 

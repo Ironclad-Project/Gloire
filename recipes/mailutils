@@ -7,18 +7,20 @@ source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
-regenerate() {
+prepare() {
     autoreconf -fvi
 }
 
-build() {
+configure() {
     cp -rp ${source_dir}/. ./
 
         configure_script_path=./configure \
     autotools_configure \
         --disable-python \
         --disable-build-imap4d
+}
 
+build() {
     make -j${parallelism}
 }
 

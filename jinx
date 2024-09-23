@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="1"
+jinx_minor_ver="2"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1029,16 +1029,16 @@ do_pkg() {
 
 cmd_host_build() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo \""${base_dir}"\"/host-recipes/"${ppkg}"); do
-            "${script}" internal-do-host-pkg "$(basename "${pkg}")"
+        for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
+            "${script}" internal-do-host-pkg "${pkg}"
         done
     done
 }
 
 cmd_build() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
-            "${script}" internal-do-pkg "$(basename "${pkg}")"
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            "${script}" internal-do-pkg "${pkg}"
         done
     done
 }
@@ -1051,16 +1051,16 @@ cmd_prepare() {
 
 cmd_host_rebuild() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo \""${base_dir}"\"/host-recipes/"${ppkg}"); do
-            "${script}" internal-do-host-rebuild "$(basename "${pkg}")"
+        for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
+            "${script}" internal-do-host-rebuild "${pkg}"
         done
     done
 }
 
 cmd_rebuild() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
-            "${script}" internal-do-rebuild "$(basename "${pkg}")"
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            "${script}" internal-do-rebuild "${pkg}"
         done
     done
 }
@@ -1077,8 +1077,8 @@ cmd_install() {
         done
     else
         for ppkg in "$@"; do
-            for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
-                deps="${deps} $(basename "${pkg}")"
+            for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+                deps="${deps} ${pkg}"
             done
         done
 

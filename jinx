@@ -1029,7 +1029,7 @@ do_pkg() {
 
 cmd_host_build() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo host-recipes/"${ppkg}"); do
+        for pkg in $(eval echo \""${base_dir}"\"/host-recipes/"${ppkg}"); do
             "${script}" internal-do-host-pkg "$(basename "${pkg}")"
         done
     done
@@ -1037,7 +1037,7 @@ cmd_host_build() {
 
 cmd_build() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo recipes/"${ppkg}"); do
+        for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
             "${script}" internal-do-pkg "$(basename "${pkg}")"
         done
     done
@@ -1051,7 +1051,7 @@ cmd_prepare() {
 
 cmd_host_rebuild() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo host-recipes/"${ppkg}"); do
+        for pkg in $(eval echo \""${base_dir}"\"/host-recipes/"${ppkg}"); do
             "${script}" internal-do-host-rebuild "$(basename "${pkg}")"
         done
     done
@@ -1059,7 +1059,7 @@ cmd_host_rebuild() {
 
 cmd_rebuild() {
     for ppkg in "$@"; do
-        for pkg in $(eval echo recipes/"${ppkg}"); do
+        for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
             "${script}" internal-do-rebuild "$(basename "${pkg}")"
         done
     done
@@ -1072,12 +1072,12 @@ cmd_install() {
 
     pkgs_to_install=""
     if [ "$1" = '*' ]; then
-        for pkg in "${build_dir}"/recipes/*; do
+        for pkg in "${base_dir}"/recipes/*; do
             pkgs_to_install="${pkgs_to_install} $(basename "${pkg}")"
         done
     else
         for ppkg in "$@"; do
-            for pkg in $(eval echo recipes/"${ppkg}"); do
+            for pkg in $(eval echo \""${base_dir}"\"/recipes/"${ppkg}"); do
                 deps="${deps} $(basename "${pkg}")"
             done
         done
@@ -1100,7 +1100,7 @@ cmd_install() {
         echo "* installing ${pkg}..."
 
         if ! [ -d "${build_dir}"/pkgs/${pkg} ]; then
-            cmd_build "${pkg}"
+            "${script}" internal-do-pkg "${pkg}"
         fi
 
         ( cd "${build_dir}"/pkgs/${pkg} && find . >>"${all_files}" )

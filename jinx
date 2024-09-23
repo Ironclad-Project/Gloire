@@ -1030,7 +1030,7 @@ do_pkg() {
 cmd_host_build() {
     for ppkg in "$@"; do
         for pkg in $(eval echo host-recipes/"${ppkg}"); do
-            "${script}" internal-do-host-pkg "$pkg"
+            "${script}" internal-do-host-pkg "$(basename "${pkg}")"
         done
     done
 }
@@ -1038,7 +1038,7 @@ cmd_host_build() {
 cmd_build() {
     for ppkg in "$@"; do
         for pkg in $(eval echo recipes/"${ppkg}"); do
-            "${script}" internal-do-pkg "$pkg"
+            "${script}" internal-do-pkg "$(basename "${pkg}")"
         done
     done
 }
@@ -1052,7 +1052,7 @@ cmd_prepare() {
 cmd_host_rebuild() {
     for ppkg in "$@"; do
         for pkg in $(eval echo host-recipes/"${ppkg}"); do
-            "${script}" internal-do-host-rebuild "$pkg"
+            "${script}" internal-do-host-rebuild "$(basename "${pkg}")"
         done
     done
 }
@@ -1060,7 +1060,7 @@ cmd_host_rebuild() {
 cmd_rebuild() {
     for ppkg in "$@"; do
         for pkg in $(eval echo recipes/"${ppkg}"); do
-            "${script}" internal-do-rebuild "$pkg"
+            "${script}" internal-do-rebuild "$(basename "${pkg}")"
         done
     done
 }

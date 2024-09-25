@@ -44,7 +44,7 @@ qemu-system-riscv64 -M virt -cpu rv64 -device ramfb -device qemu-xhci           
    -drive id=hd0,format=raw,file=gloire.img -serial stdio
 ```
 
-For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/limine-bootloader/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
+For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
 and must be prepared as per QEMU with a
 
 ```bash
@@ -82,8 +82,8 @@ PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso
 ```
 
 Regardless of architecture, if, instead of building all packages, building
-a minimal command-line only environment is desired, instead of `*`, one
-can pass `base` (or a list of desired packages) as `PKGS_TO_INSTALL`.
+a minimal command-line only environment is desired, instead of `"*"`, one
+can pass `""` (or a list of desired packages, `base` is implied) as `PKGS_TO_INSTALL`.
 
 Any of those routes will generate a bootable disk image that can be burned to
 storage media or be booted by several emulators.

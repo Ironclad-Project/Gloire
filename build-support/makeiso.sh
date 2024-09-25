@@ -2,15 +2,11 @@
 
 set -ex
 
-if [ -z "$PKGS_TO_INSTALL" ]; then
-    PKGS_TO_INSTALL=base
-fi
-
 # Build the sysroot with jinx, and make sure the packages the particular
 # target needs.
 set -f
 sudo rm -rf sysroot
-./jinx install "sysroot" $PKGS_TO_INSTALL
+./jinx install "sysroot" base $PKGS_TO_INSTALL
 set +f
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
     if ! [ -d host-pkgs/limine ]; then
@@ -60,13 +56,14 @@ sudo cp -r sysroot/usr/share/ironclad/ironclad mount_dir/boot/
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
     sudo mkdir -pv mount_dir/boot/EFI/BOOT
     sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-    sudo cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI             mount_dir/boot/EFI/BOOT/
+    sudo cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI       mount_dir/boot/EFI/BOOT/
 else
     sudo mkdir -pv mount_dir/boot/EFI/BOOT
     sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
     sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
     sudo cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-    sudo cp host-pkgs/limine/usr/local/share/limine/BOOT*.EFI             mount_dir/boot/EFI/BOOT/
+    sudo cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI           mount_dir/boot/EFI/BOOT/
+    sudo cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI          mount_dir/boot/EFI/BOOT/
     sudo cp -r host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
 fi
 

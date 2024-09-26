@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -171,11 +171,11 @@ fi
 apt_cache="$JINX_CACHE_DIR/apt-cache"
 
 temp_collect=""
-trap 'rm -rf $temp_collect' EXIT
+trap 'eval rm -rf "$temp_collect"' EXIT
 
 make_temp() {
     tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
-    temp_collect="${temp_collect} ${tmp}"
+    temp_collect="${temp_collect} \"${tmp}\""
     if [ "$1" = "-d" ]; then
         rm -f "${tmp}"
         make_dir "${tmp}"

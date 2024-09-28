@@ -547,7 +547,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index ac6bd2d..b0a8e29 100644
+index 0383452..27cdefe 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -629,6 +629,19 @@ index ac6bd2d..b0a8e29 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+index 1626e4b..4e6a696 100644
+--- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+@@ -32,7 +32,7 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
+ 		}
+ 	}
+ 	if (win != NULL) {
+-		ret = ioctl(*mfd, TIOCGWINSZ, win);
++		ret = ioctl(*mfd, TIOCSWINSZ, win);
+ 		if (ret) {
+ 			return -1;
+ 		}
 diff --git mlibc-clean/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
 index 47ab6a9..c18fefe 100644
 --- mlibc-clean/sysdeps/ironclad/generic/thread.S

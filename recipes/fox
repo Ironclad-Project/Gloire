@@ -1,8 +1,8 @@
 name=fox
 version=1.6.57
 revision=1
-tarball_url="http://fox-toolkit.org/ftp/fox-${version}.tar.gz"
-tarball_blake2b="3efbc6188225f9444fbd347359e8b4041a08fe654acb99c48e4966e501a2f72a44863f2e9b60ae810a259951f89cfc27b9a8b6341e029627066712e0dbf20e40"
+tarball_url="https://github.com/franko/fox/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="9bc6f30396e3626e20a85cae83404b040d98da459e24454274d2acef73bc29c2deaf34879cf9c1b5f4eb679e4abb16dbcec30984991be841f015c7702a1a79d9"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libx11 libxft libxext freetype2 glu"

@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=libcroco
 version=0.6.13
 revision=1

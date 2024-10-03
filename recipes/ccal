@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=ccal
 version=4.0
 revision=1

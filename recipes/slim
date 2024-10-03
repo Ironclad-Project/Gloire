@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=slim
 version=1.4.0
 revision=1

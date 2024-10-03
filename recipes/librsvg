@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=librsvg
 version=2.40.21
 revision=1

@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=util-ironclad
 version=c5f855e1715cd116039bd4c0c96498fde55eb81f
 revision=1

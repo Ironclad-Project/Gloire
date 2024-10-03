@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=file
 version=5.45
 revision=1

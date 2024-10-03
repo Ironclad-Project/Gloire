@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=xorg-xlsfonts
 version=1.0.7
 revision=1

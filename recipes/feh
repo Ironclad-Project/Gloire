@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=feh
 version=3.10.2
 revision=1

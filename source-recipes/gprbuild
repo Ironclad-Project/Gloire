@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=gprbuild
 version=22.0.0
 tarball_url="https://github.com/AdaCore/gprbuild/archive/refs/tags/v${version}.tar.gz"

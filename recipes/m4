@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=m4
 version=1.4.19
 revision=1

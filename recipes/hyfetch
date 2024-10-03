@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=hyfetch
 version=dfc3f59323c11526a4c091da361ef84d45a569e5
 revision=1

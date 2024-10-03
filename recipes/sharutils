@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=sharutils
 version=4.15.2
 revision=1

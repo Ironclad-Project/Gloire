@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=gcon
 version=fab7ce6ec1b6e53fbdf8d95427a562a20e76285c
 revision=1

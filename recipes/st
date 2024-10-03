@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=st
 version=0.9
 revision=1

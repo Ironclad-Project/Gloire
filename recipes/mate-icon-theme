@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=mate-icon-theme
 version=1.27.0
 revision=1

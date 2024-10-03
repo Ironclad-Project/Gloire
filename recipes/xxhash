@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=xxhash
 version=0.8.2
 revision=1

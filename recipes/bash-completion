@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=bash-completion
 version=2.14.0
 revision=1

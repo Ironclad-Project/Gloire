@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=posixtest
 version=d3cdad2291f77b4c090d8f24e7167700e6bba843
 revision=1

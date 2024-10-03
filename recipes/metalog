@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=metalog
 version=20230719
 revision=1

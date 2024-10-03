@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=lua
 version=5.4.6
 revision=1

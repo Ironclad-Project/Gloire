@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=jwm
 version=2.4.3
 revision=1

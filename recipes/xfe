@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=xfe
 version=1.46
 revision=1

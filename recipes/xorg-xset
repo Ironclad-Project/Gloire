@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=xorg-xset
 version=1.2.5
 revision=1

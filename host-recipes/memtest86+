@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=memtest86+
 from_source=memtest86+
 revision=1

@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=mlibc
 version=fa9135673688f477e9ad4ae002fca4b7c67e11dd
 revision=1

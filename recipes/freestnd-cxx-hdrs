@@ -1,3 +1,5 @@
+#! /bin/sh
+
 name=freestnd-cxx-hdrs
 version=674dcb02b37d55c77f7171c5c46efd5cd3dc0f5f
 revision=1

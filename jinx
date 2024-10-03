@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -58,40 +58,40 @@ if [ "$(id -u)" = "0" ]; then
     die "$0: Jinx does not support running as root."
 fi
 
-debian_snapshot="20240920T023126Z"
+debian_snapshot="20241001T203006Z"
 
 case "$(uname -m)" in
     x86_64)
         debian_architecture=amd64
-        debian_rootfs_b2sum=b718a9a062a2507543a6f8c87e0df1a480f8aaa5650ef2656c0ad849ebe96cc247d19e25ca68caf2f5f65f5aff5d34dd28e0c3519819796e4a7353140768bd3f
+        debian_rootfs_b2sum=a2362b7f01ea393e36321bba8283b358343d5abfe9808d28be2d94385aeecd34fd758bfa24e81a831ca2aa434630cb92157f7e4a52c00ade4c1bf0287b3bdcb1
         ;;
     aarch64)
         debian_architecture=arm64
-        debian_rootfs_b2sum=77f8decfa2811dfd5fca15730c46a1855beb90cd9e12616552179f0b65de6521c7b6fec4fc995b642cddc0ccbf76e15cfdcd9f34ffd0f32e19c81e939d23fdb7
+        debian_rootfs_b2sum=e7e594cea797dff684e213a1da20ef7f1e970128b81d3d714a82a4aa43b09a5ba782f367009ee0da711c3bdcc2fa7a95acacabe5bfb4233bd2bb7b06b5c7ef30
         ;;
     arm*)
         debian_architecture=armhf
-        debian_rootfs_b2sum=1f46df5755084e75f76bc720327d0f7e71ec97038ad7489eeebf53a571c481d06898d6ff5b82c15d52ae68874a6efb48b59d76cb33f61fe8de9071c8ed390e3f
+        debian_rootfs_b2sum=3c1ab156866249341e5098df08976eda811694f6cf9bde10b2ae5f30db5260e00ef1592b26928603369201495753d43b183b7f2caffc92063e839049ef52847c
         ;;
     i?86)
         debian_architecture=i386
-        debian_rootfs_b2sum=d03b24625b9fa6ab6426ec4ab9ff2f8a9264b01420e5682c4f4fc05e62a8ca7760e85148d0bc588b8b20903f084fbe3a64d69826e75243ba749b3182399279e2
+        debian_rootfs_b2sum=4499fdc9ad16aa45960af79cb6f8f450bb8d96a6f46f23613294deab432ce7e85e0149da5dcfa5b6992be38cf5dbb8b0141cef5c839da84c3016349e060ee212
         ;;
     mips64el)
         debian_architecture=mips64el
-        debian_rootfs_b2sum=1509b5abef51e074707408857def52cc5aab434e876faf189f27f7ab83882f062a1879025307c6bf40d0b03edd346bc75cfd23d6025ee5a93e4ad68bce511a54
+        debian_rootfs_b2sum=11802217f2c1aac2030263eb8c8b85ced8ce276fdc0b91a91f9412b26812a03721e7adc7135735ea8c0aa85283ad49687c5ae044e6fed3d56f6d126207d69556
         ;;
     ppc64le)
         debian_architecture=ppc64el
-        debian_rootfs_b2sum=97ddd36a43055847a282953700806865f22f87baffabbd43caaabad024ab2f56fcd39294a31dcc86b5a71fe6b78b9336131afa863827dd444338dd727be69ed6
+        debian_rootfs_b2sum=d60e31753c006da4c0faff264e4e856af80edc7e8ba60ce3f67b840de2e9fbb9246cfd6a09bf20c5867556ffcdec7a38acc589314f612d0814995fa85c9cb009
         ;;
     riscv64)
         debian_architecture=riscv64
-        debian_rootfs_b2sum=90b5fe7ac9e1dc758aed5b22ca737cfd3a7f15876d6bf1b7c8027e0779ac8c81e6a1efedf76572766bd78127dfd56b5e54e230f121c16f043cc4cf461f5ee51c
+        debian_rootfs_b2sum=54d41c3313c74f6d536af3a205ef944c861f8cd16b5a076fd43b5b5d8263760b0c8c913ad81564e1047c5e5e4c6419ecee164ca2f5c0fee116807af4ef72affe
         ;;
     s390x)
         debian_architecture=s390x
-        debian_rootfs_b2sum=b36d9e9089a8904fb79205bb9745a8afb1fb9f9d2e88efb205bc6745d60c6c9e35d1f7806ba512c5956b3c5b62eb0882f44aa630449c50e443de5d002e582043
+        debian_rootfs_b2sum=04017a6a6b7baa7641c3354bcd8bb5d766403e8cddd6cac32310b12333223dd200c8b67edfca4e45c20d410c53dec38cda7840b570c6bac94859dc09c98867f3
         ;;
     *)
         die "$0: Unsupported architecture: $(uname -m)"
@@ -399,7 +399,8 @@ run_in_container() {
     if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
         make_dir "${imgroot}/sysroot"
 
-        native_mode_mounts=y
+        container_pkgs_native_mount="-m${container_pkgs}:/usr/local:ro"
+        sysroot_native_mount="-m${sysroot_dir}:/sysroot:ro"
 
         run_in_cont_lang=en_US.UTF-8
     else
@@ -427,61 +428,33 @@ run_in_container() {
         shadow_git_dir_base="-m${tmp}:/base_dir/.git"
     fi
 
-    if [ -z "${native_mode_mounts}" ]; then
-        "$JINX_CACHE_DIR/rbrt" \
-            --root "${imgroot}" \
-            --uid $(id -u) \
-            --gid $(id -g) \
-            --env HOME=/root \
-            --env LANG=${run_in_cont_lang} \
-            --env LC_COLLATE=C \
-            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
-            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-            ${run_in_cont_term} \
-            ${run_in_cont_colorterm} \
-            --env JINX_PARALLELISM="$parallelism" \
-            --env JINX_CONFIG_FILE=/jinx-config \
-            --env JINX_SOURCE_DIR=/base_dir \
-            -m"${script}":/jinx:ro \
-            -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
-            -m"${base_dir}":/base_dir${container_base_dir_ro} \
-            ${shadow_git_dir_base:+"${shadow_git_dir_base}"} \
-            -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-            -m"${build_dir}":/build_dir \
-            ${shadow_git_dir_build:+"${shadow_git_dir_build}"} \
-            ${unshare_net_flag} \
-            --workdir / \
-            -- \
-            /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
-    else
-        "$JINX_CACHE_DIR/rbrt" \
-            --root "${imgroot}" \
-            --uid $(id -u) \
-            --gid $(id -g) \
-            --env HOME=/root \
-            --env LANG=${run_in_cont_lang} \
-            --env LC_COLLATE=C \
-            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
-            --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-            ${run_in_cont_term} \
-            ${run_in_cont_colorterm} \
-            --env JINX_PARALLELISM="$parallelism" \
-            --env JINX_CONFIG_FILE=/jinx-config \
-            --env JINX_SOURCE_DIR=/base_dir \
-            -m"${container_pkgs}":/usr/local:ro \
-            -m"${sysroot_dir}":/sysroot:ro \
-            -m"${script}":/jinx:ro \
-            -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
-            -m"${base_dir}":/base_dir${container_base_dir_ro} \
-            ${shadow_git_dir_base:+"${shadow_git_dir_base}"} \
-            -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-            -m"${build_dir}":/build_dir \
-            ${shadow_git_dir_build:+"${shadow_git_dir_build}"} \
-            ${unshare_net_flag} \
-            --workdir / \
-            -- \
-            /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
-    fi
+    "$JINX_CACHE_DIR/rbrt" \
+        --root "${imgroot}" \
+        --uid $(id -u) \
+        --gid $(id -g) \
+        --env HOME=/root \
+        --env LANG=${run_in_cont_lang} \
+        --env LC_COLLATE=C \
+        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
+        --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+        ${run_in_cont_term} \
+        ${run_in_cont_colorterm} \
+        --env JINX_PARALLELISM="$parallelism" \
+        --env JINX_CONFIG_FILE=/jinx-config \
+        --env JINX_SOURCE_DIR=/base_dir \
+        ${container_pkgs_native_mount:+"${container_pkgs_native_mount}"} \
+        ${sysroot_native_mount:+"${sysroot_native_mount}"} \
+        -m"${script}":/jinx:ro \
+        -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
+        -m"${base_dir}":/base_dir${container_base_dir_ro} \
+        ${shadow_git_dir_base:+"${shadow_git_dir_base}"} \
+        -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
+        -m"${build_dir}":/build_dir \
+        ${shadow_git_dir_build:+"${shadow_git_dir_build}"} \
+        ${unshare_net_flag} \
+        --workdir / \
+        -- \
+        /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
 
     rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
@@ -887,6 +860,8 @@ do_source() {
     do_fetch
 
     "${script}" internal-precont-patch $1
+
+    [ -f "${base_dir}"/sources/$1.prepared ] && return
 
     cross_compile=yes
     prepare_container

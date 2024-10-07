@@ -4,7 +4,7 @@
 
 # Gloire
 
-Gloire is an OS built with the [Ironclad](https://ironclad.cx)
+Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
 kernel and using GNU tools for the userland, along with some original
 applications like `util-ironclad`. This repository holds scripts and tools to
 build the OS from the ground up on a Linux-based system.

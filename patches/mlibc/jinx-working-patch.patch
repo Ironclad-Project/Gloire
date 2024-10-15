@@ -1,5 +1,5 @@
 diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
-index 2d20315..25122a5 100644
+index 3ecabad..39b12a2 100644
 --- mlibc-clean/abis/ironclad/signal.h
 +++ mlibc-workdir/abis/ironclad/signal.h
 @@ -32,41 +32,41 @@ typedef void (*__sighandler) (int);
@@ -75,15 +75,15 @@ index 2d20315..25122a5 100644
 +#define SIGIO    SIGUSR2
 +#define SIGPWR   SIGUSR2
  
- // siginfo->si_info constants
- // SIGBUS
+ /* siginfo->si_info constants */
+ /* SIGBUS */
 @@ -160,7 +160,7 @@ struct sigaction {
  	int sa_flags;
  };
  
 -#if defined(__x86_64__) || defined(__aarch64__)
 +#if defined(__x86_64__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64)
- // TODO: This is wrong for AArch64.
+ /* TODO: This is wrong for AArch64. */
  
  typedef struct {
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
@@ -117,10 +117,10 @@ index c42b4f4..011d9c0 100644
  }
  
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index c075aa4..e784c30 100644
+index 7e645e4..2f1e96b 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-@@ -523,9 +523,16 @@ int strcoll_l(const char *, const char *, locale_t) {
+@@ -528,9 +528,16 @@ int strcoll_l(const char *, const char *, locale_t) {
  	__builtin_unreachable();
  }
  
@@ -208,10 +208,10 @@ index 3af7e90..a02d4a2 100644
 +	return ret;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index fe0904d..123d146 100644
+index bb0f47d..af5ee8b 100644
 --- mlibc-clean/options/posix/include/fcntl.h
 +++ mlibc-workdir/options/posix/include/fcntl.h
-@@ -71,9 +71,6 @@ ssize_t vmsplice(int fd, const struct iovec *iov, size_t nr_segs, unsigned int f
+@@ -71,9 +71,6 @@ ssize_t vmsplice(int __fd, const struct iovec *__iov, size_t __nr_segs, unsigned
  #define SPLICE_F_MORE 4
  #define SPLICE_F_GIFT 8
  
@@ -222,16 +222,16 @@ index fe0904d..123d146 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index 627f33a..54f4b4c 100644
+index 3f4ef12..b99c39b 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
 @@ -107,135 +107,105 @@ extern "C" {
  #define _PC_FILESIZEBITS 9
  #define _PC_SYMLINK_MAX 10
  
-+// Kernel-supported ABI SC flags
-+// TODO: This should be moved to its own abi but the mlibc people wont let
-+// me do so without CBT.
++/* Kernel-supported ABI SC flags */
++/* TODO: This should be moved to its own abi but the mlibc people wont let */
++/* me do so without CBT. */
 +#define _SC_PAGESIZE         1
 +#define _SC_OPEN_MAX         2
 +#define _SC_HOST_NAME_MAX    3
@@ -250,11 +250,11 @@ index 627f33a..54f4b4c 100644
 +#define _SC_NGROUPS_MAX      16
 +#define _SC_SYMLOOP_MAX      17
 +
-+// SC Aliases
++/* SC Aliases */
 +#define _SC_PAGE_SIZE _SC_PAGESIZE
 +
-+// The rest of libc-emulated SC macros
- // MISSING: remaining _SC_macros
++/* The rest of libc-emulated SC macros */
+ /* MISSING: remaining _SC_macros */
 -#define _SC_ARG_MAX 0
 -#define _SC_CHILD_MAX 1
 -#define _SC_CLK_TCK 2
@@ -460,10 +460,10 @@ index 627f33a..54f4b4c 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
-index dfe2b61..52fa934 100644
+index b9c3a27..038e613 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -550,18 +550,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
+@@ -553,18 +553,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -700,7 +700,7 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 01ab016..f8d92ab 100644
+index 150a59c..ead1e03 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -3,6 +3,7 @@

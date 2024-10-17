@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mlibc
-version=719962342751e98766c4179328a218e5229312f3
+version=b7e6c6aaa90dc5316d88bccb0477f59232c88ba5
 revision=1
 tarball_url="https://github.com/managarm/mlibc/archive/${version}.tar.gz"
-tarball_blake2b="4f6e7dbfff88f61b3a0bcde2f87a5233da9da5de46a50891ca8c92303d6de0b5ab688620a0d51c2e0cf034fb55d646e5b1db8c314a06fd25d98d33bbf372f094"
+tarball_blake2b="b9452391d98506264c7d89d6f8e7709d1b9e34779f21a4a4b1eff412be750233787703022225ac967c4624c4ff5f1fb5d5eccd6ef6fedbfeefc2b5d0660446b7"
 imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
@@ -13,14 +13,11 @@ deps="mlibc-headers"
 configure() {
         CFLAGS="$TARGET_CFLAGS" \
         CXXFLAGS="$TARGET_CXXFLAGS" \
-        LDFLAGS="-Wl,/usr/local/libgcc-binaries/libgcc-$ARCHITECTURE.a" \
+        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-$ARCHITECTURE.a" \
     meson_configure_noflags \
         --buildtype=debugoptimized \
         -Dmlibc_no_headers=true \
         -Ddefault_library=both \
-        -Ddisable_crypt_option=true \
-        -Ddisable_iconv_option=true \
-        -Ddisable_intl_option=true \
         -Ddisable_libgcc_dependency=true \
         -Duse_freestnd_hdrs=enabled
 }

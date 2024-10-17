@@ -68,8 +68,8 @@ index 3ecabad..39b12a2 100644
 +#define SIGXCPU 27
 +#define SIGXFSZ 28
 +
-+// These values are not kernel-related, and are emulated for userland by the
-+// libc, we will map them to SIGUSR2, which userland wont be able to use.
++/* These values are not kernel-related, and are emulated for userland by the */
++/* libc, we will map them to SIGUSR2, which userland wont be able to use. */
 +#define SIGCANCEL SIGUSR2
 +#define SIGWINCH SIGUSR2
 +#define SIGIO    SIGUSR2
@@ -812,7 +812,7 @@ index 0000000..2d696e3
 +}
 +#endif
 +
-+#endif // _SYS_SYSMACROS_H
++#endif /* _SYS_SYSMACROS_H */
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
 index 9aadf8c..0629bc0 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build

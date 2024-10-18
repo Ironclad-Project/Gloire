@@ -1,5 +1,5 @@
 diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
-index 3ecabad..39b12a2 100644
+index 3ecabad..b002dcf 100644
 --- mlibc-clean/abis/ironclad/signal.h
 +++ mlibc-workdir/abis/ironclad/signal.h
 @@ -32,41 +32,41 @@ typedef void (*__sighandler) (int);
@@ -222,10 +222,10 @@ index bb0f47d..af5ee8b 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index 3f4ef12..b99c39b 100644
+index 907bad3..55d6c5a 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
-@@ -107,135 +107,105 @@ extern "C" {
+@@ -103,135 +103,105 @@ extern "C" {
  #define _PC_FILESIZEBITS 9
  #define _PC_SYMLINK_MAX 10
  
@@ -460,7 +460,7 @@ index 3f4ef12..b99c39b 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
-index b9c3a27..038e613 100644
+index 8f6f537..7f78f6f 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
 @@ -553,18 +553,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
@@ -700,21 +700,60 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..ead1e03 100644
+index 150a59c..ab50fae 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -3,6 +3,7 @@
+@@ -3,87 +3,7 @@
  
  #include <stddef.h>
  
-+#if defined(__x86_64__)
- #define SYSCALL0(NUM) ({ \
- 	asm volatile ("syscall" \
- 				  : "=a"(ret), "=d"(errno) \
-@@ -50,17 +51,6 @@
- 				  : "rcx", "r11", "memory"); \
- })
- 
+-#define SYSCALL0(NUM) ({ \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL1(NUM, ARG0) ({ \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL2(NUM, ARG0, ARG1) ({ \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
+-	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
+-					"r"(arg_r12) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
+-	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+-	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
+-					"r"(arg_r12), "r"(arg_r8) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
 -#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
 -	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
 -	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
@@ -726,44 +765,34 @@ index 150a59c..ead1e03 100644
 -				  : "rcx", "r11", "memory"); \
 -})
 -
- #define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
- 	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
- 	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
-@@ -83,6 +73,33 @@
- 					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
- 				  : "rcx", "r11", "memory"); \
- })
-+#elif (defined(__riscv) && __riscv_xlen == 64)
-+#define SYSCALL0(NUM) ({ \
-+})
-+
-+#define SYSCALL1(NUM, ARG0) ({ \
-+})
-+
-+#define SYSCALL2(NUM, ARG0, ARG1) ({ \
-+})
-+
-+#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
-+})
-+
-+#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
-+})
-+
-+#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
-+})
-+
-+#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
-+})
-+
-+#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
-+})
-+#else
-+#error "Missing architecture specific code."
-+#endif
- 
+-#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
+-	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+-	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
+-	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
+-					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
+-#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
+-	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
+-	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
+-	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
+-	register __typeof(ARG6) arg_r10 asm("r10") = ARG6; \
+-	asm volatile ("syscall" \
+-				  : "=a"(ret), "=d"(errno) \
+-				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
+-					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
+-				  : "rcx", "r11", "memory"); \
+-})
+-
++// Syscall numbers are the same on all architectures.
  #define SYSCALL_EXIT                  0
  #define SYSCALL_ARCH_PRCTL            1
-@@ -163,8 +180,8 @@
+ #define SYSCALL_OPEN                  2
+@@ -163,8 +83,8 @@
  #define SYSCALL_UTIMES               76
  #define SYSCALL_CREATE_TCLUSTER      77
  #define SYSCALL_SWITCH_TCLUSTER      78
@@ -774,9 +803,219 @@ index 150a59c..ead1e03 100644
  #define SYSCALL_SEND_SIGNAL          81
  #define SYSCALL_GETPRIO              82
  #define SYSCALL_SETPRIO              83
+@@ -184,4 +104,209 @@
+ #define SYSCALL_GETTIDID             97
+ #define SYSCALL_SETTIDID             98
+ 
++#if defined(__x86_64__)
++#define SYSCALL0(NUM) ({ \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL1(NUM, ARG0) ({ \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL2(NUM, ARG0, ARG1) ({ \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
++	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9) \
++				  : "rcx", "r11", "memory"); \
++})
++
++#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
++	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
++	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
++	register __typeof(ARG6) arg_r10 asm("r10") = ARG6; \
++	asm volatile ("syscall" \
++				  : "=a"(ret), "=d"(errno) \
++				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
++					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
++				  : "rcx", "r11", "memory"); \
++})
++#elif (defined(__riscv) && __riscv_xlen == 64)
++#define SYSCALL0(NUM) ({ \
++	register uint64_t snum asm("a7") = (NUM); \
++	register uint64_t re asm("a0");           \
++	register uint64_t err asm("a1");          \
++	asm volatile ("ecall"                     \
++				  : "=r"(re), "=r"(err)       \
++				  : "r"(snum)                 \
++				  : "memory");                \
++	ret   = re;                               \
++	errno = err;                              \
++})
++
++#define SYSCALL1(NUM, ARG0) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0)             \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL2(NUM, ARG0, ARG1) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1)  \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1), \
++				    "r"(arg2)                        \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1), \
++				    "r"(arg2), "r"(arg3)             \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
++	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1), \
++				    "r"(arg2), "r"(arg3), "r"(arg4)  \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
++	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
++	register __typeof(ARG5) arg5 asm("a5") = (ARG5); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1), \
++				    "r"(arg2), "r"(arg3), "r"(arg4), \
++				    "r"(arg5)                        \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++
++#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
++	register uint64_t snum asm("a7") = (NUM);        \
++	register uint64_t re asm("a0");                  \
++	register uint64_t err asm("a1");                 \
++	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
++	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
++	register __typeof(ARG5) arg5 asm("a5") = (ARG5); \
++	register __typeof(ARG6) arg6 asm("a6") = (ARG6); \
++	asm volatile ("ecall"                            \
++				  : "=r"(re), "=r"(err)              \
++				  : "r"(snum), "r"(arg0), "r"(arg1), \
++				    "r"(arg2), "r"(arg3), "r"(arg4), \
++				    "r"(arg5), "r"(arg6)             \
++				  : "memory");                       \
++	ret   = re;                                      \
++	errno = err;                                     \
++})
++#else
++#error "Missing architecture specific code."
++#endif
++
+ #endif /* _SYS_SYSCALL_H */
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/sysmacros.h mlibc-workdir/sysdeps/ironclad/include/sys/sysmacros.h
 new file mode 100644
-index 0000000..2d696e3
+index 0000000..9682d01
 --- /dev/null
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/sysmacros.h
 @@ -0,0 +1,33 @@

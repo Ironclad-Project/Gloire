@@ -3,19 +3,15 @@
 name=gcc
 from_source=gcc-host
 revision=1
-imagedeps="build-essential gnat-14"
+imagedeps="build-essential"
 hostdeps="autoconf-2.69 automake libtool pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
 
+. "${base_dir}"/build-support/gcc-ada-helpers
+
 configure() {
-    TMPPATH=$(mktemp -d)
-
-    export PATH=$TMPPATH:$PATH
-
-    for i in gnat gnatbind gnatchop gnatclean gnathtml gnatkr gnatlink gnatls gnatmake gnatname gnatprep; do
-        ln -s /usr/bin/$i-14 $TMPPATH/$i
-    done
+    ada_symlink_gnat_14
 
     cp -rp "${source_dir}"/. ./
     mkdir -p build && cd build
@@ -43,13 +39,7 @@ configure() {
 }
 
 build() {
-    TMPPATH=$(mktemp -d)
-
-    export PATH=$TMPPATH:$PATH
-
-    for i in gnat gnatbind gnatchop gnatclean gnathtml gnatkr gnatlink gnatls gnatmake gnatname gnatprep; do
-        ln -s /usr/bin/$i-14 $TMPPATH/$i
-    done
+    ada_symlink_gnat_14
 
     cd build
     make -j${parallelism} all-gcc
@@ -57,6 +47,8 @@ build() {
 }
 
 package() {
+    ada_symlink_gnat_14
+
     cd build
     DESTDIR="${dest_dir}" make install-gcc
 

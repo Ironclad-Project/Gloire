@@ -6,13 +6,19 @@ hostdeps="gcc autoconf-2.69 automake libtool pkg-config"
 imagedeps="build-essential"
 deps="mlibc libgcc"
 
+. "${base_dir}"/build-support/gcc-ada-helpers
+
 build() {
+    ada_symlink_gnat_14
+
     cd "${base_dir}"/host-builds/gcc/build
 
     make -j${parallelism} all-target-libstdc++-v3
 }
 
 package() {
+    ada_symlink_gnat_14
+
     cd "${base_dir}"/host-builds/gcc/build
 
     rm -rf tmp_libstdc++_dir

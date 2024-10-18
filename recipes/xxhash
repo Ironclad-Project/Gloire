@@ -10,10 +10,21 @@ deps="core-libs"
 
 build() {
     cp -rp "${source_dir}"/. ./
-    make CC="${OS_TRIPLET}-gcc" AR="${OS_TRIPLET}-ar" -j${parallelism}
+
+        CC="${OS_TRIPLET}-gcc" \
+        AR="${OS_TRIPLET}-ar" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        CXXFLAGS="${TARGET_CXXFLAGS}" \
+        CPPFLAGS="${TARGET_CPPFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+    make \
+        -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" PREFIX="${prefix}" make install
+
+    rm -fv "${dest_dir}${prefix}"/lib/libxxhash.a
+
     post_package_strip
 }

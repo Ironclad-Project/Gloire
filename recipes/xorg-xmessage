@@ -1,14 +1,14 @@
 #! /bin/sh
 
 name=xorg-xmessage
-version=1.0.6
+version=1.0.7
 revision=1
 tarball_url="https://www.x.org/pub/individual/app/xmessage-${version}.tar.xz"
-tarball_blake2b="f818af4d7a17c2da6e00fbc00622606153b74bccb809ccc42226a0be3d6f19840c3a20278fe2d73f4af1e624b37a4c086c81650ab9262a1692e6d3ab5d5b1764"
+tarball_blake2b="e2068bdaee66360296b0767b6f110bde5a3fd54b4213b2fc56929c56578ea589e38511011424d6c79da5b35821bf8772e951c299f3c4de093cf64efb8da015ef"
 source_hostdeps="autoconf automake libtool pkg-config"
 source_deps="xorg-util-macros"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libxmu libxaw"
+deps="core-libs libxaw libx11 libxt"
 
 prepare() {
     autotools_recursive_regen
@@ -16,7 +16,7 @@ prepare() {
 
 configure() {
     autotools_configure \
-      --with-appdefaultdir=/etc/X11/app-defaults
+        --with-appdefaultdir=/etc/X11/app-defaults
 }
 
 build() {
@@ -24,6 +24,7 @@ build() {
 }
 
 package() {
-    make DESTDIR=${dest_dir} install
+    DESTDIR="${dest_dir}" make install
+
     post_package_strip
 }

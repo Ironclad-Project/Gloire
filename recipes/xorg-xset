@@ -8,14 +8,15 @@ tarball_blake2b="81d93de0bd2a5f0d76937109a8f16f5e1d5074ec5209ea373d9f4b3f5064ac1
 source_hostdeps="autoconf automake libtool pkg-config"
 source_deps="xorg-util-macros"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libxmu libxaw"
+deps="core-libs libxmu"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure
+    autotools_configure \
+        --without-fontcache
 }
 
 build() {
@@ -23,6 +24,7 @@ build() {
 }
 
 package() {
-    make DESTDIR=${dest_dir} install
+    DESTDIR="${dest_dir}" make install
+
     post_package_strip
 }

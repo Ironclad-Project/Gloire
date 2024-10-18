@@ -1,14 +1,14 @@
 #! /bin/sh
 
 name=xorg-xprop
-version=1.2.6
+version=1.2.7
 revision=1
 tarball_url="https://www.x.org/pub/individual/app/xprop-${version}.tar.gz"
-tarball_blake2b="69feac251d2e54c63705aa4c1b4e91355d5739e096c962674104dbd8eb7aa7ac21e11517d62e03c491f9e96ac3b04e74cf87087fd6acdda22cce7d3e3e7f1b46"
+tarball_blake2b="c24c32f80825ed4241624394cca8e06141b4ad1ef633d75da3a874364484b0970cb746a06a2f5007f3130675cbf57921c45f8bd89fccf4dad3b76fa9692cedbf"
 source_hostdeps="autoconf automake libtool pkg-config"
 source_deps="xorg-util-macros"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libxmu libxaw"
+deps="core-libs libx11"
 
 prepare() {
     autotools_recursive_regen
@@ -23,6 +23,7 @@ build() {
 }
 
 package() {
-    make DESTDIR=${dest_dir} install
+    DESTDIR="${dest_dir}" make install
+
     post_package_strip
 }

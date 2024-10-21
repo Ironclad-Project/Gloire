@@ -379,7 +379,7 @@ index 57df730..0a73324 100755
  #
  printf "Checking for pkg-config ... "
 -PKGCONFIG_BIN=$(_which pkg-config)
-+PKGCONFIG_BIN="x86_64-pc-ironclad-mlibc-pkg-config"
++PKGCONFIG_BIN="x86_64-ironclad-mlibc-pkg-config"
  if [ -z "$PKGCONFIG_BIN" ]; then
  	echo "not found, exiting."
  	exit 1

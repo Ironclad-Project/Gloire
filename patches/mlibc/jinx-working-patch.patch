@@ -700,11 +700,14 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..c7dd8be 100644
+index 150a59c..9b1862f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -3,87 +3,7 @@
+@@ -1,89 +1,14 @@
+ #ifndef _SYS_SYSCALL_H
+ #define _SYS_SYSCALL_H
  
++#include <stdint.h>
  #include <stddef.h>
  
 -#define SYSCALL0(NUM) ({ \
@@ -787,12 +790,15 @@ index 150a59c..c7dd8be 100644
 -					"r"(arg_r12), "r"(arg_r8), "r"(arg_r9), "r"(arg_r10) \
 -				  : "rcx", "r11", "memory"); \
 -})
--
++#ifdef __cplusplus
++#  define __auto_type auto
++#endif
+ 
 +// Syscall numbers are the same on all architectures.
  #define SYSCALL_EXIT                  0
  #define SYSCALL_ARCH_PRCTL            1
  #define SYSCALL_OPEN                  2
-@@ -163,8 +83,8 @@
+@@ -163,8 +88,8 @@
  #define SYSCALL_UTIMES               76
  #define SYSCALL_CREATE_TCLUSTER      77
  #define SYSCALL_SWITCH_TCLUSTER      78
@@ -803,7 +809,7 @@ index 150a59c..c7dd8be 100644
  #define SYSCALL_SEND_SIGNAL          81
  #define SYSCALL_GETPRIO              82
  #define SYSCALL_SETPRIO              83
-@@ -184,4 +104,209 @@
+@@ -184,4 +109,209 @@
  #define SYSCALL_GETTIDID             97
  #define SYSCALL_SETTIDID             98
  
@@ -837,7 +843,7 @@ index 150a59c..c7dd8be 100644
 +})
 +
 +#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
-+	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
++	register __auto_type arg_r12 asm("r12") = ARG3; \
 +	asm volatile ("syscall" \
 +				  : "=a"(ret), "=d"(errno) \
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
@@ -846,8 +852,8 @@ index 150a59c..c7dd8be 100644
 +})
 +
 +#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
-+	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
-+	register __typeof(ARG4) arg_r8 asm("r8") = ARG4; \
++	register __auto_type arg_r12 asm("r12") = ARG3; \
++	register __auto_type arg_r8 asm("r8") = ARG4; \
 +	asm volatile ("syscall" \
 +				  : "=a"(ret), "=d"(errno) \
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
@@ -856,9 +862,9 @@ index 150a59c..c7dd8be 100644
 +})
 +
 +#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
-+	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
-+	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
-+	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
++	register __auto_type arg_r12 asm("r12") = ARG3; \
++	register __auto_type arg_r8  asm("r8")  = ARG4; \
++	register __auto_type arg_r9  asm("r9")  = ARG5; \
 +	asm volatile ("syscall" \
 +				  : "=a"(ret), "=d"(errno) \
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
@@ -867,10 +873,10 @@ index 150a59c..c7dd8be 100644
 +})
 +
 +#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
-+	register __typeof(ARG3) arg_r12 asm("r12") = ARG3; \
-+	register __typeof(ARG4) arg_r8  asm("r8")  = ARG4; \
-+	register __typeof(ARG5) arg_r9  asm("r9")  = ARG5; \
-+	register __typeof(ARG6) arg_r10 asm("r10") = ARG6; \
++	register __auto_type arg_r12 asm("r12") = ARG3; \
++	register __auto_type arg_r8  asm("r8")  = ARG4; \
++	register __auto_type arg_r9  asm("r9")  = ARG5; \
++	register __auto_type arg_r10 asm("r10") = ARG6; \
 +	asm volatile ("syscall" \
 +				  : "=a"(ret), "=d"(errno) \
 +				  : "a"(NUM), "D"(ARG0), "S"(ARG1), "d"(ARG2), \
@@ -894,7 +900,7 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0)             \
@@ -907,8 +913,8 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1)  \
@@ -921,9 +927,9 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
-+	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
++	register __auto_type arg2 asm("a2") = (ARG2); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1), \
@@ -937,10 +943,10 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
-+	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
-+	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
++	register __auto_type arg2 asm("a2") = (ARG2); \
++	register __auto_type arg3 asm("a3") = (ARG3); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1), \
@@ -954,11 +960,11 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
-+	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
-+	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
-+	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
++	register __auto_type arg2 asm("a2") = (ARG2); \
++	register __auto_type arg3 asm("a3") = (ARG3); \
++	register __auto_type arg4 asm("a4") = (ARG4); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1), \
@@ -972,12 +978,12 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
-+	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
-+	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
-+	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
-+	register __typeof(ARG5) arg5 asm("a5") = (ARG5); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
++	register __auto_type arg2 asm("a2") = (ARG2); \
++	register __auto_type arg3 asm("a3") = (ARG3); \
++	register __auto_type arg4 asm("a4") = (ARG4); \
++	register __auto_type arg5 asm("a5") = (ARG5); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1), \
@@ -992,13 +998,13 @@ index 150a59c..c7dd8be 100644
 +	register uint64_t snum asm("a7") = (NUM);        \
 +	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
-+	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
-+	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
-+	register __typeof(ARG2) arg2 asm("a2") = (ARG2); \
-+	register __typeof(ARG3) arg3 asm("a3") = (ARG3); \
-+	register __typeof(ARG4) arg4 asm("a4") = (ARG4); \
-+	register __typeof(ARG5) arg5 asm("a5") = (ARG5); \
-+	register __typeof(ARG6) arg6 asm("a6") = (ARG6); \
++	register __auto_type arg0 asm("a0") = (ARG0); \
++	register __auto_type arg1 asm("a1") = (ARG1); \
++	register __auto_type arg2 asm("a2") = (ARG2); \
++	register __auto_type arg3 asm("a3") = (ARG3); \
++	register __auto_type arg4 asm("a4") = (ARG4); \
++	register __auto_type arg5 asm("a5") = (ARG5); \
++	register __auto_type arg6 asm("a6") = (ARG6); \
 +	asm volatile ("ecall"                            \
 +				  : "=r"(re), "=r"(err)              \
 +				  : "r"(snum), "r"(arg0), "r"(arg1), \

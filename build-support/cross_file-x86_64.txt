@@ -1,10 +1,10 @@
 [binaries]
-c = 'x86_64-pc-ironclad-mlibc-gcc'
-cpp = 'x86_64-pc-ironclad-mlibc-g++'
-ar = 'x86_64-pc-ironclad-mlibc-ar'
-nm = 'x86_64-pc-ironclad-mlibc-nm'
-strip = 'x86_64-pc-ironclad-mlibc-strip'
-pkg-config = 'x86_64-pc-ironclad-mlibc-pkg-config'
+c = 'x86_64-ironclad-mlibc-gcc'
+cpp = 'x86_64-ironclad-mlibc-g++'
+ar = 'x86_64-ironclad-mlibc-ar'
+nm = 'x86_64-ironclad-mlibc-nm'
+strip = 'x86_64-ironclad-mlibc-strip'
+pkg-config = 'x86_64-ironclad-mlibc-pkg-config'
 
 [host_machine]
 system = 'ironclad'

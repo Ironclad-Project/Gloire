@@ -1,15 +1,13 @@
 #! /bin/sh
 
 name=xfe
-version=1.46
+version=1.46.2
 revision=1
 tarball_url="https://downloads.sourceforge.net/sourceforge/xfe/xfe-${version}.tar.xz"
-tarball_blake2b="d7b85e5280d1d9d6db3737f8ac14f4248ae4e99b52d843b51468299bdf71581003b21d0fb2be9949c7189481ed5f3fe88bbd146d2185c17dea3a4785edb876b7"
-source_hostdeps="autoconf automake libtool pkg-config intltool"
-source_deps="xorg-util-macros gettext"
-imagedeps="libxml-parser-perl"
-hostdeps="gcc autoconf automake libtool pkg-config intltool"
-deps="core-libs fox libx11 libxft libxcb xcb-util"
+tarball_blake2b="0c4a49aaf1ff04d25a13349fa81be9d3e8400009c7d8c24f96a017850a156b116950e0ac5d471190defeceb236e0ed82a614a143a0cdddf10dd86a9b9c318cca"
+source_hostdeps="autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs fox freetype2 xcb-util libxft"
 
 prepare() {
     autotools_recursive_regen
@@ -28,7 +26,7 @@ build() {
 }
 
 package() {
-    make DESTDIR=${dest_dir} install
+    DESTDIR="${dest_dir}" make install
 
     post_package_strip
 }

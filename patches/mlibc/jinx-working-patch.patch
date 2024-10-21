@@ -460,10 +460,10 @@ index 907bad3..55d6c5a 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
-index 8f6f537..7f78f6f 100644
+index ec11f1b..1bd9545 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -553,18 +553,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
+@@ -573,18 +573,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -700,7 +700,7 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..ab50fae 100644
+index 150a59c..c7dd8be 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -3,87 +3,7 @@
@@ -880,7 +880,7 @@ index 150a59c..ab50fae 100644
 +#elif (defined(__riscv) && __riscv_xlen == 64)
 +#define SYSCALL0(NUM) ({ \
 +	register uint64_t snum asm("a7") = (NUM); \
-+	register uint64_t re asm("a0");           \
++	register __typeof(ret) re asm("a0");      \
 +	register uint64_t err asm("a1");          \
 +	asm volatile ("ecall"                     \
 +				  : "=r"(re), "=r"(err)       \
@@ -892,7 +892,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL1(NUM, ARG0) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	asm volatile ("ecall"                            \
@@ -905,7 +905,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL2(NUM, ARG0, ARG1) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -919,7 +919,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL3(NUM, ARG0, ARG1, ARG2) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -935,7 +935,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL4(NUM, ARG0, ARG1, ARG2, ARG3) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -952,7 +952,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL5(NUM, ARG0, ARG1, ARG2, ARG3, ARG4) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -970,7 +970,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL6(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -990,7 +990,7 @@ index 150a59c..ab50fae 100644
 +
 +#define SYSCALL7(NUM, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ({ \
 +	register uint64_t snum asm("a7") = (NUM);        \
-+	register uint64_t re asm("a0");                  \
++	register __typeof(ret) re asm("a0");             \
 +	register uint64_t err asm("a1");                 \
 +	register __typeof(ARG0) arg0 asm("a0") = (ARG0); \
 +	register __typeof(ARG1) arg1 asm("a1") = (ARG1); \
@@ -1053,10 +1053,10 @@ index 0000000..9682d01
 +
 +#endif /* _SYS_SYSMACROS_H */
 diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 9aadf8c..0629bc0 100644
+index 80e6efc..e659402 100644
 --- mlibc-clean/sysdeps/ironclad/meson.build
 +++ mlibc-workdir/sysdeps/ironclad/meson.build
-@@ -74,6 +74,7 @@ if not no_headers
+@@ -80,6 +80,7 @@ if not no_headers
  		'include/sys/syscall.h',
  		'include/sys/reboot.h',
  		'include/sys/mount.h',
@@ -1064,7 +1064,7 @@ index 9aadf8c..0629bc0 100644
  		'include/sys/ptrace.h',
  		subdir: 'sys'
  	)
-@@ -99,7 +100,7 @@ if not headers_only
+@@ -105,7 +106,7 @@ if not headers_only
  	crt = custom_target('crt0',
  		build_by_default: true,
  		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
@@ -1073,7 +1073,7 @@ index 9aadf8c..0629bc0 100644
  		output: 'crt0.o',
  		install: true,
  		install_dir: get_option('libdir')
-@@ -108,7 +109,7 @@ if not headers_only
+@@ -114,7 +115,7 @@ if not headers_only
  	custom_target('crti',
  		build_by_default: true,
  		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
@@ -1082,7 +1082,7 @@ index 9aadf8c..0629bc0 100644
  		output: 'crti.o',
  		install: true,
  		install_dir: get_option('libdir')
-@@ -117,7 +118,7 @@ if not headers_only
+@@ -123,7 +124,7 @@ if not headers_only
  	custom_target('crtn',
  		build_by_default: true,
  		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],

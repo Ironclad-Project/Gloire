@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gcon
-version=27676be9658b27a402ac563ed731b73abb1fa7cc
+version=7ec045bb319125082408c1cad3b593d066a8e2c2
 revision=1
 tarball_url="https://github.com/streaksu/gcon/archive/${version}.tar.gz"
-tarball_blake2b="e293e6ad6048ec7c36e2368122bf9c1ba0955497db8eea4c7da3a3e58337ecb3b83eabf04da00ba21a2bc0c3474f6710b094d6a60f44fe78a0ef40f116d42323"
+tarball_blake2b="08aac83403c5bc9e95ed08f1994046b9dbffc9685797e2f3f4b12ab21fd9244582c7263ca86f00ee01c886ee68602c34170a9c54100c603aba6aecdd1c2f1202"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_allow_network="yes"
@@ -24,5 +24,5 @@ build() {
 }
 
 package() {
-    make install DESTDIR="${dest_dir}"
+    DESTDIR="${dest_dir}" make install
 }

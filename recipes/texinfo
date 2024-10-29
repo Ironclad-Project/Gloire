@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=texinfo
-version=7.0.2
+version=7.1.1
 revision=1
 tarball_url="https://ftp.gnu.org/pub/gnu/texinfo/texinfo-${version}.tar.xz"
-tarball_blake2b="23737cc800392c949add14c1d0a01a294e8c224d958c03325c96d6540dcfae49db5c2d4a8c29310c0603f8ac8477f6ee00a14db4aa6caab317b19e776139e617"
+tarball_blake2b="64dbd315e65d5b7cb0bb06c918e9924bb15a25a4bb26322db10b7ee98e9e6626b62592f8edd0ff016256f4a84837dabacb5278c3826e34fa3e080a5e8c0fb626"
 source_imagedeps="build-essential"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="build-essential help2man"
@@ -26,6 +26,7 @@ prepare() {
 configure() {
     cp -rp "${source_dir}"/. ./
 
+        texinfo_cv_sys_iconv_converts_euc_cn=y \
         configure_script_path=./configure \
     autotools_configure \
         --disable-perl-xs

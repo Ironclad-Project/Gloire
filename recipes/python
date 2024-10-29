@@ -8,7 +8,7 @@ tarball_blake2b="4255171ef8ee1777bab829be7bbaf28a9d5073985b3b1309a41694dda5f6b4a
 source_hostdeps="autoconf automake libtool pkg-config"
 source_deps="autoconf-archive"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs bzip2 xz zlib openssl ncurses readline gdbm tzdata libexpat libffi"
+deps="core-libs bzip2 xz zlib openssl ncurses readline gdbm libexpat libffi"
 
 prepare() {
     autotools_recursive_regen

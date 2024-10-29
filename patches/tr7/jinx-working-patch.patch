@@ -1,0 +1,26 @@
+diff --git tr7-clean/Makefile tr7-workdir/Makefile
+index e3ed4f6..028198b 100644
+--- tr7-clean/Makefile
++++ tr7-workdir/Makefile
+@@ -48,10 +48,10 @@ BINDIR = $(PREFIX)/bin
+ LIBDIR = $(PREFIX)/lib
+ INCDIR = $(PREFIX)/include
+ DATADIR = $(PREFIX)/share
+-TR7LIBPATH = $(PREFIX)/share/tr7/tr7libs:$(PWD)/tr7libs
++TR7LIBPATH = $(PREFIX)/share/tr7/tr7libs
+ 
+ # default targets
+-ALL = $(LIBSTA) $(TR7I) tags
++ALL = $(LIBSO) $(TR7I) tags
+ 
+ # uncomment below to compile shared library
+ #ALL += $(LIBSO)
+@@ -76,7 +76,7 @@ libtr7.so: $(LIBSO)
+ 	$(LN) -sf $(LIBSO) libtr7.so
+ 
+ $(LIBSO): tr7.dyn.o
+-	$(CC) -shared -o $(LIBSO) tr7.dyn.o $(SYSLIBS) -Wl,-soname,$(LIBSO)
++	$(CC) -shared -o $(LIBSO) tr7.dyn.o $(SYSLIBS) -Wl,-soname,$(LIBSO) $(LDFLAGS)
+ 
+ $(TR7I): examples/tr7i.c tr7.c tr7.h
+ 	$(CC) $(CFLAGS) -I. -o $(TR7I) examples/tr7i.c tr7.c $(LDFLAGS) $(SYSLIBS) -DDEFLIBPATH='"$(TR7LIBPATH)"'

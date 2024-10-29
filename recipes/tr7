@@ -5,30 +5,28 @@ version=1.1.0
 revision=1
 tarball_url="https://gitlab.com/jobol/tr7/-/archive/v${version}/tr7-v${version}.tar.gz"
 tarball_blake2b="9e7f77282ab7d56de7adfe380297ee3e1856f3ff671a0cb94688a74e6e7a7c2f91ad1a5e5db8fcb9a144b398d693255f35caec9af87f826329da6b25d9e56e5f"
+imagedeps="emacs-nox"
 hostdeps="gcc"
 deps="core-libs"
 
 build() {
     cp -rp "${source_dir}"/. ./
 
-    # FIXME: printing of floats is broken, it always outputs %f.0
-    # Disable <wchar> as mlibc does not support it
-    # Make only tr7i as the .a library fails due to "ar"
-    # DESTDIR="${dest_dir}" PREFIX="${prefix}" CC="${OS_TRIPLET}-gcc" AR="${OS_TRIPLET}-ar" make -j${parallelism}
-    CC="${OS_TRIPLET}-gcc" AR="${OS_TRIPLET}-ar" make -j${parallelism}
+        CFLAGS="$TARGET_CFLAGS" \
+        CC="${OS_TRIPLET}-gcc" \
+    make \
+        LDFLAGS="$TARGET_LDFLAGS" \
+        DESTDIR="${dest_dir}" \
+        PREFIX="${prefix}"
 }
 
 package() {
-    install -v -D -t "${dest_dir}${prefix}"/bin tr7i
-    # FIXME: maybe also compile and install share library?
-    # install -v -D -t "${dest_dir}${prefix}"/lib libtr7.so*
-    mkdir -p "${dest_dir}${prefix}"/include
-    cp -r tr7libs "${dest_dir}${prefix}"/include
-    mkdir -p "${dest_dir}${prefix}"/share/tr7
-    cp -r tests "${dest_dir}${prefix}"/share/tr7
-    cp -r tr7libs "${dest_dir}${prefix}"/share/tr7
+    make \
+        DESTDIR="${dest_dir}" \
+        PREFIX="${prefix}" \
+        install-bin install-dyn
 
-    # DESTDIR="${dest_dir}" PREFIX="${prefix}" make install
+    # TODO: install-doc needs host tr7i to build docs
 
     post_package_strip
 }

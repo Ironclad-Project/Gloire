@@ -86,6 +86,18 @@ index 3ecabad..b002dcf 100644
  /* TODO: This is wrong for AArch64. */
  
  typedef struct {
+diff --git mlibc-clean/abis/ironclad/termios.h mlibc-workdir/abis/ironclad/termios.h
+index 475cd5b..32f23be 100644
+--- mlibc-clean/abis/ironclad/termios.h
++++ mlibc-workdir/abis/ironclad/termios.h
+@@ -18,6 +18,7 @@ typedef unsigned int tcflag_t;
+ #define VSTOP    8
+ #define VSUSP    9
+ #define VTIME   10
++#define VLNEXT   15
+ 
+ /* bitwise flags for c_iflag in struct termios */
+ #define BRKINT  0x0001
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -208,10 +220,10 @@ index 3af7e90..a02d4a2 100644
 +	return ret;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index bb0f47d..af5ee8b 100644
+index 079a682..3ac5253 100644
 --- mlibc-clean/options/posix/include/fcntl.h
 +++ mlibc-workdir/options/posix/include/fcntl.h
-@@ -71,9 +71,6 @@ ssize_t vmsplice(int __fd, const struct iovec *__iov, size_t __nr_segs, unsigned
+@@ -74,9 +74,6 @@ ssize_t vmsplice(int __fd, const struct iovec *__iov, size_t __nr_segs, unsigned
  #define SPLICE_F_MORE 4
  #define SPLICE_F_GIFT 8
  
@@ -222,7 +234,7 @@ index bb0f47d..af5ee8b 100644
  #define FALLOC_FL_PUNCH_HOLE 2
  
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
-index 907bad3..55d6c5a 100644
+index 97bbaae..34bc025 100644
 --- mlibc-clean/options/posix/include/unistd.h
 +++ mlibc-workdir/options/posix/include/unistd.h
 @@ -103,135 +103,105 @@ extern "C" {

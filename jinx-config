@@ -107,10 +107,10 @@ meson_configure_noflags() {
 }
 
 cmake_configure() {
+        CFLAGS="$TARGET_CFLAGS" \
+        CXXFLAGS="$TARGET_CXXFLAGS" \
+        LDFLAGS="$TARGET_LDFLAGS" \
     cmake_configure_noflags \
-        -DCMAKE_C_FLAGS="$TARGET_CFLAGS" \
-        -DCMAKE_CXX_FLAGS="$TARGET_CXXFLAGS" \
-        -DCMAKE_SHARED_LINKER_FLAGS="$TARGET_LDFLAGS" \
         "$@"
 }
 

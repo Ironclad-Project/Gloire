@@ -14,8 +14,8 @@ build() {
     make \
         CFLAGS="$TARGET_CFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
-        CC=$ARCHITECTURE-ironclad-mlibc-gcc \
-        PKG_CONFIG=$ARCHITECTURE-ironclad-mlibc-pkg-config \
+        CC=$OS_TRIPLET-gcc \
+        PKG_CONFIG=$OS_TRIPLET-pkg-config \
         -j${parallelism}
 }
 

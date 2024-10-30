@@ -7,7 +7,7 @@ tarball_url="https://www.samba.org/ftp/rsync/src/rsync-${version}.tar.gz"
 tarball_blake2b="75a3cc50452086aebd16f42d7a309c173cbc1ea156227afb10d2106d0b9043e973676995b8199d22840775ae3df8db97d1c0de5f3aa58afa130c5b1348c3f825"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs openssl zstd xz xxhash lz4"
+deps="core-libs lz4 openssl xxhash zlib zstd"
 
 prepare() {
     autotools_recursive_regen
@@ -17,9 +17,10 @@ configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
-    autotools_configure
+    autotools_configure \
+        --with-included-zlib=no
 
-    make -j${parallelism} reconfigure
+    make reconfigure
 }
 
 build() {
@@ -28,5 +29,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
+
     post_package_strip
 }

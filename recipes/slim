@@ -8,7 +8,7 @@ tarball_blake2b="507f22d09a3449b870bb5fd5a5f0ab1002ceee5372c82f702582809a5fc4420
 source_deps="gettext"
 imagedeps="build-essential cmake ninja-build git"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg ironclad-branding fontconfig xorg-xauth"
+deps="core-libs libjpeg-turbo libpng libx11 libxext libxft libxmu libxrandr ironclad-branding fontconfig xorg-xauth"
 
 configure() {
     cmake_configure \
@@ -22,6 +22,8 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" ninja install
+
     cp -v "${base_dir}"/build-support/slim/slim.conf "${dest_dir}"/etc/
+
     post_package_strip
 }

@@ -1,5 +1,5 @@
 diff --git readline-clean/support/shlib-install readline-workdir/support/shlib-install
-index 661355d..d23b65c 100644
+index 661355d..4e80698 100644
 --- readline-clean/support/shlib-install
 +++ readline-workdir/support/shlib-install
 @@ -71,7 +71,7 @@ fi
@@ -44,9 +44,9 @@ index 9997161..6fdf423 100644
 --- readline-clean/terminal.c
 +++ readline-workdir/terminal.c
 @@ -102,12 +102,12 @@ static char *term_string_buffer = (char *)NULL;
-
+ 
  static int tcap_initialized;
-
+ 
 -#if !defined (__linux__) && !defined (NCURSES_VERSION)
 +//#if !defined (__linux__) && !defined (NCURSES_VERSION)
  #  if defined (__EMX__) || defined (NEED_EXTERN_PC)
@@ -55,6 +55,6 @@ index 9997161..6fdf423 100644
  char PC, *BC, *UP;
 -#endif /* !__linux__ && !NCURSES_VERSION */
 +//#endif /* !__linux__ && !NCURSES_VERSION */
-
+ 
  /* Some strings to control terminal actions.  These are output by tputs (). */
  char *_rl_term_clreol;

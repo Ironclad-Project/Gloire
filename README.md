@@ -30,7 +30,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -m 2G -M q35 -hda gloire.img -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 2G -M q35 -hda gloire.img -serial stdio
 ```
 
 Where `gloire.img` is your image of choice.
@@ -38,7 +38,7 @@ Where `gloire.img` is your image of choice.
 To do the same with a riscv64 image, you can do:
 
 ```bash
-qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -device ramfb -device qemu-xhci               \
+qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
    -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
    -hda gloire.img -serial stdio -m 2G
 ```

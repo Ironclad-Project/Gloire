@@ -30,7 +30,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 2G -M q35 -hda gloire.img -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 2G -M q35 -disk format=raw,file=gloire.img -serial stdio
 ```
 
 Where `gloire.img` is your image of choice.
@@ -48,6 +48,13 @@ and must be prepared as per QEMU with a
 
 ```bash
 dd if=/dev/zero of=<firmware path> bs=1 count=0 seek=33554432
+```
+
+Depending on your distribution, to use Linux's KVM, you might need to add your
+user to the `kvm` usergroup, as such:
+
+```bash
+usermod -aG kvm <user>
 ```
 
 ### On physical hardware

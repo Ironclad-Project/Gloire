@@ -30,7 +30,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 2G -M q35 -disk format=raw,file=gloire.img -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 2G -M q35 -drive format=raw,file=gloire.img -serial stdio
 ```
 
 Where `gloire.img` is your image of choice.

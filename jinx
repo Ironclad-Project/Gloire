@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -58,40 +58,40 @@ if [ "$(id -u)" = "0" ]; then
     die "$0: Jinx does not support running as root."
 fi
 
-debian_snapshot="20241001T203006Z"
+debian_snapshot="20241108T023030Z"
 
 case "$(uname -m)" in
     x86_64)
         debian_architecture=amd64
-        debian_rootfs_b2sum=a2362b7f01ea393e36321bba8283b358343d5abfe9808d28be2d94385aeecd34fd758bfa24e81a831ca2aa434630cb92157f7e4a52c00ade4c1bf0287b3bdcb1
+        debian_rootfs_b2sum=e6d190adbe000f1f061d668f8b75e08506ac1234524e8d74201b9140c160739bdb48b88a479bc3796bc3bd951a2eecb1b2fd30392d6618ad7a4b8125bd6cd340
         ;;
     aarch64)
         debian_architecture=arm64
-        debian_rootfs_b2sum=e7e594cea797dff684e213a1da20ef7f1e970128b81d3d714a82a4aa43b09a5ba782f367009ee0da711c3bdcc2fa7a95acacabe5bfb4233bd2bb7b06b5c7ef30
+        debian_rootfs_b2sum=1e577c53ac217bd900a7a232bd0cf8bdf279e78ab97da9af1d10c49444e9e33b3285ad0f1e6c78851934215063ca99d809add8018f26ec3bd8b7e6d87d828cbd
         ;;
     arm*)
         debian_architecture=armhf
-        debian_rootfs_b2sum=3c1ab156866249341e5098df08976eda811694f6cf9bde10b2ae5f30db5260e00ef1592b26928603369201495753d43b183b7f2caffc92063e839049ef52847c
+        debian_rootfs_b2sum=e72c0abe4fc40ebf6b24796fc41ff89ba5d4829ff13afeef3ec13d856ff53cb1c48097a11159f7eac6495098a44b35f31f9247277d4d26055d98f82183eb6813
         ;;
     i?86)
         debian_architecture=i386
-        debian_rootfs_b2sum=4499fdc9ad16aa45960af79cb6f8f450bb8d96a6f46f23613294deab432ce7e85e0149da5dcfa5b6992be38cf5dbb8b0141cef5c839da84c3016349e060ee212
+        debian_rootfs_b2sum=6d1fa9f1a4569210b4ca19fe4623ca490be38c0aba7c57df2cddad298b3e40c2cd64ec0d077aad2323e9439dc62950bfd68ae95c5576b05fa1a3ac35f217ead6
         ;;
     mips64el)
         debian_architecture=mips64el
-        debian_rootfs_b2sum=11802217f2c1aac2030263eb8c8b85ced8ce276fdc0b91a91f9412b26812a03721e7adc7135735ea8c0aa85283ad49687c5ae044e6fed3d56f6d126207d69556
+        debian_rootfs_b2sum=2c6d838c35547a1659652c93db43b40dbdb41a32f9156102da71d91264e12ce839b292024e66f24505a6c617a351d5caff4f0894aa69e8ff3abb0e7b71d11436
         ;;
     ppc64le)
         debian_architecture=ppc64el
-        debian_rootfs_b2sum=d60e31753c006da4c0faff264e4e856af80edc7e8ba60ce3f67b840de2e9fbb9246cfd6a09bf20c5867556ffcdec7a38acc589314f612d0814995fa85c9cb009
+        debian_rootfs_b2sum=a06f4149cfe51b8b17414d458dd2f1a2030fff03b3baf8ee7d2c5ae31f3a80dd6a5db0b6e54afcfb7774ffad2a5078bc83fc004bae2716196b13bec914b0c079
         ;;
     riscv64)
         debian_architecture=riscv64
-        debian_rootfs_b2sum=54d41c3313c74f6d536af3a205ef944c861f8cd16b5a076fd43b5b5d8263760b0c8c913ad81564e1047c5e5e4c6419ecee164ca2f5c0fee116807af4ef72affe
+        debian_rootfs_b2sum=060db023a4f15cf03a97b2d4a21a5e596dad970e7fecff980001bbf30a2cf6cf2807da3ec70a7c57383263e31d5ee9cbc2b3d9114227ab634ec09fac71ca05df
         ;;
     s390x)
         debian_architecture=s390x
-        debian_rootfs_b2sum=04017a6a6b7baa7641c3354bcd8bb5d766403e8cddd6cac32310b12333223dd200c8b67edfca4e45c20d410c53dec38cda7840b570c6bac94859dc09c98867f3
+        debian_rootfs_b2sum=fb6eadf5e26eaeeb2265a07579e741c8d165c3e0957399825c1aa115024369f87461fc347cf69934425323b6d49708ef35793981e3cfbf9e34a9660dc2b7c302
         ;;
     *)
         die "$0: Unsupported architecture: $(uname -m)"

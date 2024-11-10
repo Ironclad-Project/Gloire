@@ -86,6 +86,32 @@ index 3ecabad..b002dcf 100644
  /* TODO: This is wrong for AArch64. */
  
  typedef struct {
+diff --git mlibc-clean/abis/ironclad/socket.h mlibc-workdir/abis/ironclad/socket.h
+index d7754f4..1e38349 100644
+--- mlibc-clean/abis/ironclad/socket.h
++++ mlibc-workdir/abis/ironclad/socket.h
+@@ -48,14 +48,13 @@ struct cmsghdr {
+ 
+ #define SCM_CREDENTIALS 0x02
+ 
+-#define SOCK_DGRAM 1
+-#define SOCK_RAW 2
+-#define SOCK_SEQPACKET 3
+-#define SOCK_STREAM 4
+-#define SOCK_DCCP 5
+-#define SOCK_NONBLOCK 0x10000
+-#define SOCK_CLOEXEC 0x20000
+-#define SOCK_RDM 0x40000
++#define SOCK_DGRAM     0b000000000000000001
++#define SOCK_RAW       0b000000000000000010
++#define SOCK_STREAM    0b000000000000000100
++#define SOCK_SEQPACKET 0b000000000000001000
++#define SOCK_NONBLOCK  0b001000000000000000
++#define SOCK_CLOEXEC   0b010000000000000000
++#define SOCK_CLOFORK   0b100000000000000000
+ 
+ #define SOL_SOCKET 1
+ #define SOL_IPV6 41
 diff --git mlibc-clean/abis/ironclad/termios.h mlibc-workdir/abis/ironclad/termios.h
 index 475cd5b..32f23be 100644
 --- mlibc-clean/abis/ironclad/termios.h
@@ -559,7 +585,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..27cdefe 100644
+index 0383452..31ac48c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -623,7 +649,37 @@ index 0383452..27cdefe 100644
  	return errno;
  }
  
-@@ -767,7 +765,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+@@ -546,7 +544,13 @@ int sys_dup(int fd, int flags, int *newfd) {
+ 	} else {
+ 		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
+ 	}
++
+ 	*newfd = ret;
++
++	if (errno == 0) {
++		SYSCALL3(SYSCALL_FCNTL, *newfd, F_SETFD, flags);
++	}
++
+ 	return errno;
+ }
+ 
+@@ -565,9 +569,13 @@ int sys_dup2(int fd, int flags, int newfd) {
+ 
+ 	if (ret != -1 && ret != newfd) {
+ 		return EBADFD;
+-	} else {
+-		return errno;
+ 	}
++
++	if (errno == 0) {
++		SYSCALL3(SYSCALL_FCNTL, newfd, F_SETFD, flags);
++	}
++
++	return errno;
+ }
+ 
+ int sys_tcgetattr(int fd, struct termios *attr) {
+@@ -767,7 +775,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
  }
  
  int sys_setsid(pid_t *sid) {
@@ -632,7 +688,7 @@ index 0383452..27cdefe 100644
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -884,7 +882,7 @@ int sys_shutdown(int sockfd, int how) {
+@@ -884,7 +892,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  
  int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
@@ -641,19 +697,88 @@ index 0383452..27cdefe 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -933,14 +941,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+ 
+ 
+ int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
+-	// XXX: Ironclad has no sigprogmask so this is basically a weird ppoll poll
+-	// chimeral abomination.
+ 	int ret, errno;
+ 	if (timeout == NULL) {
+ 		 struct timespec t = {.tv_sec = (time_t)-1, .tv_nsec = (time_t)-1};
+-		 SYSCALL3(SYSCALL_POLL, fds, nfds, &t);
++		 SYSCALL4(SYSCALL_PPOLL, fds, nfds, &t, sigmask);
+ 	} else {
+-		 SYSCALL3(SYSCALL_POLL, fds, nfds, timeout);
++		 SYSCALL4(SYSCALL_PPOLL, fds, nfds, timeout, sigmask);
+ 	}
+ 	if (ret == -1) {
+ 		return errno;
+@@ -1201,6 +1207,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+ 	return errno;
+ }
+ 
++int sys_brk(void **out) {
++	return -1;
++}
++
+ #define SC_LIST_MOUNTS 9
+ struct mountinfo {
+ 	uint32_t type;
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-index 1626e4b..4e6a696 100644
+index 1626e4b..5ccafdc 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-@@ -32,7 +32,7 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
- 		}
- 	}
- 	if (win != NULL) {
--		ret = ioctl(*mfd, TIOCGWINSZ, win);
-+		ret = ioctl(*mfd, TIOCSWINSZ, win);
- 		if (ret) {
+@@ -25,17 +25,41 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
  			return -1;
  		}
+ 	}
+-	if (ios != NULL) {
++
++	if (ios == NULL) {
++		struct termios termios;
++		termios.c_iflag = BRKINT | IGNPAR | ICRNL | IXON | IMAXBEL;
++		termios.c_oflag = OPOST | ONLCR;
++		termios.c_cflag = CS8 | CREAD;
++		termios.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE;
++		termios.c_cc[VINTR] = CTRL('C');
++		termios.c_cc[VEOF] = CTRL('D');
++		termios.c_cc[VSUSP] = CTRL('Z');
++		termios.ibaud = 38400;
++		termios.obaud = 38400;
++		ret = tcsetattr(*mfd, TCSANOW, &termios);
++	} else {
+ 		ret = tcsetattr(*mfd, TCSANOW, ios);
+-		if (ret) {
+-			return -1;
+-		}
+ 	}
+-	if (win != NULL) {
++	if (ret) {
++		return -1;
++	}
++
++	if (win == NULL) {
++		struct winsize win_size = {
++			.ws_row = 24,
++			.ws_col = 80,
++			.ws_xpixel = 24 * 16,
++			.ws_ypixel = 80 * 16
++		};
++		ret = ioctl(*mfd, TIOCGWINSZ, &win_size);
++	} else {
+ 		ret = ioctl(*mfd, TIOCGWINSZ, win);
+-		if (ret) {
+-			return -1;
+-		}
+ 	}
++
++	if (ret) {
++		return -1;
++	}
++
+ 	return ret;
+ }
 diff --git mlibc-clean/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
 index 47ab6a9..c18fefe 100644
 --- mlibc-clean/sysdeps/ironclad/generic/thread.S
@@ -712,7 +837,7 @@ index 1b2f040..94f08c2 100644
  			*stack_base = *stack;
  		}
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..9b1862f 100644
+index 150a59c..b955b56 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,89 +1,14 @@
@@ -810,6 +935,15 @@ index 150a59c..9b1862f 100644
  #define SYSCALL_EXIT                  0
  #define SYSCALL_ARCH_PRCTL            1
  #define SYSCALL_OPEN                  2
+@@ -141,7 +66,7 @@
+ #define SYSCALL_GETRLIMIT            54
+ #define SYSCALL_SETRLIMIT            55
+ #define SYSCALL_ACCESS               56
+-#define SYSCALL_POLL                 57
++#define SYSCALL_PPOLL                57
+ #define SYSCALL_GETEUID              58
+ #define SYSCALL_SETUIDS              59
+ #define SYSCALL_FCHMOD               60
 @@ -163,8 +88,8 @@
  #define SYSCALL_UTIMES               76
  #define SYSCALL_CREATE_TCLUSTER      77

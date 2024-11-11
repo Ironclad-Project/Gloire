@@ -81,6 +81,20 @@ The instructions to build an x86_64 system are:
 PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
 ```
 
+*Note:* on certain distros, like Ubuntu 24.04, one may get an error like:
+```
+.../.jinx-cache/rbrt: failed to open or write to /proc/self/setgroups at line 186: Permission denied
+```
+In that case, it likely means apparmor is preventing the use of user namespaces,
+causing `jinx` to fail to work. One can enable user namespaces by running:
+```sh
+sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+```
+This is not permanent across reboots. To make it so, one can do:
+```sh
+sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
+```
+
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash

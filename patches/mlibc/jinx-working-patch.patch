@@ -836,6 +836,18 @@ index 1b2f040..94f08c2 100644
  		} else {
  			*stack_base = *stack;
  		}
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
+index cce83e6..431f680 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/mount.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
+@@ -7,6 +7,7 @@ extern "C" {
+ 
+ #define MNT_EXT 1
+ #define MNT_FAT 2
++#define MNT_DEV 3
+ 
+ #define MS_RDONLY   0b001
+ #define MS_REMOUNT  0b010
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 index 150a59c..b955b56 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h

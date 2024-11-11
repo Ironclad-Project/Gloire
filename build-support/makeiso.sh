@@ -34,6 +34,7 @@ sudo parted -s gloire.img mklabel gpt
 sudo parted -s gloire.img mkpart ESP fat32 2048s 5%
 sudo parted -s gloire.img mkpart gloire_data ext2 5% 100%
 sudo parted -s gloire.img set 1 esp on
+sudo sgdisk gloire.img -u 1:f2ac3998-bd9d-4193-bb75-efcd9e90dd96
 sudo sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 
 LOOPBACK_DEV=$(sudo losetup -Pf --show gloire.img)

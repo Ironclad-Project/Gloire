@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=util-ironclad
-version=0f227e00fd7000d412c8334f078a7421df2e9942
+version=1e91ba8873c58623a77474792750d3f6941f1a45
 revision=1
-tarball_url="https://git.savannah.nongnu.org/cgit/ironclad/util-ironclad.git/snapshot/util-ironclad-${version}.tar.gz"
-tarball_blake2b="8e224b1f0d60d333267268919d441293b521b2dcd5463b31389dc9b5f426ea731890b1159cadf742ca5a35c0651b33a59b9bd61818b3c2d76aa7dad7c1d52166"
+git_url="https://git.savannah.nongnu.org/git/ironclad/util-ironclad.git"
+commit=${version}
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libgcrypt"

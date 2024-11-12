@@ -1,0 +1,60 @@
+name: Weekly Gloire Snapshot
+
+on: [push]
+
+jobs:
+  gloire-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target_arch: [riscv64, x86_64]
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential make findutils curl git zstd rsync xorriso
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Unshallow repo tags
+        run: git fetch --prune --unshallow --tags
+
+      - name: Check if build is necessary
+        run: test "$(git tag --points-at HEAD)" = ""
+
+      - name: Build base
+        run: |
+          set -ex
+
+          case "${{matrix.target_arch}}" in \
+            riscv64) \
+              JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh ;; \
+            x86_64) \
+              ./build-support/makeiso.sh ;; \
+          esac
+
+      - name: Set TAG_DATE variable
+        run: echo "TAG_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Rename gloire.img and compress it
+        run: xz -T 0 < gloire.img > gloire-weekly-${{matrix.target_arch}}-$TAG_DATE.img.xz
+
+      - name: Tag new weekly release if it does not exist already
+        run: git tag weekly-$TAG_DATE && ( git push --tags || true )
+
+      - name: Create weekly snapshot
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Weekly snapshot ${{ env.TAG_DATE }}
+          tag_name: weekly-${{ env.TAG_DATE }}
+          prerelease: true
+          body: |
+            Automatically generated image of a weekly Gloire snapshot.
+
+            The image contains a TTY-only build, for a complete build, please
+            use one of the full releases.
+          files: gloire-weekly-*.img.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -47,7 +47,6 @@ sudo cp -rp sysroot/* mount_dir/
 sudo rm -rf mount_dir/boot
 sudo mkdir -p mount_dir/boot
 sudo mount ${LOOPBACK_DEV}p1 mount_dir/boot
-sudo cp -r sysroot/boot/* mount_dir/boot/
 
 # Prepare the iso and boot directories.
 sudo cp -r artwork/background.bmp              mount_dir/boot/
@@ -68,6 +67,74 @@ else
     sudo cp -r host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
 fi
 
+# Generate the config file. Take into account that there may not be a graphical
+# option, and that non x86 ports will not have memtest.
+CONFIG_TEMP="$(mktemp)"
+cat << 'EOF' > "$CONFIG_TEMP"
+timeout: 5
+wallpaper: boot():/background.bmp
+wallpaper_style: stretched
+
+${KERNEL_PATH}=boot():/ironclad
+${PROTOCOL}=limine
+${ROOTUUID}=123e4567-e89b-12d3-a456-426614174000
+${BASECMDLINE}=init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000
+
+EOF
+
+if [ -f sysroot/usr/bin/slim ]; then
+    cat << 'EOF' >> "$CONFIG_TEMP"
+/Gloire - Graphical
+    kernel_path: ${KERNEL_PATH}
+    protocol: ${PROTOCOL}
+    cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init"
+
+EOF
+fi
+
+cat << 'EOF' >> "$CONFIG_TEMP"
+/Gloire - TTY only
+    kernel_path: ${KERNEL_PATH}
+    protocol: ${PROTOCOL}
+    cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init"
+
+/Advanced options for Gloire
+EOF
+
+if [ -f sysroot/usr/bin/slim ]; then
+    cat << 'EOF' >> "$CONFIG_TEMP"
+    //Gloire - Graphical Debug (nolocaslr, noprogaslr)
+        kernel_path: ${KERNEL_PATH}
+        protocol: ${PROTOCOL}
+        cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
+
+EOF
+fi
+
+cat << 'EOF' >> "$CONFIG_TEMP"
+    //Gloire - TTY Debug (nolocaslr, noprogaslr)
+        kernel_path: ${KERNEL_PATH}
+        protocol: ${PROTOCOL}
+        cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
+
+    //Gloire - Emergency shell (nolocaslr, noprogaslr)
+        kernel_path: ${KERNEL_PATH}
+        protocol: ${PROTOCOL}
+        cmdline: rootuuid=${ROOTUUID} init=/bin/gcon nolocaslr noprogaslr
+EOF
+
+if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
+   cat << 'EOF' >> "$CONFIG_TEMP"
+
+/Memory test (memtest86+)
+    protocol: linux
+    kernel_path: boot():/memtest.bin
+EOF
+fi
+
+sudo cp "$CONFIG_TEMP" mount_dir/boot/limine.conf
+
+# Unmount after we are done.
 sync
 sudo umount -R mount_dir
 sudo rm -rf mount_dir

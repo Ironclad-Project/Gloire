@@ -30,6 +30,22 @@ jobs:
 
           case "${{matrix.target_arch}}" in \
             riscv64) \
+              JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build base ;; \
+            x86_64) \
+              ./jinx build base ;; \
+          esac
+
+      - name: Remove leftovers to reduce space
+        run: |
+          set -ex
+          rm -rf sources builds host-builds
+
+      - name: Build image
+        run: |
+          set -ex
+
+          case "${{matrix.target_arch}}" in \
+            riscv64) \
               JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh ;; \
             x86_64) \
               ./build-support/makeiso.sh ;; \

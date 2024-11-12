@@ -9,7 +9,7 @@ index 15db421..713ec57 100644
 -	tic -sx st.info
 +	#tic -sx st.info
  	@echo Please see the README file regarding the terminfo entry of st.
-
+ 
  uninstall:
 diff --git st-clean/st.c st-workdir/st.c
 index b9f66e7..9100d59 100644
@@ -20,10 +20,10 @@ index b9f66e7..9100d59 100644
  #include <unistd.h>
  #include <wchar.h>
 +#include <sys/ttydefaults.h>
-
+ 
  #include "st.h"
  #include "win.h"
-
+ 
 -#if   defined(__linux)
   #include <pty.h>
 -#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
@@ -31,7 +31,7 @@ index b9f66e7..9100d59 100644
 -#elif defined(__FreeBSD__) || defined(__DragonFly__)
 - #include <libutil.h>
 -#endif
-
+ 
  /* Arbitrary sizes */
  #define UTF_INVALID   0xFFFD
 @@ -791,8 +805,8 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
@@ -52,5 +52,5 @@ index b9f66e7..9100d59 100644
 -	tmoveto(first_col ? 0 : term.c.x, y);
 +	tmoveto(0, y);
  }
-
+ 
  void

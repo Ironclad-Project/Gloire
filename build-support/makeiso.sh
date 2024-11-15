@@ -38,7 +38,7 @@ sudo sgdisk gloire.img -u 1:f2ac3998-bd9d-4193-bb75-efcd9e90dd96
 sudo sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 
 LOOPBACK_DEV=$(sudo losetup -Pf --show gloire.img)
-sudo mkfs.fat ${LOOPBACK_DEV}p1
+sudo mkfs.fat -F 32 ${LOOPBACK_DEV}p1
 sudo mkfs.ext2 ${LOOPBACK_DEV}p2
 mkdir -p mount_dir
 sudo mount ${LOOPBACK_DEV}p2 mount_dir

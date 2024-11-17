@@ -726,7 +726,7 @@ index 0383452..31ac48c 100644
  struct mountinfo {
  	uint32_t type;
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-index 1626e4b..5ccafdc 100644
+index 1626e4b..3796ef5 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
 @@ -25,17 +25,41 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
@@ -754,6 +754,10 @@ index 1626e4b..5ccafdc 100644
 -		}
  	}
 -	if (win != NULL) {
+-		ret = ioctl(*mfd, TIOCGWINSZ, win);
+-		if (ret) {
+-			return -1;
+-		}
 +	if (ret) {
 +		return -1;
 +	}
@@ -765,12 +769,9 @@ index 1626e4b..5ccafdc 100644
 +			.ws_xpixel = 24 * 16,
 +			.ws_ypixel = 80 * 16
 +		};
-+		ret = ioctl(*mfd, TIOCGWINSZ, &win_size);
++		ret = ioctl(*mfd, TIOCSWINSZ, &win_size);
 +	} else {
- 		ret = ioctl(*mfd, TIOCGWINSZ, win);
--		if (ret) {
--			return -1;
--		}
++		ret = ioctl(*mfd, TIOCSWINSZ, win);
  	}
 +
 +	if (ret) {

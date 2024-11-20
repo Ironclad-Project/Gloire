@@ -2,57 +2,19 @@ diff --git cronie-clean/src/do_command.c cronie-workdir/src/do_command.c
 index 665e1f0..65549f2 100644
 --- cronie-clean/src/do_command.c
 +++ cronie-workdir/src/do_command.c
-@@ -131,7 +131,7 @@ static int child_process(entry * e, char **jobenv) {
- 	usernm = e->pwd->pw_name;
- 	mailto = env_get("MAILTO", jobenv);
- 	mailfrom = env_get("MAILFROM", e->envp);
--	
-+
- 	if (mailto != NULL) {
- 		if (expand_envvar(mailto, mailto_expanded, sizeof(mailto_expanded))) {
- 			mailto = mailto_expanded;
-@@ -140,7 +140,7 @@ static int child_process(entry * e, char **jobenv) {
- 			log_it("CRON", pid, "WARNING", "The environment variable 'MAILTO' could not be expanded. The non-expanded value will be used." , 0);
- 		}
- 	}
--	
-+
- 	if (mailfrom != NULL) {
- 		if (expand_envvar(mailfrom, mailfrom_expanded, sizeof(mailfrom_expanded))) {
- 			mailfrom = mailfrom_expanded;
 @@ -264,7 +264,7 @@ static int child_process(entry * e, char **jobenv) {
  		 */
  		{
  			char *shell = env_get("SHELL", jobenv);
 -			int fd, fdmax = TMIN(getdtablesize(), MAX_CLOSE_FD);
-+			int fd, fdmax = TMIN(100, MAX_CLOSE_FD);
++			int fd, fdmax = TMIN(sysconf(_SC_OPEN_MAX), MAX_CLOSE_FD);
  			DIR *dir;
  			struct dirent *dent;
  
-@@ -502,8 +502,8 @@ static int child_process(entry * e, char **jobenv) {
- 					fprintf(mail, "Content-Type: text/plain; charset=%s\n",
- 						cron_default_mail_charset);
- 				}
--				else {	/* user specified Content-Type header. 
--						 * disallow new-lines for security reasons 
-+				else {	/* user specified Content-Type header.
-+						 * disallow new-lines for security reasons
- 						 * (else users could specify arbitrary mail headers!)
- 						 */
- 					char *nl = content_type;
 diff --git cronie-clean/src/env.c cronie-workdir/src/env.c
 index c737237..310b5a1 100644
 --- cronie-clean/src/env.c
 +++ cronie-workdir/src/env.c
-@@ -148,7 +148,7 @@ int env_set_from_environ(char ***envpp) {
- 			size_t namelen;
- 
- 			namelen = strlen(*name);
--			if (strncmp(*name, *procenv, namelen) == 0 
-+			if (strncmp(*name, *procenv, namelen) == 0
- 			    && (*procenv)[namelen] == '=') {
- 				char **tmpenv;
- 
 @@ -260,7 +260,7 @@ int load_env(char *envstr, FILE * f) {
  	}
  	if (state != FINI && state != EQ2 && !(state == VALUE && !quotechar)) {
@@ -62,15 +24,6 @@ index c737237..310b5a1 100644
  			return ERR;
  		}
  		Set_LineNum(fileline);
-@@ -297,7 +297,7 @@ char **env_update_home(char **envp, const char *dir) {
- 
- 	if (glue_strings(envstr, sizeof envstr, "HOME", dir, '=')) {
- 		envp = env_set(envp, envstr);
--	}			
-+	}
- 	else
- 		log_it("CRON", getpid(), "ERROR", "can't set HOME", 0);
- 
 diff --git cronie-clean/src/popen.c cronie-workdir/src/popen.c
 index 3043eb6..19a9e2e 100644
 --- cronie-clean/src/popen.c
@@ -80,25 +33,7 @@ index 3043eb6..19a9e2e 100644
  
  	if (!pids) {
 -		if ((fds = getdtablesize()) <= 0)
-+		if ((fds = 100) <= 0)
++		if ((fds = sysconf(_SC_OPEN_MAX)) <= 0)
  			return (NULL);
  		if (fds > MAX_CLOSE_FD)
  			fds = MAX_CLOSE_FD; /* avoid allocating too much memory */
-@@ -180,7 +180,7 @@ static int cron_finalize(FILE * iop, int sig) {
- 	fdes = fileno(iop);
- 	if (pids == NULL || fdes >= fds || pids[fdes] == 0L)
- 		return (-1);
--	
-+
- 	if (!sig) {
- 		(void) fclose(iop);
- 	} else if (kill(pids[fdes], sig) == -1) {
-@@ -194,7 +194,7 @@ static int cron_finalize(FILE * iop, int sig) {
- 	(void) sigprocmask(SIG_BLOCK, &nset, &oset);
- 	while ((pid = wait(&stat_loc)) != pids[fdes] && pid != -1) ;
- 	(void) sigprocmask(SIG_SETMASK, &oset, NULL);
--	
-+
- 	if (sig) {
- 		(void) fclose(iop);
- 	}

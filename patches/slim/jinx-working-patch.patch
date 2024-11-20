@@ -10,65 +10,6 @@ index 237477d..9576290 100644
  
  #include "const.h"
  #include "log.h"
-@@ -95,7 +96,7 @@ int conv(int num_msg, const struct pam_message **msg,
- 			case PAM_ERROR_MSG:
- 			case PAM_TEXT_INFO:
- 				/* We simply write these to the log
--				   TODO: Maybe we should show them. In particular, if you 
-+				   TODO: Maybe we should show them. In particular, if you
- 				         have a fingerprint reader, PAM passes instructions
- 				         in PAM_TEXT_INFO messages */
- 				logStream << APPNAME << ": " << msg[i]->msg << endl;
-@@ -164,7 +165,7 @@ App::App(int argc, char** argv)
- 	int tmp;
- 	mcookie = string(App::mcookiesize, 'a');
- 	char * win_size = 0;
--	
-+
- 	/* Parse command line
- 	   Note: we allow an arg for the -n option to handle "-nodaemon" as
- 			 originally quoted in the docs. However, the parser has never
-@@ -374,11 +375,18 @@ void App::Run()
- 		/* Daemonize */
- 		if (daemonmode)
- 		{
--			if (daemon(0, 0) == -1)
--			{
--				logStream << APPNAME << ": " << strerror(errno) << endl;
--				exit(ERR_EXIT);
--			}
-+        pid_t child;
-+        if ((child = fork()) == (pid_t) -1) {
-+            logStream << "Daemonization failed : fork" << endl;
-+            return;
-+        }
-+        else if (child != (pid_t) 0) {
-+            _exit(EXIT_SUCCESS);
-+        }
-+        else if (setsid() == (pid_t) -1) {
-+            logStream << "Daemonization failed : setsid" << endl;
-+        }
-+        (void) chdir("/");
- 		}
- 
- 		OpenLog();
-@@ -990,14 +998,14 @@ void App::RestartServer()
- 	else
- 	{
- 		while (waitpid(-1, NULL, WNOHANG) > 0); /* Collects all dead children */
--		Run();
-+		//Run();
- 	}
- }
- 
- 
- /*
-  * Iterates over the list of all windows declared as children of Root and
-- * kills the clients. Since Root is the root window of the screen, all 
-+ * kills the clients. Since Root is the root window of the screen, all
-  * running applications (of the logged-in session) should be caught by this
-  */
- void App::KillAllClients(Bool top)
 @@ -1155,10 +1163,12 @@ int App::StartServer()
  		}
  	}

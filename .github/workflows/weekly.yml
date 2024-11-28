@@ -30,6 +30,8 @@ jobs:
         run: |
           set -ex
 
+          git clone https://git.savannah.nongnu.org/git/ironclad.git ironclad
+
           case "${{matrix.target_arch}}" in \
             riscv64) \
               JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx build base ;; \

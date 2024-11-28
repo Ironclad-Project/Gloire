@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gcon
-version=99bdf751d1570c626105a951e25b280831c4f10c
+version=15ea5dd3b26f90b4f7764630ec36515d41013449
 revision=1
-tarball_url="https://github.com/streaksu/gcon/archive/${version}.tar.gz"
-tarball_blake2b="34fc19baf5caec03502514c7c06bb3982e157f7c1f3a3f6eb464bc40694db6d50cfa5779aab5af3baab4f7fa6b990e2928cb61bd509b6abdc6ffc5bea21c679d"
+git_url="https://github.com/Ironclad-Project/gcon.git"
+commit=${version}
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_allow_network="yes"

@@ -8,6 +8,7 @@ set -ex
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
     git clone https://git.savannah.nongnu.org/git/ironclad.git ironclad
+    git -C ironclad checkout $(cat .ironclad-commit)
 fi
 
 # Build the sysroot with jinx, and make sure the packages the particular

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=ironclad
-version=2bf45b20ec4d51761b452b73292d1321786fb2e8
+version=$(cat ${base_dir}/.ironclad-commit)
 revision=1
 source_dir="ironclad"
 source_imagedeps="git"
@@ -10,7 +10,6 @@ imagedeps="texinfo gprbuild binutils"
 hostdeps="gcc autoconf automake libtool pkg-config"
 
 prepare() {
-    git checkout ${version}
     ./bootstrap
 }
 

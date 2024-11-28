@@ -25,6 +25,7 @@ jobs:
           set -ex
 
           git clone https://git.savannah.nongnu.org/git/ironclad.git ironclad
+          git -C ironclad checkout $(cat .ironclad-commit)
 
           case "${{matrix.target_arch}}" in \
             riscv64-limine) \

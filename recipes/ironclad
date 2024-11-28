@@ -3,14 +3,14 @@
 name=ironclad
 version=2bf45b20ec4d51761b452b73292d1321786fb2e8
 revision=1
-git_url="https://git.savannah.nongnu.org/git/ironclad.git"
-commit=${version}
+source_dir="ironclad"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="texinfo gprbuild binutils"
 hostdeps="gcc autoconf automake libtool pkg-config"
 
 prepare() {
+    git checkout ${version}
     ./bootstrap
 }
 

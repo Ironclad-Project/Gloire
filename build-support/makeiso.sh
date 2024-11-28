@@ -5,6 +5,11 @@ set -ex
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
+# Ensure that the Ironclad kernel has been cloned.
+if ! [ -d ironclad ]; then
+    git clone https://git.savannah.nongnu.org/git/ironclad.git ironclad
+fi
+
 # Build the sysroot with jinx, and make sure the packages the particular
 # target needs.
 set -f

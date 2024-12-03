@@ -837,6 +837,47 @@ index 1b2f040..94f08c2 100644
  		} else {
  			*stack_base = *stack;
  		}
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/mac.h mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
+index 4bf3d28..6b43225 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/mac.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/mac.h
+@@ -9,19 +9,23 @@
+ extern "C" {
+ #endif
+ 
+-#define MAC_CAP_SCHED   0b00000000001
+-#define MAC_CAP_SPAWN   0b00000000010
+-#define MAC_CAP_ENTROPY 0b00000000100
+-#define MAC_CAP_SYS_MEM 0b00000001000
+-#define MAC_CAP_USE_NET 0b00000010000
+-#define MAC_CAP_SYS_NET 0b00000100000
+-#define MAC_CAP_SYS_MNT 0b00001000000
+-#define MAC_CAP_SYS_PWR 0b00010000000
+-#define MAC_CAP_PTRACE  0b00100000000
+-#define MAC_CAP_SETUID  0b01000000000
+-#define MAC_CAP_SYS_MAC 0b10000000000
+-#define MAC_CAP_CLOCK  0b100000000000
+-#define MAC_CAP_SIGNALALL 0b1000000000000
++#define MAC_CAP_SCHED     0b0000000000000001
++#define MAC_CAP_SPAWN     0b0000000000000010
++#define MAC_CAP_ENTROPY   0b0000000000000100
++#define MAC_CAP_SYS_MEM   0b0000000000001000
++#define MAC_CAP_USE_NET   0b0000000000010000
++#define MAC_CAP_SYS_NET   0b0000000000100000
++#define MAC_CAP_SYS_MNT   0b0000000001000000
++#define MAC_CAP_SYS_PWR   0b0000000010000000
++#define MAC_CAP_PTRACE    0b0000000100000000
++#define MAC_CAP_SETUID    0b0000001000000000
++#define MAC_CAP_SYS_MAC   0b0000010000000000
++#define MAC_CAP_CLOCK     0b0000100000000000
++#define MAC_CAP_SIGNALALL 0b0001000000000000
++#define MAC_CAP_SETGID    0b0010000000000000
++#define MAC_CAP_IPC       0b0100000000000000
++#define MAC_CAP_SYS_LOG   0b1000000000000000
++
+ unsigned long get_mac_capabilities(void);
+ int set_mac_capabilities(unsigned long request);
+ 
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
 index cce83e6..431f680 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/mount.h

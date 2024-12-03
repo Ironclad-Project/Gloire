@@ -15,12 +15,12 @@ prepare() {
 
 configure() {
         GPRBUILD="gprbuild --target=${OS_TRIPLET} --db /base_dir/build-support/gprconfig" \
-    autotools_configure \
+    autotools_configure_noflags \
         --target=$ARCHITECTURE-limine-elf
 }
 
 build() {
-    make all -j${parallelism}
+    make -j${parallelism}
 }
 
 package() {

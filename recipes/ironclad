@@ -6,15 +6,15 @@ revision=1
 source_dir="ironclad"
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
-imagedeps="texinfo gprbuild binutils"
+imagedeps="texinfo gprbuild"
 hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
 
 prepare() {
     ./bootstrap
 }
 
 configure() {
-        GPRBUILD="gprbuild --target=${OS_TRIPLET} --db /base_dir/build-support/gprconfig" \
     autotools_configure_noflags \
         --target=$ARCHITECTURE-limine-elf
 }

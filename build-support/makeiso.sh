@@ -94,8 +94,8 @@ EOF
 if [ -f sysroot/usr/bin/slim ]; then
     cat << 'EOF' >> "$CONFIG_TEMP"
 /Gloire - Graphical
-    kernel_path: ${KERNEL_PATH}
     protocol: ${PROTOCOL}
+    path: ${KERNEL_PATH}
     cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init"
 
 EOF
@@ -103,8 +103,8 @@ fi
 
 cat << 'EOF' >> "$CONFIG_TEMP"
 /Gloire - TTY only
-    kernel_path: ${KERNEL_PATH}
     protocol: ${PROTOCOL}
+    path: ${KERNEL_PATH}
     cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init"
 
 /Advanced options for Gloire
@@ -113,8 +113,8 @@ EOF
 if [ -f sysroot/usr/bin/slim ]; then
     cat << 'EOF' >> "$CONFIG_TEMP"
     //Gloire - Graphical Debug (nolocaslr, noprogaslr)
-        kernel_path: ${KERNEL_PATH}
         protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
         cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
 
 EOF
@@ -122,13 +122,13 @@ fi
 
 cat << 'EOF' >> "$CONFIG_TEMP"
     //Gloire - TTY Debug (nolocaslr, noprogaslr)
-        kernel_path: ${KERNEL_PATH}
         protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
         cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
 
     //Gloire - Emergency shell (nolocaslr, noprogaslr)
-        kernel_path: ${KERNEL_PATH}
         protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
         cmdline: rootuuid=${ROOTUUID} init=/bin/gcon nolocaslr noprogaslr
 EOF
 
@@ -141,7 +141,7 @@ if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
 EOF
 fi
 
-$SUDO cp "$CONFIG_TEMP" mount_dir/boot/limine.conf
+$SUDO mv "$CONFIG_TEMP" mount_dir/boot/limine.conf
 
 # Unmount after we are done.
 sync
@@ -151,7 +151,7 @@ $SUDO losetup -d ${LOOPBACK_DEV}
 
 # Post installation triggers on the whole image.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    true
+    :
 else
     host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
 fi

@@ -15,8 +15,7 @@ prepare() {
 }
 
 configure() {
-    autotools_configure_noflags \
-        --target=$ARCHITECTURE-limine-elf
+    autotools_configure_noflags
 }
 
 build() {

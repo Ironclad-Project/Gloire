@@ -1,0 +1,26 @@
+diff --git sent-clean/config.mk sent-workdir/config.mk
+index ed08199..e962c10 100644
+--- sent-clean/config.mk
++++ sent-workdir/config.mk
+@@ -4,7 +4,7 @@ VERSION = 0.2
+ # Customize below to fit your system
+ 
+ # paths
+-PREFIX = /usr/local
++PREFIX = /usr
+ MANPREFIX = ${PREFIX}/share/man
+ 
+ X11INC = /usr/X11R6/include
+diff --git sent-clean/sent.c sent-workdir/sent.c
+index baf6d4f..1883ec7 100644
+--- sent-clean/sent.c
++++ sent-workdir/sent.c
+@@ -513,7 +513,7 @@ void run()
+ 
+ void usage()
+ {
+-	die("sent " VERSION " (c) 2014-2015 markus.teich@stusta.mhn.de\n" \
++	die("sent (c) 2014-2015 markus.teich@stusta.mhn.de\n" \
+ 	"usage: sent FILE1 [FILE2 ...]", argv0);
+ }
+ 

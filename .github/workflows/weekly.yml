@@ -26,6 +26,9 @@ jobs:
       - name: Check if build is necessary
         run: test "$(git tag --points-at HEAD)" = ""
 
+      - name: Enable user namespaces
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build base
         run: |
           set -ex

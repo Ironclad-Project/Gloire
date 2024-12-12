@@ -1,8 +1,6 @@
-<p align="center">
-    <img height="300" alt="Logo of the distro" src="artwork/logo.png"/>
-</p>
-
 # Gloire
+
+[<img src="artwork/logo.png" width="250" align="right" alt="Gloire logo">]()
 
 Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
 kernel and using GNU tools for the userland, along with some original

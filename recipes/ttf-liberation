@@ -4,7 +4,7 @@ name=ttf-liberation
 version=2.1.5
 revision=1
 tarball_url="https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-${version}.tar.gz"
-tarball_blake2b="d8614907887f20967fc7c75cb33b636a0eb5c682a076ccc7aef09f4ac243507afc005ef90d0b2aeee6a4a6a1ff3d5ce4fac0d1722a382525b3883ef53cdec26a"
+tarball_blake2b="9c9469b42becd8ccdfa0314b5f2c0fe7c1c59095c67ddc7dc656fe4ed951511e50f78da52c98700ed6f36549aacf4727339c1a786c5f16cc63d8a266318ca3d8"
 deps="core-libs"
 
 build() {

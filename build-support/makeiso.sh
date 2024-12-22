@@ -58,7 +58,7 @@ $SUDO mkdir -p mount_dir/boot
 $SUDO mount ${LOOPBACK_DEV}p1 mount_dir/boot
 
 # Prepare the iso and boot directories.
-$SUDO cp -r artwork/background.bmp              mount_dir/boot/
+$SUDO cp -r artwork/background.png              mount_dir/boot/
 $SUDO cp -r sysroot/usr/share/ironclad/ironclad mount_dir/boot/
 
 # Install the boot binaries required by the target.
@@ -81,8 +81,9 @@ fi
 CONFIG_TEMP="$(mktemp)"
 cat << 'EOF' > "$CONFIG_TEMP"
 timeout: 5
-wallpaper: boot():/background.bmp
+wallpaper: boot():/background.png
 wallpaper_style: stretched
+term_margin: 0
 
 ${KERNEL_PATH}=boot():/ironclad
 ${PROTOCOL}=limine

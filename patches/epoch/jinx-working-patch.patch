@@ -1,5 +1,5 @@
 diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
-index 92c56e2..e33079c 100644
+index 92c56e2..b1babff 100644
 --- epoch-clean/src/actions.c
 +++ epoch-workdir/src/actions.c
 @@ -35,57 +35,6 @@ struct _EnvVarList *GlobalEnvVars;
@@ -60,20 +60,17 @@ index 92c56e2..e33079c 100644
  }
  
  static void PrimaryLoop(void)
-@@ -668,13 +617,6 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
- 	/*Sync to be safe.*/
+@@ -669,7 +618,9 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
  	sync();
  
--	/*pivot_root now.*/
+ 	/*pivot_root now.*/
 -	if (syscall(SYS_pivot_root, NewRoot, OldRootDir) != 0)
--	{
--		SpitError("Failed to pivot_root()!");
--		EmergencyShell();
--	}
--
- 	chdir("/"); /*Reset working directory*/
- }
- 
++   int ret, errno;
++   SYSCALL4(SYSCALL_PIVOT_ROOT, NewRoot, strlen(NewRoot), OldRootDir, strlen(OldRootDir));
++	if (ret != 0)
+ 	{
+ 		SpitError("Failed to pivot_root()!");
+ 		EmergencyShell();
 diff --git epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
 index 8130386..66800b7 100644
 --- epoch-clean/src/epoch.h

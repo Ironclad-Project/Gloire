@@ -585,7 +585,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..31ac48c 100644
+index 0383452..f571c75 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -613,7 +613,20 @@ index 0383452..31ac48c 100644
  	} else if (ret != -1 && (flags & O_TRUNC)) {
  		// If the file cannot be truncated, dont sweat it, some software
  		// depends on some things being truncate-able that ironclad does not
-@@ -333,7 +332,9 @@ int sys_setgroups(size_t size, const gid_t *list) {
+@@ -284,12 +283,6 @@ int sys_vm_unmap(void *pointer, size_t size) {
+ 	}
+ }
+ 
+-int sys_getcwd(char *buf, size_t size) {
+-	buf[0] = '/';
+-	buf[1] = '\0';
+-	return 0;
+-}
+-
+ int sys_vm_protect(void *pointer, size_t size, int prot) {
+ 	int ret;
+ 	int errno;
+@@ -333,7 +326,9 @@ int sys_setgroups(size_t size, const gid_t *list) {
  }
  
  int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
@@ -624,7 +637,7 @@ index 0383452..31ac48c 100644
  }
  
  int sys_ptrace(long req, pid_t pid, void *addr, void *data, long *out) {
-@@ -351,7 +352,9 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
+@@ -351,7 +346,9 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
  }
  
  int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
@@ -635,7 +648,7 @@ index 0383452..31ac48c 100644
  }
  
  int sys_isatty(int fd) {
-@@ -530,12 +533,7 @@ void sys_yield(void) {
+@@ -530,12 +527,7 @@ void sys_yield(void) {
  
  int sys_kill(int pid, int sig) {
  	int ret, errno;
@@ -649,7 +662,7 @@ index 0383452..31ac48c 100644
  	return errno;
  }
  
-@@ -546,7 +544,13 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -546,7 +538,13 @@ int sys_dup(int fd, int flags, int *newfd) {
  	} else {
  		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
  	}
@@ -663,7 +676,7 @@ index 0383452..31ac48c 100644
  	return errno;
  }
  
-@@ -565,9 +569,13 @@ int sys_dup2(int fd, int flags, int newfd) {
+@@ -565,9 +563,13 @@ int sys_dup2(int fd, int flags, int newfd) {
  
  	if (ret != -1 && ret != newfd) {
  		return EBADFD;
@@ -679,7 +692,7 @@ index 0383452..31ac48c 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -767,7 +775,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+@@ -767,7 +769,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
  }
  
  int sys_setsid(pid_t *sid) {
@@ -688,7 +701,7 @@ index 0383452..31ac48c 100644
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -884,7 +892,7 @@ int sys_shutdown(int sockfd, int how) {
+@@ -884,7 +886,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  
  int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
@@ -697,7 +710,7 @@ index 0383452..31ac48c 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-@@ -933,14 +941,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -933,14 +935,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
  
  
  int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
@@ -714,7 +727,7 @@ index 0383452..31ac48c 100644
  	}
  	if (ret == -1) {
  		return errno;
-@@ -1201,6 +1207,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1201,6 +1201,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -891,7 +904,7 @@ index cce83e6..431f680 100644
  #define MS_RDONLY   0b001
  #define MS_REMOUNT  0b010
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..b955b56 100644
+index 150a59c..3e7a32f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,89 +1,14 @@
@@ -989,6 +1002,15 @@ index 150a59c..b955b56 100644
  #define SYSCALL_EXIT                  0
  #define SYSCALL_ARCH_PRCTL            1
  #define SYSCALL_OPEN                  2
+@@ -102,7 +27,7 @@
+ #define SYSCALL_SETHOSTNAME          15
+ #define SYSCALL_UNLINK               16
+ #define SYSCALL_STAT                 17
+-#define SYSCALL_GETCWD               18
++#define SYSCALL_PIVOT_ROOT           18
+ #define SYSCALL_CHDIR                19
+ #define SYSCALL_IOCTL                20
+ #define SYSCALL_SCHED_YIELD          21
 @@ -141,7 +66,7 @@
  #define SYSCALL_GETRLIMIT            54
  #define SYSCALL_SETRLIMIT            55
@@ -1009,10 +1031,12 @@ index 150a59c..b955b56 100644
  #define SYSCALL_SEND_SIGNAL          81
  #define SYSCALL_GETPRIO              82
  #define SYSCALL_SETPRIO              83
-@@ -184,4 +109,209 @@
+@@ -183,5 +108,211 @@
+ #define SYSCALL_SETSOCKOPT           96
  #define SYSCALL_GETTIDID             97
  #define SYSCALL_SETTIDID             98
- 
++#define SYSCALL_FAILURE_POLICY       99
++
 +#if defined(__x86_64__)
 +#define SYSCALL0(NUM) ({ \
 +	asm volatile ("syscall" \
@@ -1217,7 +1241,7 @@ index 150a59c..b955b56 100644
 +#else
 +#error "Missing architecture specific code."
 +#endif
-+
+ 
  #endif /* _SYS_SYSCALL_H */
 diff --git mlibc-workdir/sysdeps/ironclad/include/sys/sysmacros.h mlibc-workdir/sysdeps/ironclad/include/sys/sysmacros.h
 new file mode 100644

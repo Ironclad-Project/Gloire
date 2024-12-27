@@ -19,7 +19,7 @@ configure() {
         configure_script_path=./configure \
     autotools_configure \
         CFLAGS="$TARGET_CFLAGS -DSLOW_BUT_NO_HACKS" \
-        --enable-no-install-program=uptime
+        --enable-no-install-program="uptime,mkfifo,runcon,chroot"
 }
 
 build() {

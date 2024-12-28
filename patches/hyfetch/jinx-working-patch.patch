@@ -1,0 +1,56 @@
+diff --git hyfetch-clean/neofetch hyfetch-workdir/neofetch
+index f31d0ae..49c6458 100755
+--- hyfetch-clean/neofetch
++++ hyfetch-workdir/neofetch
+@@ -1058,8 +1058,7 @@ get_distro() {
+     [[ $distro ]] && return
+ 
+     case $os in
+-     Ironclad) distro=Ironclad ;;
+-        Linux|BSD|MINIX)
++        Linux|BSD|MINIX|Ironclad)
+             if [[ -f /bedrock/etc/bedrock-release && -z $BEDROCK_RESTRICT ]]; then
+                 case $distro_shorthand in
+                     on|tiny) distro="Bedrock Linux" ;;
+@@ -1893,9 +1892,6 @@ get_kernel() {
+ get_uptime() {
+     # Get uptime in seconds.
+     case $os in
+-        Ironclad)
+-            s=$(uptime -s)
+-        ;;
+         Linux|Windows|MINIX)
+             if [[ -r /proc/uptime ]]; then
+                 s=$(< /proc/uptime)
+@@ -1924,7 +1920,7 @@ get_uptime() {
+             s=$((now - boot))
+         ;;
+ 
+-        AIX|IRIX)
++        AIX|IRIX|Ironclad)
+             t=$(LC_ALL=POSIX ps -o etime= -p 1)
+ 
+             [[ $t == *-*   ]] && { d=${t%%-*}; t=${t#*-}; }
+@@ -6475,10 +6471,10 @@ ASCII:
+                                 Droidian, Elementary, Elive, EncryptOS, EndeavourOS, Endless, Enso,
+                                 EuroLinux, EvolutionOS, Exherbo, Exodia Predator OS, Fedora,
+                                 FemboyOS, Feren, Finnix, Floflis, FreeBSD, FreeMiNT, Frugalware,
+-                                Funtoo, GalliumOS, Garuda, Gentoo, GhostBSD, glaucus, gNewSense,
++                                Funtoo, GalliumOS, Garuda, Gentoo, GhostBSD, glaucus, Gloire, gNewSense,
+                                 GNOME, GNU, GoboLinux, GrapheneOS, Grombyang, Guix, Haiku, HamoniKR,
+                                 HarDClanZ, Hash, Huayra, Hybrid, HydroOS, Hyperbola, iglunix,
+-                                instantOS, Interix, IRIX, Ironclad, Itc, januslinux, Kaisen, Kali,
++                                instantOS, Interix, IRIX, Itc, januslinux, Kaisen, Kali,
+                                 KaOS, KDE, Kibojoe, Kogaion, Korora, KrassOS, KSLinux, Kubuntu,
+                                 LainOS, LangitKetujuh, LaxerOS, LEDE, LibreELEC, Linspire, Linux,
+                                 Linux Lite, Linux Mint, Linux Mint Old, Live Raizo, LMDE, Lubuntu,
+@@ -10349,7 +10345,7 @@ ${c2}~!!7JY5PGGBBBBBBBBGGGGGGGBGGGGGP5YJ?7~~~
+ EOF
+         ;;
+ 
+-         "Ironclad"*)
++         "Gloire"*)
+              set_colors 5 7 0
+              read -rd '' ascii_data <<'EOF'
+ ${c3}
+ 

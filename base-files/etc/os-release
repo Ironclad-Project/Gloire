@@ -1,9 +1,9 @@
 NAME="Gloire"
-PRETTY_NAME="Gloire"
+PRETTY_NAME="Gloire (w/ Ironclad kernel)"
 ID=gloire
 BUILD_ID=rolling
-ANSI_COLOR="38;2;255;0;255"
-HOME_URL="https://github.com/streaksu/Gloire"
-DOCUMENTATION_URL="https://github.com/streaksu/Gloire"
-SUPPORT_URL="https://github.com/streaksu/Gloire/issues"
-BUG_REPORT_URL="https://github.com/streaksu/Gloire/issues"
+ANSI_COLOR="45"
+HOME_URL="https://github.com/Ironclad-Project/Gloire"
+DOCUMENTATION_URL="https://github.com/Ironclad-Project/Gloire/wiki"
+SUPPORT_URL="https://github.com/Ironclad-Project/Gloire/issues"
+BUG_REPORT_URL="https://github.com/Ironclad-Project/Gloire/issues"

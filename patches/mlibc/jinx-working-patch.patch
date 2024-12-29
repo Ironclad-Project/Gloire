@@ -246,7 +246,7 @@ index 3af7e90..a02d4a2 100644
 +	return ret;
  }
 diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index 079a682..3ac5253 100644
+index 65c6678..49c42e5 100644
 --- mlibc-clean/options/posix/include/fcntl.h
 +++ mlibc-workdir/options/posix/include/fcntl.h
 @@ -74,9 +74,6 @@ ssize_t vmsplice(int __fd, const struct iovec *__iov, size_t __nr_segs, unsigned
@@ -585,7 +585,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..f571c75 100644
+index 0383452..ddfc52c 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -593,7 +593,18 @@ index 0383452..f571c75 100644
  #include <bits/ensure.h>
  #include <mlibc/debug.hpp>
  #include <mlibc/all-sysdeps.hpp>
-@@ -71,8 +70,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+@@ -17,6 +16,10 @@
+ #include <unistd.h>
+ #include <sys/file.h>
+ #include <mlibc/tcb.hpp>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <stdbool.h>
++#include <stddef.h>
+ 
+ namespace mlibc {
+ 
+@@ -71,8 +74,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
  	int path_len = strlen (path);
  	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
  	if (ret != -1 && (flags & O_EXCL)) {
@@ -604,7 +615,7 @@ index 0383452..f571c75 100644
  	}
  
  	if (ret == -1 && (flags & O_CREAT)) {
-@@ -80,7 +79,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+@@ -80,7 +83,7 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
  		 if (ret == -1) {
  			  return errno;
  		 }
@@ -613,7 +624,7 @@ index 0383452..f571c75 100644
  	} else if (ret != -1 && (flags & O_TRUNC)) {
  		// If the file cannot be truncated, dont sweat it, some software
  		// depends on some things being truncate-able that ironclad does not
-@@ -284,12 +283,6 @@ int sys_vm_unmap(void *pointer, size_t size) {
+@@ -284,12 +287,6 @@ int sys_vm_unmap(void *pointer, size_t size) {
  	}
  }
  
@@ -626,7 +637,7 @@ index 0383452..f571c75 100644
  int sys_vm_protect(void *pointer, size_t size, int prot) {
  	int ret;
  	int errno;
-@@ -333,7 +326,9 @@ int sys_setgroups(size_t size, const gid_t *list) {
+@@ -333,7 +330,9 @@ int sys_setgroups(size_t size, const gid_t *list) {
  }
  
  int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
@@ -637,7 +648,7 @@ index 0383452..f571c75 100644
  }
  
  int sys_ptrace(long req, pid_t pid, void *addr, void *data, long *out) {
-@@ -351,7 +346,9 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
+@@ -351,7 +350,9 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
  }
  
  int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restrict retrieve) {
@@ -648,7 +659,7 @@ index 0383452..f571c75 100644
  }
  
  int sys_isatty(int fd) {
-@@ -530,12 +527,7 @@ void sys_yield(void) {
+@@ -530,12 +531,7 @@ void sys_yield(void) {
  
  int sys_kill(int pid, int sig) {
  	int ret, errno;
@@ -662,7 +673,7 @@ index 0383452..f571c75 100644
  	return errno;
  }
  
-@@ -546,7 +538,13 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -546,7 +542,13 @@ int sys_dup(int fd, int flags, int *newfd) {
  	} else {
  		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
  	}
@@ -676,7 +687,7 @@ index 0383452..f571c75 100644
  	return errno;
  }
  
-@@ -565,9 +563,13 @@ int sys_dup2(int fd, int flags, int newfd) {
+@@ -565,9 +567,13 @@ int sys_dup2(int fd, int flags, int newfd) {
  
  	if (ret != -1 && ret != newfd) {
  		return EBADFD;
@@ -692,7 +703,7 @@ index 0383452..f571c75 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -767,7 +769,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+@@ -767,7 +773,7 @@ int sys_setregid(gid_t rgid, gid_t egid) {
  }
  
  int sys_setsid(pid_t *sid) {
@@ -701,7 +712,7 @@ index 0383452..f571c75 100644
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -884,7 +886,7 @@ int sys_shutdown(int sockfd, int how) {
+@@ -884,7 +890,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  
  int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
@@ -710,7 +721,7 @@ index 0383452..f571c75 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-@@ -933,14 +935,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -933,14 +939,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
  
  
  int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
@@ -727,7 +738,7 @@ index 0383452..f571c75 100644
  	}
  	if (ret == -1) {
  		return errno;
-@@ -1201,6 +1201,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1201,6 +1205,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -738,6 +749,180 @@ index 0383452..f571c75 100644
  #define SC_LIST_MOUNTS 9
  struct mountinfo {
  	uint32_t type;
+@@ -1262,5 +1270,173 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+ 
+ 	return EINVAL;
+ }
++
++int sys_getcwd(char *buf, size_t size) {
++  int fd = AT_FDCWD;
++  bool fd_needs_closing = false;
++  DIR *dirstream = NULL;
++  dev_t rootdev, thisdev;
++  ino_t rootino, thisino;
++  char *dir;
++  register char *dirp;
++  struct stat st;
++  size_t used;
++
++  if (size == 0 || buf == NULL) {
++      return EINVAL;
++  }
++
++  dir = buf;
++
++  dirp = dir + size;
++  *--dirp = '\0';
++
++  if (lstat (".", &st) < 0)
++    goto lose;
++  thisdev = st.st_dev;
++  thisino = st.st_ino;
++
++  if (lstat ("/", &st) < 0)
++    goto lose;
++  rootdev = st.st_dev;
++  rootino = st.st_ino;
++
++  while (!(thisdev == rootdev && thisino == rootino))
++    {
++      struct dirent *d;
++      dev_t dotdev;
++      ino_t dotino;
++      bool mount_point;
++      int parent_status;
++      size_t dirroom;
++      size_t namlen;
++      bool use_d_ino = true;
++
++      /* Look at the parent directory.  */
++      fd = openat (fd, "..", O_RDONLY);
++      if (fd < 0)
++        goto lose;
++      fd_needs_closing = true;
++      parent_status = fstat (fd, &st);
++      if (parent_status != 0)
++        goto lose;
++
++      if (dirstream && closedir (dirstream) != 0)
++        {
++          dirstream = NULL;
++          goto lose;
++        }
++
++      /* Figure out if this directory is a mount point.  */
++      dotdev = st.st_dev;
++      dotino = st.st_ino;
++      mount_point = dotdev != thisdev;
++
++      /* Search for the last directory.  */
++      dirstream = fdopendir (fd);
++      if (dirstream == NULL)
++        goto lose;
++      fd_needs_closing = false;
++      for (;;)
++        {
++          /* Clear errno to distinguish EOF from error if readdir returns
++             NULL.  */
++          errno = 0;
++          d = readdir (dirstream);
++
++          /* When we've iterated through all directory entries without finding
++             one with a matching d_ino, rewind the stream and consider each
++             name again, but this time, using lstat.  This is necessary in a
++             chroot on at least one system (glibc-2.3.6 + linux 2.6.12), where
++             .., ../.., ../../.., etc. all had the same device number, yet the
++             d_ino values for entries in / did not match those obtained
++             via lstat.  */
++          if (d == NULL && errno == 0 && use_d_ino)
++            {
++              use_d_ino = false;
++              rewinddir (dirstream);
++              d = readdir (dirstream);
++            }
++
++          if (d == NULL)
++            {
++              if (errno == 0)
++                /* EOF on dirstream, which can mean e.g., that the current
++                   directory has been removed.  */
++                errno = ENOENT;
++              goto lose;
++            }
++          if (d->d_name[0] == '.' &&
++              (d->d_name[1] == '\0' ||
++               (d->d_name[1] == '.' && d->d_name[2] == '\0')))
++            continue;
++
++          if (use_d_ino)
++            {
++              bool match = ((d->d_ino == thisino) || mount_point);
++              if (! match)
++                continue;
++            }
++
++          {
++            int entry_status;
++            entry_status = fstatat (fd, d->d_name, &st, AT_SYMLINK_NOFOLLOW);
++
++            /* We don't fail here if we cannot stat() a directory entry.
++               This can happen when (network) file systems fail.  If this
++               entry is in fact the one we are looking for we will find
++               out soon as we reach the end of the directory without
++               having found anything.  */
++            if (entry_status == 0 && S_ISDIR (st.st_mode)
++                && st.st_dev == thisdev && st.st_ino == thisino)
++              break;
++          }
++        }
++
++      dirroom = dirp - dir;
++      namlen = strlen (d->d_name);
++
++      if (dirroom <= namlen)
++        {
++          errno = ERANGE;
++          goto lose;
++        }
++      dirp -= namlen;
++      memcpy (dirp, d->d_name, namlen);
++      *--dirp = '/';
++
++      thisdev = dotdev;
++      thisino = dotino;
++    }
++
++  if (dirstream && closedir (dirstream) != 0)
++    {
++      dirstream = NULL;
++      goto lose;
++    }
++
++  if (dirp == &dir[size - 1])
++    *--dirp = '/';
++
++  used = dir + size - dirp;
++  memmove (dir, dirp, used);
++
++  return 0;
++
++ memory_exhausted:
++  errno = ENOMEM;
++ lose:
++  {
++    int save = errno;
++    if (dirstream)
++      closedir (dirstream);
++
++    if (fd_needs_closing)
++      close (fd);
++
++    errno = save;
++  }
++  return 1;
++}
+ #endif
+ } // namespace mlibc
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
 index 1626e4b..3796ef5 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
@@ -1312,42 +1497,3 @@ index 0000000..9682d01
 +#endif
 +
 +#endif /* _SYS_SYSMACROS_H */
-diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
-index 80e6efc..e659402 100644
---- mlibc-clean/sysdeps/ironclad/meson.build
-+++ mlibc-workdir/sysdeps/ironclad/meson.build
-@@ -80,6 +80,7 @@ if not no_headers
- 		'include/sys/syscall.h',
- 		'include/sys/reboot.h',
- 		'include/sys/mount.h',
-+		'include/sys/sysmacros.h',
- 		'include/sys/ptrace.h',
- 		subdir: 'sys'
- 	)
-@@ -105,7 +106,7 @@ if not headers_only
- 	crt = custom_target('crt0',
- 		build_by_default: true,
- 		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
--		input: 'crt-x86_64/crt0.S',
-+		input: 'crt-' + host_machine.cpu_family() / 'crt0.S',
- 		output: 'crt0.o',
- 		install: true,
- 		install_dir: get_option('libdir')
-@@ -114,7 +115,7 @@ if not headers_only
- 	custom_target('crti',
- 		build_by_default: true,
- 		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
--		input: 'crt-x86_64/crti.S',
-+		input: 'crt-' + host_machine.cpu_family() / 'crti.S',
- 		output: 'crti.o',
- 		install: true,
- 		install_dir: get_option('libdir')
-@@ -123,7 +124,7 @@ if not headers_only
- 	custom_target('crtn',
- 		build_by_default: true,
- 		command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
--		input: 'crt-x86_64/crtn.S',
-+		input: 'crt-' + host_machine.cpu_family() / 'crtn.S',
- 		output: 'crtn.o',
- 		install: true,
- 		install_dir: get_option('libdir')

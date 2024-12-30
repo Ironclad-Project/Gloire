@@ -1,0 +1,20 @@
+#! /bin/sh
+
+name=sl
+version=5.05
+revision=1
+git_url="https://github.com/eyJhb/sl.git"
+branch=${version}
+hostdeps="gcc"
+deps="core-libs ncurses"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+    make CC=${OS_TRIPLET}-gcc CFLAGS="$TARGET_CFLAGS" LDFLAGS="$TARGET_LDFLAGS" -j${parallelism}
+}
+
+package() {
+    mkdir -pv "${dest_dir}${prefix}"/bin/
+    install -Dm 775 sl "${dest_dir}${prefix}"/bin/
+    post_package_strip
+}

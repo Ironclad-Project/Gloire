@@ -1,0 +1,18 @@
+diff --git sl-clean/Makefile sl-workdir/Makefile
+index 515b96d..54f4bba 100644
+--- sl-clean/Makefile
++++ sl-workdir/Makefile
+@@ -8,11 +8,12 @@
+ 
+ CC=gcc
+ CFLAGS=-O3 -Wall
++override LDFLAGS+=-lncurses -ltinfo
+ 
+ all: sl
+ 
+ sl: sl.c sl.h
+-	$(CC) $(CFLAGS) -o sl sl.c -lncurses
++	$(CC) $(CFLAGS) -o sl sl.c $(LDFLAGS)
+ 
+ clean:
+ 	rm -f sl

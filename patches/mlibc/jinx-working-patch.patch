@@ -1107,17 +1107,25 @@ index 4bf3d28..6b43225 100644
  int set_mac_capabilities(unsigned long request);
  
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/mount.h mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
-index cce83e6..431f680 100644
+index cce83e6..f62339f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/mount.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/mount.h
-@@ -7,6 +7,7 @@ extern "C" {
+@@ -7,10 +7,12 @@ extern "C" {
  
  #define MNT_EXT 1
  #define MNT_FAT 2
 +#define MNT_DEV 3
  
- #define MS_RDONLY   0b001
- #define MS_REMOUNT  0b010
+-#define MS_RDONLY   0b001
+-#define MS_REMOUNT  0b010
+-#define MS_RELATIME 0b100
++#define MS_RDONLY   0b0001
++#define MS_REMOUNT  0b0010
++#define MS_RELATIME 0b0100
++#define MS_NOATIME  0b1000
+ 
+ #define MNT_FORCE 1
+ 
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 index 150a59c..3e7a32f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h

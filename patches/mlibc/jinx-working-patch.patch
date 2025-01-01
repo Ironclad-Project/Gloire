@@ -585,7 +585,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..ddfc52c 100644
+index 0383452..cb3bdff 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -659,6 +659,15 @@ index 0383452..ddfc52c 100644
  }
  
  int sys_isatty(int fd) {
+@@ -389,7 +390,7 @@ int sys_fork(pid_t *child) {
+ 	pid_t ret;
+ 	int errno;
+ 
+-	SYSCALL6(SYSCALL_CLONE, 0, 0, 0, 0, 0, 1);
++	SYSCALL0(SYSCALL_FORK);
+ 
+ 	if (ret == -1) {
+ 		return errno;
 @@ -530,12 +531,7 @@ void sys_yield(void) {
  
  int sys_kill(int pid, int sig) {
@@ -712,6 +721,15 @@ index 0383452..ddfc52c 100644
  }
  
  #ifndef MLIBC_BUILDING_RTLD
+@@ -776,7 +782,7 @@ extern "C" void __mlibc_thread_entry();
+ 
+ int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
+ 	 int ret, errno;
+-	 SYSCALL6(SYSCALL_CLONE, (uintptr_t)__mlibc_thread_entry, 0, stack, 0b10, tcb, 1);
++	 SYSCALL5(SYSCALL_CREATE_THREAD, (uintptr_t)__mlibc_thread_entry, 0, stack, tcb, 1);
+ 
+ 	 if (ret == -1) {
+ 		  return errno;
 @@ -884,7 +890,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  
@@ -1127,7 +1145,7 @@ index cce83e6..f62339f 100644
  #define MNT_FORCE 1
  
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 150a59c..3e7a32f 100644
+index 150a59c..7de62c4 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -1,89 +1,14 @@
@@ -1225,7 +1243,14 @@ index 150a59c..3e7a32f 100644
  #define SYSCALL_EXIT                  0
  #define SYSCALL_ARCH_PRCTL            1
  #define SYSCALL_OPEN                  2
-@@ -102,7 +27,7 @@
+@@ -96,13 +21,13 @@
+ #define SYSCALL_GETPID                9
+ #define SYSCALL_GETPPID              10
+ #define SYSCALL_EXEC                 11
+-#define SYSCALL_CLONE                12
++#define SYSCALL_FORK                 12
+ #define SYSCALL_WAIT                 13
+ #define SYSCALL_SOCKET               14
  #define SYSCALL_SETHOSTNAME          15
  #define SYSCALL_UNLINK               16
  #define SYSCALL_STAT                 17
@@ -1254,11 +1279,12 @@ index 150a59c..3e7a32f 100644
  #define SYSCALL_SEND_SIGNAL          81
  #define SYSCALL_GETPRIO              82
  #define SYSCALL_SETPRIO              83
-@@ -183,5 +108,211 @@
+@@ -183,5 +108,212 @@
  #define SYSCALL_SETSOCKOPT           96
  #define SYSCALL_GETTIDID             97
  #define SYSCALL_SETTIDID             98
 +#define SYSCALL_FAILURE_POLICY       99
++#define SYSCALL_CREATE_THREAD       100
 +
 +#if defined(__x86_64__)
 +#define SYSCALL0(NUM) ({ \

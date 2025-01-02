@@ -1,0 +1,20 @@
+#! /bin/sh
+
+name=tree
+version=2.1.3
+revision=1
+tarball_url="https://gitlab.com/OldManProgrammer/unix-tree/-/archive/${version}/unix-tree-${version}.tar.gz"
+tarball_blake2b="849dc5f2b886c28bb77c3ed588aad9cda3ec35c9d34d39bcee19387813ff699b93197e60fe2b87f54b5ac2afabdb6bd7772424d52856ab9e5767f5f06270d431"
+source_hostdeps="automake autoconf libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+    make CC=${OS_TRIPLET}-gcc -j${parallelism}
+}
+
+package() {
+    make PREFIX="${dest_dir}${prefix}" install
+    post_package_strip
+}

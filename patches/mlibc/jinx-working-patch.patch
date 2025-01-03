@@ -112,6 +112,27 @@ index d7754f4..1e38349 100644
  
  #define SOL_SOCKET 1
  #define SOL_IPV6 41
+diff --git mlibc-clean/abis/ironclad/stat.h mlibc-workdir/abis/ironclad/stat.h
+index 37f6aaa..7a507a0 100644
+--- mlibc-clean/abis/ironclad/stat.h
++++ mlibc-workdir/abis/ironclad/stat.h
+@@ -46,6 +46,8 @@
+ extern "C" {
+ #endif
+ 
++#define st_birthtim st_btim
++
+ struct stat {
+ 	dev_t st_dev;
+ 	ino_t st_ino;
+@@ -58,6 +60,7 @@ struct stat {
+ 	struct timespec st_atim;
+ 	struct timespec st_mtim;
+ 	struct timespec st_ctim;
++	struct timespec st_btim;
+ 	blksize_t st_blksize;
+ 	blkcnt_t st_blocks;
+ };
 diff --git mlibc-clean/abis/ironclad/termios.h mlibc-workdir/abis/ironclad/termios.h
 index 475cd5b..32f23be 100644
 --- mlibc-clean/abis/ironclad/termios.h

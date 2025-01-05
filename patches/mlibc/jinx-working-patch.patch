@@ -606,7 +606,7 @@ index 0000000..525efd6
 +.section .note.GNU-stack,"",%progbits
 +
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..cb3bdff 100644
+index 0383452..a9ee168 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -788,10 +788,62 @@ index 0383452..cb3bdff 100644
  #define SC_LIST_MOUNTS 9
  struct mountinfo {
  	uint32_t type;
-@@ -1262,5 +1270,173 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+@@ -1238,29 +1246,208 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+ 		return 1;
+ 	}
  
- 	return EINVAL;
- }
++   bool best_len = 0;
++   int  best_idx = 0;
+ 	for (int i = 0; i < ret; i++) {
+ 		if (!strncmp(path, buffer[i].location, buffer[i].location_length)) {
+-			out->f_bsize  = buffer[i].block_size;
+-			out->f_frsize = buffer[i].fragment_size;
+-			out->f_blocks = buffer[i].size_in_fragments;
+-			out->f_bfree  = buffer[i].free_blocks;
+-			out->f_bavail = buffer[i].free_blocks_user;
+-			out->f_files  = buffer[i].inode_count;
+-			out->f_ffree  = buffer[i].free_inodes;
+-			out->f_favail = buffer[i].free_inodes_user;
+-			out->f_fsid = 0;
+-			out->f_flag = buffer[i].flags;
+-			out->f_namemax = buffer[i].max_filename;
+-			if (buffer[i].type == MNT_EXT) {
+-				strcpy(out->f_basetype, "ext");
+-			} else {
+-				strcpy(out->f_basetype, "fat");
++			if (buffer[i].location_length > best_len) {
++				best_len = buffer[i].location_length;
++				best_idx = i;
+ 			}
+-			return 0;
+ 		}
+ 	}
+ 
+-	return EINVAL;
++	if (best_len == 0) {
++		return EINVAL;
++	}
++
++	out->f_bsize  = buffer[best_idx].block_size;
++	out->f_frsize = buffer[best_idx].fragment_size;
++	out->f_blocks = buffer[best_idx].size_in_fragments;
++	out->f_bfree  = buffer[best_idx].free_blocks;
++	out->f_bavail = buffer[best_idx].free_blocks_user;
++	out->f_files  = buffer[best_idx].inode_count;
++	out->f_ffree  = buffer[best_idx].free_inodes;
++	out->f_favail = buffer[best_idx].free_inodes_user;
++	out->f_fsid = 0;
++	out->f_flag = buffer[best_idx].flags;
++	out->f_namemax = buffer[best_idx].max_filename;
++
++	switch (buffer[best_idx].type) {
++		case MNT_EXT: strcpy(out->f_basetype, "ext");   break;
++		case MNT_FAT: strcpy(out->f_basetype, "fat");   break;
++		default:      strcpy(out->f_basetype, "devfs"); break;
++	}
++
++	return 0;
++}
 +
 +int sys_getcwd(char *buf, size_t size) {
 +  int fd = AT_FDCWD;
@@ -959,9 +1011,88 @@ index 0383452..cb3bdff 100644
 +    errno = save;
 +  }
 +  return 1;
-+}
+ }
  #endif
  } // namespace mlibc
+diff --git mlibc-clean/sysdeps/ironclad/generic/mntent.cpp mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
+index d064af3..44ef598 100644
+--- mlibc-clean/sysdeps/ironclad/generic/mntent.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
+@@ -45,53 +45,40 @@ char *hasmntopt(const struct mntent *mnt, const char *opt) {
+ 
+ /* Adapted from musl */
+ struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int buflen) {
+-	int n[8];
+ 	bool use_internal = (linebuf == SENTINEL);
+ 	int len;
+ 	size_t i;
+ 
+-	mnt->mnt_freq = 0;
+-	mnt->mnt_passno = 0;
++    char source[60];
++    char target[30];
++    char fs[30];
++    char options[30];
++    int dump;
++    int pass;
+ 
+ 	do {
+-		if(use_internal) {
++		if (use_internal) {
+ 			getline(&internal_buf, &internal_bufsize, f);
+ 			linebuf = internal_buf;
+ 		} else {
+ 			fgets(linebuf, buflen, f);
+ 		}
+-		if(feof(f) || ferror(f)) {
+-			return 0;
+-		}
+-		if(!strchr(linebuf, '\n')) {
+-			fscanf(f, "%*[^\n]%*[\n]");
+-			errno = ERANGE;
+-			return 0;
+-		}
+-
+-		len = strlen(linebuf);
+-		if(len > INT_MAX) {
+-			continue;
+-		}
+ 
+-		for(i = 0; i < sizeof n / sizeof *n; i++) {
+-			n[i] = len;
++		if (feof(f) || ferror(f)) {
++			return 0;
+ 		}
+ 
+-		sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
+-			n, n + 1, n + 2, n + 3, n + 4, n + 5, n + 6, n + 7,
+-			&mnt->mnt_freq, &mnt->mnt_passno);
+-	} while(linebuf[n[0]] == '#' || n[1] == len);
+-
+-	linebuf[n[1]] = 0;
+-	linebuf[n[3]] = 0;
+-	linebuf[n[5]] = 0;
+-	linebuf[n[7]] = 0;
+-
+-	mnt->mnt_fsname = linebuf + n[0];
+-	mnt->mnt_dir = linebuf + n[2];
+-	mnt->mnt_type = linebuf + n[4];
+-	mnt->mnt_opts = linebuf + n[6];
+-
++        if (sscanf(linebuf, "%s %s %s %s %d %d\n", source, target, fs, options,
++                     dump, pass) != 6) {
++            continue;
++        }
++	} while(linebuf[0] == '#');
++
++	mnt->mnt_fsname = strdup(source);
++	mnt->mnt_dir    = strdup(target);
++	mnt->mnt_type   = strdup(fs);
++	mnt->mnt_opts   = strdup(options);
++	mnt->mnt_freq   = dump;
++	mnt->mnt_passno = pass;
+ 	return mnt;
+ }
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
 index 1626e4b..3796ef5 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp

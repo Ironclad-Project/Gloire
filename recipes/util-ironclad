@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=util-ironclad
-version=829354ddcb23d13d99443a0948f83821c4c52b7b
+version=a68e9688b296cbb2cdbd1267de0171e94dffc338
 revision=1
 git_url="https://git.savannah.nongnu.org/git/ironclad/util-ironclad.git"
 commit=${version}

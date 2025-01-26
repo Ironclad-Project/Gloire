@@ -6,8 +6,8 @@ pkgs
 sources
 sysroot
 gloire.iso
-gloire.ext
 mount_dir
+iso_root
 bochsout.txt
 bx_enh_dbg.ini
 .jinx-cache

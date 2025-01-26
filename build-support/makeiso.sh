@@ -38,38 +38,40 @@ $SUDO chown -R 1000:1000 sysroot/home/user
 $SUDO chmod 700 sysroot/root
 $SUDO chmod 777 sysroot/tmp
 
-rm -f gloire.ext
-fallocate -l "${IMAGE_SIZE}" gloire.ext
+# Prepare the iso and boot directories.
+rm -rf iso_root
+mkdir -p iso_root/boot
 
+# Create and format the initramfs filesystem.
 # TODO: Once ready, move to ext4, now its ext2 only.
-$SUDO mkfs.ext2 gloire.ext
+fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
+$SUDO mkfs.ext2 iso_root/boot/gloire.ext
 mkdir -p mount_dir
-$SUDO mount gloire.ext mount_dir
+$SUDO mount iso_root/boot/gloire.ext mount_dir
 
+# Copy the system root to the initramfs filesystem.
 $SUDO cp -rp sysroot/* mount_dir/
-$SUDO rm -rf mount_dir/boot
 $SUDO mkdir -p mount_dir/boot
 
-rm -rf iso_root
-mkdir -pv iso_root/boot/limine
-
-# Prepare the iso and boot directories.
-cp -v artwork/background.png              iso_root/boot/
-cp -v sysroot/usr/share/ironclad/ironclad iso_root/boot/
+# Copy the bootloader wallpaper and kernel to the ISO root.
+cp artwork/background.png              iso_root/boot/
+cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
 # Install the boot binaries required by the target.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    mkdir -pv iso_root/EFI/BOOT
-    cp -v host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-    cp -v host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
+    mkdir -p iso_root/boot/limine
+    mkdir -p iso_root/EFI/BOOT
+    cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+    cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
 else
-    mkdir -pv iso_root/EFI/BOOT
-    cp -v host-pkgs/limine/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
-    cp -v host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
-    cp -v host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-    cp -v host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
-    cp -v host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
-    cp -v host-pkgs/memtest86+/boot/memtest.bin                      iso_root/boot/
+    mkdir -p iso_root/boot/limine
+    mkdir -p iso_root/EFI/BOOT
+    cp host-pkgs/limine/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
+    cp host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
+    cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+    cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
+    cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
+    cp host-pkgs/memtest86+/boot/memtest.bin                      iso_root/boot/
 fi
 
 # Generate the config file. Take into account that there may not be a graphical
@@ -141,15 +143,13 @@ if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
 EOF
 fi
 
-cp -v "$CONFIG_TEMP" iso_root/boot/limine/limine.conf
+cp "$CONFIG_TEMP" iso_root/boot/limine/limine.conf
 rm "$CONFIG_TEMP"
 
 # Unmount after we are done.
 sync
 $SUDO umount -R mount_dir
 $SUDO rm -rf mount_dir
-
-cp -v gloire.ext iso_root/boot/
 
 xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
     -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \

@@ -5,7 +5,8 @@ host-pkgs
 pkgs
 sources
 sysroot
-gloire.img
+gloire.iso
+gloire.ext
 mount_dir
 bochsout.txt
 bx_enh_dbg.ini

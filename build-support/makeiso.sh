@@ -5,6 +5,8 @@ set -ex
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
+: "${IMAGE_SIZE:=2G}"
+
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
     git clone https://git.savannah.nongnu.org/git/ironclad.git ironclad
@@ -36,48 +38,38 @@ $SUDO chown -R 1000:1000 sysroot/home/user
 $SUDO chmod 700 sysroot/root
 $SUDO chmod 777 sysroot/tmp
 
-# TODO: Once ready, move to ext4, now its ext2 only.
-rm -f gloire.img
-if [ -z ${IMAGE_SIZE+x} ]; then
-    fallocate -l 2G gloire.img
-else
-    fallocate -l "${IMAGE_SIZE}" gloire.img
-fi
-$SUDO parted -s gloire.img mklabel gpt
-$SUDO parted -s gloire.img mkpart ESP fat32 2048s 5%
-$SUDO parted -s gloire.img mkpart gloire_data ext2 5% 100%
-$SUDO parted -s gloire.img set 1 esp on
-$SUDO sgdisk gloire.img -u 1:f2ac3998-bd9d-4193-bb75-efcd9e90dd96
-$SUDO sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
+rm -f gloire.ext
+fallocate -l "${IMAGE_SIZE}" gloire.ext
 
-LOOPBACK_DEV=$($SUDO losetup -Pf --show gloire.img)
-$SUDO mkfs.fat -F 32 ${LOOPBACK_DEV}p1
-$SUDO mkfs.ext2 ${LOOPBACK_DEV}p2
+# TODO: Once ready, move to ext4, now its ext2 only.
+$SUDO mkfs.ext2 gloire.ext
 mkdir -p mount_dir
-$SUDO mount ${LOOPBACK_DEV}p2 mount_dir
+$SUDO mount gloire.ext mount_dir
 
 $SUDO cp -rp sysroot/* mount_dir/
 $SUDO rm -rf mount_dir/boot
 $SUDO mkdir -p mount_dir/boot
-$SUDO mount ${LOOPBACK_DEV}p1 mount_dir/boot
+
+rm -rf iso_root
+mkdir -pv iso_root/boot/limine
 
 # Prepare the iso and boot directories.
-$SUDO cp -r artwork/background.png              mount_dir/boot/
-$SUDO cp -r sysroot/usr/share/ironclad/ironclad mount_dir/boot/
+cp -v artwork/background.png              iso_root/boot/
+cp -v sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
 # Install the boot binaries required by the target.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    $SUDO mkdir -pv mount_dir/boot/EFI/BOOT
-    $SUDO cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI       mount_dir/boot/EFI/BOOT/
+    mkdir -pv iso_root/EFI/BOOT
+    cp -v host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+    cp -v host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
 else
-    $SUDO mkdir -pv mount_dir/boot/EFI/BOOT
-    $SUDO cp -r host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
-    $SUDO cp -r host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
-    $SUDO cp -r host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI           mount_dir/boot/EFI/BOOT/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI          mount_dir/boot/EFI/BOOT/
-    $SUDO cp -r host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
+    mkdir -pv iso_root/EFI/BOOT
+    cp -v host-pkgs/limine/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
+    cp -v host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
+    cp -v host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+    cp -v host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
+    cp -v host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
+    cp -v host-pkgs/memtest86+/boot/memtest.bin                      iso_root/boot/
 fi
 
 # Generate the config file. Take into account that there may not be a graphical
@@ -85,14 +77,12 @@ fi
 CONFIG_TEMP="$(mktemp)"
 cat << 'EOF' > "$CONFIG_TEMP"
 timeout: 5
-wallpaper: boot():/background.png
+wallpaper: boot():/boot/background.png
 wallpaper_style: stretched
 term_margin: 0
 
-${KERNEL_PATH}=boot():/ironclad
+${KERNEL_PATH}=boot():/boot/ironclad
 ${PROTOCOL}=limine
-${ROOTUUID}=123e4567-e89b-12d3-a456-426614174000
-${BASECMDLINE}=init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000
 
 EOF
 
@@ -101,7 +91,8 @@ if [ -f sysroot/usr/bin/slim ]; then
 /Gloire - Graphical
     protocol: ${PROTOCOL}
     path: ${KERNEL_PATH}
-    cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init"
+    cmdline: init=/bin/env root=ramdev1 initargs="runlevel=graphical-multiuser /sbin/init"
+    module_path: boot():/boot/gloire.ext
 
 EOF
 fi
@@ -110,7 +101,8 @@ cat << 'EOF' >> "$CONFIG_TEMP"
 /Gloire - TTY only
     protocol: ${PROTOCOL}
     path: ${KERNEL_PATH}
-    cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init"
+    cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init"
+    module_path: boot():/boot/gloire.ext
 
 /Advanced options for Gloire
 EOF
@@ -120,7 +112,8 @@ if [ -f sysroot/usr/bin/slim ]; then
     //Gloire - Graphical Debug (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: ${BASECMDLINE} initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
+        cmdline: init=/bin/env root=ramdev1 initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
+        module_path: boot():/boot/gloire.ext
 
 EOF
 fi
@@ -129,12 +122,14 @@ cat << 'EOF' >> "$CONFIG_TEMP"
     //Gloire - TTY Debug (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: ${BASECMDLINE} initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
+        cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
+        module_path: boot():/boot/gloire.ext
 
     //Gloire - Emergency shell (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: rootuuid=${ROOTUUID} init=/bin/gcon nolocaslr noprogaslr
+        cmdline: init=/bin/gcon root=ramdev1 nolocaslr noprogaslr
+        module_path: boot():/boot/gloire.ext
 EOF
 
 if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
@@ -142,21 +137,31 @@ if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
 
 /Memory test (memtest86+)
     protocol: linux
-    kernel_path: boot():/memtest.bin
+    kernel_path: boot():/boot/memtest.bin
 EOF
 fi
 
-$SUDO mv "$CONFIG_TEMP" mount_dir/boot/limine.conf
+cp -v "$CONFIG_TEMP" iso_root/boot/limine/limine.conf
+rm "$CONFIG_TEMP"
 
 # Unmount after we are done.
 sync
 $SUDO umount -R mount_dir
 $SUDO rm -rf mount_dir
-$SUDO losetup -d ${LOOPBACK_DEV}
+
+cp -v gloire.ext iso_root/boot/
+
+xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
+    -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+    -apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
+    -efi-boot-part --efi-boot-image --protective-msdos-label \
+    iso_root -o gloire.iso
+
+rm -rf iso_root
 
 # Post installation triggers on the whole image.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
     :
 else
-    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+    host-pkgs/limine/usr/local/bin/limine bios-install gloire.iso
 fi

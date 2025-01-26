@@ -6,7 +6,7 @@ megs: 1024
 
 clock: sync=realtime, time0=local
 
-ata0-master: type=disk, path="gloire.img", mode=flat
+ata0-master: type=disk, path="gloire.iso", mode=flat
 
 boot: c
 

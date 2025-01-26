@@ -3,5 +3,3 @@
 
 # <id, UUID=... or device> <mount point> <filesystem> <options> <dump> <pass>
 
-UUID=123e4567-e89b-12d3-a456-426614174000 / ext rw,relatime 0 1
-UUID=f2ac3998-bd9d-4193-bb75-efcd9e90dd96 /boot fat32 rw,relatime 0 2

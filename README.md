@@ -21,6 +21,10 @@ One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/
 
 ## Running
 
+Gloire as built from this repository will result in a live non-persistent image
+with the option for installing. So keep in mind that when doing changes to the
+filesystem.
+
 ### On virtual machines
 
 One can run either the downloaded disk image (uncompressing it first) or a
@@ -59,8 +63,7 @@ usermod -aG kvm <user>
 
 Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
 one can burn your gloire image (uncompressing it first if downloaded) to a
-SATA or ATA drive. USB sticks for booting are not supported
-(for now, stay posted!).
+SATA, IDE, or USB drive.
 
 ## Contributing
 
@@ -134,6 +137,6 @@ A list of the licenses used by the software ported to Gloire is:
 
 ## Thanks to
 
-- [Mintsuki](https://github.com/mintsuki) for the limine bootloader and `jinx`.
-- [The managarm project](https://github.com/managarm) for help with some
+- [mintsuki](https://github.com/mintsuki) for the Limine Bootloader and `jinx`.
+- [The Managarm Project](https://github.com/managarm) for help with some
 of the recipes and `mlibc`.

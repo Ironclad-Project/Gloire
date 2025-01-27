@@ -90,7 +90,7 @@ EOF
 
 if [ -f sysroot/usr/bin/slim ]; then
     cat << 'EOF' >> "$CONFIG_TEMP"
-/Gloire - Graphical
+/Gloire - Live Graphical
     protocol: ${PROTOCOL}
     path: ${KERNEL_PATH}
     cmdline: init=/bin/env root=ramdev1 initargs="runlevel=graphical-multiuser /sbin/init"
@@ -100,7 +100,7 @@ EOF
 fi
 
 cat << 'EOF' >> "$CONFIG_TEMP"
-/Gloire - TTY only
+/Gloire - Live TTY only
     protocol: ${PROTOCOL}
     path: ${KERNEL_PATH}
     cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init"
@@ -111,7 +111,7 @@ EOF
 
 if [ -f sysroot/usr/bin/slim ]; then
     cat << 'EOF' >> "$CONFIG_TEMP"
-    //Gloire - Graphical Debug (nolocaslr, noprogaslr)
+    //Gloire - Live Graphical Debug (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
         cmdline: init=/bin/env root=ramdev1 initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
@@ -121,13 +121,13 @@ EOF
 fi
 
 cat << 'EOF' >> "$CONFIG_TEMP"
-    //Gloire - TTY Debug (nolocaslr, noprogaslr)
+    //Gloire - Live TTY Debug (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
         cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
         module_path: boot():/boot/gloire.ext
 
-    //Gloire - Emergency shell (nolocaslr, noprogaslr)
+    //Gloire - Live Emergency shell (nolocaslr, noprogaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
         cmdline: init=/bin/gcon root=ramdev1 nolocaslr noprogaslr

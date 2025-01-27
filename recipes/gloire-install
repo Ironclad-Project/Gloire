@@ -1,0 +1,13 @@
+#! /bin/sh
+
+name=gloire-install
+version=62d3caee56794fa70fde025fac230e1bc109a933
+revision=1
+git_url="https://github.com/Ironclad-Project/gloire-install.git"
+commit=${version}
+deps="bash"
+
+package() {
+    mkdir -p "${dest_dir}"/usr/bin
+    cp -f "${source_dir}"/gloire-install "${dest_dir}"/usr/bin/gloire-install
+}

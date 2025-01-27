@@ -39,6 +39,8 @@
             </Program>
         </Menu>
         <Separator/>
+            <Program icon="system-software-install" label="Install Gloire">st gloire-install</Program>
+        <Separator/>
         <Program icon="view-refresh" label="Reboot">reboot</Program>
         <Program icon="system-shutdown" label="Shutdown">poweroff</Program>
         <Separator/>

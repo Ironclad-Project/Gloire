@@ -1,7 +1,56 @@
-diff --git a/builtins/psize.c b/builtins/psize.c
+diff --git bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
+index 4125622..eecd550 100644
+--- bash-clean/arrayfunc.c
++++ bash-workdir/arrayfunc.c
+@@ -208,7 +208,10 @@ bind_assoc_var_internal (entry, hash, key, value, flags)
+   newval = make_array_variable_value (entry, 0, key, value, flags);
+ 
+   if (entry->assign_func)
+-    (*entry->assign_func) (entry, newval, 0, key);
++    {
++      (*entry->assign_func) (entry, newval, 0, key);
++      FREE (key);
++    }
+   else
+     assoc_insert (hash, key, newval);
+ 
+@@ -985,6 +988,7 @@ quote_compound_array_word (w, type)
+   if (t != w+ind)
+    free (t);
+   strcpy (nword + i, value);
++  free (value);
+ 
+   return nword;
+ }
+diff --git bash-clean/bashline.c bash-workdir/bashline.c
+index c85b05b..bd7548c 100644
+--- bash-clean/bashline.c
++++ bash-workdir/bashline.c
+@@ -1928,6 +1928,7 @@ bash_command_name_stat_hook (name)
+   result = search_for_command (cname, 0);
+   if (result)
+     {
++      FREE (*name);
+       *name = result;
+       return 1;
+     }
+diff --git bash-clean/builtins/evalstring.c bash-workdir/builtins/evalstring.c
+index 53a7c0b..e43caa2 100644
+--- bash-clean/builtins/evalstring.c
++++ bash-workdir/builtins/evalstring.c
+@@ -461,6 +461,8 @@ parse_and_execute (string, from_file, flags)
+ 		      should_jump_to_top_level = 0;
+ 		      last_result = last_command_exit_value = EX_BADUSAGE;
+ 		      set_pipestatus_from_exit (last_command_exit_value);
++		      dispose_command(command);
++		      global_command = (COMMAND *)NULL;
+ 		      reset_parser ();
+ 		      break;
+ 		    }
+diff --git bash-clean/builtins/psize.c bash-workdir/builtins/psize.c
 index 30881fb..fec55ae 100644
---- a/builtins/psize.c
-+++ b/builtins/psize.c
+--- bash-clean/builtins/psize.c
++++ bash-workdir/builtins/psize.c
 @@ -21,33 +21,14 @@
  /*  Write output in 128-byte chunks until we get a sigpipe or write gets an
      EPIPE.  Then report how many bytes we wrote.  We assume that this is the
@@ -40,11 +89,257 @@ index 30881fb..fec55ae 100644
  sigpipe (sig)
       int sig;
  {
-diff --git a/lib/termcap/termcap.c b/lib/termcap/termcap.c
-index ba3dab2..2882f0c 100644
---- a/lib/termcap/termcap.c
-+++ b/lib/termcap/termcap.c
-@@ -627,7 +627,7 @@ scan_file (str, fd, bufp)
+diff --git bash-clean/builtins/read.def bash-workdir/builtins/read.def
+index ddd91d3..53b4bd8 100644
+--- bash-clean/builtins/read.def
++++ bash-workdir/builtins/read.def
+@@ -130,7 +130,7 @@ static void set_readline_timeout PARAMS((sh_timer *t, time_t, long));
+ #endif
+ static SHELL_VAR *bind_read_variable PARAMS((char *, char *, int));
+ #if defined (HANDLE_MULTIBYTE)
+-static int read_mbchar PARAMS((int, char *, int, int, int));
++static int read_mbchar PARAMS((int, char *, int, int, int, int));
+ #endif
+ static void ttyrestore PARAMS((struct ttsave *));
+ 
+@@ -806,7 +806,7 @@ add_char:
+ 	  else
+ #  endif
+ 	  if (locale_utf8locale == 0 || ((c & 0x80) != 0))
+-	    i += read_mbchar (fd, input_string, i, c, unbuffered_read);
++	    i += read_mbchar (fd, input_string, i, c, delim, unbuffered_read);
+ 	}
+ #endif
+ 
+@@ -1064,10 +1064,10 @@ bind_read_variable (name, value, flags)
+ 
+ #if defined (HANDLE_MULTIBYTE)
+ static int
+-read_mbchar (fd, string, ind, ch, unbuffered)
++read_mbchar (fd, string, ind, ch, delim, unbuffered)
+      int fd;
+      char *string;
+-     int ind, ch, unbuffered;
++     int ind, ch, delim, unbuffered;
+ {
+   char mbchar[MB_LEN_MAX + 1];
+   int i, n, r;
+@@ -1101,8 +1101,21 @@ read_mbchar (fd, string, ind, ch, unbuffered)
+ 	  mbchar[i++] = c;	
+ 	  continue;
+ 	}
+-      else if (ret == (size_t)-1 || ret == (size_t)0 || ret > (size_t)0)
+-	break;
++      else if (ret == (size_t)-1)
++	{
++	  /* If we read a delimiter character that makes this an invalid
++	     multibyte character, we can't just add it to the input string
++	     and treat it as a byte. We need to push it back so a subsequent
++	     zread will pick it up. */
++	  if (c == delim)
++	    {
++	      zungetc (c);
++	      mbchar[--i] = '\0';		/* unget the delimiter */
++	    }
++	  break;		/* invalid multibyte character */
++	}
++      else if (ret == (size_t)0 || ret > (size_t)0)
++	break;		/* valid multibyte character */
+     }
+ 
+ mbchar_return:
+diff --git bash-clean/examples/loadables/stat.c bash-workdir/examples/loadables/stat.c
+index 1e60e7b..ed5c976 100644
+--- bash-clean/examples/loadables/stat.c
++++ bash-workdir/examples/loadables/stat.c
+@@ -349,6 +349,7 @@ loadstat (vname, var, fname, flags, fmt, sp)
+       key = savestring (arraysubs[i]);
+       value = statval (i, fname, flags, fmt, sp);
+       v = bind_assoc_variable (var, vname, key, value, ASS_FORCE);
++      free (value);
+     }
+   return 0;
+ }
+diff --git bash-clean/externs.h bash-workdir/externs.h
+index 931dba9..1b70a13 100644
+--- bash-clean/externs.h
++++ bash-workdir/externs.h
+@@ -536,6 +536,7 @@ extern ssize_t zreadintr PARAMS((int, char *, size_t));
+ extern ssize_t zreadc PARAMS((int, char *));
+ extern ssize_t zreadcintr PARAMS((int, char *));
+ extern ssize_t zreadn PARAMS((int, char *, size_t));
++extern int zungetc PARAMS((int));
+ extern void zreset PARAMS((void));
+ extern void zsyncfd PARAMS((int));
+ 
+diff --git bash-clean/lib/sh/random.c bash-workdir/lib/sh/random.c
+index 1eaa71a..27aa87b 100644
+--- bash-clean/lib/sh/random.c
++++ bash-workdir/lib/sh/random.c
+@@ -76,7 +76,7 @@ intrand32 (last)
+   /* Can't seed with 0. */
+   ret = (last == 0) ? 123459876 : last;
+   h = ret / 127773;
+-  l = ret - (127773 * h);
++  l = ret % 127773;
+   t = 16807 * l - 2836 * h;
+   ret = (t < 0) ? t + 0x7fffffff : t;
+ 
+@@ -90,7 +90,7 @@ genseed ()
+   u_bits32_t iv;
+ 
+   gettimeofday (&tv, NULL);
+-  iv = (u_bits32_t)seedrand;		/* let the compiler truncate */
++  iv = (uintptr_t)seedrand;		/* let the compiler truncate */
+   iv = tv.tv_sec ^ tv.tv_usec ^ getpid () ^ getppid () ^ current_user.uid ^ iv;
+   return (iv);
+ }
+diff --git bash-clean/lib/sh/zread.c bash-workdir/lib/sh/zread.c
+index dafb7f6..7cfbb28 100644
+--- bash-clean/lib/sh/zread.c
++++ bash-workdir/lib/sh/zread.c
+@@ -41,6 +41,10 @@ extern int errno;
+ #  define ZBUFSIZ 4096
+ #endif
+ 
++#ifndef EOF
++#  define EOF -1
++#endif
++
+ extern int executing_builtin;
+ 
+ extern void check_signals_and_traps (void);
+@@ -48,6 +52,11 @@ extern void check_signals (void);
+ extern int signal_is_trapped (int);
+ extern int read_builtin_timeout (int);
+ 
++int zungetc (int);
++
++/* Provide one character of pushback whether we are using read or zread. */
++static int zpushedchar = -1;
++
+ /* Read LEN bytes from FD into BUF.  Retry the read on EINTR.  Any other
+    error causes the loop to break. */
+ ssize_t
+@@ -59,6 +68,15 @@ zread (fd, buf, len)
+   ssize_t r;
+ 
+   check_signals ();	/* check for signals before a blocking read */
++
++  /* If we pushed a char back, return it immediately */
++  if (zpushedchar != -1)
++    {
++      *buf = (unsigned char)zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   /* should generalize into a mechanism where different parts of the shell can
+      `register' timeouts and have them checked here. */
+   while (((r = read_builtin_timeout (fd)) < 0 || (r = read (fd, buf, len)) < 0) &&
+@@ -95,6 +113,14 @@ zreadretry (fd, buf, len)
+   ssize_t r;
+   int nintr;
+ 
++  /* If we pushed a char back, return it immediately */
++  if (zpushedchar != -1)
++    {
++      *buf = (unsigned char)zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   for (nintr = 0; ; )
+     {
+       r = read (fd, buf, len);
+@@ -118,6 +144,15 @@ zreadintr (fd, buf, len)
+      size_t len;
+ {
+   check_signals ();
++
++  /* If we pushed a char back, return it immediately */
++  if (zpushedchar != -1)
++    {
++      *buf = (unsigned char)zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   return (read (fd, buf, len));
+ }
+ 
+@@ -135,6 +170,14 @@ zreadc (fd, cp)
+ {
+   ssize_t nr;
+ 
++  /* If we pushed a char back, return it immediately */
++  if (zpushedchar != -1 && cp)
++    {
++      *cp = (unsigned char)zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   if (lind == lused || lused == 0)
+     {
+       nr = zread (fd, lbuf, sizeof (lbuf));
+@@ -160,6 +203,14 @@ zreadcintr (fd, cp)
+ {
+   ssize_t nr;
+ 
++  /* If we pushed a char back, return it immediately */
++  if (zpushedchar != -1 && cp)
++    {
++      *cp = (unsigned char)zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   if (lind == lused || lused == 0)
+     {
+       nr = zreadintr (fd, lbuf, sizeof (lbuf));
+@@ -186,6 +237,13 @@ zreadn (fd, cp, len)
+ {
+   ssize_t nr;
+ 
++  if (zpushedchar != -1 && cp)
++    {
++      *cp = zpushedchar;
++      zpushedchar = -1;
++      return 1;
++    }
++
+   if (lind == lused || lused == 0)
+     {
+       if (len > sizeof (lbuf))
+@@ -204,6 +262,22 @@ zreadn (fd, cp, len)
+   return 1;
+ }
+ 
++int
++zungetc (c)
++     int c;
++{
++  if (zpushedchar == -1)
++    {
++      zpushedchar = c;
++      return c;
++    }
++
++  if (c == EOF || lind == 0)
++    return (EOF);
++  lbuf[--lind] = c;		/* XXX */
++  return c;
++}
++
+ void
+ zreset ()
+ {
+diff --git bash-clean/lib/termcap/termcap.c bash-workdir/lib/termcap/termcap.c
+index 87fae05..ed9d105 100644
+--- bash-clean/lib/termcap/termcap.c
++++ bash-workdir/lib/termcap/termcap.c
+@@ -630,7 +630,7 @@ scan_file (str, fd, bufp)
    bufp->ateof = 0;
    *bufp->ptr = '\0';
  
@@ -53,10 +348,10 @@ index ba3dab2..2882f0c 100644
  
    while (!bufp->ateof)
      {
-diff --git a/mksyntax.c b/mksyntax.c
+diff --git bash-clean/mksyntax.c bash-workdir/mksyntax.c
 index 0385686..f09fdeb 100644
---- a/mksyntax.c
-+++ b/mksyntax.c
+--- bash-clean/mksyntax.c
++++ bash-workdir/mksyntax.c
 @@ -20,30 +20,19 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -132,11 +427,11 @@ index 0385686..f09fdeb 100644
 -    }
 -}
 -#endif /* HAVE_STRERROR */
-diff --git a/shell.c b/shell.c
-index ce8087f..b7475dd 100644
---- a/shell.c
-+++ b/shell.c
-@@ -1614,7 +1614,7 @@ open_shell_script (script_name)
+diff --git bash-clean/shell.c bash-workdir/shell.c
+index ebd8965..05d6a85 100644
+--- bash-clean/shell.c
++++ bash-workdir/shell.c
+@@ -1647,7 +1647,7 @@ open_shell_script (script_name)
  #endif
  
    /* Only do this with non-tty file descriptors we can seek on. */
@@ -145,7 +440,7 @@ index ce8087f..b7475dd 100644
      {
        /* Check to see if the `file' in `bash file' is a binary file
  	 according to the same tests done by execute_simple_command (),
-@@ -1651,7 +1651,7 @@ open_shell_script (script_name)
+@@ -1684,7 +1684,7 @@ open_shell_script (script_name)
  	  exit (EX_BINARY_FILE);
  	}
        /* Now rewind the file back to the beginning. */
@@ -154,10 +449,30 @@ index ce8087f..b7475dd 100644
      }
  
    /* Open the script.  But try to move the file descriptor to a randomly
-diff --git a/support/bashversion.c b/support/bashversion.c
-index 4f86b13..64779de 100644
---- a/support/bashversion.c
-+++ b/support/bashversion.c
+diff --git bash-clean/subst.c bash-workdir/subst.c
+index 2012e1f..d161517 100644
+--- bash-clean/subst.c
++++ bash-workdir/subst.c
+@@ -10727,6 +10727,7 @@ comsub:
+ 	    {
+ 	      chk_atstar (temp, quoted, pflags, quoted_dollar_at_p, contains_dollar_at);
+ 	      tdesc = parameter_brace_expand_word (temp, SPECIAL_VAR (temp, 0), quoted, pflags, 0);
++	      free (temp1);
+ 	      if (tdesc == &expand_wdesc_error || tdesc == &expand_wdesc_fatal)
+ 		return (tdesc);
+ 	      ret = tdesc;
+@@ -10739,6 +10740,7 @@ comsub:
+ 	    {
+ 	      set_exit_status (EXECUTION_FAILURE);
+ 	      report_error (_("%s: invalid variable name for name reference"), temp);
++	      free (temp1);
+ 	      return (&expand_wdesc_error);	/* XXX */
+ 	    }
+ 	  else
+diff --git bash-clean/support/bashversion.c bash-workdir/support/bashversion.c
+index ad02d46..309574b 100644
+--- bash-clean/support/bashversion.c
++++ bash-workdir/support/bashversion.c
 @@ -18,15 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -176,10 +491,10 @@ index 4f86b13..64779de 100644
  
  #include "bashansi.h"
  
-diff --git a/support/man2html.c b/support/man2html.c
+diff --git bash-clean/support/man2html.c bash-workdir/support/man2html.c
 index e6f441b..846bd54 100644
---- a/support/man2html.c
-+++ b/support/man2html.c
+--- bash-clean/support/man2html.c
++++ bash-workdir/support/man2html.c
 @@ -62,9 +62,6 @@
   *    that all these features work on all manpages. (I didn't have the
   *    time to look through all the available manpages.)
@@ -218,10 +533,10 @@ index e6f441b..846bd54 100644
  static char *
  strgrow(char *old, int len)
  {
-diff --git a/support/mksignames.c b/support/mksignames.c
+diff --git bash-clean/support/mksignames.c bash-workdir/support/mksignames.c
 index ba87ae8..5bcbb16 100644
---- a/support/mksignames.c
-+++ b/support/mksignames.c
+--- bash-clean/support/mksignames.c
++++ bash-workdir/support/mksignames.c
 @@ -19,17 +19,11 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -241,10 +556,10 @@ index ba87ae8..5bcbb16 100644
  
  /* Duplicated from signames.c */
  #if !defined (NSIG)
-diff --git a/support/signames.c b/support/signames.c
-index aba4842..e369a73 100644
---- a/support/signames.c
-+++ b/support/signames.c
+diff --git bash-clean/support/signames.c bash-workdir/support/signames.c
+index 84864fd..67c5298 100644
+--- bash-clean/support/signames.c
++++ bash-workdir/support/signames.c
 @@ -18,18 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -265,121 +580,3 @@ index aba4842..e369a73 100644
  
  #if !defined (NSIG)
  #  define NSIG 64
-
-diff --git bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
-index 2c05d15..3904c76 100644
---- bash-clean/arrayfunc.c
-+++ bash-workdir/arrayfunc.c
-@@ -208,7 +208,10 @@ bind_assoc_var_internal (entry, hash, key, value, flags)
-   newval = make_array_variable_value (entry, 0, key, value, flags);
- 
-   if (entry->assign_func)
--    (*entry->assign_func) (entry, newval, 0, key);
-+    {
-+      (*entry->assign_func) (entry, newval, 0, key);
-+      FREE (key);
-+    }
-   else
-     assoc_insert (hash, key, newval);
- 
-diff --git bash-clean/bashline.c bash-workdir/bashline.c
-index c85b05b..bd7548c 100644
---- bash-clean/bashline.c
-+++ bash-workdir/bashline.c
-@@ -1928,6 +1928,7 @@ bash_command_name_stat_hook (name)
-   result = search_for_command (cname, 0);
-   if (result)
-     {
-+      FREE (*name);
-       *name = result;
-       return 1;
-     }
-diff --git bash-clean/builtins/evalstring.c bash-workdir/builtins/evalstring.c
-index df3dd68..20c6a4a 100644
---- bash-clean/builtins/evalstring.c
-+++ bash-workdir/builtins/evalstring.c
-@@ -461,6 +461,8 @@ parse_and_execute (string, from_file, flags)
- 		      should_jump_to_top_level = 0;
- 		      last_result = last_command_exit_value = EX_BADUSAGE;
- 		      set_pipestatus_from_exit (last_command_exit_value);
-+		      dispose_command(command);
-+		      global_command = (COMMAND *)NULL;
- 		      reset_parser ();
- 		      break;
- 		    }
-@@ -762,6 +764,8 @@ open_redir_file (r, fnp)
- 
-   if (fnp)
-     *fnp = fn;
-+  else
-+    free (fn);
-   return fd;
- }
- 
-diff --git bash-clean/configure.ac bash-workdir/configure.ac
-index 50a6e20..52d4029 100644
---- bash-clean/configure.ac
-+++ bash-workdir/configure.ac
-@@ -885,7 +885,7 @@ AC_CHECK_DECLS([strtold], [
- 	[AC_COMPILE_IFELSE(
- 		[AC_LANG_PROGRAM(
- 		[[#include <stdlib.h>]],
--		[[long double r; char *foo, bar; r = strtold(foo, &bar);]]
-+		[[long double r; char *foo, *bar; r = strtold(foo, &bar);]]
- 	)],
- 	[bash_cv_strtold_broken=no],[bash_cv_strtold_broken=yes])
-         ]
-diff --git bash-clean/examples/loadables/stat.c bash-workdir/examples/loadables/stat.c
-index 1e60e7b..ed5c976 100644
---- bash-clean/examples/loadables/stat.c
-+++ bash-workdir/examples/loadables/stat.c
-@@ -349,6 +349,7 @@ loadstat (vname, var, fname, flags, fmt, sp)
-       key = savestring (arraysubs[i]);
-       value = statval (i, fname, flags, fmt, sp);
-       v = bind_assoc_variable (var, vname, key, value, ASS_FORCE);
-+      free (value);
-     }
-   return 0;
- }
-diff --git bash-clean/lib/sh/random.c bash-workdir/lib/sh/random.c
-index 1eaa71a..27aa87b 100644
---- bash-clean/lib/sh/random.c
-+++ bash-workdir/lib/sh/random.c
-@@ -76,7 +76,7 @@ intrand32 (last)
-   /* Can't seed with 0. */
-   ret = (last == 0) ? 123459876 : last;
-   h = ret / 127773;
--  l = ret - (127773 * h);
-+  l = ret % 127773;
-   t = 16807 * l - 2836 * h;
-   ret = (t < 0) ? t + 0x7fffffff : t;
- 
-@@ -90,7 +90,7 @@ genseed ()
-   u_bits32_t iv;
- 
-   gettimeofday (&tv, NULL);
--  iv = (u_bits32_t)seedrand;		/* let the compiler truncate */
-+  iv = (uintptr_t)seedrand;		/* let the compiler truncate */
-   iv = tv.tv_sec ^ tv.tv_usec ^ getpid () ^ getppid () ^ current_user.uid ^ iv;
-   return (iv);
- }
-diff --git bash-clean/subst.c bash-workdir/subst.c
-index 0dfabfe..d16035e 100644
---- bash-clean/subst.c
-+++ bash-workdir/subst.c
-@@ -10727,6 +10727,7 @@ comsub:
- 	    {
- 	      chk_atstar (temp, quoted, pflags, quoted_dollar_at_p, contains_dollar_at);
- 	      tdesc = parameter_brace_expand_word (temp, SPECIAL_VAR (temp, 0), quoted, pflags, 0);
-+	      free (temp1);
- 	      if (tdesc == &expand_wdesc_error || tdesc == &expand_wdesc_fatal)
- 		return (tdesc);
- 	      ret = tdesc;
-@@ -10739,6 +10740,7 @@ comsub:
- 	    {
- 	      set_exit_status (EXECUTION_FAILURE);
- 	      report_error (_("%s: invalid variable name for name reference"), temp);
-+	      free (temp1);
- 	      return (&expand_wdesc_error);	/* XXX */
- 	    }
- 	  else

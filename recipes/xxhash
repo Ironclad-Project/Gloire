@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xxhash
-version=0.8.2
+version=0.8.3
 revision=1
 tarball_url="https://github.com/Cyan4973/xxHash/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="735408256240760778fa516e01bed428f04837eb4e059c512e924f13e4a96db6cacbbefb04dea65a37b0f25b52cf13c4927a6e7870dc8c0d45b1b955d4ba3da1"
+tarball_blake2b="75923c7c5df3490062791fa02ccddfb7281b3646e2b3e4b4a0c0d611c339e07c8d9cb656777fd0fcec9cda484f7b33edf080116bb011f70d6b8299cda63afa4e"
 hostdeps="gcc"
 deps="core-libs"
 

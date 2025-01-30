@@ -100,17 +100,6 @@ index 9e0a271..b9c5eec 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/Bookmarks.cpp xfe-workdir/src/Bookmarks.cpp
-index 241ef32..46bcc56 100644
---- xfe-clean/src/Bookmarks.cpp
-+++ xfe-workdir/src/Bookmarks.cpp
-@@ -1,5 +1,5 @@
- // Bookmarks list. Taken from the FOX library (FXRecentFiles) and slightly modified.
--
-+#include <stdlib.h>
- #include "config.h"
- #include "i18n.h"
- 
 diff --git xfe-clean/src/BrowseInputDialog.cpp xfe-workdir/src/BrowseInputDialog.cpp
 index 4c64e68..f60e3a4 100644
 --- xfe-clean/src/BrowseInputDialog.cpp
@@ -281,28 +270,6 @@ index 27f4d77..fce88f5 100644
 +++ xfe-workdir/src/InputDialog.cpp
 @@ -1,5 +1,5 @@
  // Simple input dialog (without history)
--
-+#include <stdlib.h>
- #include "config.h"
- #include "i18n.h"
- 
-diff --git xfe-clean/src/Keybindings.cpp xfe-workdir/src/Keybindings.cpp
-index e0850c8..250a659 100644
---- xfe-clean/src/Keybindings.cpp
-+++ xfe-workdir/src/Keybindings.cpp
-@@ -1,5 +1,5 @@
- // Dialog used to modify key bindings
--
-+#include <stdlib.h>
- #include "config.h"
- #include "i18n.h"
- 
-diff --git xfe-clean/src/KeybindingsDialog.cpp xfe-workdir/src/KeybindingsDialog.cpp
-index 0f7e279..156c4e2 100644
---- xfe-clean/src/KeybindingsDialog.cpp
-+++ xfe-workdir/src/KeybindingsDialog.cpp
-@@ -1,5 +1,5 @@
- // Dialog to let the user enter a key binding
 -
 +#include <stdlib.h>
  #include "config.h"

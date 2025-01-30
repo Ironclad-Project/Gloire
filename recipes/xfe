@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xfe
-version=1.46.2
+version=2.0
 revision=1
 tarball_url="https://downloads.sourceforge.net/sourceforge/xfe/xfe-${version}.tar.xz"
-tarball_blake2b="0c4a49aaf1ff04d25a13349fa81be9d3e8400009c7d8c24f96a017850a156b116950e0ac5d471190defeceb236e0ed82a614a143a0cdddf10dd86a9b9c318cca"
+tarball_blake2b="8dd41da930ec878836b50107e0cc1e7eeccbdc58d31d4760c77559d75cf67ac1b08554e915356b1182e97467c5bfec2e38127013053885fff30120cf237ed6b8"
 source_hostdeps="autoconf automake libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs fox freetype2 xcb-util libxft"

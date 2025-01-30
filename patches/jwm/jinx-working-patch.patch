@@ -1,5 +1,5 @@
 diff --git jwm-clean/src/client.c jwm-workdir/src/client.c
-index 4856fd4..3031b75 100644
+index 4856fd4..3837239 100644
 --- jwm-clean/src/client.c
 +++ jwm-workdir/src/client.c
 @@ -879,11 +879,7 @@ void DeleteClient(ClientNode *np)
@@ -15,3 +15,15 @@ index 4856fd4..3031b75 100644
  }
  
  /** Callback to kill a client after a confirm dialog. */
+@@ -900,10 +896,7 @@ void KillClientHandler(ClientNode *np)
+ void KillClient(ClientNode *np)
+ {
+    Assert(np);
+-   ShowConfirmDialog(np, KillClientHandler,
+-      _("Kill this window?"),
+-      _("This may cause data to be lost!"),
+-      NULL);
++   KillClientHandler(np);
+ }
+ 
+ /** Place transients on top of the owner. */

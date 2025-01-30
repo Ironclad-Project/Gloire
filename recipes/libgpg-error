@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libgpg-error
-version=1.49
+version=1.51
 revision=1
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${version}.tar.gz"
-tarball_blake2b="fc8d336f2c91f8855e44b0daf67f82e24877caac3bf4dcfc42c6346cd72caf8f4d99977b66544896414a26550c7ff7c005ca8fd932938588c50141d5cd1b5fe9"
+tarball_blake2b="ba61fcf72930954ca48f9665d0b27d4d136bdc43708ef16658d52e85243cd90d9690314bb49c944381347e7d122f48be2f7623daa30a2e18d85d8b66765ff351"
 source_hostdeps="automake autoconf libtool pkg-config"
 imagedeps="build-essential"
 hostdeps="gcc autoconf automake libtool pkg-config"

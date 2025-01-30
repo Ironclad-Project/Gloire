@@ -1,17 +1,17 @@
 #! /bin/sh
 
 name=mate-icon-theme
-version=1.27.0
+version=1.28.0
 revision=1
-tarball_url="https://pub.mate-desktop.org/releases/1.27/mate-icon-theme-${version}.tar.xz"
-tarball_blake2b="d86603cad3ddb3df40fadcc752ac43bf1271cb2e860eb37906fbf12c6eb2e3dd19b6600769374910a22ad41fa72481efa52f13d2235fb3e9ea1fe773fb15de0d"
+tarball_url="https://pub.mate-desktop.org/releases/1.28/mate-icon-theme-${version}.tar.xz"
+tarball_blake2b="18b7f43c5a1a0c8f9a45feb0d4941d659d67d98918227615d12acd176cc3cf96a8eb48c9d9bfebe4710417b3fffabc89d433d51c44b42df16bf62332a743b6ae"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
 prepare() {
-    autoreconf -fvi -I/sysroot/usr/share/aclocal
+    autotools_recursive_regen
 }
 
 configure() {

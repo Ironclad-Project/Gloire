@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xterm
-version=395
+version=397
 revision=1
 tarball_url="https://invisible-mirror.net/archives/xterm/xterm-${version}.tgz"
-tarball_blake2b="8183da30b491a0e43c34e2728586816e733a18aa8bf87d0ec60b43d47d625bc07395886b02afe08260cc527bc3efa67d04cb060254f0b9ffb7e5ff29b187f42f"
+tarball_blake2b="cce4054e83edb9b4203b53a34f7415d038202a10cb997d0c0fe53bb985399bd16626f3e2c5cfdfa8d9eea31d697e532fc858c74c0ba0649936814d5c91825c76"
 source_hostdeps="autoconf automake libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs libxft libxaw ncurses xbitmaps libxkbfile"

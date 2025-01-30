@@ -1,16 +1,16 @@
 #! /bin/sh
 
 name=gsl
-version=2.7.1
+version=2.8
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/gsl/gsl-${version}.tar.gz"
-tarball_blake2b="dd216c2fdb536e57b6e29613e46e1a05183fd18c47434039caac68fefffc0390cfe2f21eb117347d4bbdf9004de837ef2db02c17c01eaea4b615e3e45a4fd90f"
+tarball_blake2b="bce739c61c599b1d5893c338ffbb08a5bf5ccfda943a3de9e0dc18f54291398d5941d217712898e81d61408401c8fcf3fdc1519623966b79b48adc47159b6ccb"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc automake autoconf libtool pkg-config"
 deps="core-libs"
 
 prepare() {
-    autoreconf -fvi
+    autotools_recursive_regen
 }
 
 configure() {

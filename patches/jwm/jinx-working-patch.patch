@@ -1,0 +1,17 @@
+diff --git jwm-clean/src/client.c jwm-workdir/src/client.c
+index 4856fd4..3031b75 100644
+--- jwm-clean/src/client.c
++++ jwm-workdir/src/client.c
+@@ -879,11 +879,7 @@ void DeleteClient(ClientNode *np)
+ {
+    Assert(np);
+    ReadWMProtocols(np->window, &np->state);
+-   if(np->state.status & STAT_DELETE) {
+-      SendClientMessage(np->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
+-   } else {
+-      KillClient(np);
+-   }
++   KillClient(np);
+ }
+ 
+ /** Callback to kill a client after a confirm dialog. */

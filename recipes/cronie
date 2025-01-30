@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=cronie
-version=1.7.0
+version=1.7.2
 revision=1
 tarball_url="https://github.com/cronie-crond/cronie/releases/download/cronie-${version}/cronie-${version}.tar.gz"
-tarball_blake2b="44745f68dba212da60f3013b10737be2390d8c76186dc641fa1930b1c7d103fa2e3127a63fe73571434683137044f7fda8cc31435c59092a14c0091a372ffead"
+tarball_blake2b="8e426fd0e279bc6a98a4f31dff867b66c87fe0629aca12b4b85557d0162b58aabf5b9789f0b36af417a92bdffa721e2309e125e9b07bfa21aee53aa1135294c7"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"

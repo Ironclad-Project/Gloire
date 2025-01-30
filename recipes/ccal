@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=ccal
-version=4.0
+version=4.1
 revision=1
-tarball_url="https://deb.debian.org/debian/pool/main/c/cal/cal_${version}.orig.tar.gz"
-tarball_blake2b="de65b25422a5fe3efaab04530ef5fb8f4ccd5a4a8603b6032e77f8132a492d6f50f04434c95acfce239001ae2d0984eefe4fc2ee975e782657bcaecc19d1a11a"
+tarball_url="https://deb.debian.org/debian/pool/main/c/cal/cal_${version}.orig.tar.xz"
+tarball_blake2b="a0e5171898331a70a4e22a828b6c184718249c1f339c8d5f571a0025b5568e3d3a267c594e1f2616461b5300ff776bc29d67df92fba9e96702782e567839711d"
 hostdeps="gcc autoconf automake libtool"
 deps="core-libs"
 

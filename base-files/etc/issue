@@ -13,5 +13,8 @@
 Gloire and Ironclad come with ABSOLUTELY NO WARRANTY, to the extent permitted
 by applicable law.
 
+[1;33mNB: Ironclad only supports PS2 input devices so far, if you only have USB ones,
+they most likely will not work! Sorry![0m
+
 Available users for login in this image are `user` and `root`, both have no
 passwords, and can be configured to do so under /etc/passwd

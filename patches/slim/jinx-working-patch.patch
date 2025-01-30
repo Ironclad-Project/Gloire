@@ -1,16 +1,16 @@
 diff --git slim-clean/app.cpp slim-workdir/app.cpp
-index 237477d..9576290 100644
+index d378793..f549e62 100644
 --- slim-clean/app.cpp
 +++ slim-workdir/app.cpp
-@@ -23,6 +23,7 @@
- #include <sstream>
- #include <vector>
- #include <algorithm>
-+#include <crypt.h>
+@@ -10,6 +10,7 @@
+  *  (at your option) any later version.
+  */
  
- #include "const.h"
- #include "log.h"
-@@ -1155,10 +1163,12 @@ int App::StartServer()
++#include <crypt.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+@@ -1167,10 +1168,12 @@ int App::StartServer()
  		}
  	}
  
@@ -23,3 +23,15 @@ index 237477d..9576290 100644
  	server[argc] = NULL;
  
  	switch (ServerPID) {
+diff --git slim-clean/app.h slim-workdir/app.h
+index 7453e34..f0108ed 100644
+--- slim-clean/app.h
++++ slim-workdir/app.h
+@@ -13,6 +13,7 @@
+ #ifndef _APP_H_
+ #define _APP_H_
+ 
++#include <string>
+ #include <X11/Xlib.h>
+ 
+ #ifdef USE_PAM

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=hyfetch
-version=dfc3f59323c11526a4c091da361ef84d45a569e5
+version=1.99.0
 revision=1
-tarball_url="https://github.com/hykilpikonna/hyfetch/archive/${version}.tar.gz"
-tarball_blake2b="164f65d1af03207741759eaa71114c2dfef684178ca230a54b3d79ad736cb99cfe2e2a0703fbf69bca6e28a28870527270835929b4ec87c135190593321c26ba"
+tarball_url="https://github.com/hykilpikonna/hyfetch/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="73e44d936124c993251b0d5f7261a1707136aee8fad8b1c660c0932223636db6cfbd1c6747bd16ee94370d6578e0220a96fb58c608ca26791957e855bc70deca"
 
 package() {
     mkdir -p "${dest_dir}"/usr/bin

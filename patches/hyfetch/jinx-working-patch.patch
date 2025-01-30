@@ -31,19 +31,6 @@ index f31d0ae..49c6458 100755
              t=$(LC_ALL=POSIX ps -o etime= -p 1)
  
              [[ $t == *-*   ]] && { d=${t%%-*}; t=${t#*-}; }
-@@ -6475,10 +6471,10 @@ ASCII:
-                                 Droidian, Elementary, Elive, EncryptOS, EndeavourOS, Endless, Enso,
-                                 EuroLinux, EvolutionOS, Exherbo, Exodia Predator OS, Fedora,
-                                 FemboyOS, Feren, Finnix, Floflis, FreeBSD, FreeMiNT, Frugalware,
--                                Funtoo, GalliumOS, Garuda, Gentoo, GhostBSD, glaucus, gNewSense,
-+                                Funtoo, GalliumOS, Garuda, Gentoo, GhostBSD, glaucus, Gloire, gNewSense,
-                                 GNOME, GNU, GoboLinux, GrapheneOS, Grombyang, Guix, Haiku, HamoniKR,
-                                 HarDClanZ, Hash, Huayra, Hybrid, HydroOS, Hyperbola, iglunix,
--                                instantOS, Interix, IRIX, Ironclad, Itc, januslinux, Kaisen, Kali,
-+                                instantOS, Interix, IRIX, Itc, januslinux, Kaisen, Kali,
-                                 KaOS, KDE, Kibojoe, Kogaion, Korora, KrassOS, KSLinux, Kubuntu,
-                                 LainOS, LangitKetujuh, LaxerOS, LEDE, LibreELEC, Linspire, Linux,
-                                 Linux Lite, Linux Mint, Linux Mint Old, Live Raizo, LMDE, Lubuntu,
 @@ -10349,7 +10345,7 @@ ${c2}~!!7JY5PGGBBBBBBBBGGGGGGGBGGGGGP5YJ?7~~~
  EOF
          ;;

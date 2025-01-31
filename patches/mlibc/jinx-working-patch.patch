@@ -146,10 +146,10 @@ index 475cd5b..32f23be 100644
  /* bitwise flags for c_iflag in struct termios */
  #define BRKINT  0x0001
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 251176e..b82ad22 100644
+index b629f39..a7a3264 100644
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
-@@ -73,6 +73,10 @@ if not headers_only
+@@ -76,6 +76,10 @@ if not headers_only
  	add_project_arguments('-fno-rtti', '-fno-exceptions', language: 'cpp')
  	add_project_link_arguments('-nostdlib', language: ['c', 'cpp'])
  
@@ -534,10 +534,10 @@ index 97bbaae..34bc025 100644
  #define STDERR_FILENO 2
  #define STDIN_FILENO 0
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
-index ec11f1b..1bd9545 100644
+index 848f7de..fbbb07f 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -573,18 +573,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
+@@ -582,18 +582,27 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  
  				void *map_pointer;
  				if(mlibc::sys_vm_map(reinterpret_cast<void *>(map_address),
@@ -1120,10 +1120,17 @@ index d064af3..44ef598 100644
  	return mnt;
  }
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-index 1626e4b..3796ef5 100644
+index 1626e4b..fd0aa20 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-@@ -25,17 +25,41 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
+@@ -20,22 +20,46 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
+ 	*sfd = fds[1];
+ 
+ 	if (name != NULL) {
+-		ret = ttyname_r(*mfd, name, (size_t)-1);
+-		if (ret) {
++		name = ttyname(*mfd);
++		if (!name) {
  			return -1;
  		}
  	}
@@ -1154,7 +1161,7 @@ index 1626e4b..3796ef5 100644
 -		}
 +	if (ret) {
 +		return -1;
-+	}
+ 	}
 +
 +	if (win == NULL) {
 +		struct winsize win_size = {
@@ -1166,7 +1173,7 @@ index 1626e4b..3796ef5 100644
 +		ret = ioctl(*mfd, TIOCSWINSZ, &win_size);
 +	} else {
 +		ret = ioctl(*mfd, TIOCSWINSZ, win);
- 	}
++	}
 +
 +	if (ret) {
 +		return -1;

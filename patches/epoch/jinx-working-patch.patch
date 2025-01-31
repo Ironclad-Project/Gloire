@@ -122,7 +122,7 @@ index 62bff39..28b2123 100644
  		{ /*Someone specified a config file from disk?*/
  			snprintf(ConfigFile, MAX_LINE_SIZE, "%s", TConfigFile);
 diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
-index b52068c..1fb2fc8 100644
+index b52068c..3497989 100644
 --- epoch-clean/src/modes.c
 +++ epoch-workdir/src/modes.c
 @@ -137,6 +137,19 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
@@ -145,7 +145,13 @@ index b52068c..1fb2fc8 100644
  ReturnCode EmulKillall5(unsigned InSignal)
  { /*Used as the killall5 utility.*/
  	DIR *ProcDir;
-@@ -149,37 +162,23 @@ ReturnCode EmulKillall5(unsigned InSignal)
+@@ -144,42 +157,28 @@ ReturnCode EmulKillall5(unsigned InSignal)
+ 	pid_t CurPID;
+ 	const pid_t OurPID = getpid(), OurSID = getsid(0);
+ 
+-	if (InSignal > SIGSTOP || InSignal == 0) /*Won't be negative since we are unsigned.*/
++	if (InSignal == 0) /*Won't be negative since we are unsigned.*/
+ 	{
  		SpitError("EmulKillall5() Bad value for unsigned InSignal.");
  	}
  	

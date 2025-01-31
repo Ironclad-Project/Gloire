@@ -6,8 +6,6 @@ revision=1
 imagedeps="file build-essential"
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \

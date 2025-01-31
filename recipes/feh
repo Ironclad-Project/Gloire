@@ -10,7 +10,14 @@ deps="core-libs libx11 libxt libpng imlib2"
 
 build() {
     cp -rp "${source_dir}"/. ./
-    make CC=${OS_TRIPLET}-gcc curl=0 xinerama=0 -j${parallelism}
+        CC=${OS_TRIPLET}-gcc \
+        CFLAGS="${TARGET_CFLAGS}" \
+        CPPFLAGS="${TARGET_CPPFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+    make \
+        curl=0 \
+        xinerama=0 \
+        -j${parallelism}
 }
 
 package() {

@@ -9,7 +9,7 @@ configure() {
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-    ./configure \
+    "${source_dir}"/configure \
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \

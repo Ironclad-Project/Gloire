@@ -137,6 +137,7 @@ A list of the licenses used by the software ported to Gloire is:
 
 ## Thanks to
 
-- [mintsuki](https://github.com/mintsuki) for the Limine Bootloader and `jinx`.
+- [mintsuki](https://github.com/mintsuki) for the Limine Bootloader and
+[jinx](https://github.com/mintsuki/jinx).
 - [The Managarm Project](https://github.com/managarm) for help with some
-of the recipes and `mlibc`.
+of the recipes and [mlibc](https://github.com/managarm/mlibc).

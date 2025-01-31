@@ -153,17 +153,20 @@ sync
 $SUDO umount -R mount_dir
 $SUDO rm -rf mount_dir
 
-xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
-    -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
-    -apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
-    -efi-boot-part --efi-boot-image --protective-msdos-label \
-    iso_root -o gloire.iso
-
-rm -rf iso_root
-
-# Post installation triggers on the whole image.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    :
+    xorriso -as mkisofs -R -r -J \
+        -hfsplus -apm-block-size 2048 \
+        --efi-boot boot/limine/limine-uefi-cd.bin \
+        -efi-boot-part --efi-boot-image --protective-msdos-label \
+        iso_root -o gloire.iso
 else
+    xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
+        -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+        -apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
+        -efi-boot-part --efi-boot-image --protective-msdos-label \
+        iso_root -o gloire.iso
+
     host-pkgs/limine/usr/local/bin/limine bios-install gloire.iso
 fi
+
+rm -rf iso_root

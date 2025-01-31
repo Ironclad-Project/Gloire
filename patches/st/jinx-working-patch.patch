@@ -12,7 +12,7 @@ index 15db421..713ec57 100644
  
  uninstall:
 diff --git st-clean/st.c st-workdir/st.c
-index b9f66e7..9100d59 100644
+index b9f66e7..8d8b1f9 100644
 --- st-clean/st.c
 +++ st-workdir/st.c
 @@ -16,17 +16,12 @@
@@ -34,12 +34,3 @@ index b9f66e7..9100d59 100644
  
  /* Arbitrary sizes */
  #define UTF_INVALID   0xFFFD
-@@ -1124,7 +1138,7 @@ tnewline(int first_col)
- 	} else {
- 		y++;
- 	}
--	tmoveto(first_col ? 0 : term.c.x, y);
-+	tmoveto(0, y);
- }
- 
- void

@@ -1120,10 +1120,10 @@ index d064af3..44ef598 100644
  	return mnt;
  }
 diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-index 1626e4b..fd0aa20 100644
+index 1626e4b..2e09c3b 100644
 --- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
-@@ -20,22 +20,46 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
+@@ -20,22 +20,47 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
  	*sfd = fds[1];
  
  	if (name != NULL) {
@@ -1143,6 +1143,7 @@ index 1626e4b..fd0aa20 100644
 +		termios.c_cflag = CS8 | CREAD;
 +		termios.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE;
 +		termios.c_cc[VINTR] = CTRL('C');
++		termios.c_cc[VERASE] = 127; // Delete.
 +		termios.c_cc[VEOF] = CTRL('D');
 +		termios.c_cc[VSUSP] = CTRL('Z');
 +		termios.ibaud = 38400;

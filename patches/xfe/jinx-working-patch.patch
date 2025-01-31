@@ -471,23 +471,3 @@ index a80d8e9..4673220 100644
  
  /* Arbitrary sizes */
  #define UTF_INVALID   0xFFFD
-@@ -806,8 +830,10 @@ ttynew(char *line, char *cmd, char *out, char **args)
-         dup2(s, 0);
-         dup2(s, 1);
-         dup2(s, 2);
-+        /*
-         if (ioctl(s, TIOCSCTTY, NULL) < 0)
-             die("ioctl TIOCSCTTY failed: %s\n", strerror(errno));
-+        */
-         close(s);
-         close(m);
- #ifdef __OpenBSD__
-@@ -1145,7 +1171,7 @@ tnewline(int first_col)
-     } else {
-         y++;
-     }
--    tmoveto(first_col ? 0 : term.c.x, y);
-+    tmoveto(0, y);
- }
- 
- void

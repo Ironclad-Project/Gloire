@@ -1,8 +1,8 @@
 diff --git bc-clean/bc/Makefile.am bc-workdir/bc/Makefile.am
-index d9d412e..1e49430 100644
+index 505f5ac..b9cc718 100644
 --- bc-clean/bc/Makefile.am
 +++ bc-workdir/bc/Makefile.am
-@@ -17,6 +17,7 @@ MAINTAINERCLEANFILES = Makefile.in bc.c bc.h scan.c \
+@@ -19,6 +19,7 @@ MAINTAINERCLEANFILES = Makefile.in bc.c bc.h scan.c \
  
  AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/../h
  LIBBC = ../lib/libbc.a
@@ -10,7 +10,7 @@ index d9d412e..1e49430 100644
  LIBL = @LEXLIB@
  LDADD = $(LIBBC) $(LIBL) @READLINELIB@
  
-@@ -24,17 +25,28 @@ AM_YFLAGS = -d
+@@ -26,15 +27,26 @@ AM_YFLAGS = -d
  
  AM_CFLAGS = @CFLAGS@
  
@@ -25,37 +25,35 @@ index d9d412e..1e49430 100644
  global.o: libmath.h
  
 -fbcOBJ = main.o bc.o scan.o execute.o load.o storage.o util.o warranty.o
+-fbc-bootstrap: $(fbcOBJ) $(LIBBC)
+-	$(COMPILE) -DBOOTSTRAP -c -o global_bootstrap.o global.c
+-	$(LINK) -o $@ $(fbcOBJ) global_bootstrap.o $(LIBBC) $(LIBL) $(READLINELIB) $(LIBS)
 +main_host.c : main.c
 +	cp $< $@
 +
-+fbcOBJ = $(addsuffix _host,main.o bc.o scan.o execute.o load.o storage.o util.o warranty.o)
-+
 +%.o_host : %.c
 +	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(CPPFLAGS_FOR_BUILD) $(INCLUDES) -c -o $@ $<
- 
--libmath.h: libmath.b $(fbcOBJ) $(LIBBC)
-+libmath.h: libmath.b $(fbcOBJ) $(LIBBC_HOST)
- 	echo '{0}' > libmath.h
--	$(MAKE) global.o
--	$(LINK) -o fbc $(fbcOBJ) global.o $(LIBBC) $(LIBL) $(READLINELIB) $(LIBS)
++
++fbcOBJ = $(addsuffix _host,main.o bc.o scan.o execute.o load.o storage.o util.o warranty.o)
++fbc-bootstrap: $(fbcOBJ) $(LIBBC_HOST)
 +	$(MAKE) global.o_host
 +	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o fbc $(fbcOBJ) global.o_host $(LIBBC_HOST) $(LIBL) ${READLINELIB} $(LIBS)
- 	./fbc -c $(srcdir)/libmath.b </dev/null >libmath.h
- 	$(srcdir)/fix-libmath_h
- 	rm -f ./fbc ./global.o
+ 
+ libmath.h: libmath.b
+ 	$(MAKE) fbc-bootstrap
 diff --git bc-clean/configure.ac bc-workdir/configure.ac
-index fc74573..e7a1895 100644
+index d0f7716..9908747 100644
 --- bc-clean/configure.ac
 +++ bc-workdir/configure.ac
-@@ -20,6 +20,7 @@ m4_define([dc_version], 1.4.1)
+@@ -20,6 +20,7 @@ m4_define([dc_version], 1.5.1)
  
  AC_INIT([bc],[bc_version])
  AC_CONFIG_SRCDIR(doc/bc.1)
 +AC_CONFIG_MACRO_DIR([m4])
- AM_INIT_AUTOMAKE([dist-bzip2])
+ AM_INIT_AUTOMAKE([dist-xz])
  AC_CONFIG_HEADERS(config.h)
- 
-@@ -35,8 +36,13 @@ AC_DEFINE([DC_COPYRIGHT],
+ AC_CONFIG_MACRO_DIRS([m4])
+@@ -36,8 +37,13 @@ AC_DEFINE([DC_COPYRIGHT],
  	  [Define the dc copyright line.])
  
  AC_PROG_CC
@@ -66,7 +64,7 @@ index fc74573..e7a1895 100644
 +AC_ARG_VAR([CPPFLAGS_FOR_BUILD], [CPPFLAGS for host])
 +AC_ARG_VAR([LDFLAGS_FOR_BUILD], [LDFLAGS for host])
 +
- AM_PROG_LEX
+ AC_PROG_LEX(noyywrap)
  AM_PROG_AR
  AC_PROG_YACC
 diff --git bc-clean/lib/Makefile.am bc-workdir/lib/Makefile.am

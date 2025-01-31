@@ -11,7 +11,10 @@ deps="core-libs libx11 libxft freetype2"
 build() {
     cp -rp ${source_dir}/. ./
 
-    make CC=${OS_TRIPLET}-gcc CFLAGS="$TARGET_CFLAGS $(x86_64-ironclad-mlibc-pkg-config --cflags freetype2)" LDFLAGS="$TARGET_LDFLAGS $(x86_64-ironclad-mlibc-pkg-config --libs freetype2 xft fontconfig x11 libpng)"
+    make \
+        CC=${OS_TRIPLET}-gcc \
+        CFLAGS="$TARGET_CFLAGS $(${OS_TRIPLET}-pkg-config --cflags freetype2)" \
+        LDFLAGS="$TARGET_LDFLAGS $(${OS_TRIPLET}-pkg-config --libs freetype2 xft fontconfig x11 libpng)"
 }
 
 package() {

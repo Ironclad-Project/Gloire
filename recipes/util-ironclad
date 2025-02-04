@@ -1,14 +1,14 @@
 #! /bin/sh
 
 name=util-ironclad
-version=a68e9688b296cbb2cdbd1267de0171e94dffc338
+version=b221b7903d91b4fe91c0ded3f554eb3c18328f65
 revision=1
 git_url="https://git.savannah.nongnu.org/git/ironclad/util-ironclad.git"
 commit=${version}
 source_hostdeps="automake autoconf libtool pkg-config"
 source_imagedeps="git"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libgcrypt"
+deps="core-libs libxcrypt"
 
 prepare() {
     ./bootstrap

@@ -1,12 +1,11 @@
 diff --git metalog-clean/configure.ac metalog-workdir/configure.ac
-index 07ba1c3..97cc9e5 100644
+index 07ba1c3..c3c66e9 100644
 --- metalog-clean/configure.ac
 +++ metalog-workdir/configure.ac
-@@ -81,32 +81,32 @@ dnl Options
- AM_WITH_DMALLOC
+@@ -82,15 +82,15 @@ AM_WITH_DMALLOC
  
  WFLAGS=""
--AC_DEFUN([W_CHECK_CFLAG],[AX_CHECK_COMPILE_FLAG([$1],[WFLAGS="$WFLAGS $1"])])
+ AC_DEFUN([W_CHECK_CFLAG],[AX_CHECK_COMPILE_FLAG([$1],[WFLAGS="$WFLAGS $1"])])
 -W_CHECK_CFLAG([-Wall])
 -W_CHECK_CFLAG([-W])
 -W_CHECK_CFLAG([-Wcast-qual])
@@ -16,42 +15,15 @@ index 07ba1c3..97cc9e5 100644
 -W_CHECK_CFLAG([-Wstrict-prototypes])
 -W_CHECK_CFLAG([-Wwrite-strings])
 -W_CHECK_CFLAG([-Wreturn-type])
--AC_SUBST(WFLAGS, $WFLAGS)
-+# AC_DEFUN([W_CHECK_CFLAG],[AX_CHECK_COMPILE_FLAG([$1],[WFLAGS="$WFLAGS $1"])])
-+# W_CHECK_CFLAG([-Wall])
-+# W_CHECK_CFLAG([-W])
-+# W_CHECK_CFLAG([-Wcast-qual])
-+# W_CHECK_CFLAG([-Wcast-align])
-+# W_CHECK_CFLAG([-Wmissing-noreturn])
-+# W_CHECK_CFLAG([-Wbad-function-cast])
-+# W_CHECK_CFLAG([-Wstrict-prototypes])
-+# W_CHECK_CFLAG([-Wwrite-strings])
-+# W_CHECK_CFLAG([-Wreturn-type])
-+# AC_SUBST(WFLAGS, $WFLAGS)
++#W_CHECK_CFLAG([-Wall])
++#W_CHECK_CFLAG([-W])
++#W_CHECK_CFLAG([-Wcast-qual])
++#W_CHECK_CFLAG([-Wcast-align])
++#W_CHECK_CFLAG([-Wmissing-noreturn])
++#W_CHECK_CFLAG([-Wbad-function-cast])
++#W_CHECK_CFLAG([-Wstrict-prototypes])
++#W_CHECK_CFLAG([-Wwrite-strings])
++#W_CHECK_CFLAG([-Wreturn-type])
+ AC_SUBST(WFLAGS, $WFLAGS)
  
  AC_ARG_WITH(unicode,
--	[AS_HELP_STRING([--with-unicode],[Enable unicode support (default no)])])
-+   [AS_HELP_STRING([--with-unicode],[Enable unicode support (default no)])])
- AS_IF([test "x$with_unicode" = "xyes"], [
--	AC_DEFINE([ACCEPT_UNICODE_CONTROL_CHARS], [1], [Don't scramble unicode])
-+   AC_DEFINE([ACCEPT_UNICODE_CONTROL_CHARS], [1], [Don't scramble unicode])
- ])
- 
- AC_CONFIG_FILES(m4_flatten([
--	Makefile
--	src/Makefile
--	man/Makefile
--	man/metalog.8
--	man/metalog.conf.5
--	metalog.spec
--	metalog.lsm
-+   Makefile
-+   src/Makefile
-+   man/Makefile
-+   man/metalog.8
-+   man/metalog.conf.5
-+   metalog.spec
-+   metalog.lsm
- ]))
- 
- AC_OUTPUT

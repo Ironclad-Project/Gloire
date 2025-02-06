@@ -10,7 +10,7 @@ deps="core-libs ncurses"
 
 build() {
     cp -rp "${source_dir}"/. ./
-    make CC=${OS_TRIPLET}-gcc CFLAGS="$TARGET_CFLAGS" LDFLAGS="$TARGET_LDFLAGS" -j${parallelism}
+    make CC=${OS_TRIPLET}-gcc CFLAGS="$TARGET_CFLAGS -ltinfo" -j${parallelism}
 }
 
 package() {

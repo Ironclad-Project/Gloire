@@ -95,6 +95,21 @@ index e4bcca2..724be23 100644
  
  Display *display=0;
  int screen=0;
+@@ -89,10 +89,10 @@ int help_background;
+ /* Motif window hints */
+ typedef struct
+ {
+-  unsigned flags;
+-  unsigned functions;
+-  unsigned decorations;
+-  int inputMode;
++  unsigned long flags;
++  unsigned long functions;
++  unsigned long decorations;
++  long inputMode;
+ } PropMotifWmHints;
+ 
+ typedef PropMotifWmHints        PropMwmHints;
 @@ -841,13 +841,13 @@ build_image (image *src)
    png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, 0, 0, 0);
    info_ptr = png_create_info_struct (png_ptr);

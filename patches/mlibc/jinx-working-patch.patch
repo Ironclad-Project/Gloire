@@ -1064,7 +1064,7 @@ index 0383452..8f61a0b 100644
  #endif
  } // namespace mlibc
 diff --git mlibc-clean/sysdeps/ironclad/generic/mntent.cpp mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
-index d064af3..44ef598 100644
+index d064af3..a5bb1d9 100644
 --- mlibc-clean/sysdeps/ironclad/generic/mntent.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/mntent.cpp
 @@ -45,53 +45,40 @@ char *hasmntopt(const struct mntent *mnt, const char *opt) {
@@ -1129,7 +1129,7 @@ index d064af3..44ef598 100644
 -	mnt->mnt_opts = linebuf + n[6];
 -
 +        if (sscanf(linebuf, "%s %s %s %s %d %d\n", source, target, fs, options,
-+                     dump, pass) != 6) {
++                     &dump, &pass) != 6) {
 +            continue;
 +        }
 +	} while(linebuf[0] == '#');

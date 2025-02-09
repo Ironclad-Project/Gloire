@@ -55,6 +55,9 @@ $SUDO mount iso_root/boot/gloire.ext mount_dir
 $SUDO cp -rp sysroot/* mount_dir/
 $SUDO mkdir -p mount_dir/boot
 
+# Just plop a random seed file from the systems RNG.
+$SUDO dd if=/dev/random of=mount_dir/root/seedfile.bin bs=40M count=1 iflag=fullblock
+
 # Copy the bootloader wallpaper and kernel to the ISO root.
 cp artwork/background.png              iso_root/boot/
 cp sysroot/usr/share/ironclad/ironclad iso_root/boot/

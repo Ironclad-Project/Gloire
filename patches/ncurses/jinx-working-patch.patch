@@ -2,6 +2,24 @@ diff --git ncurses-clean/c++/Makefile.in ncurses-workdir/c++/Makefile.in
 index 99f21da..5db41d8 100644
 --- ncurses-clean/c++/Makefile.in
 +++ ncurses-workdir/c++/Makefile.in
+@@ -118,7 +118,7 @@ SHLIB_LIST	= $(SHLIB_DIRS) \
+ 		-l@FORM_NAME@@USE_LIB_SUFFIX@ \
+ 		-l@MENU_NAME@@USE_LIB_SUFFIX@ \
+ 		-l@PANEL_NAME@@USE_LIB_SUFFIX@ \
+-		-lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
++		-lncurses@USE_LIB_SUFFIX@
+
+ LIBROOT		= ncurses++
+
+@@ -157,7 +157,7 @@ LDFLAGS_SHARED	= $(TEST_LDFLAGS) $(CFLAGS_SHARED) @LD_SHARED_OPTS@
+ LDFLAGS_DEFAULT	= $(LINK_@DFT_UPR_MODEL@) $(LDFLAGS_@DFT_UPR_MODEL@)
+
+ # flags for library built by this makefile
+-LDFLAGS		= $(TEST_ARGS) @LDFLAGS@ \
++LDFLAGS		= @LDFLAGS@ \
+ 	@LD_MODEL@ $(TEST_LIBS) @LIBS@ $(CXXLIBS)
+
+ AUTO_SRC	= \
 @@ -182,7 +182,7 @@ AUTO_SRC	= \
  all \
  libs ::		$(AUTO_SRC) $(LIBRARIES)
@@ -68,3 +86,68 @@ index 4a74bab..615a8cb 100755
  	(mingw*)
  		cf_cv_shlib_version=mingw
  		cf_cv_shlib_version_infix=mingw
+diff --git ncurses-clean/form/Makefile.in ncurses-workdir/form/Makefile.in
+index a950a3e..9b092c0 100644
+--- ncurses-clean/form/Makefile.in
++++ ncurses-workdir/form/Makefile.in
+@@ -110,7 +110,7 @@ LINK		= $(LIBTOOL_LINK)
+ LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
+
+ SHLIB_DIRS	= -L../lib
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@
+
+ RPATH_LIST	= @RPATH_LIST@
+ RESULTING_SYMS	= @RESULTING_SYMS@
+diff --git ncurses-clean/misc/gen-pkgconfig.in ncurses-workdir/misc/gen-pkgconfig.in
+index 89a5cd4..07d94d1 100644
+--- ncurses-clean/misc/gen-pkgconfig.in
++++ ncurses-workdir/misc/gen-pkgconfig.in
+@@ -83,7 +83,7 @@ if [ "$includedir" != "/usr/include" ]; then
+ fi
+
+ lib_flags=
+-for opt in -L$libdir @EXTRA_PKG_LDFLAGS@ @LIBS@
++for opt in -L$libdir @LIBS@
+ do
+ 	case $opt in
+ 	-l*) # LIBS is handled specially below
+diff --git ncurses-clean/misc/ncurses-config.in ncurses-workdir/misc/ncurses-config.in
+index c9f1cf8..51798da 100644
+--- ncurses-clean/misc/ncurses-config.in
++++ ncurses-workdir/misc/ncurses-config.in
+@@ -101,7 +101,7 @@ fi
+ # There is no portable way to find the list of standard library directories.
+ # Require a POSIX shell anyway, to keep this simple.
+ lib_flags=
+-for opt in -L$libdir @EXTRA_PKG_LDFLAGS@ $LIBS
++for opt in -L$libdir $LIBS
+ do
+ 	case $opt in
+ 	-specs*) # ignore linker specs-files which were used to build library
+diff --git ncurses-clean/panel/Makefile.in ncurses-workdir/panel/Makefile.in
+index 380f80c..a77ef15 100644
+--- ncurses-clean/panel/Makefile.in
++++ ncurses-workdir/panel/Makefile.in
+@@ -112,7 +112,7 @@ LINK		= $(LIBTOOL_LINK)
+ LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
+
+ SHLIB_DIRS	= -L../lib
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@
+
+ RPATH_LIST	= @RPATH_LIST@
+ RESULTING_SYMS	= @RESULTING_SYMS@
+diff --git ncurses-clean/progs/Makefile.in ncurses-workdir/progs/Makefile.in
+index 218e64e..160d308 100644
+--- ncurses-clean/progs/Makefile.in
++++ ncurses-workdir/progs/Makefile.in
+@@ -79,7 +79,7 @@ LIBTOOL_INSTALL	= @LIB_INSTALL@
+ LIBTOOL_UNINSTALL = @LIB_UNINSTALL@
+
+ INSTALL		= @INSTALL@
+-INSTALL_PROG	= @INSTALL_PROGRAM@ @INSTALL_OPT_S@
++INSTALL_PROG	= @INSTALL_PROGRAM@
+ transform	= @program_transform_name@
+
+ AWK		= @AWK@

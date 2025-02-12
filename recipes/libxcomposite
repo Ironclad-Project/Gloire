@@ -1,0 +1,29 @@
+#! /bin/sh
+
+name=libxcomposite
+version=0.4.6
+revision=1
+tarball_url="https://www.x.org/archive/individual/lib/libXcomposite-${version}.tar.gz"
+tarball_blake2b="1ee04b1279b5274083dd2f46a763abccf6c2aaecc5cf13b1c4ca712b3ea562e9c2fce7c5b5685a93187ab5747ca549305b0cae1581a29815a1db516f292bf501"
+source_hostdeps="autoconf automake libtool pkg-config"
+source_deps="xorg-util-macros"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs libxfixes xorg-proto"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

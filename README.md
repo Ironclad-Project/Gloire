@@ -118,11 +118,12 @@ A list of the tools needed for compilation of the OS are:
 - `qemu` for testing, if wanted.
 - `tar` and `lzip` for extracting packages.
 - `rsync` for building bootable images.
+- `xorriso` to build the final ISO file.
 
 All of said things can be installed in debian-based systems with
 
 ```bash
-sudo apt install lzip git build-essentials rsync
+sudo apt install lzip git build-essentials rsync xorriso
 ```
 
 ## Licensing

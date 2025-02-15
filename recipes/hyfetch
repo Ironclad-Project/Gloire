@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=hyfetch
-version=1.99.0
+version=8a536c30f07a1cc599285dc14f6020b0d7d9e44d
 revision=1
-tarball_url="https://github.com/hykilpikonna/hyfetch/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="73e44d936124c993251b0d5f7261a1707136aee8fad8b1c660c0932223636db6cfbd1c6747bd16ee94370d6578e0220a96fb58c608ca26791957e855bc70deca"
+git_url="https://github.com/hykilpikonna/hyfetch.git"
+commit=${version}
 
 package() {
     mkdir -p "${dest_dir}"/usr/bin

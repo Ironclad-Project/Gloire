@@ -134,8 +134,7 @@
 
     <!-- Virtual Desktops -->
     <Desktops width="4" height="1">
-        <!-- <Background type="image">/etc/background.png</Background> -->
-        <Background type="solid">#8086BA</Background>
+        <Background type="image">/etc/background.jpg</Background>
     </Desktops>
 
     <!-- Double click speed (in milliseconds) -->

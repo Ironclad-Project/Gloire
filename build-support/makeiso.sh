@@ -17,7 +17,13 @@ fi
 # target needs.
 set -f
 $SUDO rm -rf sysroot
-./jinx install "sysroot" base $PKGS_TO_INSTALL
+
+# Retry the installation in case of transient errors like 503 TooManyRequests.
+until ./jinx install "sysroot" base $PKGS_TO_INSTALL; do
+    echo "Package installation failed (likely due to rate limiting). Retrying in 30 seconds..."
+    sleep 30
+done
+
 set +f
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
     if ! [ -d host-pkgs/limine ]; then

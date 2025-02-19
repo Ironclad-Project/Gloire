@@ -1,8 +1,8 @@
 diff --git xf86-input-keyboard-clean/configure.ac xf86-input-keyboard-workdir/configure.ac
-index 0f71ce3..9673a82 100644
+index 0124e42..dfcb5bf 100644
 --- xf86-input-keyboard-clean/configure.ac
 +++ xf86-input-keyboard-workdir/configure.ac
-@@ -57,6 +57,10 @@ AC_SUBST(inputdir)
+@@ -56,6 +56,10 @@ AC_SUBST(inputdir)
  
  # The keyboard driver code is O/S specific
  case $host_os in
@@ -13,7 +13,7 @@ index 0f71ce3..9673a82 100644
    linux*)
      AC_MSG_ERROR([This is not the keyboard driver you are looking for. Use evdev or libinput.])
      ;;
-@@ -95,6 +99,7 @@ case $host_os in
+@@ -94,6 +98,7 @@ case $host_os in
  esac
  AC_SUBST([OS_FLAGS])
  
@@ -49,10 +49,10 @@ index 52f5f4d..45b0d0f 100644
 +EXTRA_DIST = $(IRONCLAD_SRCS) $(BSD_SRCS) $(HURD_SRCS) $(SOLARIS_SRCS)
 diff --git xf86-input-keyboard-workdir/src/ironclad_kbd.c xf86-input-keyboard-workdir/src/ironclad_kbd.c
 new file mode 100644
-index 0000000..a473dbb
+index 0000000..3f20d5c
 --- /dev/null
 +++ xf86-input-keyboard-workdir/src/ironclad_kbd.c
-@@ -0,0 +1,124 @@
+@@ -0,0 +1,108 @@
 +#ifdef HAVE_CONFIG_H
 +#include <config.h>
 +#endif
@@ -113,27 +113,11 @@ index 0000000..a473dbb
 +static void ReadInput(InputInfoPtr pInfo) {
 +    KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
 +
-+    for(;;) {
-+        uint8_t scancodes[2];
-+        size_t result = read(pInfo->fd, scancodes, sizeof(scancodes));
-+
-+        if (result == 0 || result == -1) {
-+            return;
-+        }
-+
-+        if (result == 1) {
-+            pKbd->PostEvent(pInfo, scancodes[0] & 0x7f /* scancode */, scancodes[0] & 0x80 ? FALSE : TRUE /* released */);
-+        } else {
-+            switch (scancodes[1]) {
-+                case 0x48: pKbd->PostEvent(pInfo, KEY_Up, TRUE);     break;
-+                case 0xC8: pKbd->PostEvent(pInfo, KEY_Up, FALSE);    break;
-+                case 0x4B: pKbd->PostEvent(pInfo, KEY_Left, TRUE);   break;
-+                case 0xCB: pKbd->PostEvent(pInfo, KEY_Left, FALSE);  break;
-+                case 0x4D: pKbd->PostEvent(pInfo, KEY_Right, TRUE);  break;
-+                case 0xCD: pKbd->PostEvent(pInfo, KEY_Right, FALSE); break;
-+                case 0x50: pKbd->PostEvent(pInfo, KEY_Down, TRUE);   break;
-+                case 0xD0: pKbd->PostEvent(pInfo, KEY_Down, FALSE);  break;
-+            }
++    uint8_t scancodes[64];
++    ssize_t result = read(pInfo->fd, scancodes, sizeof(scancodes));
++    if (result > 0) {
++        for (ssize_t i = 0; i < result; i++) {
++            pKbd->PostEvent(pInfo, scancodes[i] & 0x7f, scancodes[i] & 0x80 ? FALSE : TRUE);
 +        }
 +    }
 +}

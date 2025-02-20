@@ -210,22 +210,6 @@ index 3474615..1ce0414 100644
  }
  
  char **backtrace_symbols(void *const *, int) {
-diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
-index c42b4f4..011d9c0 100644
---- mlibc-clean/options/internal/generic/charset.cpp
-+++ mlibc-workdir/options/internal/generic/charset.cpp
-@@ -91,9 +91,9 @@ bool charset::is_space(codepoint c) {
- bool charset::is_print(codepoint c) {
- 	if(c <= 0x7F && is_ascii_superset())
- 		return c >= 0x20 && c <= 0x7E;
--	if(c > 0x7F)
-+	/*if(c > 0x7F)
- 		mlibc::infoLogger() << "mlibc: charset::is_print() is not implemented"
--				" for the full Unicode charset" << frg::endlog;
-+				" for the full Unicode charset" << frg::endlog;*/
- 	return false;
- }
- 
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
 index 7e645e4..2f1e96b 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
@@ -682,7 +666,7 @@ index 1ca8a1e..9efec85 100644
  	__dlapi_enter(entry_stack);
  
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 0383452..f46f29e 100644
+index 0383452..48a2119 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1,4 +1,3 @@
@@ -822,14 +806,41 @@ index 0383452..f46f29e 100644
  }
  
  int sys_tcgetattr(int fd, struct termios *attr) {
-@@ -767,16 +770,29 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+@@ -766,17 +769,56 @@ int sys_setregid(gid_t rgid, gid_t egid) {
+ 	return ret;
  }
  
- int sys_setsid(pid_t *sid) {
--	return 0;
+-int sys_setsid(pid_t *sid) {
++int sys_getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
++	if (ruid) {
++		*ruid = sys_getuid();
++	}
++	if (euid) {
++		*euid = sys_geteuid();
++	}
++	if (suid) {
++		*suid = sys_getuid();
++	}
++	return 0;
++}
++
++int sys_getresgid(uid_t *rgid, uid_t *egid, uid_t *sgid) {
++	if (rgid) {
++		*rgid = sys_getgid();
++	}
++	if (egid) {
++		*egid = sys_getegid();
++	}
++	if (sgid) {
++		*sgid = sys_getgid();
++	}
+ 	return 0;
+ }
+ 
++int sys_setsid(pid_t *sid) {
 +	 return 0;
- }
- 
++}
++
  #ifndef MLIBC_BUILDING_RTLD
  
  extern "C" void __mlibc_thread_entry();
@@ -854,7 +865,7 @@ index 0383452..f46f29e 100644
  
  	 if (ret == -1) {
  		  return errno;
-@@ -884,7 +900,7 @@ int sys_shutdown(int sockfd, int how) {
+@@ -884,7 +926,7 @@ int sys_shutdown(int sockfd, int how) {
  }
  
  int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
@@ -863,7 +874,7 @@ index 0383452..f46f29e 100644
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-@@ -933,14 +949,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -933,14 +975,12 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
  
  
  int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
@@ -880,7 +891,7 @@ index 0383452..f46f29e 100644
  	}
  	if (ret == -1) {
  		return errno;
-@@ -1201,6 +1215,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1201,6 +1241,10 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  
@@ -891,7 +902,7 @@ index 0383452..f46f29e 100644
  #define SC_LIST_MOUNTS 9
  struct mountinfo {
  	uint32_t type;
-@@ -1238,29 +1256,208 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+@@ -1238,29 +1282,208 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  		return 1;
  	}
  

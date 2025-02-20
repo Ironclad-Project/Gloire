@@ -16,10 +16,7 @@ prepare() {
 }
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
         GDK_PIXBUF_QUERYLOADERS=/usr/lib/*/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders \
-        configure_script_path=./configure \
     autotools_configure \
         --enable-introspection=no \
         --disable-tools \

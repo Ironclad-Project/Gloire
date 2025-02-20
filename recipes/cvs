@@ -15,9 +15,6 @@ prepare() {
 }
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
-        configure_script_path=./configure \
     EDITOR=nano cvs_cv_func_printf_ptr=1 autotools_configure \
         --with-editor
 }

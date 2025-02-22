@@ -1,0 +1,56 @@
+#! /bin/sh
+
+name=sdl3
+version=3.2.4
+revision=1
+tarball_url="https://github.com/libsdl-org/SDL/releases/download/release-${version}/SDL3-${version}.tar.gz"
+tarball_blake2b="4886c938ff9eb00af9c7429580fd034bb933efb8a3273d34693dad997268c96619cac2157119cd88c4a330c1ce4d8f4ffd8e00d2a29416be8ccd68990822dc1e"
+imagedeps="cmake ninja-build git"
+hostdeps="gcc pkg-config"
+deps="core-libs libx11 libxext libxcursor libxi libxfixes libxrandr libxrender libxxf86vm mesa"
+
+configure() {
+    cmake_configure \
+        -DSDL_ALTIVEC=OFF \
+        -DSDL_DISKAUDIO=OFF \
+        -DSDL_DIRECTFB=ON \
+        -DSDL_OPENGL=ON \
+        -DSDL_OPENGLES=ON \
+        -DSDL_PTHREADS=ON \
+        -DSDL_PTHREADS_SEM=OFF \
+        -DSDL_OSS=OFF \
+        -DSDL_ALSA=OFF \
+        -DSDL_JACK=OFF \
+        -DSDL_ESD=OFF \
+        -DSDL_PULSEAUDIO=OFF \
+        -DSDL_ARTS=OFF \
+        -DSDL_NAS=OFF \
+        -DSDL_SNDIO=OFF \
+        -DSDL_FUSIONSOUND=OFF \
+        -DSDL_LIBSAMPLERATE=OFF \
+        -DSDL_RPATH=OFF \
+        -DSDL_X11=ON \
+        -DSDL_WAYLAND=OFF \
+        -DSDL_WAYLAND_QT_TOUCH=OFF \
+        -DSDL_RPI=OFF \
+        -DSDL_COCOA=OFF \
+        -DSDL_DIRECTX=OFF \
+        -DSDL_WASAPI=OFF \
+        -DSDL_RENDER_D3D=OFF \
+        -DSDL_VIVANTE=OFF \
+        -DSDL_VULKAN=OFF \
+        -DSDL_KMSDRM=OFF \
+        -DSDL_HIDAPI=OFF \
+        -DSDL_SHARED=ON \
+        -DSDL_STATIC=OFF
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip
+}

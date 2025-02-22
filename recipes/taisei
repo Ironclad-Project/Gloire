@@ -7,14 +7,15 @@ tarball_url="https://github.com/taisei-project/taisei/releases/download/v${versi
 tarball_blake2b="608b5db6f17e2693539ce0742a1812633e91e901b3935b9e54f91514827642334f6cb6f0217aff713f1ff9dd01d971ae895ac8c98b0360f254b52d3e49bfae61"
 imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config"
-deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl libzip"
+deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl"
 
 configure() {
     meson_configure \
         -Ddocs=false \
         -Da_sdl2mixer=false \
         -Da_default=null \
-        -Db_lto=false
+        -Db_lto=false \
+        -Denable_zip=false
 }
 
 build() {

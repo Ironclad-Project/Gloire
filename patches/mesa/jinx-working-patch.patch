@@ -4,7 +4,7 @@ index 4e4f7c2..d41c0b5 100644
 +++ mesa-workdir/include/drm-uapi/drm.h
 @@ -44,7 +44,7 @@ typedef unsigned int drm_handle_t;
  #else /* One of the BSDs */
-
+ 
  #include <stdint.h>
 -#include <sys/ioccom.h>
 +// #include <sys/ioccom.h>
@@ -17,7 +17,7 @@ index de9c9af..98e14de 100644
 +++ mesa-workdir/meson.build
 @@ -999,7 +999,7 @@ if cc.has_function('fmemopen')
  endif
-
+ 
  # TODO: this is very incomplete
 -if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'haiku', 'android', 'managarm'].contains(host_machine.system())
 +if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'haiku', 'android', 'managarm', 'ironclad'].contains(host_machine.system())
@@ -30,10 +30,10 @@ index b4dd47a..a649aff 100644
 +++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c
 @@ -40,6 +40,7 @@
  #include "util/mesa-blake3.h"
-
+ 
  #include <stdio.h>
 +#include <strings.h>
-
+ 
  /* Table of all implemented capabilities.  These are the capabilities that are
   * implemented in the spirv_to_nir, not what the device supports.
 diff --git mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl/main/egllog.c
@@ -48,6 +48,19 @@ index 0de00b2..59d8fdf 100644
  #include "c11/threads.h"
  #include "util/macros.h"
  #include "util/os_misc.h"
+diff --git mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
+index 5a4796e..6ee584c 100644
+--- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
++++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
+@@ -1738,7 +1738,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
+    default:
+       break;
+    }
+-   assert(0);
++   // assert(0);
+    *value = 0;
+    return false;
+ }
 diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
 index 86286df..802814f 100644
 --- mesa-clean/src/util/detect_os.h
@@ -55,7 +68,7 @@ index 86286df..802814f 100644
 @@ -28,6 +28,12 @@
  #define DETECT_OS_ANDROID 1
  #endif
-
+ 
 +#if defined(__ironclad__)
 +#define DETECT_OS_IRONCLAD 1
 +#define DETECT_OS_UNIX 1
@@ -68,7 +81,7 @@ index 86286df..802814f 100644
 @@ -147,4 +153,8 @@
  #define DETECT_OS_MANAGARM 0
  #endif
-
+ 
 +#ifndef DETECT_OS_IRONCLAD
 +#define DETECT_OS_IRONCLAD 0
 +#endif
@@ -95,7 +108,7 @@ index 4b79166..09c16b0 100644
 +#if DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM || DETECT_OS_IRONCLAD
     const long phys_pages = sysconf(_SC_PHYS_PAGES);
     const long page_size = sysconf(_SC_PAGE_SIZE);
-
+ 
 diff --git mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
 index da8ad7a..aa9aca4 100644
 --- mesa-clean/src/util/os_time.c
@@ -116,7 +129,7 @@ index 79934e9..1a740b4 100644
 @@ -32,6 +32,7 @@
  #include "util/u_math.h"
  #include <inttypes.h>
-
+ 
 +#include <strings.h>
  #include <stdio.h>
  #include <limits.h> /* CHAR_BIT */
@@ -142,4 +155,4 @@ index 255c5f6..7c20f8d 100644
 +#if defined(HAVE_PTHREAD) && !defined(__APPLE__) && !defined(__HAIKU__) && !defined(__managarm__) && !defined(__ironclad__)
     struct timespec ts;
     clockid_t cid;
-
+ 

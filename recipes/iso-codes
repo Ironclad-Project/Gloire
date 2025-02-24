@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=iso-codes
+version=4.17.0
+revision=1
+tarball_url="https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v${version}/iso-codes-v${version}.tar.gz"
+tarball_blake2b="b788e7b9f48e76667e2a7e97367faf7f5229ce66ba1b2d4e458620af4cc189f026b76c580607f7d95b2adda319137964d6e95e683f9363f3825a71c8c6792db9"
+source_hostdeps="automake autoconf libtool pkg-config"
+hostdeps="gcc autoconf automake libtool pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

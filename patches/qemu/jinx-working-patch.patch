@@ -1,0 +1,124 @@
+diff --git qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
+index ee2dd15..24e88da 100644
+--- qemu-clean/backends/tpm/tpm_ioctl.h
++++ qemu-workdir/backends/tpm/tpm_ioctl.h
+@@ -285,30 +285,6 @@ typedef struct ptm_lockstorage ptm_lockstorage;
+ #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
+ #define PTM_CAP_LOCK_STORAGE       (1 << 16)
+ 
+-#ifndef _WIN32
+-enum {
+-    PTM_GET_CAPABILITY     = _IOR('P', 0, ptm_cap),
+-    PTM_INIT               = _IOWR('P', 1, ptm_init),
+-    PTM_SHUTDOWN           = _IOR('P', 2, ptm_res),
+-    PTM_GET_TPMESTABLISHED = _IOR('P', 3, ptm_est),
+-    PTM_SET_LOCALITY       = _IOWR('P', 4, ptm_loc),
+-    PTM_HASH_START         = _IOR('P', 5, ptm_res),
+-    PTM_HASH_DATA          = _IOWR('P', 6, ptm_hdata),
+-    PTM_HASH_END           = _IOR('P', 7, ptm_res),
+-    PTM_CANCEL_TPM_CMD     = _IOR('P', 8, ptm_res),
+-    PTM_STORE_VOLATILE     = _IOR('P', 9, ptm_res),
+-    PTM_RESET_TPMESTABLISHED = _IOWR('P', 10, ptm_reset_est),
+-    PTM_GET_STATEBLOB      = _IOWR('P', 11, ptm_getstate),
+-    PTM_SET_STATEBLOB      = _IOWR('P', 12, ptm_setstate),
+-    PTM_STOP               = _IOR('P', 13, ptm_res),
+-    PTM_GET_CONFIG         = _IOR('P', 14, ptm_getconfig),
+-    PTM_SET_DATAFD         = _IOR('P', 15, ptm_res),
+-    PTM_SET_BUFFERSIZE     = _IOWR('P', 16, ptm_setbuffersize),
+-    PTM_GET_INFO           = _IOWR('P', 17, ptm_getinfo),
+-    PTM_LOCK_STORAGE       = _IOWR('P', 18, ptm_lockstorage),
+-};
+-#endif
+-
+ /*
+  * Commands used by the non-CUSE TPMs
+  *
+diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
+index 90fa543..0a1ce62 100644
+--- qemu-clean/block/file-posix.c
++++ qemu-workdir/block/file-posix.c
+@@ -119,6 +119,8 @@
+ #endif
+ #endif
+ 
++#include <sys/ioctl.h>
++
+ /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
+ #ifndef O_DIRECT
+ #define O_DIRECT O_DSYNC
+diff --git qemu-clean/configure qemu-workdir/configure
+index 1833637..caccd97 100755
+--- qemu-clean/configure
++++ qemu-workdir/configure
+@@ -340,7 +340,9 @@ int main(void) { return 0; }
+ EOF
+ }
+ 
+-if check_define __linux__ ; then
++if check_define __ironclad__ ; then
++  host_os=ironclad
++elif check_define __linux__ ; then
+   host_os=linux
+ elif check_define _WIN32 ; then
+   host_os=windows
+diff --git qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
+index d63228e..62c57e1 100644
+--- qemu-clean/include/gdbstub/syscalls.h
++++ qemu-workdir/include/gdbstub/syscalls.h
+@@ -41,9 +41,10 @@
+ #define GDB_EUNKNOWN       9999
+ 
+ /* For gdb file i/o remote protocol lseek whence. */
+-#define GDB_SEEK_SET  0
+-#define GDB_SEEK_CUR  1
+-#define GDB_SEEK_END  2
++#include <unistd.h>
++#define GDB_SEEK_SET  SEEK_SET
++#define GDB_SEEK_CUR  SEEK_CUR
++#define GDB_SEEK_END  SEEK_END
+ 
+ /* For gdb file i/o stat/fstat. */
+ typedef uint32_t gdb_mode_t;
+diff --git qemu-clean/meson.build qemu-workdir/meson.build
+index 147097c..7c3118a 100644
+--- qemu-clean/meson.build
++++ qemu-workdir/meson.build
+@@ -835,7 +835,7 @@ endif
+ ###############################################
+ 
+ accelerators = []
+-if get_option('kvm').allowed() and host_os == 'linux'
++if get_option('kvm').allowed() and (host_os == 'linux' or host_os == 'ironclad')
+   accelerators += 'CONFIG_KVM'
+ endif
+ if get_option('whpx').allowed() and host_os == 'windows'
+@@ -2487,6 +2487,7 @@ config_host_data.set('CONFIG_PIXMAN', pixman.found())
+ config_host_data.set('CONFIG_SLIRP', slirp.found())
+ config_host_data.set('CONFIG_SNAPPY', snappy.found())
+ config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')
++config_host_data.set('CONFIG_IRONCLAD', host_os == 'ironclad')
+ if get_option('tcg').allowed()
+   config_host_data.set('CONFIG_TCG', 1)
+   config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
+diff --git qemu-clean/os-posix.c qemu-workdir/os-posix.c
+index 43f9a43..12da1c0 100644
+--- qemu-clean/os-posix.c
++++ qemu-workdir/os-posix.c
+@@ -262,7 +262,7 @@ void os_setup_limits(void)
+     struct rlimit nofile;
+ 
+     if (getrlimit(RLIMIT_NOFILE, &nofile) < 0) {
+-        warn_report("unable to query NOFILE limit: %s", strerror(errno));
++    //    warn_report("unable to query NOFILE limit: %s", strerror(errno));
+         return;
+     }
+ 
+@@ -277,7 +277,7 @@ void os_setup_limits(void)
+ #endif
+ 
+     if (setrlimit(RLIMIT_NOFILE, &nofile) < 0) {
+-        warn_report("unable to set NOFILE limit: %s", strerror(errno));
++     //   warn_report("unable to set NOFILE limit: %s", strerror(errno));
+         return;
+     }
+ }

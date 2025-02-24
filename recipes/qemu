@@ -1,0 +1,35 @@
+#! /bin/sh
+
+name=qemu
+revision=1
+version=9.2.0
+source_method=tarball
+tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
+tarball_sha512="f92548623e4e31400c823a2d78417a8a4ecfccb07f3ee4883e2f2ad33054539d2a37d076dbc64df42c6c86c08fa7c2c975cd6e823aa14d5f20cef83348006813"
+imagedeps="build-essential python3-venv ninja-build meson git"
+hostdeps="gcc pkg-config libtool"
+deps="core-libs sdl2-compat gtk+-3 glib ncurses pixman nettle"
+allow_network="yes"
+
+configure() {
+	cp -rp ${source_dir}/* .
+	CFLAGS="${TARGET_CFLAGS}" LDFLAGS="${TARGET_LDFLAGS}" ./configure \
+        --cross-prefix=${OS_TRIPLET}-                             \
+        --host=${OS_TRIPLET}                                      \
+        --prefix=${prefix}                                        \
+        --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu \
+        --with-coroutine=sigaltstack                              \
+        --disable-tpm                                             \
+        --disable-kvm
+}
+
+build() {
+	cd build
+	ninja -j${parallelism}
+}
+
+package() {
+	cd build
+	DESTDIR=${dest_dir} ninja install
+        post_package_strip || true
+}

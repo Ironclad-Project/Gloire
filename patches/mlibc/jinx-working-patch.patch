@@ -351,10 +351,33 @@ index 848f7de..fbbb07f 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 197411a..1fbf389 100644
+index f59ff55..2283d1a 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -1318,8 +1318,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+@@ -352,6 +352,22 @@ int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restric
+ 	return errno;
+ }
+ 
++int sys_sigaltstack(const stack_t *ss, stack_t *oss) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_SIGALTSTACK, ss, oss);
++	return errno;
++}
++
++int sys_sigsuspend(const sigset_t *set) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_SIGSUSPEND, set);
++	return errno;
++}
++
++int sys_tgkill(int pid, int tid, int sig) {
++	return sys_kill(pid, sig);
++}
++
+ int sys_isatty(int fd) {
+ 	struct termios t;
+ 	if (sys_tcgetattr(fd, &t) == 0) {
+@@ -1318,8 +1334,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  	return 0;
  }
  
@@ -527,5 +550,18 @@ index 197411a..1fbf389 100644
 +  }
 +  return 1;
  }
- #endif
- } // namespace mlibc
+ 
+ int sys_shmat(void **seg_start, int shmid, const void *shmaddr, int shmflg) {
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+index 848e12a..7edcce7 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -111,6 +111,8 @@
+ #define SYSCALL_FAILURE_POLICY       99
+ #define SYSCALL_CREATE_THREAD       100
+ #define SYSCALL_SIGNAL_RETURN       101
++#define SYSCALL_SIGALTSTACK         102
++#define SYSCALL_SIGSUSPEND          103
+ 
+ #if defined(__x86_64__)
+ #define SYSCALL0(NUM) ({ \

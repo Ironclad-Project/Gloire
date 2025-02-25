@@ -122,3 +122,22 @@ index 43f9a43..12da1c0 100644
          return;
      }
  }
+diff --git qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
+index 11b35e4..9eeb644 100644
+--- qemu-clean/util/oslib-posix.c
++++ qemu-workdir/util/oslib-posix.c
+@@ -693,10 +693,10 @@ void *qemu_alloc_stack(size_t *sz)
+     }
+ 
+     /* Stack grows down -- guard page at the bottom. */
+-    if (mprotect(ptr, pagesz, PROT_NONE) != 0) {
+-        perror("failed to set up stack guard page");
+-        abort();
+-    }
++    //if (mprotect(ptr, pagesz, PROT_NONE) != 0) {
++    //    perror("failed to set up stack guard page");
++    //    abort();
++    //}
+ 
+ #ifdef CONFIG_DEBUG_STACK_USAGE
+     for (ptr2 = ptr + pagesz; ptr2 < ptr + *sz; ptr2 += sizeof(uint32_t)) {

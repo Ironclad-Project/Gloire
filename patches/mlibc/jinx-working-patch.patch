@@ -79,60 +79,6 @@ index 838b85b..8b0beec 100644
  	default:
  		mlibc::infoLogger() << "mlibc: Unknown signal number " << sig << frg::endlog;
  		s = "Unknown signal number";
-diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
-index 8782ae6..ba4c619 100644
---- mlibc-clean/options/posix/generic/sys-shm.cpp
-+++ mlibc-workdir/options/posix/generic/sys-shm.cpp
-@@ -4,42 +4,28 @@
- #include <bits/ensure.h>
- #include <mlibc/debug.hpp>
- #include <mlibc/posix-sysdeps.hpp>
-+#include <sys/syscall.h>
- 
- void *shmat(int shmid, const void *shmaddr, int shmflg) {
- 	void *ret;
--	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_shmat, ((void *)-1));
--	if(int e = sysdep(&ret, shmid, shmaddr, shmflg); e) {
--		errno = e;
--		return ((void *)-1);
--	}
-+	SYSCALL3(SYSCALL_SHMAT, shmid, shmaddr, shmflg);
- 	return ret;
- }
- 
- int shmctl(int shmid, int cmd, struct shmid_ds *buf) {
- 	int ret;
--	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_shmctl, -1);
--	if(int e = sysdep(&ret, shmid, cmd, buf); e) {
--		errno = e;
--		return -1;
--	}
-+	SYSCALL3(SYSCALL_SHMCTL, shmid, cmd, buf);
- 	return ret;
- }
- 
- int shmdt(const void *shmaddr) {
--	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_shmdt, -1);
--	if(int e = sysdep(shmaddr); e) {
--		errno = e;
--		return -1;
--	}
--	return 0;
-+	int ret;
-+	SYSCALL1(SYSCALL_SHMDT, shmaddr);
-+	return ret;
- }
- 
- int shmget(key_t key, size_t size, int shmflg) {
- 	int ret;
--	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_shmget, -1);
--	if(int e = sysdep(&ret, key, size, shmflg); e) {
--		errno = e;
--		return -1;
--	}
-+	SYSCALL3(SYSCALL_SHMGET, key, size, shmflg);
- 	return ret;
- }
 diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
 index 97bbaae..34bc025 100644
 --- mlibc-clean/options/posix/include/unistd.h
@@ -405,7 +351,7 @@ index 848f7de..fbbb07f 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 5c863ce..87b7d01 100644
+index f59ff55..2283d1a 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -352,6 +352,22 @@ int sys_sigprocmask(int how, const sigset_t *__restrict set, sigset_t *__restric

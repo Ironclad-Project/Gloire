@@ -40,7 +40,7 @@ Where `gloire.iso` is your image of choice.
 To do the same with a riscv64 image, you can do:
 
 ```bash
-qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
+qemu-system-riscv64 -M virt -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
    -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
    -hda gloire.iso -serial stdio -m 4G
 ```
@@ -124,6 +124,11 @@ All of said things can be installed in debian-based systems with
 
 ```bash
 sudo apt install lzip git build-essential rsync xorriso
+```
+
+Lastly, to simulate with QEMU you'll need to install it with:
+```bash
+sudo apt-get install qemu-system
 ```
 
 ## Licensing

@@ -122,16 +122,15 @@ index 62bff39..28b2123 100644
  		{ /*Someone specified a config file from disk?*/
  			snprintf(ConfigFile, MAX_LINE_SIZE, "%s", TConfigFile);
 diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
-index b52068c..3497989 100644
+index b52068c..7f6f837 100644
 --- epoch-clean/src/modes.c
 +++ epoch-workdir/src/modes.c
-@@ -137,6 +137,19 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
+@@ -137,6 +137,18 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
  	}
  }
  
 +#include <sys/syscall.h>
 +#include <errno.h>
-+#define SC_LIST_PROCS 8
 +
 +struct procinfo {
 +    char     id[20];
@@ -145,7 +144,7 @@ index b52068c..3497989 100644
  ReturnCode EmulKillall5(unsigned InSignal)
  { /*Used as the killall5 utility.*/
  	DIR *ProcDir;
-@@ -144,42 +157,28 @@ ReturnCode EmulKillall5(unsigned InSignal)
+@@ -144,42 +156,28 @@ ReturnCode EmulKillall5(unsigned InSignal)
  	pid_t CurPID;
  	const pid_t OurPID = getpid(), OurSID = getsid(0);
  
@@ -185,7 +184,7 @@ index b52068c..3497989 100644
 -			kill(CurPID, InSignal); /*Actually send the kill, stop, whatever signal.*/
 +    int ret;
 +    struct procinfo *buffer = malloc(50 * sizeof(struct procinfo));
-+    SYSCALL3(SYSCALL_SYSCONF, SC_LIST_PROCS, buffer, 50 * sizeof(struct procinfo));
++    SYSCALL2(SYSCALL_LISTPROCS, buffer, 50);
 +    if (ret == -1) {
 +        return FAILURE;
 +    } else if (ret > 50) {

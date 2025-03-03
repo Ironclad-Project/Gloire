@@ -138,10 +138,44 @@ index 848f7de..fbbb07f 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index aedc314..87b7d01 100644
+index f43741a..99aca2d 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -1334,8 +1334,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+@@ -1131,11 +1131,33 @@ struct meminfo {
+ 	uint64_t poison_usage;
+ };
+ 
++struct cpuinfo {
++	uint64_t conf_cores;
++	uint64_t onln_cores;
++};
++
+ int sys_sysconf(int num, long *rret) {
+ 	struct meminfo mem;
++	struct cpuinfo cpu;
+ 	int ret, errno;
+ 
+ 	switch (num) {
++		case _SC_NPROCESSORS_CONF:
++			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
++			if (ret == 0) {
++				*rret = cpu.conf_cores;
++				return 0;
++			} else {
++				return EFAULT;
++			}
++		case _SC_NPROCESSORS_ONLN:
++			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
++			if (ret == 0) {
++				*rret = cpu.onln_cores;
++				return 0;
++			} else {
++				return EFAULT;
++			}
+ 		case _SC_OPEN_MAX:
+ 			*rret = 100;
+ 			return 0;
+@@ -1366,8 +1388,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  	return 0;
  }
  
@@ -316,3 +350,15 @@ index aedc314..87b7d01 100644
  }
  
  int sys_shmat(void **seg_start, int shmid, const void *shmaddr, int shmflg) {
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+index b8b7db6..9c576dc 100644
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+@@ -123,6 +123,7 @@
+ #define SYSCALL_LOADAVG             111
+ #define SYSCALL_MEMINFO             112
+ #define SYSCALL_LISTPCI             113
++#define SYSCALL_GETCPUINFO          114
+ 
+ #if defined(__x86_64__)
+ #define SYSCALL0(NUM) ({ \

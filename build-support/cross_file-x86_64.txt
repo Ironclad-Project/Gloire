@@ -5,6 +5,7 @@ ar = 'x86_64-ironclad-mlibc-ar'
 nm = 'x86_64-ironclad-mlibc-nm'
 strip = 'x86_64-ironclad-mlibc-strip'
 pkg-config = 'x86_64-ironclad-mlibc-pkg-config'
+llvm-config = '/base_dir/build-support/cross-llvm-config'
 
 [host_machine]
 system = 'ironclad'

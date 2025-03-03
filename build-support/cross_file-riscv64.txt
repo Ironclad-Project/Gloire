@@ -5,6 +5,7 @@ ar = 'riscv64-ironclad-mlibc-ar'
 nm = 'riscv64-ironclad-mlibc-nm'
 strip = 'riscv64-ironclad-mlibc-strip'
 pkg-config = 'riscv64-ironclad-mlibc-pkg-config'
+llvm-config = '/base_dir/build-support/cross-llvm-config'
 
 [host_machine]
 system = 'ironclad'

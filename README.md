@@ -49,19 +49,44 @@ qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4G -M q35 -drive format=raw,f
 
 Where `gloire.iso` is your image of choice.
 
-To do the same with a riscv64 image, you can do:
+To do the same with a riscv64 image, a few additional steps must be performed. As of March 2025, the version maintained in the apt pkg manager is not recent enough to properly emulate RISC-V boards with this software. You must build it from the source code. To do that, perform the following (I recommend at a relatively high level directory, as we will have to manually add it to the path - or move it later. I personally used "/michae/home/capstone"):
 
 ```bash
-qemu-system-riscv64 -M virt -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
-   -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
-   -hda gloire.iso -serial stdio -m 4G
+git clone https://gitlab.com/qemu-project/qemu-web.git
+sudo apt-get install git libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninja-build flex bison
+sudo apt-get install git-email
+sudo apt-get install libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev
+sudo apt-get install libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev
+sudo apt-get install libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev
+sudo apt-get install librbd-dev librdmacm-dev
+sudo apt-get install libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev
+sudo apt-get install libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev
+sudo apt-get install valgrind xfslibs-dev 
+sudo apt-get install libnfs-dev libiscsi-dev
+sudo apt install lzip git build-essential rsync xorriso curl
+cd qemu
+./configure
+make
 ```
 
-For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
-and must be prepared as per QEMU with a
+This will run for quite a while. Once this is done, add this to your PATH in however you want to do it. I personally would add it to the tippy top of your ~/.bashrc file with "export PATH=/path/to/qemu:$PATH". Then reclose your terminal and re-open it.
+
+Confirm you're using the right one with "which qemu-system-riscv64" and you should get "/path/to/qemu" (where "/path/to/qemu" is your own path that you cloned QEMU into).
+
+Then, you need to download firmware. firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd), and must be prepared as per QEMU with a
 
 ```bash
 dd if=/dev/zero of=<firmware path> bs=1 count=0 seek=33554432
+```
+
+This can be confirmed successful with a "ls -la" and verifying the size of the firmware file is 33554432.
+
+Finally, you can run the following command, assuming you are in a folder with a built gloire.iso image. If you are not, please refer to below for building. Prior to running the below command, ensure you replace "firmware path" with your path to the firmware.
+
+```bash
+qemu-system-riscv64 -M virt -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
+   -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file="firmware path" \
+   -hda gloire.iso -serial stdio -m 4G
 ```
 
 Depending on your distribution, to use Linux's KVM, you might need to add your
@@ -112,6 +137,16 @@ To build the very experimental riscv64 port, one can instead use:
 
 ```bash
 PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+```
+
+For build/debug/run cycles, you can use the following. This is explained in more detail in u/streaksu's original repositories wiki. Again, please ensure to replace "firmware path" with your path to your firmware.
+
+```bash
+PKGS_TO_INSTALL="" JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx rebuild ironclad
+PKGS_TO_INSTALL="" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh
+qemu-system-riscv64 -M virt -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
+   -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file="firmware path" \
+   -hda gloire.iso -serial stdio -m 4G
 ```
 
 Regardless of architecture, if, instead of building all packages, building

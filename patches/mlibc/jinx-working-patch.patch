@@ -122,6 +122,10 @@ index 848f7de..fbbb07f 100644
  		}else if(phdr->p_type == PT_TLS) {
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index f43741a..99aca2d 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1366,8 +1388,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  	return 0;
  }

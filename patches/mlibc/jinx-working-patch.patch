@@ -29,21 +29,6 @@ index f6eeed0..db23cd4 100644
  
  /* siginfo->si_info constants */
  /* SIGBUS */
-diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index eae40c4..b7b9dee 100644
---- mlibc-clean/meson.build
-+++ mlibc-workdir/meson.build
-@@ -76,6 +76,10 @@ if not headers_only
- 	add_project_arguments('-fno-rtti', '-fno-exceptions', language: 'cpp')
- 	add_project_link_arguments('-nostdlib', language: ['c', 'cpp'])
- 
-+	if get_option('buildtype').startswith('debug')
-+		add_project_arguments('-DDEBUG', language : ['c', 'cpp'])
-+	endif
-+
- 	if not freestnd_c_hdrs_dep.found()
- 		searchdirs = run_command(c_compiler.cmd_array(), '-print-search-dirs',
- 					check: true).stdout()
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -138,44 +123,26 @@ index 848f7de..fbbb07f 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index f43741a..99aca2d 100644
+index 099842f..6be3b07 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -1131,11 +1131,33 @@ struct meminfo {
- 	uint64_t poison_usage;
+@@ -1132,8 +1132,13 @@ struct meminfo {
  };
  
-+struct cpuinfo {
-+	uint64_t conf_cores;
-+	uint64_t onln_cores;
-+};
-+
- int sys_sysconf(int num, long *rret) {
- 	struct meminfo mem;
-+	struct cpuinfo cpu;
- 	int ret, errno;
+ struct cpuinfo {
+-	uint64_t conf_cores;
+-	uint64_t onln_cores;
++    uint64_t conf_cores;
++    uint64_t onln_cores;
++    char model_name[64];
++    char vendor_name[64];
++    uint32_t base_mhz;
++    uint32_t max_mhz;
++    uint32_t ref_mhz;
+ };
  
- 	switch (num) {
-+		case _SC_NPROCESSORS_CONF:
-+			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
-+			if (ret == 0) {
-+				*rret = cpu.conf_cores;
-+				return 0;
-+			} else {
-+				return EFAULT;
-+			}
-+		case _SC_NPROCESSORS_ONLN:
-+			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
-+			if (ret == 0) {
-+				*rret = cpu.onln_cores;
-+				return 0;
-+			} else {
-+				return EFAULT;
-+			}
- 		case _SC_OPEN_MAX:
- 			*rret = 100;
- 			return 0;
-@@ -1366,8 +1388,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+ int sys_sysconf(int num, long *rret) {
+@@ -1388,8 +1393,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  	return 0;
  }
  
@@ -350,15 +317,3 @@ index f43741a..99aca2d 100644
  }
  
  int sys_shmat(void **seg_start, int shmid, const void *shmaddr, int shmflg) {
-diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index b8b7db6..9c576dc 100644
---- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
-+++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -123,6 +123,7 @@
- #define SYSCALL_LOADAVG             111
- #define SYSCALL_MEMINFO             112
- #define SYSCALL_LISTPCI             113
-+#define SYSCALL_GETCPUINFO          114
- 
- #if defined(__x86_64__)
- #define SYSCALL0(NUM) ({ \

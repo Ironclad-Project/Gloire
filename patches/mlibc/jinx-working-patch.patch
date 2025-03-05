@@ -123,10 +123,18 @@ index 848f7de..fbbb07f 100644
  			object->tlsSegmentSize = phdr->p_memsz;
  			object->tlsAlignment = phdr->p_align;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 099842f..6be3b07 100644
+index 099842f..7412389 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -1132,8 +1132,13 @@ struct meminfo {
+@@ -10,7 +10,6 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <sys/syscall.h>
+-#include <sys/ironclad_devices.h>
+ #include <sched.h>
+ #include <sys/mman.h>
+ #include <unistd.h>
+@@ -1132,8 +1131,13 @@ struct meminfo {
  };
  
  struct cpuinfo {
@@ -142,7 +150,7 @@ index 099842f..6be3b07 100644
  };
  
  int sys_sysconf(int num, long *rret) {
-@@ -1388,8 +1393,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
+@@ -1388,8 +1392,172 @@ int sys_statvfs(const char *path, struct statvfs *out) {
  	return 0;
  }
  
@@ -317,3 +325,130 @@ index 099842f..6be3b07 100644
  }
  
  int sys_shmat(void **seg_start, int shmid, const void *shmaddr, int shmflg) {
+diff --git mlibc-clean/sysdeps/ironclad/generic/sched2.cpp mlibc-clean/sysdeps/ironclad/generic/sched2.cpp
+deleted file mode 100644
+index 9699517..0000000
+--- mlibc-clean/sysdeps/ironclad/generic/sched2.cpp
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#include <sys/syscall.h>
+-#include <sys/sched2.h>
+-#include <errno.h>
+-#include <string.h>
+-
+-extern "C" {
+-
+-int get_thread_sched(void) {
+-	return 0;
+-}
+-
+-int set_thread_sched(int flags) {
+-	return 0;
+-}
+-
+-int set_deadlines(int runtime, int period) {
+-	return 0;
+-}
+-
+-}
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/ironclad_devices.h mlibc-clean/sysdeps/ironclad/include/sys/ironclad_devices.h
+deleted file mode 100644
+index f0efc8c..0000000
+--- mlibc-clean/sysdeps/ironclad/include/sys/ironclad_devices.h
++++ /dev/null
+@@ -1,44 +0,0 @@
+-#ifndef _SYS_IRONCLAD_DEVICES_H
+-#define _SYS_IRONCLAD_DEVICES_H
+-
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <sys/types.h>
+-#include <asm/ioctls.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-#define PS2MOUSE_2_1_SCALING     1
+-#define PS2MOUSE_1_1_SCALING     2
+-#define PS2MOUSE_SET_RES         3
+-#define PS2MOUSE_SET_SAMPLE_RATE 4
+-
+-struct ironclad_mouse_data {
+-	int  x_variation;
+-	int  y_variation;
+-	bool is_left;
+-	bool is_right;
+-};
+-
+-#define RTC_RD_TIME  1
+-#define RTC_SET_TIME 2
+-
+-struct rtc_time {
+-	int tm_sec;
+-	int tm_min;
+-	int tm_hour;
+-	int tm_mday;
+-	int tm_mon;
+-	int tm_year;
+-	int tm_wday;     /* unused */
+-	int tm_yday;     /* unused */
+-	int tm_isdst;    /* unused */
+-};
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#endif /* _SYS_IRONCLAD_DEVICES_H */
+diff --git mlibc-clean/sysdeps/ironclad/include/sys/sched2.h mlibc-clean/sysdeps/ironclad/include/sys/sched2.h
+deleted file mode 100644
+index 42b3790..0000000
+--- mlibc-clean/sysdeps/ironclad/include/sys/sched2.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-#ifndef _SYS_SCHED2_H
+-#define _SYS_SCHED2_H
+-
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <sys/types.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-#define THREAD_RT     (1 << 0)
+-#define THREAD_MONO   (1 << 1)
+-#define THREAD_MLOCK  (1 << 2)
+-#define THREAD_BANNED (1 << 3)
+-int get_thread_sched(void);
+-int set_thread_sched(int flags);
+-int set_deadlines(int runtime, int period);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#endif /* _SYS_SCHED2_H */
+diff --git mlibc-clean/sysdeps/ironclad/meson.build mlibc-workdir/sysdeps/ironclad/meson.build
+index dc64db3..592f15b 100644
+--- mlibc-clean/sysdeps/ironclad/meson.build
++++ mlibc-workdir/sysdeps/ironclad/meson.build
+@@ -19,7 +19,6 @@ libc_sources += files(
+ 	'generic/pty.cpp',
+ 	'generic/thread.cpp',
+ 	'generic/mac.cpp',
+-	'generic/sched2.cpp',
+ 	'generic/thread.S',
+ 	'generic/utmpx.cpp'
+ )
+@@ -73,8 +72,6 @@ if not no_headers
+ 		follow_symlinks: true
+ 	)
+ 	install_headers(
+-		'include/sys/sched2.h',
+-		'include/sys/ironclad_devices.h',
+ 		'include/sys/mac.h',
+ 		'include/sys/syscall.h',
+ 		'include/sys/reboot.h',

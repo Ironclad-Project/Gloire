@@ -52,7 +52,7 @@ Where `gloire.iso` is your image of choice.
 To do the same with a riscv64 image, a few additional steps must be performed. As of March 2025, the version maintained in the apt pkg manager is not recent enough to properly emulate RISC-V boards with this software. You must build it from the source code. To do that, perform the following (I recommend at a relatively high level directory, as we will have to manually add it to the path - or move it later. I personally used "/michae/home/capstone"):
 
 ```bash
-git clone https://gitlab.com/qemu-project/qemu-web.git
+git clone https://gitlab.com/qemu-project/qemu.git
 sudo apt-get install git libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev ninja-build flex bison
 sudo apt-get install git-email
 sudo apt-get install libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev
@@ -148,6 +148,18 @@ qemu-system-riscv64 -M virt -cpu rv64 -smp 4 -device ramfb -device qemu-xhci    
    -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file="firmware path" \
    -hda gloire.iso -serial stdio -m 4G
 ```
+For simplicity can also run
+```bash
+./build-ironclad.sh [x86|riscv]
+```
+for example, running
+`./build-ironclad.sh riscv`
+will run
+```bash
+PKGS_TO_INSTALL="" JINX_CONFIG_FILE=jinx-config-riscv64 ./jinx rebuild ironclad
+PKGS_TO_INSTALL="" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh
+```
+in a single command
 
 Regardless of architecture, if, instead of building all packages, building
 a minimal command-line only environment is desired, instead of `"*"`, one

@@ -1,34 +1,3 @@
-diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
-index f6eeed0..db23cd4 100644
---- mlibc-clean/abis/ironclad/signal.h
-+++ mlibc-workdir/abis/ironclad/signal.h
-@@ -48,18 +48,21 @@ typedef void (*__sighandler) (int);
- #define SIGTTOU   18
- #define SIGUSR1   19
- #define SIGUSR2   20
--#define SIGIO     21
--#define SIGPOLL   SIGIO
-+#define SIGPOLL   21
- #define SIGPROF   22
- #define SIGSYS    23
--#define SIGCANCEL SIGSYS
- #define SIGTRAP   24
- #define SIGURG    25
- #define SIGVTALRM 26
- #define SIGXCPU   27
- #define SIGXFSZ   28
--#define SIGWINCH  29
--#define SIGPWR    30
-+
-+/* These values are not kernel-related, and are emulated for userland by the */
-+/* libc, we will map them to SIGUSR2, which userland wont be able to use. */
-+#define SIGCANCEL SIGUSR2
-+#define SIGWINCH SIGUSR2
-+#define SIGIO    SIGUSR2
-+#define SIGPWR   SIGUSR2
- 
- /* siginfo->si_info constants */
- /* SIGBUS */
 diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
 index 3474615..1ce0414 100644
 --- mlibc-clean/options/glibc/generic/execinfo.cpp
@@ -43,27 +12,6 @@ index 3474615..1ce0414 100644
  }
  
  char **backtrace_symbols(void *const *, int) {
-diff --git mlibc-clean/options/posix/generic/posix_string.cpp mlibc-workdir/options/posix/generic/posix_string.cpp
-index 838b85b..8b0beec 100644
---- mlibc-clean/options/posix/generic/posix_string.cpp
-+++ mlibc-workdir/options/posix/generic/posix_string.cpp
-@@ -94,8 +94,6 @@ char *strsignal(int sig) {
- 	CASE_FOR(SIGSEGV)
- 	CASE_FOR(SIGTERM)
- 	CASE_FOR(SIGPROF)
--	CASE_FOR(SIGIO)
--	CASE_FOR(SIGPWR)
- 	CASE_FOR(SIGALRM)
- 	CASE_FOR(SIGBUS)
- 	CASE_FOR(SIGCHLD)
-@@ -116,7 +114,6 @@ char *strsignal(int sig) {
- 	CASE_FOR(SIGVTALRM)
- 	CASE_FOR(SIGXCPU)
- 	CASE_FOR(SIGXFSZ)
--	CASE_FOR(SIGWINCH)
- 	default:
- 		mlibc::infoLogger() << "mlibc: Unknown signal number " << sig << frg::endlog;
- 		s = "Unknown signal number";
 diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
 index 8782ae6..bfacac2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp

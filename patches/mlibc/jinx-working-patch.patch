@@ -1,17 +1,3 @@
-diff --git mlibc-clean/options/glibc/generic/execinfo.cpp mlibc-workdir/options/glibc/generic/execinfo.cpp
-index 3474615..1ce0414 100644
---- mlibc-clean/options/glibc/generic/execinfo.cpp
-+++ mlibc-workdir/options/glibc/generic/execinfo.cpp
-@@ -2,8 +2,7 @@
- #include <bits/ensure.h>
- 
- int backtrace(void **, int) {
--	__ensure(!"Not implemented");
--	__builtin_unreachable();
-+	return 0;
- }
- 
- char **backtrace_symbols(void *const *, int) {
 diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
 index 8782ae6..bfacac2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp

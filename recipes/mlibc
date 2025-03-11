@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=mlibc
-version=ba0c27cf3098d207a2b232d7b17dd96eac71e062
+version=1d60e4138d9bbf31d3378640aec4b6b11961fc3e
 revision=1
 git_url="https://github.com/managarm/mlibc.git"
 commit=${version}

@@ -1040,6 +1040,36 @@ cmd_rebuild() {
     done
 }
 
+
+cmd_check_updates() {
+    for ppkg in "$@"; do
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            . "${base_dir}/recipes/${pkg}"
+            if [ -z "$repology_id" ]; then
+                name_to_check="$name"
+            else
+                name_to_check="$repology_id"
+            fi
+
+            printf "checking $pkg ..."
+            sleep 1
+            checked_vers=$(wget -q -O - https://repology.org/api/v1/project/$name_to_check | jq '.[] | select(.status=="newest").version' | head -n 1)
+            if [ -z "$checked_vers" ]; then
+                printf " is not checkable!\n"
+                continue
+            fi
+
+            if ! [ "\"$version\"" = "$checked_vers" ]; then
+                printf " needs update! $version -> $checked_vers\n"
+            else
+                printf "\33[2K\r"
+            fi
+
+            unset repology_id
+        done
+    done
+}
+
 cmd_install() {
     sysroot="$1"
     shift 1
@@ -1950,6 +1980,10 @@ case "$1" in
     rebuild)
         shift 1
         cmd_rebuild "$@"
+        ;;
+    check-updates)
+        shift 1
+        cmd_check_updates "$@"
         ;;
     install)
         shift 1

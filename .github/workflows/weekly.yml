@@ -82,3 +82,18 @@ jobs:
           files: gloire-weekly-*.iso.xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  package-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Enable user namespaces
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Check updates
+        run: ./jinx check-updates "*"

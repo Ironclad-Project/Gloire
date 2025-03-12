@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=gtk+-3
+repology_id="gtk+3.0"
 version=3.24.43
 revision=1
 tarball_url="https://download.gnome.org/sources/gtk%2B/3.24/gtk%2B-${version}.tar.xz"

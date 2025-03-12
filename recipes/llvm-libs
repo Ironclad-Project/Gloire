@@ -1,4 +1,5 @@
 name=llvm-libs
+repology_id="llvm"
 version=18.1.7
 revision=1
 tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"

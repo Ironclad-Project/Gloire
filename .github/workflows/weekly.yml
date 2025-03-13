@@ -62,8 +62,8 @@ jobs:
       - name: Set TAG_DATE variable
         run: echo "TAG_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
-      - name: Rename gloire.iso and compress it
-        run: xz -T 0 < gloire.iso > gloire-weekly-${{matrix.target_arch}}-$TAG_DATE.iso.xz
+      - name: Rename gloire.iso
+        run: mv gloire.iso gloire-weekly-${{matrix.target_arch}}-$TAG_DATE.iso
 
       - name: Tag new weekly release if it does not exist already
         run: git tag weekly-$TAG_DATE && ( git push --tags || true )
@@ -79,7 +79,7 @@ jobs:
 
             The image contains a TTY-only build, for a complete build, please
             use one of the full releases.
-          files: gloire-weekly-*.iso.xz
+          files: gloire-weekly-*.iso
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

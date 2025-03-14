@@ -10,10 +10,10 @@ build the OS from the ground up on a Linux-based system.
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
 
-![Gloire running the JWM window manager, a terminal emulator, xeyes, and a game](artwork/screenshot1.png)
-*Gloire running the JWM window manager, a terminal emulator, xeyes, and a game*
-![Gloire generating an RSA key and running neofetch in its fallback shell](artwork/screenshot2.png)
-*Gloire generating an RSA key and running neofetch in its fallback shell.*
+![Gloire running the JWM window manager, a terminal, taipei, and glxgears](artwork/screenshot1.png)
+![Gloire showcasing some terminal utilities](artwork/screenshot2.png)
+![Gloire running Taisei Project, a FOSS fangame of the Tōhō series](artwork/screenshot3.png)
+![Gloire showcasing the creation, compilation, and execution of a C program](artwork/screenshot4.png)
 
 ## Downloading
 
@@ -44,7 +44,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4G -M q35 -drive format=raw,file=gloire.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host -m 4G -M q35 -drive format=raw,file=gloire.iso -serial stdio
 ```
 
 Where `gloire.iso` is your image of choice.
@@ -52,9 +52,9 @@ Where `gloire.iso` is your image of choice.
 To do the same with a riscv64 image, you can do:
 
 ```bash
-qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -smp 4 -device ramfb -device qemu-xhci        \
+qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -device ramfb -device qemu-xhci -m 4G         \
    -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
-   -hda gloire.iso -serial stdio -m 4G
+   -hda gloire.iso -serial stdio
 ```
 
 For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
@@ -91,7 +91,7 @@ The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
 ```bash
-PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" ./build-support/makeiso.sh
 ```
 
 *Note:* on certain distros, like Ubuntu 24.04, one may get an error like:
@@ -99,7 +99,7 @@ PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
 .../.jinx-cache/rbrt: failed to open or write to /proc/self/setgroups at line 186: Permission denied
 ```
 In that case, it likely means apparmor is preventing the use of user namespaces,
-causing `jinx` to fail to work. One can enable user namespaces by running:
+which `jinx` needs. One can enable user namespaces by running:
 ```sh
 sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
 ```
@@ -111,7 +111,7 @@ sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash
-PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh
 ```
 
 Regardless of architecture, if, instead of building all packages, building

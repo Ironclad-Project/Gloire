@@ -77,8 +77,11 @@ jobs:
           body: |
             Automatically generated image of a weekly Gloire snapshot.
 
-            The image contains a TTY-only build, for a complete build, please
-            use one of the full releases.
+            This image is a development release and is provided only for easy
+            testing and distribution among developers, things may be broken,
+            and the image contains a TTY-only build.
+
+            For a complete, stable build, please use one of the full releases.
           files: gloire-weekly-*.iso
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

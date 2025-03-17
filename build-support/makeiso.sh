@@ -5,7 +5,7 @@ set -ex
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
-: "${IMAGE_SIZE:=2G}"
+: "${IMAGE_SIZE:=3G}"
 
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then

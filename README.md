@@ -108,6 +108,10 @@ This is not permanent across reboots. To make it so, one can do:
 sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
 ```
 
+The image size will default to 3G, this may be too big or too small for the
+selection of packages the user may have built the image with. For modifying
+this value, use the environment variable `IMAGE_SIZE`.
+
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash

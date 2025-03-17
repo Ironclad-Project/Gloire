@@ -54,9 +54,9 @@ jobs:
 
           case "${{matrix.target_arch}}" in \
             riscv64) \
-              JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh ;; \
+              JINX_CONFIG_FILE=jinx-config-riscv64 IMAGE_SIZE=700M ./build-support/makeiso.sh ;; \
             x86_64) \
-              ./build-support/makeiso.sh ;; \
+              IMAGE_SIZE=700M ./build-support/makeiso.sh ;; \
           esac
 
       - name: Set TAG_DATE variable

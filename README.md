@@ -2,7 +2,7 @@
 
 [<img src="artwork/logo.png" width="250" align="right" alt="Gloire logo">]()
 
-Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
+Gloire is an OS built with the [Ironclad](https://ironclad-os.org)
 kernel and using GNU tools for the userland, along with some original
 applications like `util-ironclad`. This repository holds scripts and tools to
 build the OS from the ground up on a Linux-based system.
@@ -35,7 +35,7 @@ Additionally, for x86_64 platforms, Ironclad requires a system with a working
 HPET.
 
 For more information on the current hardware requirements of the kernel, please
-visit [Ironclad's hardware support section](https://ironclad.nongnu.org/supportedhardware.html).
+visit [Ironclad's hardware support section](https://ironclad-os.org/supportedhardware.html).
 
 ### On virtual machines
 
@@ -80,10 +80,8 @@ SATA, IDE, or USB drive.
 ## Contributing
 
 Gloire accepts contributions for new packages or any other kind of changes
-using the pull request system baked into Github.
-Please [submit PRs here](https://github.com/streaksu/Gloire/pulls) or read
-our documentation on how to do so and some things to keep in mind porting on
-[the project's wiki](https://github.com/streaksu/Gloire/wiki).
+using the pull request system baked into Github. Check our
+[contribution guidelines](CONTRIBUTING.md)
 
 ## Building
 

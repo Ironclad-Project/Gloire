@@ -6,6 +6,7 @@ pkgs
 sources
 sysroot
 gloire.iso
+gloire.img
 mount_dir
 iso_root
 bochsout.txt

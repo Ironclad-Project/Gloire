@@ -5,8 +5,6 @@ set -ex
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
-: "${IMAGE_SIZE:=3G}"
-
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
     git clone https://github.com/Ironclad-Project/Ironclad ironclad
@@ -50,9 +48,19 @@ $SUDO chmod 710 sysroot/home/user
 rm -rf iso_root
 mkdir -p iso_root/boot
 
+# Allocate the image. If a size is passed, we just use that size, else, we try
+# to guesstimate calculate a rough size.
+if [ -z "$IMAGE_SIZE" ]; then
+    if [ -f sysroot/usr/bin/slim ]; then
+        IMAGE_SIZE=2.75G
+    else
+        IMAGE_SIZE=750M
+    fi
+fi
+fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
+
 # Create and format the initramfs filesystem.
 # TODO: Once ready, move to ext4, now its ext2 only.
-fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
 $SUDO mkfs.ext2 iso_root/boot/gloire.ext
 mkdir -p mount_dir
 $SUDO mount iso_root/boot/gloire.ext mount_dir

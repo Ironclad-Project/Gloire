@@ -25,17 +25,17 @@ Gloire as built from this repository will result in a live non-persistent image
 with the option for installing. So keep in mind that when doing changes to the
 filesystem.
 
-### System requirements
-
-The image built from this repository is a live distribution that will mount
-the filesystem's contents in memory, thus, a sizeable memory is needed. The
-recommended amount is at least 4G.
-
-Additionally, for x86_64 platforms, Ironclad requires a system with a working
-HPET.
-
-For more information on the current hardware requirements of the kernel, please
-visit [Ironclad's hardware support section](https://ironclad-os.org/supportedhardware.html).
+> [!IMPORTANT]
+> For the live images, the minimum amount of memory is dependent on the size
+> of the image. A good formula is `size of the image + 1G`.
+>
+> For disk images, the minimum amount of memory is  500M for the graphical
+> targets and 200M for the terminal-only ones.
+>
+> Additionally, for x86_64 platforms, Ironclad requires a system with a working
+> HPET, among others.
+> For more information on the current hardware requirements of the
+> kernel, please visit [Ironclad's hardware support section](https://ironclad-os.org/supportedhardware.html).
 
 ### On virtual machines
 

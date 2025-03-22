@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=gcon
-version=6c6d6a8be14c7b16bb1ec8caf9be5d3cc1e8c6ea
+version=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
 revision=1
 git_url="https://github.com/Ironclad-Project/gcon.git"
 commit=${version}

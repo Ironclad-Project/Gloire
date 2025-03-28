@@ -1,3 +1,15 @@
+diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
+index a460a6d..d578fa2 100644
+--- mlibc-clean/meson.build
++++ mlibc-workdir/meson.build
+@@ -237,6 +237,7 @@ elif host_machine.system() == 'managarm'
+ elif host_machine.system() == 'ironclad'
+ 	rtld_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
++	internal_conf.set10('MLIBC_MMAP_ALLOCATE_DSO', true)
+ 	subdir('sysdeps/ironclad')
+ elif host_machine.system() == 'keyronex'
+ 	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
 diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
 index 8782ae6..bfacac2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp
@@ -23,3 +35,15 @@ index 8782ae6..bfacac2 100644
  	return ret;
  }
  
+diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
+index 80ed3ea..711fad5 100644
+--- mlibc-clean/options/rtld/generic/linker.cpp
++++ mlibc-workdir/options/rtld/generic/linker.cpp
+@@ -518,6 +518,7 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
+ 		return LinkerError::outOfMemory;
+ 	}
+ 
++	mlibc::sys_vm_unmap(mappedAddr, highest_address - object->baseAddress);
+ 	object->baseAddress = reinterpret_cast<uintptr_t>(mappedAddr);
+ #else
+ 	object->baseAddress = libraryBase;

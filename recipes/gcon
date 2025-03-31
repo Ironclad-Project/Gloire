@@ -3,7 +3,7 @@
 name=gcon
 version=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
 revision=1
-git_url="https://github.com/Ironclad-Project/gcon.git"
+git_url="https://codeberg.org/Ironclad/gcon"
 commit=${version}
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"

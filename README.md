@@ -17,7 +17,7 @@ which was the first ocean-going vessel of its kind.
 
 ## Downloading
 
-One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/releases).
+One can grab a pre-built Gloire image [here](https://codeberg.org/Ironclad/Gloire/releases).
 
 ## Running
 
@@ -80,7 +80,7 @@ SATA, IDE, or USB drive.
 ## Contributing
 
 Gloire accepts contributions for new packages or any other kind of changes
-using the pull request system baked into Github. Check our
+using the pull request system baked into Codeberg. Check our
 [contribution guidelines](CONTRIBUTING.md)
 
 ## Building

@@ -7,7 +7,7 @@ set -ex
 
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
-    git clone https://github.com/Ironclad-Project/Ironclad ironclad
+    git clone https://codeberg.org/Ironclad/Ironclad ironclad
     git -C ironclad checkout $(cat .ironclad-commit)
 fi
 

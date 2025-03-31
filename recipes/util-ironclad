@@ -3,7 +3,7 @@
 name=util-ironclad
 version=c3c4449f8d6f1b3411be2dbaa58fefdad90f67a9
 revision=1
-git_url="https://github.com/Ironclad-Project/util-ironclad"
+git_url="https://codeberg.org/Ironclad/util-ironclad"
 commit=${version}
 source_hostdeps="automake autoconf libtool pkg-config"
 source_imagedeps="git"

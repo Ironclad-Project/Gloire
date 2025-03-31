@@ -3,7 +3,7 @@
 name=gloire-install
 version=4a28ac6fbd7e2239d89211fc0ddcb0ffb56b3721
 revision=1
-git_url="https://github.com/Ironclad-Project/gloire-install.git"
+git_url="https://codeberg.org/Ironclad/gloire-install.git"
 commit=${version}
 deps="bash"
 

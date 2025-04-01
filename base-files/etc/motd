@@ -2,8 +2,8 @@ Gloire is an OS built with the [1mIronclad[0m kernel and using [1;31mGNU[0m 
 It is 100% freedom-respecting free/libre software, and distributed following
 the GNU Free System Distribution Guidelines.
 
-Please report any issues at <https://github.com/streaksu/Gloire/issues>, or
+Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>, or
 check the differences between a Linux and Ironclad userland at
-<https://github.com/streaksu/Gloire/wiki/Differences-with-GNU-Linux>.
+<https://codeberg.org/Ironclad/Gloire/wiki/Differences-with-GNU-Linux>.
 
 Thanks in advance, and [1;34mhave a nice time around[0m!

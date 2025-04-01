@@ -77,11 +77,11 @@ Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
 one can burn your gloire image (uncompressing it first if downloaded) to a
 SATA, IDE, or USB drive.
 
-## Contributing
+## Contributing and bug reporting
 
 Gloire accepts contributions for new packages or any other kind of changes
 using the pull request system baked into Codeberg. Check our
-[contribution guidelines](CONTRIBUTING.md)
+[contribution information](CONTRIBUTING.md).
 
 ## Building
 

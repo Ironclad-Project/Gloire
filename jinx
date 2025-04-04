@@ -1053,7 +1053,7 @@ cmd_check_updates() {
 
             printf "checking $pkg ..."
             sleep 1
-            checked_vers=$(wget -q -O - https://repology.org/api/v1/project/$name_to_check | jq '.[] | select(.status=="newest").version' | head -n 1)
+            checked_vers=$(curl -s -A '' https://repology.org/api/v1/project/$name_to_check | jq '.[] | select(.repo=="arch").version' | head -n 1)
             if [ -z "$checked_vers" ]; then
                 printf " is not checkable!\n"
                 continue

@@ -83,6 +83,11 @@ Gloire accepts contributions for new packages or any other kind of changes
 using the pull request system baked into Codeberg. Check our
 [contribution information](CONTRIBUTING.md).
 
+## Joining the community
+
+You can visit our list of community channels on Ironclad's
+[community tab] (https://ironclad-os.org/community.html).
+
 ## Building
 
 The project uses `jinx` as its build system, which is included in the tree.

@@ -1,9 +1,9 @@
 #! /bin/sh
 
 name=freestnd-c-hdrs
-version=87956bbcad0e1934e708223913be53131311342d
+version=4039f438fb1dc1064d8e98f70e1cf122f91b763b
 revision=1
-git_url="https://github.com/osdev0/freestnd-c-hdrs.git"
+git_url="https://codeberg.org/osdev/freestnd-c-hdrs.git"
 commit=${version}
 
 build() {

@@ -11,7 +11,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
 
 prepare() {
-    autotools_recursive_regen
+    autotools_recursive_regen -I"${source_dir}"/m4
 }
 
 configure() {

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2022-2024 mintsuki
+# Copyright (C) 2022-2025 mintsuki
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="7"
+jinx_minor_ver="10"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -58,40 +58,40 @@ if [ "$(id -u)" = "0" ]; then
     die "$0: Jinx does not support running as root."
 fi
 
-debian_snapshot="20241203T084120Z"
+debian_snapshot="20250401T023134Z"
 
 case "$(uname -m)" in
     x86_64)
         debian_architecture=amd64
-        debian_rootfs_b2sum=9e5ca2b7d987c3ac1d463a20fc57fe3bca0189663118d0dd97869dff9e4eb94935f55ede26cba3df89be16cce17a7bc1dbe78f3f0ad646833a323bfc7ca29e82
+        debian_rootfs_b2sum=8153d1895cb9530f469eadab418a9105fd2cdbb93ceaedcfb01e7819ff64a9cff3ee2221b6b7412ba39230338ac2eb012e918fbc5f28662c3913f861b1f6aaa0
         ;;
     aarch64)
         debian_architecture=arm64
-        debian_rootfs_b2sum=196ed3de6038b3b0d71d2edff1949a0fc21ee63f9e302453f3b8df13971fb7e544d728f3b6fd033495669b8a23a9f5141e31d2b74a9e919b3f2d840998cae4c2
+        debian_rootfs_b2sum=07d554637d5492652ed997a07ded2cfc3827e534d07c3a73397817e97ec15a2aa53f8117ba69e572e5519ff8dc9ab3a0a3313d26eeb3197d81247826735020d2
         ;;
     arm*)
         debian_architecture=armhf
-        debian_rootfs_b2sum=14248e197538f3c26ef08d48c0827dcd5dfe0ddb6964fd2766095302ef8f3742f9bd280ec775bc9ffeb985085ba1691275e84c482e26a8c4119dc03acd3b9504
+        debian_rootfs_b2sum=43d08d9119bea19c5de13c33153a371f579a0ebc4c416c06f3df79ccfdb1b037a5d4796144a5bab04a09e59c2c45eb27c0f7a722a7a8c7c5e6d43e4b6e9533ba
         ;;
     i?86)
         debian_architecture=i386
-        debian_rootfs_b2sum=c55b07876f97530a9315f18b62632b89e5839bcb2eb5d4b75b047ce5a392c6a5aec9b24e38e06b994a6a45c8476dad48b8fedbe6576534c1816eb8f329d46cb9
+        debian_rootfs_b2sum=6383a7683c354a50a8d29a740b75af027332649b64c9e5d75fcc7c0136ab1dfae59f0cb0162f5c9e7ba16c9013ea5e42a6f56ca198d39f4ca0e4d75e8a51bc35
         ;;
     mips64el)
         debian_architecture=mips64el
-        debian_rootfs_b2sum=2bf08471d53eeec532cdbe2b0dc0f8d6fc020f8b12a2fe8b0c4f26733525ec1b47be605e8d9e906aa91e22be7cfe68285877130fd51c207efce81833977d74df
+        debian_rootfs_b2sum=b7dde57d789ed66160307aff45a5a0569db4185100314a6c44e26f3aaaaab80794c93e663dfe9dd34091c9daa1b5387d6e458e1a5b6d75b25385ed46e4d66aaf
         ;;
     ppc64le)
         debian_architecture=ppc64el
-        debian_rootfs_b2sum=57028eedb1edaa27497ed4e607ac814256569c31472fb32c37bdc8fc09100471ebda6abbd6d7b3d670ab1d4f23a3dd67c9a9bf0c8f3a5b841920d871699406f4
+        debian_rootfs_b2sum=9ed1f8ca4d0a4f70cf49455a59f969d8f1b65588a0fb40d35d9469066f30c5de9cd4a6278fc5394f5388e9f71d9d5f8fdcdfc77553a540955099d155c17e16f6
         ;;
     riscv64)
         debian_architecture=riscv64
-        debian_rootfs_b2sum=5efb44776a3fae5f14cfdb711b0408b4b0842172dc67ce524a77545467bf163dea07c2017c0a823f3585f36a0ee28b52ec7f4490ed620017ee6e8c33cea722d0
+        debian_rootfs_b2sum=50c5a6a6df49e6501309225f17cdbfb3078109a042b2c97289537e33ae1853dff95d75c02bcf77509af21aad11098300834ffe2642449091ef228c5cc8fdad04
         ;;
     s390x)
         debian_architecture=s390x
-        debian_rootfs_b2sum=776f818f15ca2c506d8a553eb036d7bfea33fe6c74f9134198e0b37e38b3a0eefdf9b8a9862d41dd0baddde610ebd7b626e2019c9359b8c4b43326339382fcf0
+        debian_rootfs_b2sum=334b2bf1a9ab6009236185055c1bf5e6972bdd7751b1269419fdbc0c2e75adec24bc7ef173478157faee53b6d67bbdf9b65ddbfda55b207a7accfbee60b1fd0d
         ;;
     *)
         die "$0: Unsupported architecture: $(uname -m)"
@@ -114,6 +114,27 @@ make_dir() {
     done
 }
 
+script_name="$(basename "$0")"
+script_dir="$(dirname "$0")"
+if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
+    if echo "$0" | grep "/" >/dev/null 2>&1; then
+        script_dir=.
+    else
+        script_dir="$(dirname $(which "${script_name}"))"
+    fi
+fi
+script_dir="$(cd "${script_dir}" && pwd -P)"
+script="${script_dir}/${script_name}"
+
+in_container=false
+if [ "$script" = "//jinx" ]; then
+    in_container=true
+fi
+
+if [ "$in_container" = "false" ] && [ -f ./jinx-parameters ]; then
+    . ./jinx-parameters
+fi
+
 if [ -z "$JINX_PARALLELISM" ]; then
     max_threads_by_mem="$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))"
     parallelism="$(nproc 2>/dev/null || echo 1)"
@@ -130,18 +151,6 @@ else
     base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
 fi
 
-script_name="$(basename "$0")"
-script_dir="$(dirname "$0")"
-if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
-    if echo "$0" | grep "/" >/dev/null 2>&1; then
-        script_dir=.
-    else
-        script_dir="$(dirname $(which "${script_name}"))"
-    fi
-fi
-script_dir="$(cd "${script_dir}" && pwd -P)"
-script="${script_dir}/${script_name}"
-
 if [ -z "$JINX_CONFIG_FILE" ]; then
     JINX_CONFIG_FILE="${base_dir}/jinx-config"
 fi
@@ -151,18 +160,13 @@ fi
 JINX_CONFIG_FILE="$(cd "$(dirname "$JINX_CONFIG_FILE")" && pwd -P)"/"$(basename "$JINX_CONFIG_FILE")"
 
 if [ -z "$JINX_CACHE_DIR" ]; then
-    JINX_CACHE_DIR="${build_dir}/.jinx-cache"
+    JINX_CACHE_DIR="${base_dir}/.jinx-cache"
 fi
 if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
     die "$0: cannot access cache directory parent"
 fi
 make_dir "$JINX_CACHE_DIR"
 JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
-
-in_container=false
-if [ "$script" = "//jinx" ]; then
-    in_container=true
-fi
 
 if [ "$in_container" = "false" ]; then
     make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
@@ -954,7 +958,10 @@ do_host_pkg() {
     cross_compile=yes
     prepare_container
 
-    container_sources_ro=":ro"
+    if ! [ "${allow_source_writes}" == "yes" ]; then
+        container_sources_ro=":ro"
+    fi
+
     if ! [ -d "${base_dir}"/host-builds/$1 ]; then
         run_in_container internal-configure-host $1
     fi
@@ -987,7 +994,10 @@ do_pkg() {
 
     prepare_container
 
-    container_sources_ro=":ro"
+    if ! [ "${allow_source_writes}" == "yes" ]; then
+        container_sources_ro=":ro"
+    fi
+
     if ! [ -d "${base_dir}"/builds/$1 ]; then
         run_in_container internal-configure $1
     fi
@@ -1969,7 +1979,7 @@ case "$1" in
         shift 1
         cmd_build "$@"
         ;;
-    regenerate)
+    regenerate|regen)
         shift 1
         cmd_prepare "$@"
         ;;

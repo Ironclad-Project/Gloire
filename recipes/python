@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=python
-version=3.12.7
+version=3.13.2
 revision=1
 tarball_url="https://www.python.org/ftp/python/${version}/Python-${version}.tar.xz"
-tarball_blake2b="eed8744261cab3b401963ec5187a8b814adb9a18f8d0a6a3d59c027a83cf8408524af9b20204b0a0861d173cc33c45ae37bb1542a1ace3344dc59c649087ff1f"
+tarball_blake2b="79c7dff8a15fd2487d62847a8e654c02433a89887aa4f93819020b60a30587e3ba92b101553d971b59e132677f9f74dfc41cd7c7901db78a7787607ec96c6664"
 source_hostdeps="autoconf automake libtool pkg-config"
 source_deps="autoconf-archive"
 hostdeps="gcc autoconf automake libtool pkg-config"
@@ -22,7 +22,7 @@ configure() {
     autotools_configure \
         --build=$ARCHITECTURE \
         --with-computed-gotos \
-        --enable-optimizations \
+        --disable-optimizations \
         --enable-ipv6 \
         --with-system-expat \
         --enable-loadable-sqlite-extensions \

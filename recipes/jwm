@@ -12,7 +12,7 @@ deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng lib
 
 prepare() {
         AUTOMAKE=true \
-    autotools_recursive_regen
+    autotools_recursive_regen -I"${source_dir}"/m4
 }
 
 configure() {

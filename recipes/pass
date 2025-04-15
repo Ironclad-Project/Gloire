@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=pass
+repology_id=password-store
 version=1.7.4
 revision=1
 git_url="https://git.zx2c4.com/password-store"

@@ -1054,6 +1054,8 @@ cmd_rebuild() {
 cmd_check_updates() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            unset repology_id
+
             . "${base_dir}/recipes/${pkg}"
             if [ -z "$repology_id" ]; then
                 name_to_check="$name"
@@ -1074,8 +1076,6 @@ cmd_check_updates() {
             else
                 printf "\33[2K\r"
             fi
-
-            unset repology_id
         done
     done
 }

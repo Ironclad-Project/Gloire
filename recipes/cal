@@ -1,6 +1,6 @@
 #! /bin/sh
 
-name=ccal
+name=cal
 version=4.1
 revision=1
 tarball_url="https://deb.debian.org/debian/pool/main/c/cal/cal_${version}.orig.tar.xz"

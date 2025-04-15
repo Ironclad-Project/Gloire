@@ -8,6 +8,10 @@ tarball_blake2b="8f8965e2d339f0413e8d1da421ea7556526f39f089a822063d6fdc35b781a7c
 hostdeps="gcc libtool"
 deps="core-libs gettext"
 
+prepare() {
+    autotools_recursive_regen
+}
+
 configure() {
     autotools_configure
 }

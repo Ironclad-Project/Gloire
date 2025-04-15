@@ -1,5 +1,5 @@
 diff --git xfe-clean/configure.ac xfe-workdir/configure.ac
-index 9393875..57a4636 100644
+index 03fd881..9744ce2 100644
 --- xfe-clean/configure.ac
 +++ xfe-workdir/configure.ac
 @@ -69,9 +69,9 @@ AC_FUNC_GETGROUPS
@@ -90,7 +90,7 @@ index 9393875..57a4636 100644
  # Check for startup notification support
  AC_MSG_CHECKING(for startup notification)
 diff --git xfe-clean/src/ArchInputDialog.cpp xfe-workdir/src/ArchInputDialog.cpp
-index 9e0a271..b9c5eec 100644
+index 5d2490e..222bc6c 100644
 --- xfe-clean/src/ArchInputDialog.cpp
 +++ xfe-workdir/src/ArchInputDialog.cpp
 @@ -1,5 +1,5 @@
@@ -101,7 +101,7 @@ index 9e0a271..b9c5eec 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/BrowseInputDialog.cpp xfe-workdir/src/BrowseInputDialog.cpp
-index 4c64e68..f60e3a4 100644
+index 346776f..861158f 100644
 --- xfe-clean/src/BrowseInputDialog.cpp
 +++ xfe-workdir/src/BrowseInputDialog.cpp
 @@ -1,5 +1,5 @@
@@ -112,7 +112,7 @@ index 4c64e68..f60e3a4 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/CommandWindow.cpp xfe-workdir/src/CommandWindow.cpp
-index d9a9541..95b5fb2 100644
+index 7f6ae02..c29c8b1 100644
 --- xfe-clean/src/CommandWindow.cpp
 +++ xfe-workdir/src/CommandWindow.cpp
 @@ -5,7 +5,7 @@
@@ -125,7 +125,7 @@ index d9a9541..95b5fb2 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/DialogBox.cpp xfe-workdir/src/DialogBox.cpp
-index e5fad00..c2c6b0f 100644
+index a58d9c0..87e93bb 100644
 --- xfe-clean/src/DialogBox.cpp
 +++ xfe-workdir/src/DialogBox.cpp
 @@ -1,4 +1,5 @@
@@ -135,7 +135,7 @@ index e5fad00..c2c6b0f 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/DirHistBox.cpp xfe-workdir/src/DirHistBox.cpp
-index 1708b05..958efcb 100644
+index 6e0c24f..6e3739c 100644
 --- xfe-clean/src/DirHistBox.cpp
 +++ xfe-workdir/src/DirHistBox.cpp
 @@ -1,6 +1,6 @@
@@ -147,7 +147,7 @@ index 1708b05..958efcb 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/DirList.cpp xfe-workdir/src/DirList.cpp
-index c750a49..7d07579 100644
+index 8113c52..bc9d7ed 100644
 --- xfe-clean/src/DirList.cpp
 +++ xfe-workdir/src/DirList.cpp
 @@ -1,7 +1,7 @@
@@ -160,7 +160,7 @@ index c750a49..7d07579 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/DirPanel.cpp xfe-workdir/src/DirPanel.cpp
-index 5be5263..ecb219c 100644
+index 3fbac85..10561cd 100644
 --- xfe-clean/src/DirPanel.cpp
 +++ xfe-workdir/src/DirPanel.cpp
 @@ -1,3 +1,4 @@
@@ -169,7 +169,7 @@ index 5be5263..ecb219c 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/ExecuteBox.cpp xfe-workdir/src/ExecuteBox.cpp
-index 83c201f..3b403aa 100644
+index 10fa3f0..d730c33 100644
 --- xfe-clean/src/ExecuteBox.cpp
 +++ xfe-workdir/src/ExecuteBox.cpp
 @@ -1,3 +1,4 @@
@@ -178,7 +178,7 @@ index 83c201f..3b403aa 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/File.cpp xfe-workdir/src/File.cpp
-index e42092a..a4d8a65 100644
+index 118415a..5a5f070 100644
 --- xfe-clean/src/File.cpp
 +++ xfe-workdir/src/File.cpp
 @@ -1,5 +1,5 @@
@@ -189,7 +189,7 @@ index e42092a..a4d8a65 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/FileDialog.cpp xfe-workdir/src/FileDialog.cpp
-index 65f6085..b8bfd72 100644
+index 4cb7466..d734129 100644
 --- xfe-clean/src/FileDialog.cpp
 +++ xfe-workdir/src/FileDialog.cpp
 @@ -1,5 +1,5 @@
@@ -200,7 +200,7 @@ index 65f6085..b8bfd72 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/FileDict.cpp xfe-workdir/src/FileDict.cpp
-index 8a0f915..3e33bfd 100644
+index 1a76655..37f1bca 100644
 --- xfe-clean/src/FileDict.cpp
 +++ xfe-workdir/src/FileDict.cpp
 @@ -1,5 +1,5 @@
@@ -211,7 +211,7 @@ index 8a0f915..3e33bfd 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/FileList.cpp xfe-workdir/src/FileList.cpp
-index fb335e1..8639b8a 100644
+index d3f514c..5e7b408 100644
 --- xfe-clean/src/FileList.cpp
 +++ xfe-workdir/src/FileList.cpp
 @@ -2,7 +2,7 @@
@@ -224,7 +224,7 @@ index fb335e1..8639b8a 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/FilePanel.cpp xfe-workdir/src/FilePanel.cpp
-index 403b7aa..1eecd46 100644
+index 8e6d158..92f73c5 100644
 --- xfe-clean/src/FilePanel.cpp
 +++ xfe-workdir/src/FilePanel.cpp
 @@ -1,3 +1,4 @@
@@ -233,7 +233,7 @@ index 403b7aa..1eecd46 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/FontDialog.cpp xfe-workdir/src/FontDialog.cpp
-index 0fd78a1..9df1478 100644
+index 7fbfe06..95baf56 100644
 --- xfe-clean/src/FontDialog.cpp
 +++ xfe-workdir/src/FontDialog.cpp
 @@ -1,5 +1,5 @@
@@ -244,7 +244,7 @@ index 0fd78a1..9df1478 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/HistInputDialog.cpp xfe-workdir/src/HistInputDialog.cpp
-index 7faadcc..3df5161 100644
+index c5b8d39..4c4e564 100644
 --- xfe-clean/src/HistInputDialog.cpp
 +++ xfe-workdir/src/HistInputDialog.cpp
 @@ -1,5 +1,5 @@
@@ -255,7 +255,7 @@ index 7faadcc..3df5161 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/IconList.cpp xfe-workdir/src/IconList.cpp
-index 364fdf9..00ca802 100644
+index 3846914..1242618 100644
 --- xfe-clean/src/IconList.cpp
 +++ xfe-workdir/src/IconList.cpp
 @@ -1,4 +1,5 @@
@@ -265,7 +265,7 @@ index 364fdf9..00ca802 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/InputDialog.cpp xfe-workdir/src/InputDialog.cpp
-index 27f4d77..fce88f5 100644
+index 1999aff..744261f 100644
 --- xfe-clean/src/InputDialog.cpp
 +++ xfe-workdir/src/InputDialog.cpp
 @@ -1,5 +1,5 @@
@@ -276,7 +276,7 @@ index 27f4d77..fce88f5 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/MessageBox.cpp xfe-workdir/src/MessageBox.cpp
-index 768a62e..6516589 100644
+index 7bf48d3..ccf00fb 100644
 --- xfe-clean/src/MessageBox.cpp
 +++ xfe-workdir/src/MessageBox.cpp
 @@ -1,6 +1,6 @@
@@ -288,7 +288,7 @@ index 768a62e..6516589 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/OverwriteBox.cpp xfe-workdir/src/OverwriteBox.cpp
-index 2109677..7ec9f90 100644
+index d352957..9c5e3f4 100644
 --- xfe-clean/src/OverwriteBox.cpp
 +++ xfe-workdir/src/OverwriteBox.cpp
 @@ -1,3 +1,4 @@
@@ -297,7 +297,7 @@ index 2109677..7ec9f90 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/Preferences.cpp xfe-workdir/src/Preferences.cpp
-index df00073..c8b71ca 100644
+index c7c49ca..2dec50a 100644
 --- xfe-clean/src/Preferences.cpp
 +++ xfe-workdir/src/Preferences.cpp
 @@ -1,5 +1,5 @@
@@ -308,7 +308,7 @@ index df00073..c8b71ca 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/Properties.cpp xfe-workdir/src/Properties.cpp
-index fe1fb6f..b2b9555 100644
+index d17d0d8..92c1e35 100644
 --- xfe-clean/src/Properties.cpp
 +++ xfe-workdir/src/Properties.cpp
 @@ -1,5 +1,5 @@
@@ -319,7 +319,7 @@ index fe1fb6f..b2b9555 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/SearchPanel.cpp xfe-workdir/src/SearchPanel.cpp
-index 815ec5b..0c766e7 100644
+index 6cc65a2..56d5151 100644
 --- xfe-clean/src/SearchPanel.cpp
 +++ xfe-workdir/src/SearchPanel.cpp
 @@ -1,4 +1,5 @@
@@ -329,7 +329,7 @@ index 815ec5b..0c766e7 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/SearchWindow.cpp xfe-workdir/src/SearchWindow.cpp
-index c46637d..3dd6731 100644
+index f7fa356..5347e01 100644
 --- xfe-clean/src/SearchWindow.cpp
 +++ xfe-workdir/src/SearchWindow.cpp
 @@ -1,4 +1,5 @@
@@ -339,7 +339,7 @@ index c46637d..3dd6731 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/TextWindow.cpp xfe-workdir/src/TextWindow.cpp
-index 0cb00ab..c9a4160 100644
+index 33f2f84..85b5d99 100644
 --- xfe-clean/src/TextWindow.cpp
 +++ xfe-workdir/src/TextWindow.cpp
 @@ -1,4 +1,5 @@
@@ -349,7 +349,7 @@ index 0cb00ab..c9a4160 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/WriteWindow.cpp xfe-workdir/src/WriteWindow.cpp
-index a45d151..3ee2067 100644
+index 28b5219..0bb1135 100644
 --- xfe-clean/src/WriteWindow.cpp
 +++ xfe-workdir/src/WriteWindow.cpp
 @@ -1,6 +1,6 @@
@@ -361,7 +361,7 @@ index a45d151..3ee2067 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/XFileExplorer.cpp xfe-workdir/src/XFileExplorer.cpp
-index 7ef91f0..5c7ed17 100644
+index 54b867f..bf7a89a 100644
 --- xfe-clean/src/XFileExplorer.cpp
 +++ xfe-workdir/src/XFileExplorer.cpp
 @@ -1,3 +1,4 @@
@@ -370,7 +370,7 @@ index 7ef91f0..5c7ed17 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/XFileImage.cpp xfe-workdir/src/XFileImage.cpp
-index 01a045c..5d0f7d4 100644
+index af06bb2..e287860 100644
 --- xfe-clean/src/XFileImage.cpp
 +++ xfe-workdir/src/XFileImage.cpp
 @@ -1,6 +1,6 @@
@@ -382,7 +382,7 @@ index 01a045c..5d0f7d4 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/XFilePackage.cpp xfe-workdir/src/XFilePackage.cpp
-index 28cd76e..acf1eaf 100644
+index 99a288f..2b768c3 100644
 --- xfe-clean/src/XFilePackage.cpp
 +++ xfe-workdir/src/XFilePackage.cpp
 @@ -1,3 +1,4 @@
@@ -391,7 +391,7 @@ index 28cd76e..acf1eaf 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/XFileWrite.cpp xfe-workdir/src/XFileWrite.cpp
-index 870eeeb..9bed875 100644
+index 9d666a1..244aa97 100644
 --- xfe-clean/src/XFileWrite.cpp
 +++ xfe-workdir/src/XFileWrite.cpp
 @@ -1,6 +1,6 @@
@@ -403,7 +403,7 @@ index 870eeeb..9bed875 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/icons.cpp xfe-workdir/src/icons.cpp
-index 7754362..f8b74eb 100644
+index d473a08..a32a01e 100644
 --- xfe-clean/src/icons.cpp
 +++ xfe-workdir/src/icons.cpp
 @@ -1,5 +1,5 @@
@@ -414,7 +414,7 @@ index 7754362..f8b74eb 100644
  #include "i18n.h"
  
 diff --git xfe-clean/src/main.cpp xfe-workdir/src/main.cpp
-index e8e58ea..46b5e0c 100644
+index 5996aca..f78a43c 100644
 --- xfe-clean/src/main.cpp
 +++ xfe-workdir/src/main.cpp
 @@ -1,3 +1,4 @@
@@ -422,8 +422,33 @@ index e8e58ea..46b5e0c 100644
  #include "config.h"
  #include "i18n.h"
  
+@@ -389,6 +390,7 @@ int main(int argc, char* argv[])
+     textdomain(PACKAGE);
+ #endif
+ 
++    FXuint pkg_format;
+ #if defined(linux)
+     // For package query on Linux systems, try to guess if the default package format is deb or rpm:
+     //   - if dpkg exists then the system uses deb packages
+@@ -398,7 +400,6 @@ int main(int argc, char* argv[])
+     cmd = "dpkg --version";
+     FXString str = xf_getcommandoutput(cmd);
+ 
+-    FXuint pkg_format;
+     if (str.find("Debian") != -1)
+     {
+         pkg_format = DEB_PKG; // deb based system
+@@ -417,6 +418,8 @@ int main(int argc, char* argv[])
+             pkg_format = OTHER_PKG; // other (unsupported) package system
+         }
+     }
++#else
++    pkg_format = OTHER_PKG;
+ #endif
+ 
+     // Parse basic arguments
 diff --git xfe-clean/src/startupnotification.cpp xfe-workdir/src/startupnotification.cpp
-index 27c0b7a..d16df00 100644
+index 6a8a6b1..93ec81a 100644
 --- xfe-clean/src/startupnotification.cpp
 +++ xfe-workdir/src/startupnotification.cpp
 @@ -1,3 +1,4 @@
@@ -431,8 +456,24 @@ index 27c0b7a..d16df00 100644
  #include "config.h"
  #include "i18n.h"
  
+diff --git xfe-clean/src/xfedefs.h xfe-workdir/src/xfedefs.h
+index 2c30d42..2158104 100644
+--- xfe-clean/src/xfedefs.h
++++ xfe-workdir/src/xfedefs.h
+@@ -366,9 +366,9 @@ enum
+ #define MTAB_PATH    "/proc/mounts"
+ #endif
+ 
++#endif
++
+ // Package format
+ #define DEB_PKG      0
+ #define RPM_PKG      1
+ #define OTHER_PKG    2
+-
+-#endif
 diff --git xfe-clean/src/xfeutils.cpp xfe-workdir/src/xfeutils.cpp
-index ad7aeba..4572a12 100644
+index e4f070f..284b1e6 100644
 --- xfe-clean/src/xfeutils.cpp
 +++ xfe-workdir/src/xfeutils.cpp
 @@ -3,7 +3,7 @@
@@ -445,7 +486,7 @@ index ad7aeba..4572a12 100644
  #include "i18n.h"
  
 diff --git xfe-clean/st/st.c xfe-workdir/st/st.c
-index a80d8e9..4673220 100644
+index a80d8e9..72fefc5 100644
 --- xfe-clean/st/st.c
 +++ xfe-workdir/st/st.c
 @@ -22,17 +22,22 @@

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mailutils
-version=3.18
+version=3.19
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/mailutils/mailutils-${version}.tar.xz"
-tarball_blake2b="7866a9c0419daaeaf277f266893030cda771804c636ce143e36a9cd1823280c2662b0696825387b3b0727115e0ab131ca376bd99445d4b4080f66289dca11316"
+tarball_blake2b="a9d7147b5ed1a7614ae284b8655b467364ca521dd1efe275dda8c8b512399c3044447a5b00263a5e1f5e74cf7a7d1a805b6f4a2d4f27fb0962269de490050f02"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"

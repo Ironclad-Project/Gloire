@@ -8,7 +8,7 @@ tarball_blake2b="2c43fd7faeb4faf9195e9647b9b0fd657b49d51f6e43651532afb4b66cfc1db
 source_hostdeps="automake autoconf libtool pkg-config"
 source_deps="gettext"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng librsvg"
+deps="core-libs libx11 libxft libxmu libjpeg-turbo libxpm libxinerama libpng"
 
 prepare() {
         AUTOMAKE=true \

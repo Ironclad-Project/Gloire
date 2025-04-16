@@ -1,7 +1,8 @@
 #! /bin/sh
 
 name=gtk+-3
-repology_id="gtk+3.0"
+repology_id=gtk
+repology_srcname=gtk3
 version=3.24.49
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/gtk.git"

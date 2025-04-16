@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=freestnd-cxx-hdrs
+skip_pkg_check=yes
 version=85096df5361a4d7ef2ce46947e555ec248c2858e
 revision=1
 git_url="https://codeberg.org/osdev/freestnd-cxx-hdrs.git"

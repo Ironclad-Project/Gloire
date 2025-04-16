@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=gcon
+skip_pkg_check=yes
 version=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
 revision=1
 git_url="https://codeberg.org/Ironclad/gcon"

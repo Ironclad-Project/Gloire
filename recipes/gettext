@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=gettext
+repology_srcname=gettext
 version=0.24
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/gettext/gettext-${version}.tar.xz"

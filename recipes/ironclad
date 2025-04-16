@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=ironclad
+skip_pkg_check=yes
 version=$(cat "${base_dir}"/.ironclad-commit)
 revision=1
 source_dir="ironclad"

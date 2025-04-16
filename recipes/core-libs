@@ -1,5 +1,6 @@
 #! /bin/sh
 
 name=core-libs
+skip_pkg_check=yes
 revision=1
 deps="mlibc libgcc libstdc++ libintl libiconv libxcrypt tzdata"

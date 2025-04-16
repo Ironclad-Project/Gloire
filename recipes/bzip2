@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=bzip2
+repology_srcname=bzip2
 version=1.0.8
 revision=1
 tarball_url="https://sourceware.org/ftp/bzip2/bzip2-${version}.tar.gz"

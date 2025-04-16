@@ -1,0 +1,19 @@
+#! /bin/sh
+
+name=gtk-doc
+from_source=gtk-doc
+imagedeps="meson ninja-build libglib2.0-dev build-essential python3-pygments itstool"
+
+configure() {
+    meson setup "${source_dir}" --prefix="${prefix}"
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip
+}

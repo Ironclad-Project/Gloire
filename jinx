@@ -958,7 +958,7 @@ do_host_pkg() {
     cross_compile=yes
     prepare_container
 
-    if ! [ "${allow_source_writes}" == "yes" ]; then
+    if ! [ "${allow_source_writes}" = "yes" ]; then
         container_sources_ro=":ro"
     fi
 
@@ -994,7 +994,7 @@ do_pkg() {
 
     prepare_container
 
-    if ! [ "${allow_source_writes}" == "yes" ]; then
+    if ! [ "${allow_source_writes}" = "yes" ]; then
         container_sources_ro=":ro"
     fi
 
@@ -1096,7 +1096,7 @@ cmd_check_updates() {
                 continue
             fi
 
-            checked_vers="$(echo "$checked_vers" | sed 's/"//g')"
+            checked_vers="$(echo "$checked_vers" | sed 's/\"//g')"
 
             if ! [ "$version" = "$checked_vers" ]; then
                 if ! [ "$(printf "$checked_vers\n$version\n" | sort -Vr | head -n 1)" = "$version" ]; then

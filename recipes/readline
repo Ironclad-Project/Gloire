@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=readline
-_patch=013
+_patch=13
 version=8.2p${_patch}
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz"
@@ -13,7 +13,7 @@ hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs ncurses"
 
 prepare() {
-    for p in $(seq -w ${_patch}); do
+    for p in $(seq -w 0${_patch}); do
         curl -L https://ftp.gnu.org/gnu/readline/readline-8.2-patches/readline82-$p | patch -p0
     done
 

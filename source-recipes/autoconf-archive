@@ -1,0 +1,15 @@
+#! /bin/sh
+
+name=autoconf-archive
+version=2023.02.20
+revision=1
+tarball_url="https://github.com/autoconf-archive/autoconf-archive/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="eb521c824b4f8875de40dee0acb75097a92fd4b64ca03c7759e671f9565e0155b6eb82287ec02ebe3e700621f62261b7f0912c7dab593401277b9eb83c5a01f1"
+# imagedeps="meson ninja-build libglib2.0-dev"
+hostdeps="gcc pkg-config autoconf automake"
+# deps="core-libs"
+
+prepare() {
+        LIBTOOLIZE=true \
+    autotools_recursive_regen
+}

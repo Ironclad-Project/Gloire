@@ -48,7 +48,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..4d2e6cc 100644
+index 68e6fee..ece0a11 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,8 @@ extern "C" void __mlibc_sigret(void);
@@ -66,3 +66,16 @@ index 68e6fee..4d2e6cc 100644
  }
  
  void sys_libc_panic() {
+@@ -723,6 +718,12 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
+ 	}
+ }
+ 
++int sys_socketpair(int domain, int type, int protocol, int *fds) {
++	int ret = sys_socket(domain, type, protocol, &fds[0]);
++	if (ret) return ret;
++	return sys_socket(domain, type, protocol, &fds[1]);
++}
++
+ uid_t sys_getuid() {
+ 	uint64_t ret, errno;
+ 	SYSCALL0(SYSCALL_GETUID);

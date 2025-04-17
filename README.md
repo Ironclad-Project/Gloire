@@ -44,7 +44,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 6G -M q35 -drive format=raw,file=gloire.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -drive format=raw,file=gloire.iso -serial stdio
 ```
 
 Where `gloire.iso` is your image of choice.

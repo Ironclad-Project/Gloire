@@ -1,9 +1,9 @@
 name=llvm-libs
 repology_id="llvm"
-version=18.1.7
+version=20.1.2
 revision=1
 tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"
-tarball_blake2b="b8c37bd131fb5f3131bfab4fbad7aa811079ca10723faa14779253bc62b1ee08d4e04650e1da883297ed88a62d518b868a1f13cf57d03233254fd01209da5c02"
+tarball_blake2b="90be4c8b69d44bc3a295f3f63081f999cf35d05e9157ab104d403a5d5b6c3ff97b57a89598d2ec0413988f93a23f97f485b2216bbf0630cade754e9830246621"
 imagedeps="build-essential cmake ninja-build git"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses zlib zstd libffi"

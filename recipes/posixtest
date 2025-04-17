@@ -2,7 +2,7 @@
 
 name=posixtest
 skip_pkg_check=yes
-version=c2d0add19b99e7b02550537c9ca2cab8931277db
+version=ea777bb357dda6ac13b4d90e058b0b78b285da00
 revision=1
 git_url="https://codeberg.org/Ironclad/posixtest"
 commit=${version}

@@ -1,5 +1,5 @@
 diff --git binutils-clean/bfd/config.bfd binutils-workdir/bfd/config.bfd
-index 6553aac..188a8e0 100644
+index 0d79011..9cc2679 100644
 --- binutils-clean/bfd/config.bfd
 +++ binutils-workdir/bfd/config.bfd
 @@ -665,6 +665,11 @@ case "${targ}" in
@@ -27,7 +27,7 @@ index 6553aac..188a8e0 100644
    i[3-7]86-*-lynxos*)
      targ_defvec=i386_elf32_vec
 diff --git binutils-clean/configure.ac binutils-workdir/configure.ac
-index eb5b3b3..964ba0c 100644
+index 659388f..4e156b8 100644
 --- binutils-clean/configure.ac
 +++ binutils-workdir/configure.ac
 @@ -351,7 +351,7 @@ case "${ENABLE_GOLD}" in
@@ -40,7 +40,7 @@ index eb5b3b3..964ba0c 100644
            *-*-linux*aout* | *-*-linux*oldld*)
              ;;
 diff --git binutils-clean/gas/configure.tgt binutils-workdir/gas/configure.tgt
-index d58f218..c57d177 100644
+index 7c81bff..bb3a256 100644
 --- binutils-clean/gas/configure.tgt
 +++ binutils-workdir/gas/configure.tgt
 @@ -229,6 +229,7 @@ case ${generic_target} in
@@ -52,7 +52,7 @@ index d58f218..c57d177 100644
    i386-*-haiku*)			fmt=elf em=haiku ;;
    i386-*-genode*)			fmt=elf ;;
 diff --git binutils-clean/gprofng/libcollector/configure.ac binutils-workdir/gprofng/libcollector/configure.ac
-index b923645..4df7b1c 100644
+index 3205da3..be5d23c 100644
 --- binutils-clean/gprofng/libcollector/configure.ac
 +++ binutils-workdir/gprofng/libcollector/configure.ac
 @@ -18,7 +18,7 @@ dnl <http://www.gnu.org/licenses/>.
@@ -65,7 +65,7 @@ index b923645..4df7b1c 100644
  AC_CANONICAL_TARGET
  AM_INIT_AUTOMAKE
 diff --git binutils-clean/ld/configure.tgt binutils-workdir/ld/configure.tgt
-index f937f78..10fbfe5 100644
+index ea01ccf..ce1b332 100644
 --- binutils-clean/ld/configure.tgt
 +++ binutils-workdir/ld/configure.tgt
 @@ -384,6 +384,9 @@ i[3-7]86-*-linux-*)	targ_emul=elf_i386
@@ -78,7 +78,7 @@ index f937f78..10fbfe5 100644
  i[3-7]86-*-solaris2*)	targ_emul=elf_i386_sol2
  			targ_extra_emuls="elf_i386_ldso elf_i386 elf_iamcu elf_x86_64_sol2 elf_x86_64"
  			targ_extra_libpath=$targ_extra_emuls
-@@ -1023,6 +1026,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
+@@ -1019,6 +1022,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
  x86_64-*-redox*)	targ_emul=elf_x86_64
  			targ_extra_emuls=elf_i386
  			;;

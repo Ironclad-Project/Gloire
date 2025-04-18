@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.4"
-jinx_minor_ver="10"
+jinx_minor_ver="11"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1889,7 +1889,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         chmod 755 "$f"
     done
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen file findutils flex gawk gettext grep gzip xsltproc m4 make patch perl python3 sed tar texinfo w3m which xmlto xz-utils
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen file findutils flex gawk gettext grep gzip xsltproc m4 make patch perl python3 sed tar texinfo w3m which xmlto xz-utils zstd
 
     # Build xstow
     XSTOW_BUILDENV="$JINX_CACHE_DIR/xstow_buildenv"

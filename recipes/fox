@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=fox
+repology_id=fox-toolkit
 version=1.6.59
 revision=1
 tarball_url="http://fox-toolkit.org/ftp/fox-${version}.tar.gz"

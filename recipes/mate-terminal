@@ -1,0 +1,42 @@
+#! /bin/sh
+
+name=mate-terminal
+version=1.28.1
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-terminal/releases/download/v${version}/mate-terminal-${version}.tar.xz"
+tarball_blake2b="9bf50305426758204782ffa8921accd506c5859a10dedef7ee4d74ea35560c5f6cebfbce64ee6c42c195d140af930bb133d38e354f67ff3a17121eff3fb9b7f7"
+allow_network=yes
+imagedeps="meson ninja-build libglib2.0-dev git itstool"
+hostdeps="gcc pkg-config"
+deps="core-libs at-spi2-core glib dconf gdk-pixbuf libice libsm libx11 pango gtk+-3 vte mate-desktop"
+
+configure() {
+    cp -rp "${source_dir}"/. ./
+
+    mkdir build && cd build
+
+        meson_source_dir=.. \
+    meson_configure \
+        # -Da11y=true \
+        # -Ddebug=false \
+        # -Ddocs=false \
+        # -Dgir=false \
+        # -Dfribidi=true \
+        # -Dglade=true \
+        # -Dgnutls=false \
+        # -Dgtk3=true \
+        # -Dgtk4=false \
+        # -Dicu=true \
+        # -D_systemd=false \
+        # -Dvapi=false
+}
+
+build() {
+    ( cd build && ninja -j${parallelism} )
+}
+
+package() {
+    ( cd build && DESTDIR="${dest_dir}" ninja install )
+
+    post_package_strip
+}

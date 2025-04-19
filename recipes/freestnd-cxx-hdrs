@@ -2,10 +2,10 @@
 
 name=freestnd-cxx-hdrs
 skip_pkg_check=yes
-version=85096df5361a4d7ef2ce46947e555ec248c2858e
+version=0.0git
 revision=1
 git_url="https://codeberg.org/osdev/freestnd-cxx-hdrs.git"
-commit=${version}
+commit=85096df5361a4d7ef2ce46947e555ec248c2858e
 
 build() {
     cp -rpf "${source_dir}"/. ./

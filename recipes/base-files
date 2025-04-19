@@ -7,5 +7,12 @@ revision=1
 source_dir="base-files"
 
 package() {
-    cp -rpv ${source_dir}/. "${dest_dir}"/
+    cp -r ${source_dir}/. "${dest_dir}"/
+
+    chown -R 1000:1000 "${dest_dir}"/home/user
+
+    chmod 750 "${dest_dir}"/root
+    chmod 777 "${dest_dir}"/tmp
+    chmod 777 "${dest_dir}"/run
+    chmod 710 "${dest_dir}"/home/user
 }

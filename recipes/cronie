@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=cronie
-version=293bdf46f585f9d82f71ee6cbc8dc7596fb7ec83
+version=0.0git
 revision=1
 git_url="https://github.com/cronie-crond/cronie.git"
-commit=${version}
+commit=293bdf46f585f9d82f71ee6cbc8dc7596fb7ec83
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
 deps="core-libs"
@@ -24,6 +24,7 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
     mkdir -pv "${dest_dir}"/var/spool/cron
+    touch "${dest_dir}"/var/spool/cron/.keep
 
     post_package_strip
 }

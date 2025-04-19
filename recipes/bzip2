@@ -24,7 +24,7 @@ package() {
     ln -sf bzip2 "${dest_dir}${prefix}/bin/bunzip2"
     ln -sf bzip2 "${dest_dir}${prefix}/bin/bzcat"
 
-    cp -a libbz2.so* "${dest_dir}${prefix}/lib/"
+    cp -dR libbz2.so* "${dest_dir}${prefix}/lib/"
     ln -s libbz2.so.${version} "${dest_dir}${prefix}/lib/libbz2.so"
     ln -s libbz2.so.${version} "${dest_dir}${prefix}/lib/libbz2.so.1"
 

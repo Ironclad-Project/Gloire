@@ -2,10 +2,10 @@
 
 name=gloire-install
 skip_pkg_check=yes
-version=4a28ac6fbd7e2239d89211fc0ddcb0ffb56b3721
+version=0.0git
 revision=1
 git_url="https://codeberg.org/Ironclad/gloire-install.git"
-commit=${version}
+commit=4a28ac6fbd7e2239d89211fc0ddcb0ffb56b3721
 deps="bash"
 
 package() {

@@ -2,10 +2,10 @@
 
 name=posixtest
 skip_pkg_check=yes
-version=4cf97b0d46c330edfb440ee2558bc8c49b4abe1a
+version=0.0git
 revision=1
 git_url="https://codeberg.org/Ironclad/posixtest"
-commit=${version}
+commit=4cf97b0d46c330edfb440ee2558bc8c49b4abe1a
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_allow_network="yes"

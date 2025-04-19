@@ -2,10 +2,10 @@
 
 name=mlibc
 skip_pkg_check=yes
-version=fe37a029eb06beb85cc381046e44116ce034bffa
+version=0.0git
 revision=1
 git_url="https://github.com/managarm/mlibc.git"
-commit=${version}
+commit=fe37a029eb06beb85cc381046e44116ce034bffa
 imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"

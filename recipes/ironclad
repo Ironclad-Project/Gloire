@@ -2,7 +2,7 @@
 
 name=ironclad
 skip_pkg_check=yes
-version=$(cat "${base_dir}"/.ironclad-commit)
+version=0.0git
 revision=1
 source_dir="ironclad"
 source_imagedeps="git"

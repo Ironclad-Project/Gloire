@@ -33,15 +33,23 @@ export LC_COLLATE
 
 umask 0022
 
-jinx_major_ver="0.4"
-jinx_minor_ver="11"
+jinx_major_ver="0.5"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
+
+debian_snapshot="20250401T023134Z"
+
+XBPS_VERSION=0.59.2
 
 die() {
     echo "$1"
     exit 1
 }
+
+if [ -z "$1" ]; then
+    die "$0: no command specified."
+fi
 
 case "$1" in
     version|--version)
@@ -54,11 +62,21 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-if [ "$(id -u)" = "0" ]; then
-    die "$0: Jinx does not support running as root."
-fi
-
-debian_snapshot="20250401T023134Z"
+case "$1" in
+    install)
+        ;;
+    *)
+        if [ "$(id -u)" = "0" ]; then
+            case "$LD_LIBRARY_PATH" in
+                *libfakeroot*)
+                    ;;
+                *)
+                    die "$0: Jinx does not support running as root."
+                    ;;
+            esac
+        fi
+        ;;
+esac
 
 case "$(uname -m)" in
     x86_64)
@@ -97,8 +115,6 @@ case "$(uname -m)" in
         die "$0: Unsupported architecture: $(uname -m)"
         ;;
 esac
-
-XSTOW_VERSION=1.1.1
 
 make_dir() {
     for d in "$@"; do
@@ -168,14 +184,16 @@ fi
 make_dir "$JINX_CACHE_DIR"
 JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
+XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
+
 if [ "$in_container" = "false" ]; then
     make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
 
 apt_cache="$JINX_CACHE_DIR/apt-cache"
 
-temp_collect=""
-trap 'eval rm -rf "$temp_collect"' EXIT
+temp_collect="${build_dir}/.jinx-errcode"
+trap 'echo $? >"${build_dir}"/.jinx-errcode; eval rm -rf "$temp_collect"' EXIT
 
 make_temp() {
     tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
@@ -200,7 +218,17 @@ build_deps() {
     for dep in ${deps} ${builddeps}; do
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
-        [ -d "${build_dir}"/pkgs/${dep} ] && continue
+        (
+            set -e
+            unset version
+            unset from_source
+            . "${base_dir}"/recipes/${dep}
+            if ! [ -z "${from_source}" ]; then
+                version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+            fi
+
+            [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]
+        ) && continue
 
         "${script}" build ${dep}
     done
@@ -313,38 +341,19 @@ prepare_container() {
     make_temp -d
     sysroot_dir="${tmp}"
 
-    rm -rf "$JINX_CACHE_DIR"/saved-info-dir
     for dep in $(cat "${deps_file}"); do
-        if [ -f "${build_dir}"/pkgs/${dep}/usr/share/info/dir ]; then
-            mv "${build_dir}"/pkgs/${dep}/usr/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
-        fi
-        copy_failed=0
-        check_duplicates "${build_dir}"/pkgs/${dep} "${sysroot_dir}" || copy_failed=1
-        cp -Pplr "${build_dir}"/pkgs/${dep}/. "${sysroot_dir}"/
-        if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
-            mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/pkgs/${dep}/usr/share/info/dir
-        fi
-        if [ "$copy_failed" = 1 ]; then
-            die "jinx: error: Dependency '${dep}' contains file confilcts"
-        fi
+        LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
+            "${JINX_CACHE_DIR}"/xbps-bin/bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
         imgroot="${sysroot_dir}"
     else
         for hostdep in $(cat "${hostdeps_file}"); do
-            if [ -f "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir ]; then
-                mv "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir "$JINX_CACHE_DIR"/saved-info-dir
-            fi
-            copy_failed=0
-            check_duplicates "${build_dir}"/host-pkgs/${hostdep}/usr/local "${container_pkgs}" || copy_failed=1
-            cp -Pplr "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
-            if [ -f "$JINX_CACHE_DIR"/saved-info-dir ]; then
-                mv "$JINX_CACHE_DIR"/saved-info-dir "${build_dir}"/host-pkgs/${hostdep}/usr/local/share/info/dir
-            fi
-            if [ "$copy_failed" = 1 ]; then
+            if ! check_duplicates "${build_dir}"/host-pkgs/${hostdep}/usr/local "${container_pkgs}"; then
                 die "jinx: error: Dependency '${hostdep}' contains file confilcts"
             fi
+            cp -Pplr "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
         done
 
         imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
@@ -458,7 +467,7 @@ run_in_container() {
         ${unshare_net_flag} \
         --workdir / \
         -- \
-        /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
+        /bin/bash -c "cd /build_dir && ${use_fakeroot} /bin/bash /jinx $run_in_cont_argvar"
 
     rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
@@ -736,12 +745,13 @@ do_package_host() {
 
     cd "${build_dir}"/host-builds/${name}
     package
-    cd "${base_dir}"
 
     # Remove libtool files
     for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
         rm -rvf $i
     done
+
+    cd "${base_dir}"
 }
 
 do_configure() {
@@ -839,12 +849,28 @@ do_package() {
 
     cd "${build_dir}"/builds/${name}
     package
-    cd "${base_dir}"
 
     # Remove libtool files
     for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
         rm -rvf $i
     done
+
+    xbps_deps=""
+    for dep in ${deps}; do
+        xbps_deps="${xbps_deps} ${dep}>=0.0"
+    done
+
+    cd "${build_dir}"/pkgs
+    "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-create \
+        -A $JINX_ARCH \
+        -s ${name} \
+        -n ${name}-${version}_${revision} \
+        -D "${xbps_deps}" \
+        "${dest_dir}"
+
+    rm -rf "${dest_dir}"
+
+    cd "${base_dir}"
 }
 
 precont_patch() {
@@ -983,9 +1009,10 @@ do_pkg() {
     echo "* building package: $name"
 
     if ! [ -z "${from_source}" ]; then
-        from_source="$(. "${base_dir}"/recipes/$1 && echo "$from_source")"
         [ -f "${base_dir}"/sources/${from_source}.prepared ] || \
             "${script}" internal-source "${from_source}"
+
+        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
     fi
 
     if ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
@@ -1003,13 +1030,20 @@ do_pkg() {
     fi
     run_in_container internal-build $1
     rm -rf "${base_dir}"/pkgs/$1
-    if ! run_in_container internal-package $1; then
+    use_fakeroot=fakeroot run_in_container internal-package $1
+    if [ -f "${build_dir}"/.jinx-errcode ] && ! [ "$(cat "${build_dir}"/.jinx-errcode)" = "0" ]; then
         rm -rf "${base_dir}"/pkgs/$1
         return 1
     fi
     unset container_sources_ro
 
     destroy_container
+
+        LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
+        XBPS_TARGET_ARCH=$JINX_ARCH \
+    "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-rindex \
+        -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
+        -f
 }
 
 cmd_host_build() {
@@ -1023,6 +1057,26 @@ cmd_host_build() {
 cmd_build() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            "${script}" internal-do-pkg "${pkg}"
+        done
+    done
+}
+
+cmd_build_if_needed() {
+    for ppkg in "$@"; do
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            (
+                set -e
+                unset version
+                unset from_source
+                . "${base_dir}"/recipes/${pkg}
+                if ! [ -z "${from_source}" ]; then
+                    version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+                fi
+
+                [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]
+            ) && continue
+
             "${script}" internal-do-pkg "${pkg}"
         done
     done
@@ -1118,87 +1172,32 @@ cmd_install() {
     mkdir -m 755 -p "${sysroot}"
 
     pkgs_to_install=""
-    if [ "$1" = '*' ]; then
-        for pkg in "${base_dir}"/recipes/*; do
-            pkgs_to_install="${pkgs_to_install} $(basename "${pkg}")"
+    for ppkg in "$@"; do
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            pkgs_to_install="${pkgs_to_install} ${pkg}"
         done
-    else
-        for ppkg in "$@"; do
-            for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-                deps="${deps} ${pkg}"
-            done
-        done
+    done
 
-        make_temp
-        deps_file="${tmp}"
-
-        echo "* resolving dependencies..."
-
-        get_deps_file
-
-        pkgs_to_install="$(cat "${deps_file}")"
-    fi
-
-    make_temp
-    all_files="${tmp}"
-
-    pkg_dirs_to_install=""
     for pkg in ${pkgs_to_install}; do
         echo "* installing ${pkg}..."
 
-        if ! [ -d "${build_dir}"/pkgs/${pkg} ]; then
-            "${script}" internal-do-pkg "${pkg}"
+        unset name
+        unset version
+        unset revision
+        unset from_source
+        . "${base_dir}"/recipes/${pkg}
+
+        if ! [ -z "${from_source}" ]; then
+            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
         fi
 
-        ( cd "${build_dir}"/pkgs/${pkg} && find . >>"${all_files}" )
-
-        pkg_dirs_to_install="${pkg_dirs_to_install} ${pkg}/."
-    done
-
-    echo "* checking for conflicts..."
-
-    make_temp
-    all_files_sorted="${tmp}"
-
-    make_temp
-    all_files_uniq="${tmp}"
-
-    sort <"${all_files}" >"${all_files_sorted}"
-    uniq <"${all_files_sorted}" >"${all_files_uniq}"
-
-    dup_elements="$(comm -23 "${all_files_sorted}" "${all_files_uniq}" | uniq)"
-
-    rm -f "$JINX_CACHE_DIR/merged-info-dir"
-
-    for pkg in ${pkgs_to_install}; do
-        for elem in ${dup_elements}; do
-            if [ -f "${build_dir}"/pkgs/${pkg}/${elem} ] || [ -L "${build_dir}"/pkgs/${pkg}/${elem} ]; then
-                if [ "${elem}" = "./usr/share/info/dir" ]; then
-                    # Coalesce info directory
-                    if ! [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
-                        cp "${build_dir}"/pkgs/${pkg}/${elem} "$JINX_CACHE_DIR/merged-info-dir"
-                    else
-                        "$JINX_CACHE_DIR/merge-info" -o "$JINX_CACHE_DIR/merged-info-dir" "${build_dir}"/pkgs/${pkg}/${elem} "$JINX_CACHE_DIR/merged-info-dir"
-                    fi
-                    continue
-                fi
-                die "* error: duplicate files were found in package '${pkg}': ${elem}"
-            fi
-        done
-    done
-
-    echo "* synchronising package files to sysroot '${sysroot}'..."
-    sysroot_abs="$(cd "${sysroot}" && pwd -P)"
-    ( cd "${build_dir}/pkgs" && rsync -urlptD ${pkg_dirs_to_install} "${sysroot_abs}"/ )
-
-    # inject the merged info dir into sysroot
-    if [ -f "${sysroot}"/usr/share/info/dir ] && [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
-        "$JINX_CACHE_DIR/merge-info" -o "${sysroot}"/usr/share/info/dir "$JINX_CACHE_DIR/merged-info-dir" "${sysroot}"/usr/share/info/dir
-    else
-        if [ -f "$JINX_CACHE_DIR/merged-info-dir" ]; then
-            cp "$JINX_CACHE_DIR/merged-info-dir" "${sysroot}"/usr/share/info/dir
+        if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+            die "* package '${name}' not built"
         fi
-    fi
+
+        LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
+            "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
+    done
 }
 
 rebuild_b2sum() {
@@ -1889,18 +1888,15 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         chmod 755 "$f"
     done
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen file findutils flex gawk gettext grep gzip xsltproc m4 make patch perl python3 sed tar texinfo w3m which xmlto xz-utils zstd
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen fakeroot file findutils flex gawk gettext grep gzip xsltproc libarchive13 libssl3t64 m4 make patch perl python3 sed tar texinfo w3m which xmlto xz-utils zlib1g zstd
 
-    # Build xstow
-    XSTOW_BUILDENV="$JINX_CACHE_DIR/xstow_buildenv"
-    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XSTOW_BUILDENV}/"
-    curl -Lo "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}.tar.gz" https://github.com/majorkingleo/xstow/releases/download/${XSTOW_VERSION}/xstow-${XSTOW_VERSION}.tar.gz
-    ( cd "${XSTOW_BUILDENV}" && gunzip < xstow-${XSTOW_VERSION}.tar.gz | tar -xf - )
-    run_in_container1 "${XSTOW_BUILDENV}" apt-get install -y build-essential
-    run_in_container1 "${XSTOW_BUILDENV}" sh -c "cd /xstow-${XSTOW_VERSION} && ./configure LDFLAGS='-static' --enable-static --enable-merge-info --without-curses && make -j${parallelism}"
-    mv "${XSTOW_BUILDENV}/xstow-${XSTOW_VERSION}/src/merge-info" "$JINX_CACHE_DIR/"
-    chmod -R 777 "$XSTOW_BUILDENV"
-    rm -rf "$XSTOW_BUILDENV"
+    # Build xbps
+    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XBPS_BUILDENV}/"
+    curl -Lo "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
+    ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
+    run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
+    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --disable-debug --enable-rpath --prefix=/ --sysconfdir=/ && make -j${parallelism} && make DESTDIR=/xbps-bin install"
+    mv "${XBPS_BUILDENV}/xbps-bin" "$JINX_CACHE_DIR/"
 }
 
 first_use() {
@@ -2011,6 +2007,10 @@ case "$1" in
         shift 1
         cmd_build "$@"
         ;;
+    build-if-needed)
+        shift 1
+        cmd_build_if_needed "$@"
+        ;;
     regenerate|regen)
         shift 1
         cmd_prepare "$@"
@@ -2038,10 +2038,6 @@ case "$1" in
         redo_first_use
         ;;
     *)
-        if [ -z "$1" ]; then
-            die "$0: no command specified."
-        else
-            die "$0: unknown command: $1"
-        fi
+        die "$0: unknown command: $1"
         ;;
 esac

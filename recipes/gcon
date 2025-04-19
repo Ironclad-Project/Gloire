@@ -2,10 +2,10 @@
 
 name=gcon
 skip_pkg_check=yes
-version=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
+version=0.0git
 revision=1
 git_url="https://codeberg.org/Ironclad/gcon"
-commit=${version}
+commit=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
 source_imagedeps="git"
 source_hostdeps="automake autoconf libtool pkg-config"
 source_allow_network="yes"

@@ -10,7 +10,7 @@ branch=${version}
 deps="core-libs git tree"
 
 package() {
-    cp -rp "${source_dir}"/. ./
+    cp -r "${source_dir}"/. ./
     make DESTDIR="${dest_dir}" PREFIX="${prefix}" install
     post_package_strip
 }

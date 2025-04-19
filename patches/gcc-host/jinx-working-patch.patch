@@ -96,6 +96,19 @@ index 0000000..b7a3ba6
 +    builtin_assert ("system=unix");      \
 +    builtin_assert ("system=posix");     \
 +  } while (0);
+diff --git gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
+index b748b33..afbdde0 100644
+--- gcc-host-clean/gcc/config.build
++++ gcc-host-workdir/gcc/config.build
+@@ -45,7 +45,7 @@
+ build_xm_file=
+ build_xm_defines=
+ build_exeext=
+-build_install_headers_dir=install-headers-tar
++build_install_headers_dir=install-headers-cp
+ build_file_translate=
+ 
+ # System-specific settings.
 diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
 index 95c91ee..5cdc83a 100644
 --- gcc-host-clean/gcc/config.gcc

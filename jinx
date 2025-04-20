@@ -343,7 +343,9 @@ prepare_container() {
 
     for dep in $(cat "${deps_file}"); do
         LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
-            "${JINX_CACHE_DIR}"/xbps-bin/bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
+            "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
@@ -861,6 +863,8 @@ do_package() {
     done
 
     cd "${build_dir}"/pkgs
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
     "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-create \
         -A $JINX_ARCH \
         -s ${name} \
@@ -1040,7 +1044,8 @@ do_pkg() {
     destroy_container
 
         LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
-        XBPS_TARGET_ARCH=$JINX_ARCH \
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
     "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-rindex \
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
@@ -1196,6 +1201,8 @@ cmd_install() {
         fi
 
         LD_LIBRARY_PATH="$XBPS_BUILDENV/usr/lib/$(uname -m)-linux-gnu" \
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
             "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
     done
 }

@@ -48,7 +48,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..d577662 100644
+index 68e6fee..9f0be21 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@ extern "C" void __mlibc_sigret(void);
@@ -84,7 +84,25 @@ index 68e6fee..d577662 100644
  int sys_flock(int fd, int options) {
  	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
  	struct flock lock;
-@@ -713,8 +719,9 @@ int sys_link(const char* srcpath, const char* destpath) {
+@@ -692,15 +698,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
+ int sys_rmdir(const char* path){
+ 	int ret, errno;
+ 	size_t path_len = strlen (path);
+-	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
++	SYSCALL4(SYSCALL_UNLINK, AT_FDCWD, path, path_len, AT_REMOVEDIR);
+ 	return errno;
+ }
+ 
+ int sys_unlinkat(int fd, const char *path, int flags) {
+-	(void)flags;
+ 	int ret, errno;
+ 	size_t path_len = strlen (path);
+-	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
++	SYSCALL4(SYSCALL_UNLINK, fd, path, path_len, flags);
+ 	return errno;
+ }
+ 
+@@ -713,8 +718,9 @@ int sys_link(const char* srcpath, const char* destpath) {
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -95,7 +113,7 @@ index 68e6fee..d577662 100644
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +730,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
+@@ -723,6 +729,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
  	}
  }
  
@@ -109,7 +127,7 @@ index 68e6fee..d577662 100644
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1171,12 @@ int sys_sysconf(int num, long *rret) {
+@@ -1157,6 +1170,12 @@ int sys_sysconf(int num, long *rret) {
  	int ret, errno;
  
  	switch (num) {

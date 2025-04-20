@@ -171,7 +171,8 @@ rm "$CONFIG_TEMP"
 
 # Unmount after we are done.
 sync
-$SUDO umount -R mount_dir
+$SUDO umount mount_dir/boot
+$SUDO umount mount_dir
 $SUDO rm -rf mount_dir
 $SUDO losetup -d ${LOOPBACK_DEV}
 

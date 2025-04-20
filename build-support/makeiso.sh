@@ -38,6 +38,14 @@ else
     fi
 fi
 
+# XXX: TODO: Fix xbps
+# Ensure permissions are set.
+$SUDO chown -R 1000:1000 sysroot/home/user
+$SUDO chmod 750 sysroot/root
+$SUDO chmod 777 sysroot/tmp
+$SUDO chmod 777 sysroot/run
+$SUDO chmod 710 sysroot/home/user
+
 # Prepare the iso and boot directories.
 rm -rf iso_root
 mkdir -p iso_root/boot

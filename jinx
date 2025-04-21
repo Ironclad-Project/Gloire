@@ -41,6 +41,7 @@ jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 debian_snapshot="20250401T023134Z"
 
 XBPS_VERSION=0.59.2
+XBPS_B2SUM=cabe5676eb1611271f255c75f4439f3ef4ea6096d6fc26f0982da471556e1fd1733cb76a6d5857d3546513b157e8a3493624d09d989134f3f6d7763c55e98a83
 
 die() {
     echo "$1"
@@ -342,7 +343,7 @@ prepare_container() {
     for dep in $(cat "${deps_file}"); do
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null
+            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
@@ -862,7 +863,7 @@ do_package() {
     cd "${build_dir}"/pkgs
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-    "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-create \
+    "$JINX_CACHE_DIR"/xbps-bin/xbps-create \
         -A $JINX_ARCH \
         -s ${name} \
         -n ${name}-${version}_${revision} \
@@ -1042,7 +1043,7 @@ do_pkg() {
 
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-    "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-rindex \
+    "$JINX_CACHE_DIR"/xbps-bin/xbps-rindex \
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
 }
@@ -1198,7 +1199,7 @@ cmd_install() {
 
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            "$JINX_CACHE_DIR"/xbps-bin/bin/xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
+            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
     done
 }
 
@@ -1896,6 +1897,9 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
     cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XBPS_BUILDENV}/"
     curl -Lo "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
+    if ! "$JINX_CACHE_DIR/b2sum" "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_B2SUM}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify XBPS tarball"
+    fi
     ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
     run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
     # XXX: xbps upstream forgot to bump version string
@@ -1907,7 +1911,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     for f in "${XBPS_BUILDENV}"/xbps-bin/bin/*.static; do
         mv "$f" "${f%.static*}"
     done
-    mv "${XBPS_BUILDENV}/xbps-bin" "$JINX_CACHE_DIR/"
+    mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
     chmod -R 777 "${XBPS_BUILDENV}"
     rm -rf "${XBPS_BUILDENV}"
 }

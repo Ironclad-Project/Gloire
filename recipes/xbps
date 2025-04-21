@@ -11,12 +11,14 @@ deps="core-libs libarchive openssl"
 configure() {
     cp -rp "${source_dir}"/. ./
 
+        CFLAGS="$TARGET_CFLAGS" \
+        CPPFLAGS="$TARGET_CPPFLAGS" \
+        LDFLAGS="$TARGET_LDFLAGS" \
     ./configure \
         --verbose \
         --host=${OS_TRIPLET} \
         --prefix="${prefix}" \
-        --pkgconfigdir="${sysroot_dir}${prefix}/lib" \
-        -Wnoerror
+        --sysconfdir=/etc
 }
 
 build() {

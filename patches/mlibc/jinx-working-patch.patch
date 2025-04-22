@@ -1,3 +1,15 @@
+diff --git mlibc-clean/abis/ironclad/vm-flags.h mlibc-workdir/abis/ironclad/vm-flags.h
+index 5725ed0..0c894cd 100644
+--- mlibc-clean/abis/ironclad/vm-flags.h
++++ mlibc-workdir/abis/ironclad/vm-flags.h
+@@ -14,7 +14,6 @@
+ #define MAP_ANON      0x08
+ #define MAP_ANONYMOUS 0x08
+ #define MAP_NORESERVE 0x10
+-#define MAP_WC        (1 << 4)
+ 
+ #define MS_ASYNC 0x01
+ #define MS_SYNC 0x02
 diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
 index a1e526b..9515929 100644
 --- mlibc-clean/meson.build
@@ -48,7 +60,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..9f0be21 100644
+index 68e6fee..31851a9 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@ extern "C" void __mlibc_sigret(void);
@@ -84,7 +96,20 @@ index 68e6fee..9f0be21 100644
  int sys_flock(int fd, int options) {
  	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
  	struct flock lock;
-@@ -692,15 +698,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
+@@ -268,6 +274,12 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+ 	return errno;
+ }
+ 
++int sys_posix_madvise(void *addr, size_t length, int advice) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_MADVISE, addr, length, advice);
++	return errno;
++}
++
+ int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
+ 	int ret, errno;
+ 	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
+@@ -692,15 +704,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -102,7 +127,7 @@ index 68e6fee..9f0be21 100644
  	return errno;
  }
  
-@@ -713,8 +718,9 @@ int sys_link(const char* srcpath, const char* destpath) {
+@@ -713,8 +724,9 @@ int sys_link(const char* srcpath, const char* destpath) {
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -113,7 +138,7 @@ index 68e6fee..9f0be21 100644
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +729,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
+@@ -723,6 +735,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
  	}
  }
  
@@ -127,7 +152,7 @@ index 68e6fee..9f0be21 100644
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1170,12 @@ int sys_sysconf(int num, long *rret) {
+@@ -1157,6 +1176,12 @@ int sys_sysconf(int num, long *rret) {
  	int ret, errno;
  
  	switch (num) {
@@ -141,14 +166,15 @@ index 68e6fee..9f0be21 100644
  			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
  			if (ret == 0) {
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index 9c576dc..cded030 100644
+index 9c576dc..409a817 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -124,6 +124,7 @@
+@@ -124,6 +124,8 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113
  #define SYSCALL_GETCPUINFO          114
 +#define SYSCALL_SOCKETPAIR          115
++#define SYSCALL_MADVISE             116
  
  #if defined(__x86_64__)
  #define SYSCALL0(NUM) ({ \

@@ -172,3 +172,5 @@ $SUDO rm -rf mount_dir
 $SUDO losetup -d ${LOOPBACK_DEV}
 
 host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+
+sync

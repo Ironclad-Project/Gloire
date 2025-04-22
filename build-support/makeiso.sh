@@ -184,3 +184,5 @@ else
 fi
 
 rm -rf iso_root
+
+sync

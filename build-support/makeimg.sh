@@ -38,9 +38,6 @@ else
     fi
 fi
 
-# Copy over inital crontab.
-$SUDO cp build-support/crontab sysroot/var/spool/cron/root
-
 # Prepare the iso and boot directories.
 rm -rf mount_dir
 

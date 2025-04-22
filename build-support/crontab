@@ -1,1 +1,0 @@
-@reboot /bin/sh -c '/usr/bin/xbps-reconfigure -a && /usr/bin/rm /var/spool/cron/root'

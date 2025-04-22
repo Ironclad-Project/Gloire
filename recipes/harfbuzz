@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=harfbuzz
-version=11.0.1
+version=11.1.0
 revision=1
 tarball_url="https://github.com/harfbuzz/harfbuzz/releases/download/${version}/harfbuzz-${version}.tar.xz"
-tarball_blake2b="db36c39915a96e82ba1aefe48dd753e925ff32c05b5ac96a737da4c55e6416e18898c2cc9aa8aa8c24ea996a8fdf57838d4de274f0a583ad54c3a7ed04168cb6"
+tarball_blake2b="e59bacf346740d464eef0d6b8172f88e020512519163799a9da8d0b4f30e14a5b065870725ab6f0ea7bf83a06d7cc3065267763dc66a3a5387eea81836fa5d6c"
 imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config"
 deps="core-libs graphite2 glib zlib freetype2 cairo icu"

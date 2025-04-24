@@ -22,7 +22,9 @@ configure() {
 }
 
 build() {
-    make AR="$ARCHITECTURE-ironclad-mlibc-ar" RANLIB="$ARCHITECTURE-ironclad-mlibc-ranlib" -j${parallelism}
+    make -j${parallelism} \
+        AR="$ARCHITECTURE-ironclad-mlibc-ar" \
+        RANLIB="$ARCHITECTURE-ironclad-mlibc-ranlib"
 }
 
 package() {

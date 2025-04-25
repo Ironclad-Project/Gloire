@@ -6,7 +6,7 @@ if [ -f "/var/db/gloire-first-boot/done" ]; then
     exit 0
 fi
 
-xbps-reconfigure -a
+xbps-reconfigure -a >/dev/null
 
 mkdir -p /var/db/gloire-first-boot
 touch /var/db/gloire-first-boot/done

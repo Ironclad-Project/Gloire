@@ -22,6 +22,52 @@ index a1e526b..9515929 100644
  	subdir('sysdeps/ironclad')
  elif host_machine.system() == 'keyronex'
  	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
+diff --git mlibc-clean/options/posix/generic/spawn.cpp mlibc-workdir/options/posix/generic/spawn.cpp
+index cf7edfc..cbc2cb7 100644
+--- mlibc-clean/options/posix/generic/spawn.cpp
++++ mlibc-workdir/options/posix/generic/spawn.cpp
+@@ -12,6 +12,7 @@
+ 
+ #include <bits/ensure.h>
+ #include <mlibc/debug.hpp>
++#include <mlibc/posix-sysdeps.hpp>
+ 
+ /*
+  * Musl places this in a seperate header called fdop.h
+@@ -192,6 +193,15 @@ int posix_spawn(pid_t *__restrict res, const char *__restrict path,
+ 		const posix_spawn_file_actions_t *file_actions,
+ 		const posix_spawnattr_t *__restrict attrs,
+ 		char *const argv[], char *const envp[]) {
++
++	if(mlibc::sys_posix_spawn) {
++		int e = mlibc::sys_posix_spawn(res, path, file_actions, attrs, argv, envp);
++		if(e) {
++			errno = e;
++			return -1;
++		}
++	}
++
+ 	pid_t pid;
+ 	int ec = 0, cs;
+ 	struct args args;
+@@ -259,7 +269,7 @@ int posix_spawnattr_destroy(posix_spawnattr_t *) {
+ }
+ 
+ int posix_spawnattr_setflags(posix_spawnattr_t *attr, short flags) {
+-	const unsigned all_flags = 
++	const unsigned all_flags =
+ 			POSIX_SPAWN_RESETIDS |
+ 			POSIX_SPAWN_SETPGROUP |
+ 			POSIX_SPAWN_SETSIGDEF |
+@@ -370,7 +380,7 @@ int posix_spawnp(pid_t *__restrict pid, const char *__restrict file,
+ 	posix_spawnattr_t spawnp_attr = {};
+ 	if(attrp)
+ 		spawnp_attr = *attrp;
+-	spawnp_attr.__fn = (void *)execvpe;	
++	spawnp_attr.__fn = (void *)execvpe;
+ 	return posix_spawn(pid, file, file_actions, &spawnp_attr, argv, envp);
+ }
+ 
 diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
 index 8782ae6..bfacac2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp
@@ -47,6 +93,26 @@ index 8782ae6..bfacac2 100644
  	return ret;
  }
  
+diff --git mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+index 51c4e5c..cdba098 100644
+--- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
++++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+@@ -31,6 +31,7 @@
+ #include <termios.h>
+ #include <time.h>
+ #include <ucontext.h>
++#include <spawn.h>
+ 
+ namespace [[gnu::visibility("hidden")]] mlibc {
+ 
+@@ -101,6 +102,7 @@ int sys_close(int fd);
+ [[gnu::weak]] int sys_sleep(time_t *secs, long *nanos);
+ [[gnu::weak]] int sys_fork(pid_t *child);
+ [[gnu::weak]] int sys_execve(const char *path, char *const argv[], char *const envp[]);
++[[gnu::weak]] int sys_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const posix_spawnattr_t *attrs, char *const argv[], char *const envp[]);
+ [[gnu::weak]] int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set,
+ 		fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events);
+ [[gnu::weak]] int sys_getrusage(int scope, struct rusage *usage);
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
 index 33cd1b9..fbb98d4 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
@@ -60,7 +126,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..31851a9 100644
+index 68e6fee..d41cce6 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@ extern "C" void __mlibc_sigret(void);
@@ -109,7 +175,55 @@ index 68e6fee..31851a9 100644
  int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
  	int ret, errno;
  	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
-@@ -692,15 +704,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
+@@ -419,6 +431,47 @@ int sys_fork(pid_t *child) {
+ 	return 0;
+ }
+ 
++struct spawn_args {
++    uint64_t path;
++    uint64_t path_len;
++    uint64_t argv;
++    uint64_t argv_len;
++    uint64_t envp;
++    uint64_t envp_len;
++    uint64_t caps;
++    uint64_t file_actions;
++    uint64_t file_action_count;
++    uint64_t spawn_actions;
++    uint64_t spawn_action_count;
++};
++
++int sys_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions,
++	const posix_spawnattr_t *attrs, char *const argv[], char *const envp[]) {
++
++	int argv_len, envp_len;
++	for (argv_len = 0; argv[argv_len] != NULL; argv_len++);
++	for (envp_len = 0; envp[envp_len] != NULL; envp_len++);
++
++	struct spawn_args arg;
++	arg.path               = (uint64_t)path;
++	arg.path_len           = (uint64_t)strlen(path);
++	arg.argv               = (uint64_t)argv;
++	arg.argv_len           = (uint64_t)argv_len;
++	arg.envp               = (uint64_t)envp;
++	arg.envp_len           = (uint64_t)envp_len;
++	arg.caps               = 0;
++	arg.file_actions       = 0;
++	arg.file_action_count  = 0;
++	arg.spawn_actions      = 0;
++	arg.spawn_action_count = 0;
++
++	pid_t ret;
++	int errno;
++	SYSCALL1(SYSCALL_SPAWN, &arg);
++	*pid = ret;
++	return errno;
++}
++
+ int sys_getrlimit(int resource, struct rlimit *limit) {
+ 	uint64_t ret, errno;
+ 	SYSCALL1(SYSCALL_GETRLIMIT, resource);
+@@ -692,15 +745,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -127,7 +241,7 @@ index 68e6fee..31851a9 100644
  	return errno;
  }
  
-@@ -713,8 +724,9 @@ int sys_link(const char* srcpath, const char* destpath) {
+@@ -713,8 +765,9 @@ int sys_link(const char* srcpath, const char* destpath) {
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -138,7 +252,7 @@ index 68e6fee..31851a9 100644
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +735,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
+@@ -723,6 +776,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
  	}
  }
  
@@ -152,7 +266,7 @@ index 68e6fee..31851a9 100644
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1176,12 @@ int sys_sysconf(int num, long *rret) {
+@@ -1157,6 +1217,12 @@ int sys_sysconf(int num, long *rret) {
  	int ret, errno;
  
  	switch (num) {

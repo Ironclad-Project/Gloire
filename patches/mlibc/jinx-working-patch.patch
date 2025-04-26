@@ -23,7 +23,7 @@ index a1e526b..9515929 100644
  elif host_machine.system() == 'keyronex'
  	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
 diff --git mlibc-clean/options/posix/generic/spawn.cpp mlibc-workdir/options/posix/generic/spawn.cpp
-index cf7edfc..cbc2cb7 100644
+index cf7edfc..10c62c2 100644
 --- mlibc-clean/options/posix/generic/spawn.cpp
 +++ mlibc-workdir/options/posix/generic/spawn.cpp
 @@ -12,6 +12,7 @@
@@ -34,7 +34,7 @@ index cf7edfc..cbc2cb7 100644
  
  /*
   * Musl places this in a seperate header called fdop.h
-@@ -192,6 +193,15 @@ int posix_spawn(pid_t *__restrict res, const char *__restrict path,
+@@ -192,6 +193,16 @@ int posix_spawn(pid_t *__restrict res, const char *__restrict path,
  		const posix_spawn_file_actions_t *file_actions,
  		const posix_spawnattr_t *__restrict attrs,
  		char *const argv[], char *const envp[]) {
@@ -45,12 +45,13 @@ index cf7edfc..cbc2cb7 100644
 +			errno = e;
 +			return -1;
 +		}
++		return e;
 +	}
 +
  	pid_t pid;
  	int ec = 0, cs;
  	struct args args;
-@@ -259,7 +269,7 @@ int posix_spawnattr_destroy(posix_spawnattr_t *) {
+@@ -259,7 +270,7 @@ int posix_spawnattr_destroy(posix_spawnattr_t *) {
  }
  
  int posix_spawnattr_setflags(posix_spawnattr_t *attr, short flags) {
@@ -59,7 +60,7 @@ index cf7edfc..cbc2cb7 100644
  			POSIX_SPAWN_RESETIDS |
  			POSIX_SPAWN_SETPGROUP |
  			POSIX_SPAWN_SETSIGDEF |
-@@ -370,7 +380,7 @@ int posix_spawnp(pid_t *__restrict pid, const char *__restrict file,
+@@ -370,7 +381,7 @@ int posix_spawnp(pid_t *__restrict pid, const char *__restrict file,
  	posix_spawnattr_t spawnp_attr = {};
  	if(attrp)
  		spawnp_attr = *attrp;

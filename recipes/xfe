@@ -5,8 +5,7 @@ version=2.0.1
 revision=1
 tarball_url="https://downloads.sourceforge.net/sourceforge/xfe/xfe-${version}.tar.xz"
 tarball_blake2b="110c5fa053392213384e8b5e45255d7166b8062a0f27a324bb6cdf931a76951ab5a166d729010310070b02f66a7719296cdc086748cc813bff1e7b55c88de753"
-source_hostdeps="autoconf automake libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs fox freetype2 xcb-util libxft"
 
 prepare() {
@@ -18,7 +17,7 @@ configure() {
 
         configure_script_path=./configure \
     autotools_configure \
-       --with-x
+        --with-x
 }
 
 build() {

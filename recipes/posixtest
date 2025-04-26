@@ -7,13 +7,15 @@ revision=1
 git_url="https://codeberg.org/Ironclad/posixtest"
 commit=4cf97b0d46c330edfb440ee2558bc8c49b4abe1a
 source_imagedeps="git"
-source_hostdeps="automake autoconf libtool pkg-config"
+source_hostdeps="automake autoconf pkg-config"
 source_allow_network="yes"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs"
 
 prepare() {
     ./bootstrap
+
+    autotools_recursive_regen
 }
 
 configure() {

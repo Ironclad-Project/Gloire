@@ -625,14 +625,14 @@ cont_patch() {
         for patch in "${base_dir}"/patches/${name}/*; do
             [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
             [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
-            patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
+            patch --no-backup-if-mismatch -Z -p1 -r "${patch_trash}" < "${patch}"
         done
     fi
 
     cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
-        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+        patch --no-backup-if-mismatch -Z -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
     fi
 
     cp -rp "${source_dir}" "${base_dir}"/sources/${name}-workdir
@@ -942,7 +942,7 @@ do_cmd_prepare() {
             mv $1-workdir/.hg "${vc_dir_workdir}"
         fi
 
-        git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
+        diff -urN --no-dereference $1-clean $1-workdir >"${patch_file}" || true
 
         if ! [ -z "${git_url}" ]; then
             mv "${vc_dir_clean}" $1-clean/.git

@@ -1,34 +1,63 @@
-diff --git xfe-clean/configure.ac xfe-workdir/configure.ac
-index 03fd881..9744ce2 100644
---- xfe-clean/configure.ac
-+++ xfe-workdir/configure.ac
-@@ -69,9 +69,9 @@ AC_FUNC_GETGROUPS
- AC_FUNC_GETMNTENT
- AC_FUNC_LSTAT
- AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
--AC_FUNC_MALLOC
-+#AC_FUNC_MALLOC
- AC_FUNC_MKTIME
--AC_FUNC_REALLOC
-+#AC_FUNC_REALLOC
- AC_FUNC_STAT
- AC_FUNC_UTIME_NULL
- AC_CHECK_FUNCS([endgrent endpwent gethostname getmntent gettimeofday lchown memset mkdir mkfifo putenv rmdir setlocale sqrt strchr strdup strerror strstr strtol strtoul strtoull utime])
-@@ -87,25 +87,19 @@ AC_CHECK_LIB(FOX-1.6,fxfindfox,,AC_MSG_ERROR("libFOX-1.6 not found"))
+diff -urN --no-dereference xfe-clean/configure xfe-workdir/configure
+--- xfe-clean/configure	2025-03-15 12:25:48.000000000 +0100
++++ xfe-workdir/configure	2025-04-26 23:14:56.143336025 +0200
+@@ -12529,66 +12529,13 @@
  
- # Check for FOX 1.6 header files
- AC_LANG([C++])
--AC_CHECK_HEADER(fox-1.6/fx.h,,AC_MSG_ERROR("fox-1.6/fx.h not found"))
-+#AC_CHECK_HEADER(fox-1.6/fx.h,,AC_MSG_ERROR("fox-1.6/fx.h not found"))
  
  
 -# Check if fox-config exists
--AC_CHECK_PROGS(FOX_CONFIG,fox-config-1.6 fox-1.6-config fox-config)
--if test no"$FOX_CONFIG" = no ; then
--	AC_MSG_ERROR("fox-config not found")               
+-for ac_prog in fox-config-1.6 fox-1.6-config fox-config
+-do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
+-set dummy $ac_prog; ac_word=$2
+-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+-printf %s "checking for $ac_word... " >&6; }
+-if test ${ac_cv_prog_FOX_CONFIG+y}
+-then :
+-  printf %s "(cached) " >&6
+-else $as_nop
+-  if test -n "$FOX_CONFIG"; then
+-  ac_cv_prog_FOX_CONFIG="$FOX_CONFIG" # Let the user override the test.
+-else
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH
+-do
+-  IFS=$as_save_IFS
+-  case $as_dir in #(((
+-    '') as_dir=./ ;;
+-    */) ;;
+-    *) as_dir=$as_dir/ ;;
+-  esac
+-    for ac_exec_ext in '' $ac_executable_extensions; do
+-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+-    ac_cv_prog_FOX_CONFIG="$ac_prog"
+-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+-    break 2
+-  fi
+-done
+-  done
+-IFS=$as_save_IFS
+-
+-fi
+-fi
+-FOX_CONFIG=$ac_cv_prog_FOX_CONFIG
+-if test -n "$FOX_CONFIG"; then
+-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $FOX_CONFIG" >&5
+-printf "%s\n" "$FOX_CONFIG" >&6; }
+-else
+-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-printf "%s\n" "no" >&6; }
 -fi
 -
- 
+-
+-  test -n "$FOX_CONFIG" && break
+-done
+-
+-if test no"$FOX_CONFIG" = no ; then
+-	as_fn_error $? "\"fox-config not found\"" "$LINENO" 5
+-fi
+-
+-
  # Include flags for the FOX library
 -FOXCFLAGS=`$FOX_CONFIG --cflags`
 +FOXCFLAGS=`$PKG_CONFIG --cflags fox`
@@ -39,60 +68,11 @@ index 03fd881..9744ce2 100644
 -TEST_XFT=`$FOX_CONFIG --libs | grep Xft`
 +TEST_XFT=yes
  if test "x$TEST_XFT" != "x" ; then
--	
-+
+ 
  	echo "checking whether FOX was compiled with Xft support... yes"
- 
- 	# Check for FreeType2
-@@ -135,7 +129,7 @@ if test "x$TEST_XFT" != "x" ; then
- 			CXXFLAGS="$CXXFLAGS -DHAVE_XFT_H"
- 		], AC_MSG_ERROR("Xft not found"))
- 	fi
--	AC_CHECK_HEADER(X11/Xft/Xft.h,,AC_MSG_ERROR("Xft.h not found"))
-+	#AC_CHECK_HEADER(X11/Xft/Xft.h,,AC_MSG_ERROR("Xft.h not found"))
- 
- else
- 	echo "checking whether FOX was compiled with Xft support... no"
-@@ -149,28 +143,28 @@ else
- 	echo "   sudo make install"
- 	echo "============================================================================================="
- 	echo ""
--	AC_MSG_ERROR("missing Xft support in FOX")               
-+	AC_MSG_ERROR("missing Xft support in FOX")
- fi
- 
- 
- # Check for Xlib headers
--AC_CHECK_HEADER(X11/Xlib.h,,AC_MSG_ERROR("Xlib.h not found"))
-+#AC_CHECK_HEADER(X11/Xlib.h,,AC_MSG_ERROR("Xlib.h not found"))
- 
- # Check for XRandR support
- AC_MSG_CHECKING(for xrandr extension)
- AC_ARG_WITH(xrandr,[  --with-xrandr           compile with XRandR support])
- AC_MSG_RESULT([$with_xrandr])
--if test "x$with_xrandr" != "xno"; then
--AC_CHECK_HEADERS(X11/extensions/Xrandr.h,CXXFLAGS="${CXXFLAGS} -DHAVE_XRANDR_H=1"; LIBS="${LIBS} -lXrandr")
--fi
-+#if test "x$with_xrandr" != "xno"; then
-+#AC_CHECK_HEADERS(X11/extensions/Xrandr.h,CXXFLAGS="${CXXFLAGS} -DHAVE_XRANDR_H=1"; LIBS="${LIBS} -lXrandr")
-+#fi
- 
- # Check for libPNG
- AC_CHECK_LIB(png, png_read_info,,AC_MSG_ERROR("libPNG not found"))
--AC_CHECK_HEADER(png.h,,AC_MSG_ERROR("png.h not found"))
-+#AC_CHECK_HEADER(png.h,,AC_MSG_ERROR("png.h not found"))
- 
- # Check for fontconfig
- AC_CHECK_LIB(fontconfig, FcInit,, AC_MSG_ERROR("fontconfig not found"))
--AC_CHECK_HEADER(fontconfig/fontconfig.h,,AC_MSG_ERROR("fontconfig.h not found"))
-+#AC_CHECK_HEADER(fontconfig/fontconfig.h,,AC_MSG_ERROR("fontconfig.h not found"))
- 
- # Check for startup notification support
- AC_MSG_CHECKING(for startup notification)
-diff --git xfe-clean/src/ArchInputDialog.cpp xfe-workdir/src/ArchInputDialog.cpp
-index 5d2490e..222bc6c 100644
---- xfe-clean/src/ArchInputDialog.cpp
-+++ xfe-workdir/src/ArchInputDialog.cpp
+diff -urN --no-dereference xfe-clean/src/ArchInputDialog.cpp xfe-workdir/src/ArchInputDialog.cpp
+--- xfe-clean/src/ArchInputDialog.cpp	2025-01-24 09:43:26.000000000 +0100
++++ xfe-workdir/src/ArchInputDialog.cpp	2025-04-26 23:11:14.898057065 +0200
 @@ -1,5 +1,5 @@
  // Input dialog for the add to archive command
 -
@@ -100,10 +80,9 @@ index 5d2490e..222bc6c 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/BrowseInputDialog.cpp xfe-workdir/src/BrowseInputDialog.cpp
-index 346776f..861158f 100644
---- xfe-clean/src/BrowseInputDialog.cpp
-+++ xfe-workdir/src/BrowseInputDialog.cpp
+diff -urN --no-dereference xfe-clean/src/BrowseInputDialog.cpp xfe-workdir/src/BrowseInputDialog.cpp
+--- xfe-clean/src/BrowseInputDialog.cpp	2025-01-24 09:43:26.000000000 +0100
++++ xfe-workdir/src/BrowseInputDialog.cpp	2025-04-26 23:11:14.898112139 +0200
 @@ -1,5 +1,5 @@
  // Input dialog with file browse icon
 -
@@ -111,10 +90,9 @@ index 346776f..861158f 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/CommandWindow.cpp xfe-workdir/src/CommandWindow.cpp
-index 7f6ae02..c29c8b1 100644
---- xfe-clean/src/CommandWindow.cpp
-+++ xfe-workdir/src/CommandWindow.cpp
+diff -urN --no-dereference xfe-clean/src/CommandWindow.cpp xfe-workdir/src/CommandWindow.cpp
+--- xfe-clean/src/CommandWindow.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/CommandWindow.cpp	2025-04-26 23:11:14.898151537 +0200
 @@ -5,7 +5,7 @@
  // The object deletes itself when the close button is pressed
  // The command window can be a free-floating window or can be
@@ -124,20 +102,18 @@ index 7f6ae02..c29c8b1 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/DialogBox.cpp xfe-workdir/src/DialogBox.cpp
-index a58d9c0..87e93bb 100644
---- xfe-clean/src/DialogBox.cpp
-+++ xfe-workdir/src/DialogBox.cpp
+diff -urN --no-dereference xfe-clean/src/DialogBox.cpp xfe-workdir/src/DialogBox.cpp
+--- xfe-clean/src/DialogBox.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/DialogBox.cpp	2025-04-26 23:11:14.898187193 +0200
 @@ -1,4 +1,5 @@
  // Dialog Box with additional toggle option
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/DirHistBox.cpp xfe-workdir/src/DirHistBox.cpp
-index 6e0c24f..6e3739c 100644
---- xfe-clean/src/DirHistBox.cpp
-+++ xfe-workdir/src/DirHistBox.cpp
+diff -urN --no-dereference xfe-clean/src/DirHistBox.cpp xfe-workdir/src/DirHistBox.cpp
+--- xfe-clean/src/DirHistBox.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/DirHistBox.cpp	2025-04-26 23:11:14.898217616 +0200
 @@ -1,6 +1,6 @@
  // Display a history list box and allows the user to select a string
  // This is based on FXChoiceBox
@@ -146,10 +122,9 @@ index 6e0c24f..6e3739c 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/DirList.cpp xfe-workdir/src/DirList.cpp
-index 8113c52..bc9d7ed 100644
---- xfe-clean/src/DirList.cpp
-+++ xfe-workdir/src/DirList.cpp
+diff -urN --no-dereference xfe-clean/src/DirList.cpp xfe-workdir/src/DirList.cpp
+--- xfe-clean/src/DirList.cpp	2025-01-24 17:41:20.000000000 +0100
++++ xfe-workdir/src/DirList.cpp	2025-04-26 23:11:14.898309833 +0200
 @@ -1,7 +1,7 @@
  // Directory list. Taken from the FOX library and slightly modified.
  // The compare(), compare_nolocale() and compare_locale() functions are adapted from a patch
@@ -159,28 +134,25 @@ index 8113c52..bc9d7ed 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/DirPanel.cpp xfe-workdir/src/DirPanel.cpp
-index 3fbac85..10561cd 100644
---- xfe-clean/src/DirPanel.cpp
-+++ xfe-workdir/src/DirPanel.cpp
+diff -urN --no-dereference xfe-clean/src/DirPanel.cpp xfe-workdir/src/DirPanel.cpp
+--- xfe-clean/src/DirPanel.cpp	2025-01-25 11:14:13.000000000 +0100
++++ xfe-workdir/src/DirPanel.cpp	2025-04-26 23:11:14.898510338 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/ExecuteBox.cpp xfe-workdir/src/ExecuteBox.cpp
-index 10fa3f0..d730c33 100644
---- xfe-clean/src/ExecuteBox.cpp
-+++ xfe-workdir/src/ExecuteBox.cpp
+diff -urN --no-dereference xfe-clean/src/ExecuteBox.cpp xfe-workdir/src/ExecuteBox.cpp
+--- xfe-clean/src/ExecuteBox.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/ExecuteBox.cpp	2025-04-26 23:11:14.898650040 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/File.cpp xfe-workdir/src/File.cpp
-index 118415a..5a5f070 100644
---- xfe-clean/src/File.cpp
-+++ xfe-workdir/src/File.cpp
+diff -urN --no-dereference xfe-clean/src/File.cpp xfe-workdir/src/File.cpp
+--- xfe-clean/src/File.cpp	2025-01-24 09:42:30.000000000 +0100
++++ xfe-workdir/src/File.cpp	2025-04-26 23:11:14.898723012 +0200
 @@ -1,5 +1,5 @@
  // File management class with progress dialog
 -
@@ -188,10 +160,9 @@ index 118415a..5a5f070 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/FileDialog.cpp xfe-workdir/src/FileDialog.cpp
-index 4cb7466..d734129 100644
---- xfe-clean/src/FileDialog.cpp
-+++ xfe-workdir/src/FileDialog.cpp
+diff -urN --no-dereference xfe-clean/src/FileDialog.cpp xfe-workdir/src/FileDialog.cpp
+--- xfe-clean/src/FileDialog.cpp	2025-03-15 11:30:05.000000000 +0100
++++ xfe-workdir/src/FileDialog.cpp	2025-04-26 23:11:14.898834256 +0200
 @@ -1,5 +1,5 @@
  // File dialog. Taken from the FOX library and slightly modified.
 -
@@ -199,10 +170,9 @@ index 4cb7466..d734129 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/FileDict.cpp xfe-workdir/src/FileDict.cpp
-index 1a76655..37f1bca 100644
---- xfe-clean/src/FileDict.cpp
-+++ xfe-workdir/src/FileDict.cpp
+diff -urN --no-dereference xfe-clean/src/FileDict.cpp xfe-workdir/src/FileDict.cpp
+--- xfe-clean/src/FileDict.cpp	2025-01-24 09:46:29.000000000 +0100
++++ xfe-workdir/src/FileDict.cpp	2025-04-26 23:11:14.898903767 +0200
 @@ -1,5 +1,5 @@
  // File association tables. Taken from the FOX library and slightly modified.
 -
@@ -210,10 +180,9 @@ index 1a76655..37f1bca 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/FileList.cpp xfe-workdir/src/FileList.cpp
-index d3f514c..5e7b408 100644
---- xfe-clean/src/FileList.cpp
-+++ xfe-workdir/src/FileList.cpp
+diff -urN --no-dereference xfe-clean/src/FileList.cpp xfe-workdir/src/FileList.cpp
+--- xfe-clean/src/FileList.cpp	2025-03-15 11:37:58.000000000 +0100
++++ xfe-workdir/src/FileList.cpp	2025-04-26 23:11:14.899091483 +0200
 @@ -2,7 +2,7 @@
  // The compare(), compare_nolocale() and compare_locale() functions are adapted from a patch
  // submitted by Vladimir Támara Patiño
@@ -223,19 +192,17 @@ index d3f514c..5e7b408 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/FilePanel.cpp xfe-workdir/src/FilePanel.cpp
-index 8e6d158..92f73c5 100644
---- xfe-clean/src/FilePanel.cpp
-+++ xfe-workdir/src/FilePanel.cpp
+diff -urN --no-dereference xfe-clean/src/FilePanel.cpp xfe-workdir/src/FilePanel.cpp
+--- xfe-clean/src/FilePanel.cpp	2025-01-25 11:14:13.000000000 +0100
++++ xfe-workdir/src/FilePanel.cpp	2025-04-26 23:11:14.899430277 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/FontDialog.cpp xfe-workdir/src/FontDialog.cpp
-index 7fbfe06..95baf56 100644
---- xfe-clean/src/FontDialog.cpp
-+++ xfe-workdir/src/FontDialog.cpp
+diff -urN --no-dereference xfe-clean/src/FontDialog.cpp xfe-workdir/src/FontDialog.cpp
+--- xfe-clean/src/FontDialog.cpp	2025-01-25 11:10:13.000000000 +0100
++++ xfe-workdir/src/FontDialog.cpp	2025-04-26 23:11:14.899621618 +0200
 @@ -1,5 +1,5 @@
  // Font dialog. Taken from the FOX library and only modified for translation purpose
 -
@@ -243,10 +210,9 @@ index 7fbfe06..95baf56 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/HistInputDialog.cpp xfe-workdir/src/HistInputDialog.cpp
-index c5b8d39..4c4e564 100644
---- xfe-clean/src/HistInputDialog.cpp
-+++ xfe-workdir/src/HistInputDialog.cpp
+diff -urN --no-dereference xfe-clean/src/HistInputDialog.cpp xfe-workdir/src/HistInputDialog.cpp
+--- xfe-clean/src/HistInputDialog.cpp	2025-01-25 11:10:13.000000000 +0100
++++ xfe-workdir/src/HistInputDialog.cpp	2025-04-26 23:11:14.899662123 +0200
 @@ -1,5 +1,5 @@
  // Input dialog with history list and an optional check box
 -
@@ -254,20 +220,18 @@ index c5b8d39..4c4e564 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/IconList.cpp xfe-workdir/src/IconList.cpp
-index 3846914..1242618 100644
---- xfe-clean/src/IconList.cpp
-+++ xfe-workdir/src/IconList.cpp
+diff -urN --no-dereference xfe-clean/src/IconList.cpp xfe-workdir/src/IconList.cpp
+--- xfe-clean/src/IconList.cpp	2025-03-15 11:46:00.000000000 +0100
++++ xfe-workdir/src/IconList.cpp	2025-04-26 23:11:14.899790228 +0200
 @@ -1,4 +1,5 @@
  // Icon list. Taken from the FOX library and slightly modified.
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/InputDialog.cpp xfe-workdir/src/InputDialog.cpp
-index 1999aff..744261f 100644
---- xfe-clean/src/InputDialog.cpp
-+++ xfe-workdir/src/InputDialog.cpp
+diff -urN --no-dereference xfe-clean/src/InputDialog.cpp xfe-workdir/src/InputDialog.cpp
+--- xfe-clean/src/InputDialog.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/InputDialog.cpp	2025-04-26 23:11:14.899892579 +0200
 @@ -1,5 +1,5 @@
  // Simple input dialog (without history)
 -
@@ -275,10 +239,9 @@ index 1999aff..744261f 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/MessageBox.cpp xfe-workdir/src/MessageBox.cpp
-index 7bf48d3..ccf00fb 100644
---- xfe-clean/src/MessageBox.cpp
-+++ xfe-workdir/src/MessageBox.cpp
+diff -urN --no-dereference xfe-clean/src/MessageBox.cpp xfe-workdir/src/MessageBox.cpp
+--- xfe-clean/src/MessageBox.cpp	2025-01-24 09:43:26.000000000 +0100
++++ xfe-workdir/src/MessageBox.cpp	2025-04-26 23:11:14.899925161 +0200
 @@ -1,6 +1,6 @@
  // Message box. Taken from the FOX library and slightly modified for translation purpose.
  // Also added a SU button
@@ -287,19 +250,17 @@ index 7bf48d3..ccf00fb 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/OverwriteBox.cpp xfe-workdir/src/OverwriteBox.cpp
-index d352957..9c5e3f4 100644
---- xfe-clean/src/OverwriteBox.cpp
-+++ xfe-workdir/src/OverwriteBox.cpp
+diff -urN --no-dereference xfe-clean/src/OverwriteBox.cpp xfe-workdir/src/OverwriteBox.cpp
+--- xfe-clean/src/OverwriteBox.cpp	2025-01-24 09:42:30.000000000 +0100
++++ xfe-workdir/src/OverwriteBox.cpp	2025-04-26 23:11:14.899959386 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/Preferences.cpp xfe-workdir/src/Preferences.cpp
-index c7c49ca..2dec50a 100644
---- xfe-clean/src/Preferences.cpp
-+++ xfe-workdir/src/Preferences.cpp
+diff -urN --no-dereference xfe-clean/src/Preferences.cpp xfe-workdir/src/Preferences.cpp
+--- xfe-clean/src/Preferences.cpp	2025-03-15 11:30:05.000000000 +0100
++++ xfe-workdir/src/Preferences.cpp	2025-04-26 23:11:14.900054510 +0200
 @@ -1,5 +1,5 @@
  // Preferences dialog box
 -
@@ -307,10 +268,9 @@ index c7c49ca..2dec50a 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/Properties.cpp xfe-workdir/src/Properties.cpp
-index d17d0d8..92c1e35 100644
---- xfe-clean/src/Properties.cpp
-+++ xfe-workdir/src/Properties.cpp
+diff -urN --no-dereference xfe-clean/src/Properties.cpp xfe-workdir/src/Properties.cpp
+--- xfe-clean/src/Properties.cpp	2025-01-25 11:10:13.000000000 +0100
++++ xfe-workdir/src/Properties.cpp	2025-04-26 23:11:14.900198116 +0200
 @@ -1,5 +1,5 @@
  // Properties box
 -
@@ -318,40 +278,36 @@ index d17d0d8..92c1e35 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/SearchPanel.cpp xfe-workdir/src/SearchPanel.cpp
-index 6cc65a2..56d5151 100644
---- xfe-clean/src/SearchPanel.cpp
-+++ xfe-workdir/src/SearchPanel.cpp
+diff -urN --no-dereference xfe-clean/src/SearchPanel.cpp xfe-workdir/src/SearchPanel.cpp
+--- xfe-clean/src/SearchPanel.cpp	2025-01-25 11:14:13.000000000 +0100
++++ xfe-workdir/src/SearchPanel.cpp	2025-04-26 23:11:14.900389201 +0200
 @@ -1,4 +1,5 @@
  // Search panel
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/SearchWindow.cpp xfe-workdir/src/SearchWindow.cpp
-index f7fa356..5347e01 100644
---- xfe-clean/src/SearchWindow.cpp
-+++ xfe-workdir/src/SearchWindow.cpp
+diff -urN --no-dereference xfe-clean/src/SearchWindow.cpp xfe-workdir/src/SearchWindow.cpp
+--- xfe-clean/src/SearchWindow.cpp	2025-03-15 11:30:05.000000000 +0100
++++ xfe-workdir/src/SearchWindow.cpp	2025-04-26 23:11:14.900544657 +0200
 @@ -1,4 +1,5 @@
  // Search files dialog and panel
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/TextWindow.cpp xfe-workdir/src/TextWindow.cpp
-index 33f2f84..85b5d99 100644
---- xfe-clean/src/TextWindow.cpp
-+++ xfe-workdir/src/TextWindow.cpp
+diff -urN --no-dereference xfe-clean/src/TextWindow.cpp xfe-workdir/src/TextWindow.cpp
+--- xfe-clean/src/TextWindow.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/TextWindow.cpp	2025-04-26 23:11:14.900598512 +0200
 @@ -1,4 +1,5 @@
  // Text widget with a close button
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/WriteWindow.cpp xfe-workdir/src/WriteWindow.cpp
-index 28b5219..0bb1135 100644
---- xfe-clean/src/WriteWindow.cpp
-+++ xfe-workdir/src/WriteWindow.cpp
+diff -urN --no-dereference xfe-clean/src/WriteWindow.cpp xfe-workdir/src/WriteWindow.cpp
+--- xfe-clean/src/WriteWindow.cpp	2025-01-24 09:44:02.000000000 +0100
++++ xfe-workdir/src/WriteWindow.cpp	2025-04-26 23:11:14.900673236 +0200
 @@ -1,6 +1,6 @@
  // This is adapted from 'adie', a text editor found
  // in the FOX library and written by Jeroen van der Zijp.
@@ -360,19 +316,17 @@ index 28b5219..0bb1135 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/XFileExplorer.cpp xfe-workdir/src/XFileExplorer.cpp
-index 54b867f..bf7a89a 100644
---- xfe-clean/src/XFileExplorer.cpp
-+++ xfe-workdir/src/XFileExplorer.cpp
+diff -urN --no-dereference xfe-clean/src/XFileExplorer.cpp xfe-workdir/src/XFileExplorer.cpp
+--- xfe-clean/src/XFileExplorer.cpp	2025-03-15 11:30:05.000000000 +0100
++++ xfe-workdir/src/XFileExplorer.cpp	2025-04-26 23:11:14.900865283 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/XFileImage.cpp xfe-workdir/src/XFileImage.cpp
-index af06bb2..e287860 100644
---- xfe-clean/src/XFileImage.cpp
-+++ xfe-workdir/src/XFileImage.cpp
+diff -urN --no-dereference xfe-clean/src/XFileImage.cpp xfe-workdir/src/XFileImage.cpp
+--- xfe-clean/src/XFileImage.cpp	2025-03-15 11:30:05.000000000 +0100
++++ xfe-workdir/src/XFileImage.cpp	2025-04-26 23:11:14.901062007 +0200
 @@ -1,6 +1,6 @@
  // This code is adapted from 'imageviewer', a demo image viewer found
  // in the FOX library and written by Jeroen van der Zijp.
@@ -381,19 +335,17 @@ index af06bb2..e287860 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/XFilePackage.cpp xfe-workdir/src/XFilePackage.cpp
-index 99a288f..2b768c3 100644
---- xfe-clean/src/XFilePackage.cpp
-+++ xfe-workdir/src/XFilePackage.cpp
+diff -urN --no-dereference xfe-clean/src/XFilePackage.cpp xfe-workdir/src/XFilePackage.cpp
+--- xfe-clean/src/XFilePackage.cpp	2025-01-25 11:14:13.000000000 +0100
++++ xfe-workdir/src/XFilePackage.cpp	2025-04-26 23:11:14.901170771 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/XFileWrite.cpp xfe-workdir/src/XFileWrite.cpp
-index 9d666a1..244aa97 100644
---- xfe-clean/src/XFileWrite.cpp
-+++ xfe-workdir/src/XFileWrite.cpp
+diff -urN --no-dereference xfe-clean/src/XFileWrite.cpp xfe-workdir/src/XFileWrite.cpp
+--- xfe-clean/src/XFileWrite.cpp	2025-01-23 16:06:34.000000000 +0100
++++ xfe-workdir/src/XFileWrite.cpp	2025-04-26 23:11:14.901222737 +0200
 @@ -1,6 +1,6 @@
  // This is adapted from 'adie', a demo text editor found
  // in the FOX library and written by Jeroen van der Zijp.
@@ -402,10 +354,9 @@ index 9d666a1..244aa97 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/icons.cpp xfe-workdir/src/icons.cpp
-index d473a08..a32a01e 100644
---- xfe-clean/src/icons.cpp
-+++ xfe-workdir/src/icons.cpp
+diff -urN --no-dereference xfe-clean/src/icons.cpp xfe-workdir/src/icons.cpp
+--- xfe-clean/src/icons.cpp	2025-01-24 09:42:30.000000000 +0100
++++ xfe-workdir/src/icons.cpp	2025-04-26 23:11:14.901261770 +0200
 @@ -1,5 +1,5 @@
  // Global icons for all applications
 -
@@ -413,16 +364,15 @@ index d473a08..a32a01e 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/main.cpp xfe-workdir/src/main.cpp
-index 5996aca..f78a43c 100644
---- xfe-clean/src/main.cpp
-+++ xfe-workdir/src/main.cpp
+diff -urN --no-dereference xfe-clean/src/main.cpp xfe-workdir/src/main.cpp
+--- xfe-clean/src/main.cpp	2025-01-24 09:42:30.000000000 +0100
++++ xfe-workdir/src/main.cpp	2025-04-26 23:11:14.901309168 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-@@ -389,6 +390,7 @@ int main(int argc, char* argv[])
+@@ -389,6 +390,7 @@
      textdomain(PACKAGE);
  #endif
  
@@ -430,7 +380,7 @@ index 5996aca..f78a43c 100644
  #if defined(linux)
      // For package query on Linux systems, try to guess if the default package format is deb or rpm:
      //   - if dpkg exists then the system uses deb packages
-@@ -398,7 +400,6 @@ int main(int argc, char* argv[])
+@@ -398,7 +400,6 @@
      cmd = "dpkg --version";
      FXString str = xf_getcommandoutput(cmd);
  
@@ -438,7 +388,7 @@ index 5996aca..f78a43c 100644
      if (str.find("Debian") != -1)
      {
          pkg_format = DEB_PKG; // deb based system
-@@ -417,6 +418,8 @@ int main(int argc, char* argv[])
+@@ -417,6 +418,8 @@
              pkg_format = OTHER_PKG; // other (unsupported) package system
          }
      }
@@ -447,20 +397,18 @@ index 5996aca..f78a43c 100644
  #endif
  
      // Parse basic arguments
-diff --git xfe-clean/src/startupnotification.cpp xfe-workdir/src/startupnotification.cpp
-index 6a8a6b1..93ec81a 100644
---- xfe-clean/src/startupnotification.cpp
-+++ xfe-workdir/src/startupnotification.cpp
+diff -urN --no-dereference xfe-clean/src/startupnotification.cpp xfe-workdir/src/startupnotification.cpp
+--- xfe-clean/src/startupnotification.cpp	2025-01-24 09:35:02.000000000 +0100
++++ xfe-workdir/src/startupnotification.cpp	2025-04-26 23:11:14.901350355 +0200
 @@ -1,3 +1,4 @@
 +#include <stdlib.h>
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/src/xfedefs.h xfe-workdir/src/xfedefs.h
-index 2c30d42..2158104 100644
---- xfe-clean/src/xfedefs.h
-+++ xfe-workdir/src/xfedefs.h
-@@ -366,9 +366,9 @@ enum
+diff -urN --no-dereference xfe-clean/src/xfedefs.h xfe-workdir/src/xfedefs.h
+--- xfe-clean/src/xfedefs.h	2025-01-24 16:19:54.000000000 +0100
++++ xfe-workdir/src/xfedefs.h	2025-04-26 23:11:14.901382881 +0200
+@@ -366,9 +366,9 @@
  #define MTAB_PATH    "/proc/mounts"
  #endif
  
@@ -472,10 +420,9 @@ index 2c30d42..2158104 100644
  #define OTHER_PKG    2
 -
 -#endif
-diff --git xfe-clean/src/xfeutils.cpp xfe-workdir/src/xfeutils.cpp
-index e4f070f..284b1e6 100644
---- xfe-clean/src/xfeutils.cpp
-+++ xfe-workdir/src/xfeutils.cpp
+diff -urN --no-dereference xfe-clean/src/xfeutils.cpp xfe-workdir/src/xfeutils.cpp
+--- xfe-clean/src/xfeutils.cpp	2025-01-24 09:44:02.000000000 +0100
++++ xfe-workdir/src/xfeutils.cpp	2025-04-26 23:11:14.901445906 +0200
 @@ -3,7 +3,7 @@
  // Also supports a timeout on the stat and lstat function (this is the reason
  // why some standard FOX function cannot be used and are rewritten here)
@@ -485,10 +432,9 @@ index e4f070f..284b1e6 100644
  #include "config.h"
  #include "i18n.h"
  
-diff --git xfe-clean/st/st.c xfe-workdir/st/st.c
-index a80d8e9..72fefc5 100644
---- xfe-clean/st/st.c
-+++ xfe-workdir/st/st.c
+diff -urN --no-dereference xfe-clean/st/st.c xfe-workdir/st/st.c
+--- xfe-clean/st/st.c	2025-01-20 18:23:14.000000000 +0100
++++ xfe-workdir/st/st.c	2025-04-26 23:11:14.901556112 +0200
 @@ -22,17 +22,22 @@
  #include <termios.h>
  #include <unistd.h>

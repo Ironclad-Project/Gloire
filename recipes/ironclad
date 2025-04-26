@@ -6,14 +6,16 @@ version=0.0git
 revision=1
 source_dir="ironclad"
 source_imagedeps="git"
-source_hostdeps="automake autoconf libtool pkg-config"
+source_hostdeps="automake autoconf pkg-config"
 imagedeps="texinfo gprbuild"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs"
 source_allow_network="yes"
 
 prepare() {
     ./bootstrap
+
+    autotools_recursive_regen
 }
 
 configure() {

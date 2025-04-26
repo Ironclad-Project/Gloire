@@ -1,0 +1,39 @@
+diff --git a/src/do_command.c b/src/do_command.c
+index ee815b6..ca04469 100644
+--- a/src/do_command.c
++++ b/src/do_command.c
+@@ -264,7 +264,7 @@ static int child_process(entry * e, char **jobenv) {
+ 		 */
+ 		{
+ 			char *shell = env_get("SHELL", jobenv);
+-			int fd, fdmax = TMIN(getdtablesize(), MAX_CLOSE_FD);
++			int fd, fdmax = TMIN(sysconf(_SC_OPEN_MAX), MAX_CLOSE_FD);
+ 			DIR *dir;
+ 			struct dirent *dent;
+ 
+diff --git a/src/env.c b/src/env.c
+index b5645b5..8feb690 100644
+--- a/src/env.c
++++ b/src/env.c
+@@ -261,7 +261,7 @@ int load_env(char *envstr, FILE * f) {
+ 	}
+ 	if (state != FINI && state != EQ2 && !(state == VALUE && !quotechar)) {
+ 		Debug(DPARS, ("load_env, not an env var, state = %d\n", state));
+-		if (fseek(f, filepos, 0)) {
++		if (fseek(f, filepos, SEEK_SET)) {
+ 			return ERR;
+ 		}
+ 		Set_LineNum(fileline);
+diff --git a/src/popen.c b/src/popen.c
+index dadff0d..570c5a6 100644
+--- a/src/popen.c
++++ b/src/popen.c
+@@ -79,7 +79,7 @@ FILE *cron_popen(char *program, const char *type, struct passwd *pw, char **jobe
+ 		return (NULL);
+ 
+ 	if (!pids) {
+-		if ((fds = getdtablesize()) <= 0)
++		if ((fds = sysconf(_SC_OPEN_MAX)) <= 0)
+ 			return (NULL);
+ 		if (fds > MAX_CLOSE_FD)
+ 			fds = MAX_CLOSE_FD; /* avoid allocating too much memory */

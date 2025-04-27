@@ -47,6 +47,38 @@ index 8782ae6..bfacac2 100644
  	return ret;
  }
  
+diff --git mlibc-clean/options/posix/generic/unistd.cpp mlibc-workdir/options/posix/generic/unistd.cpp
+index 6e525be..e39c744 100644
+--- mlibc-clean/options/posix/generic/unistd.cpp
++++ mlibc-workdir/options/posix/generic/unistd.cpp
+@@ -1208,13 +1208,13 @@ pid_t vfork(void) {
+ 	/* deferring to fork as implementing vfork correctly requires assembly
+ 	 * to handle not mucking up the stack
+ 	 */
+-	if(!mlibc::sys_fork) {
++	if(!mlibc::sys_vfork) {
+ 		MLIBC_MISSING_SYSDEP();
+ 		errno = ENOSYS;
+ 		return -1;
+ 	}
+ 
+-	if(int e = mlibc::sys_fork(&child); e) {
++	if(int e = mlibc::sys_vfork(&child); e) {
+ 		errno = e;
+ 		return -1;
+ 	}
+diff --git mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+index 51c4e5c..8699c6b 100644
+--- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
++++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+@@ -100,6 +100,7 @@ int sys_close(int fd);
+ [[gnu::weak]] void sys_yield();
+ [[gnu::weak]] int sys_sleep(time_t *secs, long *nanos);
+ [[gnu::weak]] int sys_fork(pid_t *child);
++[[gnu::weak]] int sys_vfork(pid_t *child);
+ [[gnu::weak]] int sys_execve(const char *path, char *const argv[], char *const envp[]);
+ [[gnu::weak]] int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set,
+ 		fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events);
 diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
 index 33cd1b9..fbb98d4 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
@@ -60,7 +92,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..8d915a7 100644
+index 68e6fee..1a6a67b 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@ extern "C" void __mlibc_sigret(void);
@@ -109,16 +141,33 @@ index 68e6fee..8d915a7 100644
  int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
  	int ret, errno;
  	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
-@@ -406,7 +418,7 @@ int sys_fork(pid_t *child) {
+@@ -406,7 +418,24 @@ int sys_fork(pid_t *child) {
  	pid_t ret;
  	int errno;
  
 -	SYSCALL0(SYSCALL_FORK);
 +	SYSCALL2(SYSCALL_FORK, 0, 1);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	if (child != NULL) {
++		*child = ret;
++	}
++
++	return 0;
++}
++
++int sys_vfork(pid_t *child) {
++	pid_t ret;
++	int errno;
++
++	SYSCALL2(SYSCALL_FORK, 1, 1);
  
  	if (ret == -1) {
  		return errno;
-@@ -692,15 +704,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
+@@ -692,15 +721,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -136,7 +185,7 @@ index 68e6fee..8d915a7 100644
  	return errno;
  }
  
-@@ -713,8 +724,9 @@ int sys_link(const char* srcpath, const char* destpath) {
+@@ -713,8 +741,9 @@ int sys_link(const char* srcpath, const char* destpath) {
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -147,7 +196,7 @@ index 68e6fee..8d915a7 100644
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +735,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
+@@ -723,6 +752,13 @@ int sys_socket(int domain, int type, int protocol, int *fd) {
  	}
  }
  
@@ -161,7 +210,7 @@ index 68e6fee..8d915a7 100644
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1176,12 @@ int sys_sysconf(int num, long *rret) {
+@@ -1157,6 +1193,12 @@ int sys_sysconf(int num, long *rret) {
  	int ret, errno;
  
  	switch (num) {

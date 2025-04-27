@@ -60,7 +60,7 @@ index 33cd1b9..fbb98d4 100644
  #else
  	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 68e6fee..31851a9 100644
+index 68e6fee..8d915a7 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@ extern "C" void __mlibc_sigret(void);
@@ -109,6 +109,15 @@ index 68e6fee..31851a9 100644
  int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
  	int ret, errno;
  	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
+@@ -406,7 +418,7 @@ int sys_fork(pid_t *child) {
+ 	pid_t ret;
+ 	int errno;
+ 
+-	SYSCALL0(SYSCALL_FORK);
++	SYSCALL2(SYSCALL_FORK, 0, 1);
+ 
+ 	if (ret == -1) {
+ 		return errno;
 @@ -692,15 +704,14 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
  int sys_rmdir(const char* path){
  	int ret, errno;

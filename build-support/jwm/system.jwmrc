@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <JWM>
     <!-- The root menu. -->
-    <RootMenu onroot="12">
+    <RootMenu onroot="0">
         <Program icon="utilities-terminal" label="Terminal">st bash --login</Program>
         <Program icon="system-file-manager" label="File Manager">xfe</Program>
         <Menu icon="applications-other" label="Applications">
@@ -58,7 +58,7 @@
 
     <!-- Tray at the top. -->
     <Tray x="0" y="0" autohide="off" delay="1000">
-        <TrayButton icon="ironcladseal" label="Applications">root:1</TrayButton>
+        <TrayButton label="Applications">root:0</TrayButton>
         <Spacer width="2"/>
         <TaskList maxwidth="256"/>
         <Pager labeled="true"/>
@@ -170,7 +170,7 @@
     <Key mask="A" key="Tab">nextstacked</Key>
     <Key mask="A" key="F4">close</Key>
     <Key mask="A" key="#">desktop#</Key>
-    <Key mask="A" key="F1">root:1</Key>
+    <Key mask="A" key="F1">root:0</Key>
     <Key mask="A" key="F2">window</Key>
     <Key mask="A" key="F10">maximize</Key>
     <Key mask="A" key="Right">rdesktop</Key>

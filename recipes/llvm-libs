@@ -1,0 +1,33 @@
+name=llvm-libs
+version=18.1.7
+revision=1
+tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"
+tarball_blake2b="b8c37bd131fb5f3131bfab4fbad7aa811079ca10723faa14779253bc62b1ee08d4e04650e1da883297ed88a62d518b868a1f13cf57d03233254fd01209da5c02"
+imagedeps="build-essential cmake ninja-build git"
+hostdeps="gcc pkg-config"
+deps="core-libs ncurses zlib zstd libffi"
+
+build() {
+        cmake_source_dir="${source_dir}/llvm" \
+    cmake_configure \
+        -UBUILD_SHARED_LIBS \
+        -UENABLE_STATIC \
+        -DLLVM_LINK_LLVM_DYLIB=ON \
+        -DLLVM_ENABLE_FFI=ON \
+        -DLLVM_ENABLE_EH=ON \
+        -DLLVM_ENABLE_RTTI=ON \
+        -DLLVM_DEFAULT_TARGET_TRIPLE=${OS_TRIPLET} \
+        -DLLVM_HOST_TRIPLE=${OS_TRIPLET} \
+        -Wno-dev
+
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+    rm -rf "${dest_dir}${prefix}"/bin
+
+    post_package_strip
+}

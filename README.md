@@ -2,7 +2,7 @@
 
 [<img src="artwork/logo.png" width="250" align="right" alt="Gloire logo">]()
 
-Gloire is an OS built with the [Ironclad](https://ironclad.nongnu.org)
+Gloire is an OS built with the [Ironclad](https://ironclad-os.org)
 kernel and using GNU tools for the userland, along with some original
 applications like `util-ironclad`. This repository holds scripts and tools to
 build the OS from the ground up on a Linux-based system.
@@ -10,14 +10,14 @@ build the OS from the ground up on a Linux-based system.
 Gloire is named after the [french ironclad](https://en.wikipedia.org/wiki/French_ironclad_Gloire),
 which was the first ocean-going vessel of its kind.
 
-![Gloire running the JWM window manager, a terminal emulator, xeyes, and a game](artwork/screenshot1.png)
-*Gloire running the JWM window manager, a terminal emulator, xeyes, and a game*
-![Gloire generating an RSA key and running neofetch in its fallback shell](artwork/screenshot2.png)
-*Gloire generating an RSA key and running neofetch in its fallback shell.*
+![Gloire running the JWM window manager, a terminal, taipei, and glxgears](artwork/screenshot1.png)
+![Gloire showcasing some terminal utilities](artwork/screenshot2.png)
+![Gloire running Taisei Project, a FOSS fangame of the Tōhō series](artwork/screenshot3.png)
+![Gloire showcasing the creation, compilation, and execution of a C program](artwork/screenshot4.png)
 
 ## Downloading
 
-One can grab a pre-built Gloire image [here](https://github.com/streaksu/Gloire/releases).
+One can grab a pre-built Gloire image [here](https://codeberg.org/Ironclad/Gloire/releases).
 
 ## Running
 
@@ -25,17 +25,17 @@ Gloire as built from this repository will result in a live non-persistent image
 with the option for installing. So keep in mind that when doing changes to the
 filesystem.
 
-### System requirements
-
-The image built from this repository is a live distribution that will mount
-the filesystem's contents in memory, thus, a sizeable memory is needed. The
-recommended amount is at least 4G.
-
-Additionally, for x86_64 platforms, Ironclad requires a system with a working
-HPET.
-
-For more information on the current hardware requirements of the kernel, please
-visit [Ironclad's hardware support section](https://ironclad.nongnu.org/supportedhardware.html).
+> [!IMPORTANT]
+> For the live images, the minimum amount of memory is dependent on the size
+> of the image. A good formula is `size of the image + 1G`.
+>
+> For disk images, the minimum amount of memory is  500M for the graphical
+> targets and 200M for the terminal-only ones.
+>
+> Additionally, for x86_64 platforms, Ironclad requires a system with a working
+> HPET, among others.
+> For more information on the current hardware requirements of the
+> kernel, please visit [Ironclad's hardware support section](https://ironclad-os.org/supportedhardware.html).
 
 ### On virtual machines
 
@@ -44,7 +44,7 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4G -M q35 -drive format=raw,file=gloire.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -drive format=raw,file=gloire.iso -serial stdio
 ```
 
 Where `gloire.iso` is your image of choice.
@@ -102,13 +102,16 @@ Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
 one can burn your gloire image (uncompressing it first if downloaded) to a
 SATA, IDE, or USB drive.
 
-## Contributing
+## Contributing and bug reporting
 
 Gloire accepts contributions for new packages or any other kind of changes
-using the pull request system baked into Github.
-Please [submit PRs here](https://github.com/streaksu/Gloire/pulls) or read
-our documentation on how to do so and some things to keep in mind porting on
-[the project's wiki](https://github.com/streaksu/Gloire/wiki).
+using the pull request system baked into Codeberg. Check our
+[contribution information](CONTRIBUTING.md).
+
+## Joining the community
+
+You can visit our list of community channels on Ironclad's
+[community tab] (https://ironclad-os.org/community.html).
 
 ## Building
 
@@ -116,7 +119,7 @@ The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
 ```bash
-PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" ./build-support/makeiso.sh
 ```
 
 *Note:* on certain distros, like Ubuntu 24.04, one may get an error like:
@@ -124,7 +127,7 @@ PKGS_TO_INSTALL="*" ./build-support/makeiso.sh # Create the image.
 .../.jinx-cache/rbrt: failed to open or write to /proc/self/setgroups at line 186: Permission denied
 ```
 In that case, it likely means apparmor is preventing the use of user namespaces,
-causing `jinx` to fail to work. One can enable user namespaces by running:
+which `jinx` needs. One can enable user namespaces by running:
 ```sh
 sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
 ```
@@ -133,10 +136,14 @@ This is not permanent across reboots. To make it so, one can do:
 sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
 ```
 
+The image size will default to 3G, this may be too big or too small for the
+selection of packages the user may have built the image with. For modifying
+this value, use the environment variable `IMAGE_SIZE`.
+
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash
-PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh # Create the image.
+PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh
 ```
 
 For build/debug/run cycles, you can use the following. This is explained in more detail in u/streaksu's original repositories wiki. Again, please ensure to replace "firmware path" with your path to your firmware.
@@ -176,18 +183,12 @@ A list of the tools needed for compilation of the OS are:
 - `sgdisk` from the `gptfdisk` package for building the image.
 - `qemu` for testing, if wanted.
 - `tar` and `lzip` for extracting packages.
-- `rsync` for building bootable images.
 - `xorriso` to build the final ISO file.
 
 All of said things can be installed in debian-based systems with
 
 ```bash
 sudo apt install lzip git build-essential rsync xorriso curl
-```
-
-Lastly, to simulate with QEMU you'll need to install it with:
-```bash
-sudo apt-get install qemu-system
 ```
 
 ## Licensing

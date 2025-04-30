@@ -4,7 +4,7 @@ name=gcc
 from_source=gcc-host
 revision=1
 imagedeps="build-essential"
-hostdeps="autoconf-2.69 automake libtool pkg-config"
+hostdeps="pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
 
@@ -51,6 +51,8 @@ package() {
 
     cd build
     DESTDIR="${dest_dir}" make install-gcc
+
+    ln -s x86_64-ironclad-mlibc-gnatbind "${dest_dir}${prefix}"/bin/x86_64-ironclad-mlibc-gnatbind-14
 
         strip_command=strip \
     post_package_strip

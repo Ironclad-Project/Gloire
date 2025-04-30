@@ -5,8 +5,6 @@ set -ex
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
-: "${IMAGE_SIZE:=2G}"
-
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
     git clone https://github.com/SW480C-O25T18/ironclad.git ironclad
@@ -19,10 +17,12 @@ set -f
 $SUDO rm -rf sysroot
 
 # Retry the installation in case of transient errors like 503 TooManyRequests.
-until ./jinx install "sysroot" base $PKGS_TO_INSTALL; do
+until ./jinx build-if-needed base $PKGS_TO_INSTALL; do
     echo "Package installation failed (likely due to rate limiting). Retrying in 30 seconds..."
     sleep 30
 done
+
+$SUDO ./jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
@@ -38,21 +38,23 @@ else
     fi
 fi
 
-# Ensure permissions are set.
-$SUDO chown -R root:root sysroot/*
-$SUDO chown -R 1000:1000 sysroot/home/user
-$SUDO chmod 750 sysroot/root
-$SUDO chmod 777 sysroot/tmp
-$SUDO chmod 777 sysroot/run
-$SUDO chmod 710 sysroot/home/user
-
 # Prepare the iso and boot directories.
 rm -rf iso_root
 mkdir -p iso_root/boot
 
+# Allocate the image. If a size is passed, we just use that size, else, we try
+# to guesstimate calculate a rough size.
+if [ -z "$IMAGE_SIZE" ]; then
+    if [ -f sysroot/usr/bin/slim ]; then
+        IMAGE_SIZE=2.75G
+    else
+        IMAGE_SIZE=750M
+    fi
+fi
+fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
+
 # Create and format the initramfs filesystem.
 # TODO: Once ready, move to ext4, now its ext2 only.
-fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
 $SUDO mkfs.ext2 iso_root/boot/gloire.ext
 mkdir -p mount_dir
 $SUDO mount iso_root/boot/gloire.ext mount_dir
@@ -159,7 +161,7 @@ rm "$CONFIG_TEMP"
 
 # Unmount after we are done.
 sync
-$SUDO umount -R mount_dir
+$SUDO umount mount_dir
 $SUDO rm -rf mount_dir
 
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
@@ -179,3 +181,5 @@ else
 fi
 
 rm -rf iso_root
+
+sync

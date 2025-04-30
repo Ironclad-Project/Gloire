@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=slim
+repology_id=slim-login-manager
 version=1.4.0
 revision=1
 tarball_url="https://downloads.sourceforge.net/project/slim-fork/slim-${version}.tar.gz"

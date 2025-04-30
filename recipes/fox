@@ -1,12 +1,12 @@
 #! /bin/sh
 
 name=fox
+repology_id=fox-toolkit
 version=1.6.59
 revision=1
 tarball_url="http://fox-toolkit.org/ftp/fox-${version}.tar.gz"
 tarball_blake2b="07e89813c4bf4c62da4f668b8115e9e1bf75c54f8c153a4201bf7f1581a87234c22bb193cbc102b23664270c79b5ececb271ebfa5fe2db67dc9bbf1cdf553ad5"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxft libxext freetype2 glu"
 
 prepare() {
@@ -14,9 +14,7 @@ prepare() {
 }
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
-        configure_script_path=./configure \
+        PKG_CONFIG=${OS_TRIPLET}-pkg-config \
     autotools_configure
 }
 

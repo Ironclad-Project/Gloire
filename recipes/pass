@@ -1,6 +1,8 @@
 #! /bin/sh
 
 name=pass
+repology_id=password-store
+repology_srcname=password-store
 version=1.7.4
 revision=1
 git_url="https://git.zx2c4.com/password-store"
@@ -8,7 +10,7 @@ branch=${version}
 deps="core-libs git tree"
 
 package() {
-    cp -rp "${source_dir}"/. ./
+    cp -r "${source_dir}"/. ./
     make DESTDIR="${dest_dir}" PREFIX="${prefix}" install
     post_package_strip
 }

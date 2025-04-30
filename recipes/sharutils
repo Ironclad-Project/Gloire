@@ -5,8 +5,7 @@ version=4.15.2
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/sharutils/sharutils-${version}.tar.xz"
 tarball_blake2b="e2acae027679ebdf723ecae6f243608f501f5c24685a19223dd27580ccf76bc7d38905a9d202b30cf2633e5580d727821398f1162b170233f03c17f3da683917"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs"
 
 prepare() {
@@ -14,14 +13,10 @@ prepare() {
 }
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
         CFLAGS="$TARGET_CFLAGS -fcommon" \
         CXXFLAGS="$TARGET_CXXFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
-        configure_script_path=./configure \
-    autotools_configure_noflags \
-        --disable-dependency-tracking
+    autotools_configure_noflags
 }
 
 build() {

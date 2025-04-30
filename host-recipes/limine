@@ -3,7 +3,7 @@
 name=limine
 from_source=limine
 revision=1
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 imagedeps="nasm build-essential mtools"
 
 configure() {
@@ -17,7 +17,7 @@ configure() {
 
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
-        LDFLAGS="$HOST_LDFLAGS" \
+        LDFLAGS="$HOST_LDFLAGS -static" \
     "${source_dir}"/configure \
         --prefix="${prefix}" \
         TOOLCHAIN_FOR_TARGET=${OS_TRIPLET} \
@@ -27,7 +27,6 @@ configure() {
 }
 
 build() {
-        LDFLAGS="$LDFLAGS -static" \
     make -j${parallelism}
 }
 

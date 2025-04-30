@@ -6,12 +6,12 @@ revision=1
 tarball_url="https://github.com/hvisage/metalog/archive/refs/tags/metalog-${version}.tar.gz"
 tarball_blake2b="6088c86fad90185fcb22a96ff88686647eac1fb4216884f43c07dff23274efc748c908f6f98162f743d2528437748f79809dfe6911d8d47e6cf7e58c8f3ca3b4"
 source_deps="autoconf-archive"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+source_hostdeps="automake autoconf pkg-config"
+hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs pcre2"
 
 prepare() {
-    autotools_recursive_regen
+    autoreconf -fvi -I${sysroot_dir}/usr/share/aclocal
 }
 
 configure() {

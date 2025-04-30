@@ -1,16 +1,13 @@
 #! /bin/sh
 
 name=libintl
+skip_pkg_check=yes
 from_source=gettext
 revision=1
-hostdeps="gcc automake autoconf libtool pkg-config"
-deps="mlibc libgcc libstdc++ libiconv"
+hostdeps="gcc pkg-config"
+deps="mlibc libgcc libstdc++ libatomic libiconv"
 
 configure() {
-        ACLOCAL=true \
-        AUTOCONF=true \
-        AUTOMAKE=true \
-        AUTOHEADER=true \
     autotools_configure \
         --without-emacs \
         --without-lispdir \

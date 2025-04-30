@@ -1,12 +1,11 @@
 #! /bin/sh
 
 name=imlib2
-version=1.12.3
+version=1.12.5
 revision=1
 tarball_url="https://downloads.sourceforge.net/enlightenment/imlib2-${version}.tar.xz"
-tarball_blake2b="3c02b103bf65ed54319b30d3112b8c4a1b8f41333f2a8848fc44bc1380e1e5dbe3a21e311685d80f77f08815bb11a2a1073beb1683df852919f2c6003535fcaf"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+tarball_blake2b="13370398b8aaa876d98910122949ec40ae8f7eea6c68fd8cdea991cef617e7619cc7b5dc59871b09fc08100c4d4039e13b82467ee6ee5a8f4d0aa41ee3d624a9"
+hostdeps="gcc pkg-config"
 deps="core-libs bzip2 freetype2 libjpeg-turbo libpng libtiff libxext xz"
 
 prepare() {

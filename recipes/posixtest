@@ -1,14 +1,15 @@
 #! /bin/sh
 
 name=posixtest
-version=d3cdad2291f77b4c090d8f24e7167700e6bba843
+skip_pkg_check=yes
+version=0.0git
 revision=1
-tarball_url="https://github.com/streaksu/posixtest/archive/${version}.tar.gz"
-tarball_blake2b="58f45227978fd36fcd617f3cc8a42d94f8c1d73eaf7cc5b7c5622e9ef83c949352b3ecd5f7ed7a85f780121ee9b34fdcdec38f350f11a43968f205984fe0ceb9"
+git_url="https://codeberg.org/Ironclad/posixtest"
+commit=4cf97b0d46c330edfb440ee2558bc8c49b4abe1a
 source_imagedeps="git"
-source_hostdeps="automake autoconf libtool pkg-config"
+source_hostdeps="automake autoconf pkg-config"
 source_allow_network="yes"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs"
 
 prepare() {

@@ -1,7 +1,177 @@
-diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
-index 8782ae6..bfacac2 100644
---- mlibc-clean/options/posix/generic/sys-shm.cpp
-+++ mlibc-workdir/options/posix/generic/sys-shm.cpp
+diff -urN --no-dereference mlibc-clean/abis/ironclad/vm-flags.h mlibc-workdir/abis/ironclad/vm-flags.h
+--- mlibc-clean/abis/ironclad/vm-flags.h	2025-04-28 07:46:47.165624643 +0200
++++ mlibc-workdir/abis/ironclad/vm-flags.h	2025-04-28 07:46:47.303272573 +0200
+@@ -14,7 +14,6 @@
+ #define MAP_ANON      0x08
+ #define MAP_ANONYMOUS 0x08
+ #define MAP_NORESERVE 0x10
+-#define MAP_WC        (1 << 4)
+ 
+ #define MS_ASYNC 0x01
+ #define MS_SYNC 0x02
+diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
+--- mlibc-clean/meson.build	2025-04-28 07:46:47.167026826 +0200
++++ mlibc-workdir/meson.build	2025-04-28 07:46:47.303338744 +0200
+@@ -239,6 +239,7 @@
+ elif host_machine.system() == 'ironclad'
+ 	rtld_include_dirs += include_directories('sysdeps/ironclad/include')
+ 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
++	internal_conf.set10('MLIBC_MMAP_ALLOCATE_DSO', true)
+ 	subdir('sysdeps/ironclad')
+ elif host_machine.system() == 'keyronex'
+ 	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
+diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
+--- mlibc-clean/options/internal/generic/charset.cpp	2025-04-28 07:46:47.173412746 +0200
++++ mlibc-workdir/options/internal/generic/charset.cpp	2025-04-28 08:16:38.623948977 +0200
+@@ -13,36 +13,28 @@
+ bool charset::is_alpha(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_alpha() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_digit(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return c >= '0' && c <= '9';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_digit() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_xdigit(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_xdigit() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_alnum(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_alnum() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+@@ -55,63 +47,49 @@
+ 				|| c == '@'
+ 				|| c == '[' || c == '\\' || c == ']' || c == '^' || c == '_' || c == '`'
+ 				|| c == '{' || c == '|' || c == '}' || c == '~';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_punct() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_graph(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return c >= 0x21 && c <= 0x7E;
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_graph() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_blank(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return c == ' ' || c == '\t';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_blank() is not implemented"
+-				" for the full Unicode charset " << c << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_space(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_space() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_print(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return c >= 0x20 && c <= 0x7E;
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_print() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_lower(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return (c >= 'a' && c <= 'z');
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_print() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+ bool charset::is_upper(codepoint c) {
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		return (c >= 'A' && c <= 'Z');
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::is_print() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return false;
+ }
+ 
+@@ -119,9 +97,7 @@
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		if(c >= 'A' && c <= 'Z')
+ 			return c - 'A' + 'a';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::to_lower() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return c;
+ }
+ 
+@@ -129,9 +105,7 @@
+ 	if(c <= 0x7F && is_ascii_superset())
+ 		if(c >= 'a' && c <= 'z')
+ 			return c - 'a' + 'A';
+-	if(c > 0x7F)
+-		mlibc::infoLogger() << "mlibc: charset::to_upper() is not implemented"
+-				" for the full Unicode charset" << frg::endlog;
++
+ 	return c;
+ }
+ 
+diff -urN --no-dereference mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
+--- mlibc-clean/options/posix/generic/posix_locale.cpp	2025-04-28 07:46:47.175232868 +0200
++++ mlibc-workdir/options/posix/generic/posix_locale.cpp	2025-04-28 12:24:57.189575852 +0200
+@@ -25,7 +25,7 @@
+ 
+ locale_t uselocale(locale_t) {
+ 	if(!uselocale_seen) {
+-		mlibc::infoLogger() << "mlibc: uselocale() is a no-op" << frg::endlog;
++		//mlibc::infoLogger() << "mlibc: uselocale() is a no-op" << frg::endlog;
+ 		uselocale_seen = true;
+ 	}
+ 	return nullptr;
+diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
+--- mlibc-clean/options/posix/generic/sys-shm.cpp	2025-04-28 07:46:47.175232868 +0200
++++ mlibc-workdir/options/posix/generic/sys-shm.cpp	2025-04-28 07:46:47.303401137 +0200
 @@ -4,6 +4,7 @@
  #include <bits/ensure.h>
  #include <mlibc/debug.hpp>
@@ -10,7 +180,7 @@ index 8782ae6..bfacac2 100644
  
  void *shmat(int shmid, const void *shmaddr, int shmflg) {
  	void *ret;
-@@ -17,11 +18,7 @@ void *shmat(int shmid, const void *shmaddr, int shmflg) {
+@@ -17,11 +18,7 @@
  
  int shmctl(int shmid, int cmd, struct shmid_ds *buf) {
  	int ret;
@@ -23,3 +193,195 @@ index 8782ae6..bfacac2 100644
  	return ret;
  }
  
+diff -urN --no-dereference mlibc-clean/options/posix/generic/unistd.cpp mlibc-workdir/options/posix/generic/unistd.cpp
+--- mlibc-clean/options/posix/generic/unistd.cpp	2025-04-28 07:46:47.175232868 +0200
++++ mlibc-workdir/options/posix/generic/unistd.cpp	2025-04-28 07:46:47.303471924 +0200
+@@ -1208,13 +1208,13 @@
+ 	/* deferring to fork as implementing vfork correctly requires assembly
+ 	 * to handle not mucking up the stack
+ 	 */
+-	if(!mlibc::sys_fork) {
++	if(!mlibc::sys_vfork) {
+ 		MLIBC_MISSING_SYSDEP();
+ 		errno = ENOSYS;
+ 		return -1;
+ 	}
+ 
+-	if(int e = mlibc::sys_fork(&child); e) {
++	if(int e = mlibc::sys_vfork(&child); e) {
+ 		errno = e;
+ 		return -1;
+ 	}
+diff -urN --no-dereference mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+--- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp	2025-04-28 07:46:47.176577663 +0200
++++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp	2025-04-28 07:46:47.303562351 +0200
+@@ -100,6 +100,7 @@
+ [[gnu::weak]] void sys_yield();
+ [[gnu::weak]] int sys_sleep(time_t *secs, long *nanos);
+ [[gnu::weak]] int sys_fork(pid_t *child);
++[[gnu::weak]] int sys_vfork(pid_t *child);
+ [[gnu::weak]] int sys_execve(const char *path, char *const argv[], char *const envp[]);
+ [[gnu::weak]] int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set,
+ 		fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events);
+diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
+--- mlibc-clean/options/rtld/generic/linker.cpp	2025-04-28 07:46:47.177713859 +0200
++++ mlibc-workdir/options/rtld/generic/linker.cpp	2025-04-28 07:46:47.303685175 +0200
+@@ -521,6 +521,7 @@
+ 		return LinkerError::outOfMemory;
+ 	}
+ 
++	mlibc::sys_vm_unmap(mappedAddr, highest_address - object->baseAddress);
+ 	object->baseAddress = reinterpret_cast<uintptr_t>(mappedAddr);
+ #else
+ 	object->baseAddress = libraryBase;
+diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp	2025-04-28 07:46:47.179899488 +0200
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp	2025-04-28 07:46:47.303827953 +0200
+@@ -25,13 +25,9 @@
+ namespace mlibc {
+ 
+ void sys_libc_log(const char *message) {
+-#ifdef __MLIBC_DEBUG
+ 	ssize_t unused;
+-	sys_write(2, message, strlen(message), &unused);
+-	sys_write(2, "\n", 1, &unused);
+-#else
+-	(void)message;
+-#endif
++	sys_write(1, message, strlen(message), &unused);
++	sys_write(1, "\n", 1, &unused);
+ }
+ 
+ void sys_libc_panic() {
+@@ -200,6 +196,16 @@
+ 	return errno;
+ }
+ 
++int sys_fallocate(int fd, off_t offset, size_t size) {
++	if (offset < 0 || size == 0) {
++		return EINVAL;
++	}
++
++	int ret, errno;
++	SYSCALL2(SYSCALL_TRUNCATE, fd, offset + size);
++	return errno;
++}
++
+ int sys_flock(int fd, int options) {
+ 	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
+ 	struct flock lock;
+@@ -268,6 +274,12 @@
+ 	return errno;
+ }
+ 
++int sys_posix_madvise(void *addr, size_t length, int advice) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_MADVISE, addr, length, advice);
++	return errno;
++}
++
+ int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
+ 	int ret, errno;
+ 	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
+@@ -406,7 +418,24 @@
+ 	pid_t ret;
+ 	int errno;
+ 
+-	SYSCALL0(SYSCALL_FORK);
++	SYSCALL2(SYSCALL_FORK, 0, 1);
++
++	if (ret == -1) {
++		return errno;
++	}
++
++	if (child != NULL) {
++		*child = ret;
++	}
++
++	return 0;
++}
++
++int sys_vfork(pid_t *child) {
++	pid_t ret;
++	int errno;
++
++	SYSCALL2(SYSCALL_FORK, 1, 1);
+ 
+ 	if (ret == -1) {
+ 		return errno;
+@@ -692,15 +721,14 @@
+ int sys_rmdir(const char* path){
+ 	int ret, errno;
+ 	size_t path_len = strlen (path);
+-	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
++	SYSCALL4(SYSCALL_UNLINK, AT_FDCWD, path, path_len, AT_REMOVEDIR);
+ 	return errno;
+ }
+ 
+ int sys_unlinkat(int fd, const char *path, int flags) {
+-	(void)flags;
+ 	int ret, errno;
+ 	size_t path_len = strlen (path);
+-	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
++	SYSCALL4(SYSCALL_UNLINK, fd, path, path_len, flags);
+ 	return errno;
+ }
+ 
+@@ -713,8 +741,9 @@
+ }
+ 
+ int sys_socket(int domain, int type, int protocol, int *fd) {
++	(void)protocol;
+ 	int ret, errno;
+-	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
++	SYSCALL2(SYSCALL_SOCKET, domain, type);
+ 	if (ret != -1) {
+ 		*fd = ret;
+ 		return 0;
+@@ -723,6 +752,13 @@
+ 	}
+ }
+ 
++int sys_socketpair(int domain, int type, int protocol, int *fds) {
++	(void)protocol;
++	int ret, errno;
++	SYSCALL3(SYSCALL_SOCKETPAIR, domain, type, fds);
++	return errno;
++}
++
+ uid_t sys_getuid() {
+ 	uint64_t ret, errno;
+ 	SYSCALL0(SYSCALL_GETUID);
+@@ -1157,6 +1193,12 @@
+ 	int ret, errno;
+ 
+ 	switch (num) {
++		case _SC_LINE_MAX:
++			return 2048;
++		case _SC_NGROUPS_MAX:
++			return 0x10000;
++		case _SC_CHILD_MAX:
++			return 30;
+ 		case _SC_NPROCESSORS_CONF:
+ 			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
+ 			if (ret == 0) {
+diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h	2025-04-28 07:46:47.180415400 +0200
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h	2025-04-28 07:46:47.303935120 +0200
+@@ -36,7 +36,6 @@
+ #define SYSCALL_GETUID               24
+ #define SYSCALL_RENAME               25
+ #define SYSCALL_LISTPROCS            26
+-#define SYSCALL_SPAWN                27
+ #define SYSCALL_GETTID               28
+ #define SYSCALL_MANAGE_TCLUSTER      29
+ #define SYSCALL_FCNTL                30
+@@ -124,6 +123,8 @@
+ #define SYSCALL_MEMINFO             112
+ #define SYSCALL_LISTPCI             113
+ #define SYSCALL_GETCPUINFO          114
++#define SYSCALL_SOCKETPAIR          115
++#define SYSCALL_MADVISE             116
+ 
+ #if defined(__x86_64__)
+ #define SYSCALL0(NUM) ({ \

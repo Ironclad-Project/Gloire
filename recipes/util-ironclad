@@ -1,13 +1,14 @@
 #! /bin/sh
 
 name=util-ironclad
-version=c3c4449f8d6f1b3411be2dbaa58fefdad90f67a9
+skip_pkg_check=yes
+version=0.0git
 revision=1
-git_url="https://git.savannah.nongnu.org/git/ironclad/util-ironclad.git"
-commit=${version}
-source_hostdeps="automake autoconf libtool pkg-config"
+git_url="https://codeberg.org/Ironclad/util-ironclad"
+commit=455d2e4c73edebc64a255058a0c49737c3ccfd32
+source_hostdeps="automake autoconf pkg-config"
 source_imagedeps="git"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs libxcrypt"
 
 prepare() {

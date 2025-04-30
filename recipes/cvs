@@ -5,12 +5,10 @@ version=1.12.13
 revision=1
 tarball_url="http://deb.debian.org/debian/pool/main/c/cvs/cvs_${version}+real.orig.tar.gz"
 tarball_blake2b="04be16ac95e6e701bc8629b3aafcc28b6d42162419f192d79534dbbc5b62151c244500eaddfe554cc4165267d69b201cbaf485e7803af39c0aafc86343bfce9d"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs"
 
 prepare() {
-    echo 'AM_GNU_GETTEXT_VERSION(0.22.5)' >> ${source_dir}/configure.in
     autotools_recursive_regen
 }
 

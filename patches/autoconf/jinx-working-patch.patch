@@ -1,7 +1,6 @@
-diff --git autoconf-clean/build-aux/config.guess autoconf-workdir/build-aux/config.guess
-index cdfc439..02e3643 100755
---- autoconf-clean/build-aux/config.guess
-+++ autoconf-workdir/build-aux/config.guess
+diff -urN --no-dereference autoconf-clean/build-aux/config.guess autoconf-workdir/build-aux/config.guess
+--- autoconf-clean/build-aux/config.guess	2023-11-30 16:51:32.000000000 +0100
++++ autoconf-workdir/build-aux/config.guess	2025-04-30 13:57:31.395445023 +0200
 @@ -4,7 +4,8 @@
  
  # shellcheck disable=SC2006,SC2268 # see below for rationale
@@ -12,7 +11,7 @@ index cdfc439..02e3643 100755
  
  # This file is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by
-@@ -976,6 +977,12 @@ EOF
+@@ -976,6 +977,12 @@
      *:[Mm]anagarm:*:*)
  	GUESS="$UNAME_MACHINE-unknown-managarm-mlibc"
  	;;
@@ -25,10 +24,9 @@ index cdfc439..02e3643 100755
      *:Minix:*:*)
  	GUESS=$UNAME_MACHINE-unknown-minix
  	;;
-diff --git autoconf-clean/build-aux/config.sub autoconf-workdir/build-aux/config.sub
-index defe52c..426e8de 100755
---- autoconf-clean/build-aux/config.sub
-+++ autoconf-workdir/build-aux/config.sub
+diff -urN --no-dereference autoconf-clean/build-aux/config.sub autoconf-workdir/build-aux/config.sub
+--- autoconf-clean/build-aux/config.sub	2023-11-30 16:51:33.000000000 +0100
++++ autoconf-workdir/build-aux/config.sub	2025-04-30 13:57:37.494740853 +0200
 @@ -4,7 +4,8 @@
  
  # shellcheck disable=SC2006,SC2268 # see below for rationale
@@ -39,7 +37,7 @@ index defe52c..426e8de 100755
  
  # This file is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by
-@@ -145,7 +146,7 @@ case $1 in
+@@ -145,7 +146,7 @@
  			nto-qnx* | linux-* | uclinux-uclibc* \
  			| uclinux-gnu* | kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* \
  			| netbsd*-eabi* | kopensolaris*-gnu* | cloudabi*-eabi* \
@@ -48,7 +46,7 @@ index defe52c..426e8de 100755
  			| windows-* )
  				basic_machine=$field1
  				basic_os=$maybe_os
-@@ -1325,6 +1326,10 @@ EOF
+@@ -1325,6 +1326,10 @@
  		kernel=managarm
  		os=`echo "$basic_os" | sed -e 's|managarm|mlibc|'`
  		;;
@@ -59,7 +57,7 @@ index defe52c..426e8de 100755
  	*)
  		kernel=
  		os=$basic_os
-@@ -1825,6 +1830,8 @@ case $kernel-$os-$obj in
+@@ -1825,6 +1830,8 @@
  		;;
  	managarm-mlibc*- | managarm-kernel*- )
  		;;

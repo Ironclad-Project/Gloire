@@ -5,25 +5,18 @@ version=3.31.1.4
 revision=1
 tarball_url="https://github.com/eddelbuettel/dieharder/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="4dd2716a53cb3ed36f64851651b60f29c7d0028ba2a3000bb28cebd22a13b9eb36ce5003412868d4cbadb5e74654bec64157e5d7f453361a4a0613a90380893a"
-source_hostdeps="autoconf-2.69 automake libtool pkg-config"
 imagedeps="build-essential"
-hostdeps="gcc autoconf-2.69 automake pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs gsl"
 
 prepare() {
-    autoreconf -fvi
-    (cd libdieharder && autoreconf -fvi)
-    (cd dieharder    && autoreconf -fvi)
-    (cd manual       && autoreconf -fvi)
-
     autotools_recursive_regen
+
+    cp ${base_dir}/build-support/config.guess ./
+    cp ${base_dir}/build-support/config.sub ./
 }
 
 configure() {
-    rm -f ${source_dir}/config.status
-    rm -f ${source_dir}/dieharder/config.status
-    rm -f ${source_dir}/libdieharder/config.status
-
     autotools_configure
 
     sed -i 's|-I${prefix}/include||g' dieharder/Makefile

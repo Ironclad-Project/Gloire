@@ -13,8 +13,6 @@ deps="core-libs libxcrypt"
 
 prepare() {
     ./bootstrap
-
-    autotools_recursive_regen
 }
 
 configure() {

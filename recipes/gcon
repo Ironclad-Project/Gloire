@@ -14,8 +14,6 @@ deps="core-libs"
 
 prepare() {
     ./bootstrap
-
-    autotools_recursive_regen
 }
 
 configure() {

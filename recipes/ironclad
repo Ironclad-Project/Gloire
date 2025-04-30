@@ -14,8 +14,6 @@ source_allow_network="yes"
 
 prepare() {
     ./bootstrap
-
-    autotools_recursive_regen
 }
 
 configure() {

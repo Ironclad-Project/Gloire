@@ -12,8 +12,6 @@ deps="core-libs pcre2"
 
 prepare() {
     autoreconf -fvi -I${sysroot_dir}/usr/share/aclocal
-
-    autotools_recursive_regen
 }
 
 configure() {

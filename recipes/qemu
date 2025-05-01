@@ -12,8 +12,9 @@ deps="core-libs sdl2-compat gtk+-3 glib ncurses pixman nettle"
 allow_network="yes"
 
 configure() {
-	cp -rp ${source_dir}/* .
-	CFLAGS="${TARGET_CFLAGS}" LDFLAGS="${TARGET_LDFLAGS}" ./configure \
+    cp -rp "${source_dir}"/* ./
+
+    CFLAGS="${TARGET_CFLAGS}" LDFLAGS="${TARGET_LDFLAGS}" ./configure \
         --cross-prefix=${OS_TRIPLET}-                             \
         --host=${OS_TRIPLET}                                      \
         --prefix=${prefix}                                        \
@@ -24,12 +25,15 @@ configure() {
 }
 
 build() {
-	cd build
-	ninja -j${parallelism}
+    cd build
+
+    ninja -j${parallelism}
 }
 
 package() {
-	cd build
-	DESTDIR=${dest_dir} ninja install
-        post_package_strip || true
+    cd build
+
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip || true
 }

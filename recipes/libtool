@@ -23,5 +23,7 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
+    sed -Ei "s|/sysroot(/)?|/|g;s|/${prefix}|/|g" "${dest_dir}${prefix}"/bin/libtool
+
     post_package_strip
 }

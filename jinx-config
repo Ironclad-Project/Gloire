@@ -171,6 +171,7 @@ cmake_configure_noflags() {
     fi
 
     cmake "${cmake_source_dir}" \
+        -DCMAKE_MODULE_PATH="${base_dir}/build-support/cmake-host" \
         -DCMAKE_TOOLCHAIN_FILE="${base_dir}/build-support/CMakeToolchain-$ARCHITECTURE.txt" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_INSTALL_SYSCONFDIR=/etc \

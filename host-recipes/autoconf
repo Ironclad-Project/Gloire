@@ -8,7 +8,8 @@ configure() {
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-    "${source_dir}"/configure --prefix="${prefix}"
+    "${source_dir}"/configure \
+        --prefix="${prefix}"
 }
 
 build() {

@@ -7,12 +7,10 @@ hostdeps="autoconf automake"
 imagedeps="help2man build-essential"
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-    ./configure \
+    "${source_dir}"/configure \
         --prefix="${prefix}"
 }
 
@@ -22,9 +20,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
-
-    cp -pv /usr/local/share/autoconf/build-aux/config.sub "${dest_dir}${prefix}"/share/libtool/build-aux/
-    cp -pv /usr/local/share/autoconf/build-aux/config.guess "${dest_dir}${prefix}"/share/libtool/build-aux/
 
         strip_command=strip \
     post_package_strip

@@ -2,10 +2,9 @@
 
 name=qemu
 revision=1
-version=9.2.3
-source_method=tarball
+version=10.0.0
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
-tarball_sha512="941a4337a115c65de2fca042932efb31886114f4300226fcf55f04c2c5471bd2b5ce220c4b17e01c3679bd55ba08a1aa7ce399de15e3e5f28c17da52030b139e"
+tarball_sha512="2215458ed8be3ab0b0032fe2a96e79183f5fc2da323d927018412ea3d980b022a07ba87d4f446229eaaa7d1b19a577d438dbcaa3af3bd537c7720b56734a2d8b"
 imagedeps="build-essential python3-venv ninja-build meson git"
 hostdeps="gcc pkg-config"
 deps="core-libs sdl2-compat gtk+-3 glib ncurses pixman nettle"

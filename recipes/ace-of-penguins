@@ -10,18 +10,15 @@ hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxpm libpng zlib"
 
 prepare() {
-    autotools_recursive_regen
-}
-
-configure() {
-    cp -rp "${source_dir}"/. ./
-
     cp -v "${base_dir}"/build-support/ace-of-penguins/jack.png    ./lib/png/
     cp -v "${base_dir}"/build-support/ace-of-penguins/king.png    ./lib/png/
     cp -v "${base_dir}"/build-support/ace-of-penguins/penguin.png ./lib/png/
     cp -v "${base_dir}"/build-support/ace-of-penguins/queen.png   ./lib/png/
 
-        configure_script_path=./configure \
+    autotools_recursive_regen
+}
+
+configure() {
     autotools_configure \
         BUILD_CFLAGS="$HOST_CFLAGS" \
         BUILD_CPPFLAGS="$HOST_CPPFLAGS" \

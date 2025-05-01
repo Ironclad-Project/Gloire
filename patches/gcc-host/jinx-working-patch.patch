@@ -12,7 +12,7 @@ diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workd
 diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
 --- gcc-host-clean/gcc/config/i386/ironclad.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-host-workdir/gcc/config/i386/ironclad.h	2025-04-26 14:30:21.814250843 +0200
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,30 @@
 +#undef TARGET_IRONCLAD
 +#define TARGET_IRONCLAD 1
 +
@@ -37,6 +37,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 +#define TARGET_OS_CPP_BUILTINS()         \
 +  do {                                   \
 +    builtin_define ("__ironclad__");    \
++    builtin_define ("__mlibc__");         \
 +    builtin_define ("__unix__");         \
 +    builtin_assert ("system=ironclad"); \
 +    builtin_assert ("system=unix");      \
@@ -45,7 +46,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
 --- gcc-host-clean/gcc/config/riscv/ironclad.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-host-workdir/gcc/config/riscv/ironclad.h	2025-04-26 14:30:21.814250843 +0200
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,46 @@
 +#undef TARGET_IRONCLAD
 +#define TARGET_IRONCLAD 1
 +
@@ -86,6 +87,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-w
 +#define TARGET_OS_CPP_BUILTINS()         \
 +  do {                                   \
 +    builtin_define ("__ironclad__");    \
++    builtin_define ("__mlibc__");         \
 +    builtin_define ("__unix__");         \
 +    builtin_assert ("system=ironclad"); \
 +    builtin_assert ("system=unix");      \

@@ -11,7 +11,8 @@ deps="sdl3"
 
 configure() {
     cmake_configure \
-        -DSDL2COMPAT_STATIC=OFF
+        -DSDL2COMPAT_STATIC=OFF \
+        -DSDL2COMPAT_TEST_LIBRARY=OFF
 }
 
 build() {

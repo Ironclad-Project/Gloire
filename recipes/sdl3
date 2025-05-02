@@ -35,7 +35,8 @@ configure() {
         -DSDL_KMSDRM=OFF \
         -DSDL_HIDAPI=ON \
         -DSDL_SHARED=ON \
-        -DSDL_STATIC=OFF
+        -DSDL_STATIC=OFF \
+        -DSDL_TEST_LIBRARY=OFF
 }
 
 build() {
@@ -44,8 +45,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" ninja install
-
-    rm -v "${dest_dir}${prefix}"/lib/*.a
 
     post_package_strip
 }

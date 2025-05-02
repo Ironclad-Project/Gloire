@@ -21,6 +21,7 @@ configure() {
         ac_cv_fread_reads_directories=no \
         ac_cv_snprintf_returns_bogus=no \
     autotools_configure \
+        CFLAGS="$TARGET_CFLAGS -std=gnu17" \
         --with-gitconfig=/etc/gitconfig \
         --with-python=python3
 }

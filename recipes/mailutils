@@ -14,6 +14,7 @@ prepare() {
 
 configure() {
     autotools_configure \
+        CFLAGS="$TARGET_CFLAGS -std=gnu17" \
         --disable-python \
         --disable-build-imap4d
 }

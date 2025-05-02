@@ -1,13 +1,13 @@
 #! /bin/sh
 
-imagedeps="$imagedeps gnat-14"
+imagedeps="$imagedeps experimental:gnat-15"
 
-ada_symlink_gnat_14() {
+ada_symlink_gnat() {
     TMPPATH="$(mktemp -d)"
 
     export PATH="$TMPPATH:$PATH"
 
     for i in gnat gnatbind gnatchop gnatclean gnathtml gnatkr gnatlink gnatls gnatmake gnatname gnatprep; do
-        ln -s /usr/bin/$i-14 "$TMPPATH/$i"
+        ln -s /usr/bin/$i-15 "$TMPPATH/$i"
     done
 }

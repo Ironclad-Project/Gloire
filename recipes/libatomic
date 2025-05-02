@@ -5,13 +5,13 @@ from_source=gcc-host
 skip_pkg_check=yes
 revision=1
 hostdeps="gcc pkg-config"
-imagedeps="build-essential"
+imagedeps="experimental:build-essential"
 deps="mlibc libgcc libstdc++"
 
 . "${base_dir}"/build-support/gcc-ada-helpers
 
 build() {
-    ada_symlink_gnat_14
+    ada_symlink_gnat
 
     cd "${base_dir}"/host-builds/gcc/build
 
@@ -19,7 +19,7 @@ build() {
 }
 
 package() {
-    ada_symlink_gnat_14
+    ada_symlink_gnat
 
     cd "${base_dir}"/host-builds/gcc/build
 

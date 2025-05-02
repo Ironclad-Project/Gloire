@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -372,7 +372,13 @@ prepare_container() {
 
             rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
 
-            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y "${pkg}"; then
+            want_experimental=''
+            if echo "${pkg}" | grep -q '^experimental:'; then
+                want_experimental='-t experimental'
+                pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
+            fi
+
+            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"; then
                 die 'Jinx error: Installing an imagedep failed.'
             fi
 
@@ -1881,6 +1887,9 @@ reinit_container() {
 APT::Install-Recommends "0";
 APT::Sandbox::User "root";
 Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
+
+    sources_list_tmp="$(sed 's/sid/experimental/g' "$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list")"
+    echo "${sources_list_tmp}" >>"$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get update
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y locales

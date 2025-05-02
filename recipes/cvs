@@ -14,6 +14,7 @@ prepare() {
 
 configure() {
     EDITOR=nano cvs_cv_func_printf_ptr=1 autotools_configure \
+        CFLAGS="$TARGET_CFLAGS -std=gnu17" \
         --with-editor
 }
 

@@ -3,7 +3,7 @@
 name=gcc
 from_source=gcc-host
 revision=1
-imagedeps="build-essential"
+imagedeps="experimental:build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"
 deps="mlibc-headers"
@@ -11,7 +11,7 @@ deps="mlibc-headers"
 . "${base_dir}"/build-support/gcc-ada-helpers
 
 configure() {
-    ada_symlink_gnat_14
+    ada_symlink_gnat
 
     cp -rp "${source_dir}"/. ./
     mkdir -p build && cd build
@@ -39,7 +39,7 @@ configure() {
 }
 
 build() {
-    ada_symlink_gnat_14
+    ada_symlink_gnat
 
     cd build
     make -j${parallelism} all-gcc
@@ -47,12 +47,12 @@ build() {
 }
 
 package() {
-    ada_symlink_gnat_14
+    ada_symlink_gnat
 
     cd build
     DESTDIR="${dest_dir}" make install-gcc
 
-    ln -s x86_64-ironclad-mlibc-gnatbind "${dest_dir}${prefix}"/bin/x86_64-ironclad-mlibc-gnatbind-14
+    ln -s x86_64-ironclad-mlibc-gnatbind "${dest_dir}${prefix}"/bin/x86_64-ironclad-mlibc-gnatbind-15
 
         strip_command=strip \
     post_package_strip

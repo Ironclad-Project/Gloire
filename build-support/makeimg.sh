@@ -154,7 +154,7 @@ if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
 
 /Memory test (memtest86+)
     protocol: linux
-    kernel_path: boot():/boot/memtest.bin
+    kernel_path: boot():/memtest.bin
 EOF
 fi
 

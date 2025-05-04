@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -972,7 +972,7 @@ do_cmd_prepare() {
         diff -urN --no-dereference $1-clean $1-workdir >"${patch_file}" || true
 
         # remove timestamps
-        sed -Ei 's/\t[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{9} [+-][0-9]{4}//g' "${patch_file}"
+        sed -Ei 's/\t2[0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{9} [+-][0-9]{4}//g' "${patch_file}"
 
         if ! [ -z "${git_url}" ]; then
             mv "${vc_dir_clean}" $1-clean/.git

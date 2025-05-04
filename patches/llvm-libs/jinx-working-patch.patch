@@ -116,7 +116,7 @@ diff -urN --no-dereference llvm-libs-clean/clang/lib/Driver/ToolChains/Gnu.cpp l
    case llvm::Triple::aarch64_be:
      return "aarch64linuxb";
 diff -urN --no-dereference llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.cpp llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
---- llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.cpp
+--- llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
 @@ -0,0 +1,227 @@
 +//===--- Ironclad.h - Ironclad ToolChain Implementations --------*- C++ -*-===//
@@ -347,7 +347,7 @@ diff -urN --no-dereference llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.
 +    CmdArgs.push_back(Opt.c_str());
 +}
 diff -urN --no-dereference llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.h llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
---- llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.h
+--- llvm-libs-clean/clang/lib/Driver/ToolChains/Ironclad.h	1970-01-01 01:00:00.000000000 +0100
 +++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
 @@ -0,0 +1,55 @@
 +//===--- Ironclad.h - Ironclad ToolChain Implementations --------*- C++ -*-===//

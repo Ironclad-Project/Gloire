@@ -21,7 +21,7 @@ diff -urN --no-dereference xf86-input-mouse-clean/configure xf86-input-mouse-wor
  
  
 diff -urN --no-dereference xf86-input-mouse-clean/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
---- xf86-input-mouse-clean/src/ironclad_mouse.c
+--- xf86-input-mouse-clean/src/ironclad_mouse.c	1970-01-01 01:00:00.000000000 +0100
 +++ xf86-input-mouse-workdir/src/ironclad_mouse.c
 @@ -0,0 +1,115 @@
 +#ifdef HAVE_XORG_CONFIG_H

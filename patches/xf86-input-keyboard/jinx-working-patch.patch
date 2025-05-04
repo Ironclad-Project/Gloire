@@ -129,7 +129,7 @@ diff -urN --no-dereference xf86-input-keyboard-clean/src/Makefile.in xf86-input-
  	-rm -f ./$(DEPDIR)/sun_kbd.Plo
  	-rm -f ./$(DEPDIR)/sun_kbdMap.Plo
 diff -urN --no-dereference xf86-input-keyboard-clean/src/ironclad_kbd.c xf86-input-keyboard-workdir/src/ironclad_kbd.c
---- xf86-input-keyboard-clean/src/ironclad_kbd.c
+--- xf86-input-keyboard-clean/src/ironclad_kbd.c	1970-01-01 01:00:00.000000000 +0100
 +++ xf86-input-keyboard-workdir/src/ironclad_kbd.c
 @@ -0,0 +1,108 @@
 +#ifdef HAVE_CONFIG_H

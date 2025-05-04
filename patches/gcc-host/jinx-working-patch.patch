@@ -10,7 +10,7 @@ diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workd
      powerpc-*-eabisim* | \
      powerpc-*-eabi*    | \
 diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
---- gcc-host-clean/gcc/config/i386/ironclad.h
+--- gcc-host-clean/gcc/config/i386/ironclad.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-host-workdir/gcc/config/i386/ironclad.h
 @@ -0,0 +1,30 @@
 +#undef TARGET_IRONCLAD
@@ -44,7 +44,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 +    builtin_assert ("system=posix");     \
 +  } while (0);
 diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
---- gcc-host-clean/gcc/config/riscv/ironclad.h
+--- gcc-host-clean/gcc/config/riscv/ironclad.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-host-workdir/gcc/config/riscv/ironclad.h
 @@ -0,0 +1,46 @@
 +#undef TARGET_IRONCLAD

@@ -1,6 +1,6 @@
 diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workdir/fixincludes/mkfixinc.sh
---- gcc-host-clean/fixincludes/mkfixinc.sh	2025-04-25 10:17:59.000000000 +0200
-+++ gcc-host-workdir/fixincludes/mkfixinc.sh	2025-04-25 10:17:59.000000000 +0200
+--- gcc-host-clean/fixincludes/mkfixinc.sh
++++ gcc-host-workdir/fixincludes/mkfixinc.sh
 @@ -12,6 +12,7 @@
  # Check for special fix rules for particular targets
  case $machine in
@@ -10,8 +10,8 @@ diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workd
      powerpc-*-eabisim* | \
      powerpc-*-eabi*    | \
 diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
---- gcc-host-clean/gcc/config/i386/ironclad.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-host-workdir/gcc/config/i386/ironclad.h	2025-04-26 14:30:21.814250843 +0200
+--- gcc-host-clean/gcc/config/i386/ironclad.h
++++ gcc-host-workdir/gcc/config/i386/ironclad.h
 @@ -0,0 +1,30 @@
 +#undef TARGET_IRONCLAD
 +#define TARGET_IRONCLAD 1
@@ -44,8 +44,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 +    builtin_assert ("system=posix");     \
 +  } while (0);
 diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
---- gcc-host-clean/gcc/config/riscv/ironclad.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-host-workdir/gcc/config/riscv/ironclad.h	2025-04-26 14:30:21.814250843 +0200
+--- gcc-host-clean/gcc/config/riscv/ironclad.h
++++ gcc-host-workdir/gcc/config/riscv/ironclad.h
 @@ -0,0 +1,46 @@
 +#undef TARGET_IRONCLAD
 +#define TARGET_IRONCLAD 1
@@ -94,8 +94,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-w
 +    builtin_assert ("system=posix");     \
 +  } while (0);
 diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
---- gcc-host-clean/gcc/config.build	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/config.build	2025-04-25 10:18:00.000000000 +0200
+--- gcc-host-clean/gcc/config.build
++++ gcc-host-workdir/gcc/config.build
 @@ -45,7 +45,7 @@
  build_xm_file=
  build_xm_defines=
@@ -106,8 +106,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/
  
  # System-specific settings.
 diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
---- gcc-host-clean/gcc/config.gcc	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/config.gcc	2025-04-25 10:18:00.000000000 +0200
+--- gcc-host-clean/gcc/config.gcc
++++ gcc-host-workdir/gcc/config.gcc
 @@ -879,6 +879,15 @@
    rust_target_objs="${rust_target_objs} freebsd-rust.o"
    target_has_targetrustm=yes
@@ -149,8 +149,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/co
  	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
  	case "x${enable_multilib}" in
 diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
---- gcc-host-clean/gcc/cp/module.cc	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/cp/module.cc	2025-04-25 10:18:00.000000000 +0200
+--- gcc-host-clean/gcc/cp/module.cc
++++ gcc-host-workdir/gcc/cp/module.cc
 @@ -1697,8 +1697,10 @@
  	      set_error (errno);
  	  else
@@ -174,8 +174,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/
    hdr.buffer = (char *)mapping;
  #else
 diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workdir/libatomic/configure.tgt
---- gcc-host-clean/libatomic/configure.tgt	2025-04-25 10:18:04.000000000 +0200
-+++ gcc-host-workdir/libatomic/configure.tgt	2025-04-25 10:18:04.000000000 +0200
+--- gcc-host-clean/libatomic/configure.tgt
++++ gcc-host-workdir/libatomic/configure.tgt
 @@ -151,7 +151,7 @@
    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
    | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
@@ -186,8 +186,8 @@ diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workd
  	config_path="${config_path} posix"
  	;;
 diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
---- gcc-host-clean/libcpp/Makefile.in	2025-04-25 10:21:27.000000000 +0200
-+++ gcc-host-workdir/libcpp/Makefile.in	2025-04-25 10:21:27.000000000 +0200
+--- gcc-host-clean/libcpp/Makefile.in
++++ gcc-host-workdir/libcpp/Makefile.in
 @@ -32,10 +32,10 @@
  AUTOHEADER = @AUTOHEADER@
  CATALOGS = $(patsubst %,po/%,@CATALOGS@)
@@ -211,8 +211,8 @@ diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/li
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
 diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
---- gcc-host-clean/libgcc/config.host	2025-04-25 10:18:04.000000000 +0200
-+++ gcc-host-workdir/libgcc/config.host	2025-04-25 10:18:04.000000000 +0200
+--- gcc-host-clean/libgcc/config.host
++++ gcc-host-workdir/libgcc/config.host
 @@ -310,6 +310,11 @@
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
@@ -248,8 +248,8 @@ diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/li
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 diff -urN --no-dereference gcc-host-clean/libstdc++-v3/configure gcc-host-workdir/libstdc++-v3/configure
---- gcc-host-clean/libstdc++-v3/configure	2025-04-25 10:18:05.000000000 +0200
-+++ gcc-host-workdir/libstdc++-v3/configure	2025-04-25 10:18:05.000000000 +0200
+--- gcc-host-clean/libstdc++-v3/configure
++++ gcc-host-workdir/libstdc++-v3/configure
 @@ -38856,7 +38856,7 @@
  
    fi

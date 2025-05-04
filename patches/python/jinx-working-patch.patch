@@ -1,6 +1,6 @@
 diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
---- python-clean/Modules/timemodule.c	2025-04-08 15:54:08.000000000 +0200
-+++ python-workdir/Modules/timemodule.c	2025-04-08 15:54:08.000000000 +0200
+--- python-clean/Modules/timemodule.c
++++ python-workdir/Modules/timemodule.c
 @@ -185,7 +185,7 @@
  static int
  time_clockid_converter(PyObject *obj, clockid_t *p)
@@ -11,8 +11,8 @@ diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modu
  #elif defined(__DragonFly__)
      long clk_id = PyLong_AsLong(obj);
 diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
---- python-clean/Objects/mimalloc/prim/unix/prim.c	2025-04-08 15:54:08.000000000 +0200
-+++ python-workdir/Objects/mimalloc/prim/unix/prim.c	2025-04-08 15:54:08.000000000 +0200
+--- python-clean/Objects/mimalloc/prim/unix/prim.c
++++ python-workdir/Objects/mimalloc/prim/unix/prim.c
 @@ -29,6 +29,10 @@
  #include <unistd.h>    // sysconf
  #include <fcntl.h>     // open, close, read, access
@@ -35,8 +35,8 @@ diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python
    return madvise(addr, size, advice);
    #endif
 diff -urN --no-dereference python-clean/configure python-workdir/configure
---- python-clean/configure	2025-04-08 15:54:08.000000000 +0200
-+++ python-workdir/configure	2025-04-08 15:54:08.000000000 +0200
+--- python-clean/configure
++++ python-workdir/configure
 @@ -4067,6 +4067,9 @@
  	*-*-wasi*)
  	    ac_sys_system=WASI

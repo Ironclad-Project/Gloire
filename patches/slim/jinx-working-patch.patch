@@ -1,6 +1,6 @@
 diff -urN --no-dereference slim-clean/app.cpp slim-workdir/app.cpp
---- slim-clean/app.cpp	2023-01-14 21:34:20.000000000 +0100
-+++ slim-workdir/app.cpp	2023-01-14 21:34:20.000000000 +0100
+--- slim-clean/app.cpp
++++ slim-workdir/app.cpp
 @@ -23,6 +23,7 @@
  #include <sstream>
  #include <vector>

@@ -1,6 +1,6 @@
 diff -urN --no-dereference fox-clean/configure fox-workdir/configure
---- fox-clean/configure	2024-11-23 20:38:12.000000000 +0100
-+++ fox-workdir/configure	2024-11-23 20:38:12.000000000 +0100
+--- fox-clean/configure
++++ fox-workdir/configure
 @@ -18821,8 +18821,8 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xft" >&5
  $as_echo "$with_xft" >&6; }
@@ -13,8 +13,8 @@ diff -urN --no-dereference fox-clean/configure fox-workdir/configure
  CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
  X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
 diff -urN --no-dereference fox-clean/include/FXStream.h fox-workdir/include/FXStream.h
---- fox-clean/include/FXStream.h	2018-04-04 05:42:41.000000000 +0200
-+++ fox-workdir/include/FXStream.h	2018-04-04 05:42:41.000000000 +0200
+--- fox-clean/include/FXStream.h
++++ fox-workdir/include/FXStream.h
 @@ -52,9 +52,9 @@
  
  /// Stream seeking
@@ -29,8 +29,8 @@ diff -urN --no-dereference fox-clean/include/FXStream.h fox-workdir/include/FXSt
  
  
 diff -urN --no-dereference fox-clean/src/FXString.cpp fox-workdir/src/FXString.cpp
---- fox-clean/src/FXString.cpp	2024-11-23 20:37:53.000000000 +0100
-+++ fox-workdir/src/FXString.cpp	2024-11-23 20:37:53.000000000 +0100
+--- fox-clean/src/FXString.cpp
++++ fox-workdir/src/FXString.cpp
 @@ -2501,18 +2501,18 @@
  
  

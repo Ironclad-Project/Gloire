@@ -1,6 +1,6 @@
 diff -urN --no-dereference mesa-clean/include/drm-uapi/drm.h mesa-workdir/include/drm-uapi/drm.h
---- mesa-clean/include/drm-uapi/drm.h	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/include/drm-uapi/drm.h	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/include/drm-uapi/drm.h
++++ mesa-workdir/include/drm-uapi/drm.h
 @@ -44,7 +44,7 @@
  #else /* One of the BSDs */
  
@@ -11,8 +11,8 @@ diff -urN --no-dereference mesa-clean/include/drm-uapi/drm.h mesa-workdir/includ
  typedef int8_t   __s8;
  typedef uint8_t  __u8;
 diff -urN --no-dereference mesa-clean/meson.build mesa-workdir/meson.build
---- mesa-clean/meson.build	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/meson.build	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/meson.build
++++ mesa-workdir/meson.build
 @@ -1036,7 +1036,7 @@
  endif
  
@@ -23,8 +23,8 @@ diff -urN --no-dereference mesa-clean/meson.build mesa-workdir/meson.build
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
 diff -urN --no-dereference mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-workdir/src/compiler/spirv/spirv_to_nir.c
---- mesa-clean/src/compiler/spirv/spirv_to_nir.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/compiler/spirv/spirv_to_nir.c
++++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c
 @@ -40,6 +40,7 @@
  #include "util/mesa-blake3.h"
  
@@ -34,8 +34,8 @@ diff -urN --no-dereference mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-wor
  /* Table of all implemented capabilities.  These are the capabilities that are
   * implemented in the spirv_to_nir, not what the device supports.
 diff -urN --no-dereference mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl/main/egllog.c
---- mesa-clean/src/egl/main/egllog.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/egl/main/egllog.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/egl/main/egllog.c
++++ mesa-workdir/src/egl/main/egllog.c
 @@ -37,6 +37,7 @@
  #include <stdio.h>
  #include <stdlib.h>
@@ -45,8 +45,8 @@ diff -urN --no-dereference mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl
  #include "util/macros.h"
  #include "util/os_misc.h"
 diff -urN --no-dereference mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
---- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
++++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
 @@ -1741,7 +1741,7 @@
     default:
        break;
@@ -57,8 +57,8 @@ diff -urN --no-dereference mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c 
     return false;
  }
 diff -urN --no-dereference mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
---- mesa-clean/src/util/detect_os.h	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/util/detect_os.h	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/util/detect_os.h
++++ mesa-workdir/src/util/detect_os.h
 @@ -28,6 +28,12 @@
  #define DETECT_OS_ANDROID 1
  #endif
@@ -82,8 +82,8 @@ diff -urN --no-dereference mesa-clean/src/util/detect_os.h mesa-workdir/src/util
 +
  #endif /* DETECT_OS_H */
 diff -urN --no-dereference mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
---- mesa-clean/src/util/os_misc.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/util/os_misc.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/util/os_misc.c
++++ mesa-workdir/src/util/os_misc.c
 @@ -57,7 +57,7 @@
  #  include <unistd.h>
  #  include <log/log.h>
@@ -103,8 +103,8 @@ diff -urN --no-dereference mesa-clean/src/util/os_misc.c mesa-workdir/src/util/o
     const long page_size = sysconf(_SC_PAGE_SIZE);
  
 diff -urN --no-dereference mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
---- mesa-clean/src/util/os_time.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/util/os_time.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/util/os_time.c
++++ mesa-workdir/src/util/os_time.c
 @@ -65,7 +65,7 @@
  void
  os_time_sleep(int64_t usecs)
@@ -115,8 +115,8 @@ diff -urN --no-dereference mesa-clean/src/util/os_time.c mesa-workdir/src/util/o
     time.tv_sec = usecs / 1000000;
     time.tv_nsec = (usecs % 1000000) * 1000;
 diff -urN --no-dereference mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u_debug.c
---- mesa-clean/src/util/u_debug.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/util/u_debug.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/util/u_debug.c
++++ mesa-workdir/src/util/u_debug.c
 @@ -32,6 +32,7 @@
  #include "util/u_math.h"
  #include <inttypes.h>
@@ -126,8 +126,8 @@ diff -urN --no-dereference mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u
  #include <limits.h> /* CHAR_BIT */
  #include <ctype.h> /* isalnum */
 diff -urN --no-dereference mesa-clean/src/util/u_thread.c mesa-workdir/src/util/u_thread.c
---- mesa-clean/src/util/u_thread.c	2025-04-17 02:04:03.000000000 +0200
-+++ mesa-workdir/src/util/u_thread.c	2025-04-17 02:04:03.000000000 +0200
+--- mesa-clean/src/util/u_thread.c
++++ mesa-workdir/src/util/u_thread.c
 @@ -75,7 +75,7 @@
  void u_thread_setname( const char *name )
  {

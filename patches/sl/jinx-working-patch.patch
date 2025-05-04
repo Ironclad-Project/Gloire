@@ -1,6 +1,6 @@
 diff -urN --no-dereference sl-clean/Makefile sl-workdir/Makefile
---- sl-clean/Makefile	2025-05-03 18:03:23.014236322 +0200
-+++ sl-workdir/Makefile	2025-05-03 18:03:23.014236322 +0200
+--- sl-clean/Makefile
++++ sl-workdir/Makefile
 @@ -12,7 +12,7 @@
  all: sl
  

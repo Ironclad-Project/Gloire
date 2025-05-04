@@ -1,6 +1,6 @@
 diff -urN --no-dereference epoch-clean/src/actions.c epoch-workdir/src/actions.c
---- epoch-clean/src/actions.c	2015-06-24 01:16:06.000000000 +0200
-+++ epoch-workdir/src/actions.c	2015-06-24 01:16:06.000000000 +0200
+--- epoch-clean/src/actions.c
++++ epoch-workdir/src/actions.c
 @@ -35,57 +35,6 @@
  /*Functions.*/
  static void MountVirtuals(void)
@@ -71,8 +71,8 @@ diff -urN --no-dereference epoch-clean/src/actions.c epoch-workdir/src/actions.c
  		SpitError("Failed to pivot_root()!");
  		EmergencyShell();
 diff -urN --no-dereference epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
---- epoch-clean/src/epoch.h	2015-06-24 01:16:06.000000000 +0200
-+++ epoch-workdir/src/epoch.h	2015-06-24 01:16:06.000000000 +0200
+--- epoch-clean/src/epoch.h
++++ epoch-workdir/src/epoch.h
 @@ -67,9 +67,9 @@
  #define VERSIONSTRING "Epoch Init System 1.3.0 \"Fluoxetine\""
  
@@ -87,8 +87,8 @@ diff -urN --no-dereference epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
  #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
  
 diff -urN --no-dereference epoch-clean/src/main.c epoch-workdir/src/main.c
---- epoch-clean/src/main.c	2015-06-24 01:16:06.000000000 +0200
-+++ epoch-workdir/src/main.c	2015-06-24 01:16:06.000000000 +0200
+--- epoch-clean/src/main.c
++++ epoch-workdir/src/main.c
 @@ -17,6 +17,8 @@
  #include <sys/reboot.h>
  #include <sys/shm.h>
@@ -119,8 +119,8 @@ diff -urN --no-dereference epoch-clean/src/main.c epoch-workdir/src/main.c
  		{ /*Someone specified a config file from disk?*/
  			snprintf(ConfigFile, MAX_LINE_SIZE, "%s", TConfigFile);
 diff -urN --no-dereference epoch-clean/src/modes.c epoch-workdir/src/modes.c
---- epoch-clean/src/modes.c	2015-06-24 01:16:06.000000000 +0200
-+++ epoch-workdir/src/modes.c	2015-06-24 01:16:06.000000000 +0200
+--- epoch-clean/src/modes.c
++++ epoch-workdir/src/modes.c
 @@ -137,6 +137,18 @@
  	}
  }

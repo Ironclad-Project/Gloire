@@ -1,6 +1,6 @@
 diff -urN --no-dereference qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
---- qemu-clean/backends/tpm/tpm_ioctl.h	2025-04-22 22:26:10.000000000 +0200
-+++ qemu-workdir/backends/tpm/tpm_ioctl.h	2025-04-22 22:26:10.000000000 +0200
+--- qemu-clean/backends/tpm/tpm_ioctl.h
++++ qemu-workdir/backends/tpm/tpm_ioctl.h
 @@ -285,30 +285,6 @@
  #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
  #define PTM_CAP_LOCK_STORAGE       (1 << 16)
@@ -33,8 +33,8 @@ diff -urN --no-dereference qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/back
   * Commands used by the non-CUSE TPMs
   *
 diff -urN --no-dereference qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
---- qemu-clean/block/file-posix.c	2025-04-22 22:26:10.000000000 +0200
-+++ qemu-workdir/block/file-posix.c	2025-04-22 22:26:10.000000000 +0200
+--- qemu-clean/block/file-posix.c
++++ qemu-workdir/block/file-posix.c
 @@ -119,6 +119,8 @@
  #endif
  #endif
@@ -45,8 +45,8 @@ diff -urN --no-dereference qemu-clean/block/file-posix.c qemu-workdir/block/file
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
 diff -urN --no-dereference qemu-clean/configure qemu-workdir/configure
---- qemu-clean/configure	2025-04-22 22:26:10.000000000 +0200
-+++ qemu-workdir/configure	2025-04-22 22:26:10.000000000 +0200
+--- qemu-clean/configure
++++ qemu-workdir/configure
 @@ -340,7 +340,9 @@
  EOF
  }
@@ -59,8 +59,8 @@ diff -urN --no-dereference qemu-clean/configure qemu-workdir/configure
  elif check_define _WIN32 ; then
    host_os=windows
 diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
---- qemu-clean/include/gdbstub/syscalls.h	2025-04-22 22:26:11.000000000 +0200
-+++ qemu-workdir/include/gdbstub/syscalls.h	2025-04-22 22:26:11.000000000 +0200
+--- qemu-clean/include/gdbstub/syscalls.h
++++ qemu-workdir/include/gdbstub/syscalls.h
 @@ -41,9 +41,10 @@
  #define GDB_EUNKNOWN       9999
  
@@ -76,8 +76,8 @@ diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/in
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
 diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
---- qemu-clean/meson.build	2025-04-22 22:26:11.000000000 +0200
-+++ qemu-workdir/meson.build	2025-04-22 22:26:11.000000000 +0200
+--- qemu-clean/meson.build
++++ qemu-workdir/meson.build
 @@ -867,7 +867,7 @@
  ###############################################
  
@@ -96,8 +96,8 @@ diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
    config_host_data.set('CONFIG_TCG', 1)
    config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
 diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
---- qemu-clean/os-posix.c	2025-04-22 22:26:11.000000000 +0200
-+++ qemu-workdir/os-posix.c	2025-04-22 22:26:11.000000000 +0200
+--- qemu-clean/os-posix.c
++++ qemu-workdir/os-posix.c
 @@ -262,7 +262,7 @@
      struct rlimit nofile;
  
@@ -117,8 +117,8 @@ diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
      }
  }
 diff -urN --no-dereference qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
---- qemu-clean/util/oslib-posix.c	2025-04-22 22:26:11.000000000 +0200
-+++ qemu-workdir/util/oslib-posix.c	2025-04-22 22:26:11.000000000 +0200
+--- qemu-clean/util/oslib-posix.c
++++ qemu-workdir/util/oslib-posix.c
 @@ -708,10 +708,10 @@
      }
  

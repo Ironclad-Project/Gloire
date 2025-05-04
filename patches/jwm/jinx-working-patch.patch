@@ -1,6 +1,6 @@
 diff -urN --no-dereference jwm-clean/src/client.c jwm-workdir/src/client.c
---- jwm-clean/src/client.c	2024-11-09 18:29:29.000000000 +0100
-+++ jwm-workdir/src/client.c	2024-11-09 18:29:29.000000000 +0100
+--- jwm-clean/src/client.c
++++ jwm-workdir/src/client.c
 @@ -879,11 +879,7 @@
  {
     Assert(np);

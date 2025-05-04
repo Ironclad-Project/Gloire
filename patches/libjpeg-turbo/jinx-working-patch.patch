@@ -1,6 +1,6 @@
 diff -urN --no-dereference libjpeg-turbo-clean/src/cdjpeg.h libjpeg-turbo-workdir/src/cdjpeg.h
---- libjpeg-turbo-clean/src/cdjpeg.h	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/cdjpeg.h	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/cdjpeg.h
++++ libjpeg-turbo-workdir/src/cdjpeg.h
 @@ -19,7 +19,7 @@
  #include "jpeglib.h"
  #include "jerror.h"             /* get library error codes too */
@@ -11,8 +11,8 @@ diff -urN --no-dereference libjpeg-turbo-clean/src/cdjpeg.h libjpeg-turbo-workdi
  /*
   * Object interface for cjpeg's source file decoding modules
 diff -urN --no-dereference libjpeg-turbo-clean/src/example.c libjpeg-turbo-workdir/src/example.c
---- libjpeg-turbo-clean/src/example.c	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/example.c	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/example.c
++++ libjpeg-turbo-workdir/src/example.c
 @@ -32,6 +32,7 @@
  #include <stdio.h>
  #include <stdlib.h>
@@ -22,8 +22,8 @@ diff -urN --no-dereference libjpeg-turbo-clean/src/example.c libjpeg-turbo-workd
  #ifdef _WIN32
  #define strcasecmp  stricmp
 diff -urN --no-dereference libjpeg-turbo-clean/src/jchuff.c libjpeg-turbo-workdir/src/jchuff.c
---- libjpeg-turbo-clean/src/jchuff.c	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/jchuff.c	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/jchuff.c
++++ libjpeg-turbo-workdir/src/jchuff.c
 @@ -36,7 +36,7 @@
  #endif
  #include <limits.h>
@@ -34,8 +34,8 @@ diff -urN --no-dereference libjpeg-turbo-clean/src/jchuff.c libjpeg-turbo-workdi
  /* Expanded entropy encoder object for Huffman encoding.
   *
 diff -urN --no-dereference libjpeg-turbo-clean/src/md5/md5cmp.c libjpeg-turbo-workdir/src/md5/md5cmp.c
---- libjpeg-turbo-clean/src/md5/md5cmp.c	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/md5/md5cmp.c	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/md5/md5cmp.c
++++ libjpeg-turbo-workdir/src/md5/md5cmp.c
 @@ -28,6 +28,7 @@
  
  #include <stdio.h>
@@ -45,8 +45,8 @@ diff -urN --no-dereference libjpeg-turbo-clean/src/md5/md5cmp.c libjpeg-turbo-wo
  #include "../tjutil.h"
  
 diff -urN --no-dereference libjpeg-turbo-clean/src/turbojpeg.c libjpeg-turbo-workdir/src/turbojpeg.c
---- libjpeg-turbo-clean/src/turbojpeg.c	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/turbojpeg.c	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/turbojpeg.c
++++ libjpeg-turbo-workdir/src/turbojpeg.c
 @@ -30,6 +30,7 @@
  /* TurboJPEG/LJT:  this implements the TurboJPEG API using libjpeg or
     libjpeg-turbo */
@@ -56,8 +56,8 @@ diff -urN --no-dereference libjpeg-turbo-clean/src/turbojpeg.c libjpeg-turbo-wor
  #include <limits.h>
  #if !defined(_MSC_VER) || _MSC_VER > 1600
 diff -urN --no-dereference libjpeg-turbo-clean/src/turbojpeg.h libjpeg-turbo-workdir/src/turbojpeg.h
---- libjpeg-turbo-clean/src/turbojpeg.h	2024-12-12 21:46:51.000000000 +0100
-+++ libjpeg-turbo-workdir/src/turbojpeg.h	2024-12-12 21:46:51.000000000 +0100
+--- libjpeg-turbo-clean/src/turbojpeg.h
++++ libjpeg-turbo-workdir/src/turbojpeg.h
 @@ -31,6 +31,7 @@
  #define __TURBOJPEG_H__
  

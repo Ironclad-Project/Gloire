@@ -1,6 +1,6 @@
 diff -urN --no-dereference dieharder-clean/dieharder/Makefile.in dieharder-workdir/dieharder/Makefile.in
---- dieharder-clean/dieharder/Makefile.in	2022-12-21 14:04:02.000000000 +0100
-+++ dieharder-workdir/dieharder/Makefile.in	2022-12-21 14:04:02.000000000 +0100
+--- dieharder-clean/dieharder/Makefile.in
++++ dieharder-workdir/dieharder/Makefile.in
 @@ -421,7 +421,7 @@
  # CC = gcc
  
@@ -11,8 +11,8 @@ diff -urN --no-dereference dieharder-clean/dieharder/Makefile.in dieharder-workd
  
  # Load flags (optional)
 diff -urN --no-dereference dieharder-clean/libdieharder/Makefile.in dieharder-workdir/libdieharder/Makefile.in
---- dieharder-clean/libdieharder/Makefile.in	2022-12-21 14:04:02.000000000 +0100
-+++ dieharder-workdir/libdieharder/Makefile.in	2022-12-21 14:04:02.000000000 +0100
+--- dieharder-clean/libdieharder/Makefile.in
++++ dieharder-workdir/libdieharder/Makefile.in
 @@ -575,7 +575,7 @@
  # CC = gcc
  

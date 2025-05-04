@@ -1,6 +1,6 @@
 diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
---- openssl-clean/Configurations/10-main.conf	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/Configurations/10-main.conf	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/Configurations/10-main.conf
++++ openssl-workdir/Configurations/10-main.conf
 @@ -925,6 +925,40 @@
          ranlib           => "true",
      },
@@ -43,8 +43,8 @@ diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-wor
      "BSD-generic32" => {
          # As for thread cflag. Idea is to maintain "collective" set of
 diff -urN --no-dereference openssl-clean/Configure openssl-workdir/Configure
---- openssl-clean/Configure	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/Configure	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/Configure
++++ openssl-workdir/Configure
 @@ -1549,20 +1549,7 @@
  unless ($disabled{afalgeng}) {
      $config{afalgeng}="";
@@ -68,8 +68,8 @@ diff -urN --no-dereference openssl-clean/Configure openssl-workdir/Configure
          disable('not-linux', 'afalgeng');
      }
 diff -urN --no-dereference openssl-clean/apps/speed.c openssl-workdir/apps/speed.c
---- openssl-clean/apps/speed.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/apps/speed.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/apps/speed.c
++++ openssl-workdir/apps/speed.c
 @@ -113,6 +113,8 @@
  # define NO_FORK
  #endif
@@ -80,8 +80,8 @@ diff -urN --no-dereference openssl-clean/apps/speed.c openssl-workdir/apps/speed
  #define MAX_ECDH_SIZE   256
  #define MISALIGN        64
 diff -urN --no-dereference openssl-clean/crypto/conf/conf_def.c openssl-workdir/crypto/conf/conf_def.c
---- openssl-clean/crypto/conf/conf_def.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/crypto/conf/conf_def.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/crypto/conf/conf_def.c
++++ openssl-workdir/crypto/conf/conf_def.c
 @@ -11,6 +11,7 @@
  
  #include <stdio.h>
@@ -91,8 +91,8 @@ diff -urN --no-dereference openssl-clean/crypto/conf/conf_def.c openssl-workdir/
  #include "internal/o_dir.h"
  #include <openssl/lhash.h>
 diff -urN --no-dereference openssl-clean/test/bntest.c openssl-workdir/test/bntest.c
---- openssl-clean/test/bntest.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/test/bntest.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/test/bntest.c
++++ openssl-workdir/test/bntest.c
 @@ -10,6 +10,7 @@
  #include <errno.h>
  #include <stdio.h>
@@ -102,8 +102,8 @@ diff -urN --no-dereference openssl-clean/test/bntest.c openssl-workdir/test/bnte
  
  #include <openssl/bn.h>
 diff -urN --no-dereference openssl-clean/test/rsa_complex.c openssl-workdir/test/rsa_complex.c
---- openssl-clean/test/rsa_complex.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/test/rsa_complex.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/test/rsa_complex.c
++++ openssl-workdir/test/rsa_complex.c
 @@ -14,7 +14,9 @@
   */
  #if defined(__STDC_VERSION__)
@@ -116,8 +116,8 @@ diff -urN --no-dereference openssl-clean/test/rsa_complex.c openssl-workdir/test
  #endif
  #include <openssl/rsa.h>
 diff -urN --no-dereference openssl-clean/test/ssl_test_ctx.c openssl-workdir/test/ssl_test_ctx.c
---- openssl-clean/test/ssl_test_ctx.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/test/ssl_test_ctx.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/test/ssl_test_ctx.c
++++ openssl-workdir/test/ssl_test_ctx.c
 @@ -8,6 +8,7 @@
   */
  
@@ -127,8 +127,8 @@ diff -urN --no-dereference openssl-clean/test/ssl_test_ctx.c openssl-workdir/tes
  #include <openssl/e_os2.h>
  #include <openssl/crypto.h>
 diff -urN --no-dereference openssl-clean/test/v3nametest.c openssl-workdir/test/v3nametest.c
---- openssl-clean/test/v3nametest.c	2023-09-11 16:08:11.000000000 +0200
-+++ openssl-workdir/test/v3nametest.c	2023-09-11 16:08:11.000000000 +0200
+--- openssl-clean/test/v3nametest.c
++++ openssl-workdir/test/v3nametest.c
 @@ -8,6 +8,7 @@
   */
  

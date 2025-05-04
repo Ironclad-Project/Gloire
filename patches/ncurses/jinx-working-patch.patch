@@ -1,6 +1,6 @@
 diff -urN --no-dereference ncurses-clean/c++/Makefile.in ncurses-workdir/c++/Makefile.in
---- ncurses-clean/c++/Makefile.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/c++/Makefile.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/c++/Makefile.in
++++ ncurses-workdir/c++/Makefile.in
 @@ -120,7 +120,7 @@
  		-l@FORM_NAME@@USE_LIB_SUFFIX@ \
  		-l@MENU_NAME@@USE_LIB_SUFFIX@ \
@@ -63,8 +63,8 @@ diff -urN --no-dereference ncurses-clean/c++/Makefile.in ncurses-workdir/c++/Mak
  etip.h:	$(srcdir)/etip.h.in $(srcdir)/edit_cfg.sh
  	cp $(srcdir)/etip.h.in $@
 diff -urN --no-dereference ncurses-clean/configure ncurses-workdir/configure
---- ncurses-clean/configure	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/configure	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/configure
++++ ncurses-workdir/configure
 @@ -3821,7 +3821,7 @@
  
  		save_CPPFLAGS="$CPPFLAGS"
@@ -86,8 +86,8 @@ diff -urN --no-dereference ncurses-clean/configure ncurses-workdir/configure
  		cf_cv_shlib_version=mingw
  		cf_cv_shlib_version_infix=mingw
 diff -urN --no-dereference ncurses-clean/form/Makefile.in ncurses-workdir/form/Makefile.in
---- ncurses-clean/form/Makefile.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/form/Makefile.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/form/Makefile.in
++++ ncurses-workdir/form/Makefile.in
 @@ -112,7 +112,7 @@
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
  
@@ -98,8 +98,8 @@ diff -urN --no-dereference ncurses-clean/form/Makefile.in ncurses-workdir/form/M
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
 diff -urN --no-dereference ncurses-clean/misc/gen-pkgconfig.in ncurses-workdir/misc/gen-pkgconfig.in
---- ncurses-clean/misc/gen-pkgconfig.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/misc/gen-pkgconfig.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/misc/gen-pkgconfig.in
++++ ncurses-workdir/misc/gen-pkgconfig.in
 @@ -83,7 +83,7 @@
  fi
  
@@ -110,8 +110,8 @@ diff -urN --no-dereference ncurses-clean/misc/gen-pkgconfig.in ncurses-workdir/m
  	case $opt in
  	-l*) # LIBS is handled specially below
 diff -urN --no-dereference ncurses-clean/misc/ncurses-config.in ncurses-workdir/misc/ncurses-config.in
---- ncurses-clean/misc/ncurses-config.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/misc/ncurses-config.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/misc/ncurses-config.in
++++ ncurses-workdir/misc/ncurses-config.in
 @@ -110,7 +110,7 @@
  # There is no portable way to find the list of standard library directories.
  # Require a POSIX shell anyway, to keep this simple.
@@ -122,8 +122,8 @@ diff -urN --no-dereference ncurses-clean/misc/ncurses-config.in ncurses-workdir/
  	case $opt in
  	-specs*) # ignore linker specs-files which were used to build library
 diff -urN --no-dereference ncurses-clean/panel/Makefile.in ncurses-workdir/panel/Makefile.in
---- ncurses-clean/panel/Makefile.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/panel/Makefile.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/panel/Makefile.in
++++ ncurses-workdir/panel/Makefile.in
 @@ -114,7 +114,7 @@
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
  
@@ -134,8 +134,8 @@ diff -urN --no-dereference ncurses-clean/panel/Makefile.in ncurses-workdir/panel
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
 diff -urN --no-dereference ncurses-clean/progs/Makefile.in ncurses-workdir/progs/Makefile.in
---- ncurses-clean/progs/Makefile.in	2025-04-27 02:04:40.000000000 +0200
-+++ ncurses-workdir/progs/Makefile.in	2025-04-27 02:04:40.000000000 +0200
+--- ncurses-clean/progs/Makefile.in
++++ ncurses-workdir/progs/Makefile.in
 @@ -80,7 +80,7 @@
  LIBTOOL_UNINSTALL = @LIB_UNINSTALL@
  

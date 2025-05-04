@@ -1,6 +1,6 @@
 diff -urN --no-dereference cronie-clean/src/do_command.c cronie-workdir/src/do_command.c
---- cronie-clean/src/do_command.c	2024-01-19 11:20:51.000000000 +0100
-+++ cronie-workdir/src/do_command.c	2024-01-19 11:20:51.000000000 +0100
+--- cronie-clean/src/do_command.c
++++ cronie-workdir/src/do_command.c
 @@ -264,7 +264,7 @@
  		 */
  		{
@@ -11,8 +11,8 @@ diff -urN --no-dereference cronie-clean/src/do_command.c cronie-workdir/src/do_c
  			struct dirent *dent;
  
 diff -urN --no-dereference cronie-clean/src/env.c cronie-workdir/src/env.c
---- cronie-clean/src/env.c	2024-01-19 11:20:51.000000000 +0100
-+++ cronie-workdir/src/env.c	2024-01-19 11:20:51.000000000 +0100
+--- cronie-clean/src/env.c
++++ cronie-workdir/src/env.c
 @@ -261,7 +261,7 @@
  	}
  	if (state != FINI && state != EQ2 && !(state == VALUE && !quotechar)) {
@@ -23,8 +23,8 @@ diff -urN --no-dereference cronie-clean/src/env.c cronie-workdir/src/env.c
  		}
  		Set_LineNum(fileline);
 diff -urN --no-dereference cronie-clean/src/popen.c cronie-workdir/src/popen.c
---- cronie-clean/src/popen.c	2024-04-08 10:05:57.000000000 +0200
-+++ cronie-workdir/src/popen.c	2024-04-08 10:05:57.000000000 +0200
+--- cronie-clean/src/popen.c
++++ cronie-workdir/src/popen.c
 @@ -79,7 +79,7 @@
  		return (NULL);
  

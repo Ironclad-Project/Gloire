@@ -1,6 +1,6 @@
 diff -urN --no-dereference xorg-proto-clean/include/X11/Xfuncs.h xorg-proto-workdir/include/X11/Xfuncs.h
---- xorg-proto-clean/include/X11/Xfuncs.h	2024-03-26 08:16:32.000000000 +0100
-+++ xorg-proto-workdir/include/X11/Xfuncs.h	2024-03-26 08:16:32.000000000 +0100
+--- xorg-proto-clean/include/X11/Xfuncs.h
++++ xorg-proto-workdir/include/X11/Xfuncs.h
 @@ -44,7 +44,7 @@
  #    define bcmp(b1,b2,len) memcmp(b1, b2, len)
  #   else
@@ -11,8 +11,8 @@ diff -urN --no-dereference xorg-proto-clean/include/X11/Xfuncs.h xorg-proto-work
  #    endif
  #    define _XFUNCS_H_INCLUDED_STRING_H
 diff -urN --no-dereference xorg-proto-clean/include/X11/Xos.h xorg-proto-workdir/include/X11/Xos.h
---- xorg-proto-clean/include/X11/Xos.h	2024-03-26 08:16:32.000000000 +0100
-+++ xorg-proto-workdir/include/X11/Xos.h	2024-03-26 08:16:32.000000000 +0100
+--- xorg-proto-clean/include/X11/Xos.h
++++ xorg-proto-workdir/include/X11/Xos.h
 @@ -60,7 +60,7 @@
   */
  
@@ -23,8 +23,8 @@ diff -urN --no-dereference xorg-proto-clean/include/X11/Xos.h xorg-proto-workdir
  # else
  #  ifndef index
 diff -urN --no-dereference xorg-proto-clean/include/X11/Xos_r.h xorg-proto-workdir/include/X11/Xos_r.h
---- xorg-proto-clean/include/X11/Xos_r.h	2024-03-26 08:16:32.000000000 +0100
-+++ xorg-proto-workdir/include/X11/Xos_r.h	2024-03-26 08:16:32.000000000 +0100
+--- xorg-proto-clean/include/X11/Xos_r.h
++++ xorg-proto-workdir/include/X11/Xos_r.h
 @@ -318,7 +318,7 @@
    (_Xos_processUnlock), \
    (p).pwp )

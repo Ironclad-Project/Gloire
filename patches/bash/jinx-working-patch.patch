@@ -1,6 +1,6 @@
 diff -urN --no-dereference bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
---- bash-clean/arrayfunc.c	2024-02-22 17:08:16.000000000 +0100
-+++ bash-workdir/arrayfunc.c	2024-02-22 17:08:16.000000000 +0100
+--- bash-clean/arrayfunc.c
++++ bash-workdir/arrayfunc.c
 @@ -208,7 +208,10 @@
    newval = make_array_variable_value (entry, 0, key, value, flags);
  
@@ -22,8 +22,8 @@ diff -urN --no-dereference bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
    return nword;
  }
 diff -urN --no-dereference bash-clean/bashline.c bash-workdir/bashline.c
---- bash-clean/bashline.c	2022-04-18 00:37:12.000000000 +0200
-+++ bash-workdir/bashline.c	2022-04-18 00:37:12.000000000 +0200
+--- bash-clean/bashline.c
++++ bash-workdir/bashline.c
 @@ -1928,6 +1928,7 @@
    result = search_for_command (cname, 0);
    if (result)
@@ -33,8 +33,8 @@ diff -urN --no-dereference bash-clean/bashline.c bash-workdir/bashline.c
        return 1;
      }
 diff -urN --no-dereference bash-clean/builtins/evalstring.c bash-workdir/builtins/evalstring.c
---- bash-clean/builtins/evalstring.c	2024-07-31 17:15:44.000000000 +0200
-+++ bash-workdir/builtins/evalstring.c	2024-07-31 17:15:44.000000000 +0200
+--- bash-clean/builtins/evalstring.c
++++ bash-workdir/builtins/evalstring.c
 @@ -461,6 +461,8 @@
  		      should_jump_to_top_level = 0;
  		      last_result = last_command_exit_value = EX_BADUSAGE;
@@ -45,8 +45,8 @@ diff -urN --no-dereference bash-clean/builtins/evalstring.c bash-workdir/builtin
  		      break;
  		    }
 diff -urN --no-dereference bash-clean/builtins/psize.c bash-workdir/builtins/psize.c
---- bash-clean/builtins/psize.c	2008-08-14 21:56:53.000000000 +0200
-+++ bash-workdir/builtins/psize.c	2008-08-14 21:56:53.000000000 +0200
+--- bash-clean/builtins/psize.c
++++ bash-workdir/builtins/psize.c
 @@ -21,33 +21,14 @@
  /*  Write output in 128-byte chunks until we get a sigpipe or write gets an
      EPIPE.  Then report how many bytes we wrote.  We assume that this is the
@@ -86,8 +86,8 @@ diff -urN --no-dereference bash-clean/builtins/psize.c bash-workdir/builtins/psi
       int sig;
  {
 diff -urN --no-dereference bash-clean/builtins/read.def bash-workdir/builtins/read.def
---- bash-clean/builtins/read.def	2022-11-23 23:09:15.000000000 +0100
-+++ bash-workdir/builtins/read.def	2022-11-23 23:09:15.000000000 +0100
+--- bash-clean/builtins/read.def
++++ bash-workdir/builtins/read.def
 @@ -130,7 +130,7 @@
  #endif
  static SHELL_VAR *bind_read_variable PARAMS((char *, char *, int));
@@ -144,8 +144,8 @@ diff -urN --no-dereference bash-clean/builtins/read.def bash-workdir/builtins/re
  
  mbchar_return:
 diff -urN --no-dereference bash-clean/examples/loadables/stat.c bash-workdir/examples/loadables/stat.c
---- bash-clean/examples/loadables/stat.c	2022-03-11 16:27:06.000000000 +0100
-+++ bash-workdir/examples/loadables/stat.c	2022-03-11 16:27:06.000000000 +0100
+--- bash-clean/examples/loadables/stat.c
++++ bash-workdir/examples/loadables/stat.c
 @@ -349,6 +349,7 @@
        key = savestring (arraysubs[i]);
        value = statval (i, fname, flags, fmt, sp);
@@ -155,8 +155,8 @@ diff -urN --no-dereference bash-clean/examples/loadables/stat.c bash-workdir/exa
    return 0;
  }
 diff -urN --no-dereference bash-clean/externs.h bash-workdir/externs.h
---- bash-clean/externs.h	2022-07-05 17:08:50.000000000 +0200
-+++ bash-workdir/externs.h	2022-07-05 17:08:50.000000000 +0200
+--- bash-clean/externs.h
++++ bash-workdir/externs.h
 @@ -536,6 +536,7 @@
  extern ssize_t zreadc PARAMS((int, char *));
  extern ssize_t zreadcintr PARAMS((int, char *));
@@ -166,8 +166,8 @@ diff -urN --no-dereference bash-clean/externs.h bash-workdir/externs.h
  extern void zsyncfd PARAMS((int));
  
 diff -urN --no-dereference bash-clean/lib/sh/random.c bash-workdir/lib/sh/random.c
---- bash-clean/lib/sh/random.c	2020-05-29 20:21:10.000000000 +0200
-+++ bash-workdir/lib/sh/random.c	2020-05-29 20:21:10.000000000 +0200
+--- bash-clean/lib/sh/random.c
++++ bash-workdir/lib/sh/random.c
 @@ -76,7 +76,7 @@
    /* Can't seed with 0. */
    ret = (last == 0) ? 123459876 : last;
@@ -187,8 +187,8 @@ diff -urN --no-dereference bash-clean/lib/sh/random.c bash-workdir/lib/sh/random
    return (iv);
  }
 diff -urN --no-dereference bash-clean/lib/sh/zread.c bash-workdir/lib/sh/zread.c
---- bash-clean/lib/sh/zread.c	2021-05-06 17:21:20.000000000 +0200
-+++ bash-workdir/lib/sh/zread.c	2021-05-06 17:21:20.000000000 +0200
+--- bash-clean/lib/sh/zread.c
++++ bash-workdir/lib/sh/zread.c
 @@ -41,6 +41,10 @@
  #  define ZBUFSIZ 4096
  #endif
@@ -327,8 +327,8 @@ diff -urN --no-dereference bash-clean/lib/sh/zread.c bash-workdir/lib/sh/zread.c
  zreset ()
  {
 diff -urN --no-dereference bash-clean/lib/termcap/termcap.c bash-workdir/lib/termcap/termcap.c
---- bash-clean/lib/termcap/termcap.c	2021-09-03 20:17:58.000000000 +0200
-+++ bash-workdir/lib/termcap/termcap.c	2021-09-03 20:17:58.000000000 +0200
+--- bash-clean/lib/termcap/termcap.c
++++ bash-workdir/lib/termcap/termcap.c
 @@ -630,7 +630,7 @@
    bufp->ateof = 0;
    *bufp->ptr = '\0';
@@ -339,8 +339,8 @@ diff -urN --no-dereference bash-clean/lib/termcap/termcap.c bash-workdir/lib/ter
    while (!bufp->ateof)
      {
 diff -urN --no-dereference bash-clean/mksyntax.c bash-workdir/mksyntax.c
---- bash-clean/mksyntax.c	2012-07-30 01:48:38.000000000 +0200
-+++ bash-workdir/mksyntax.c	2012-07-30 01:48:38.000000000 +0200
+--- bash-clean/mksyntax.c
++++ bash-workdir/mksyntax.c
 @@ -20,30 +20,19 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -417,8 +417,8 @@ diff -urN --no-dereference bash-clean/mksyntax.c bash-workdir/mksyntax.c
 -}
 -#endif /* HAVE_STRERROR */
 diff -urN --no-dereference bash-clean/shell.c bash-workdir/shell.c
---- bash-clean/shell.c	2022-11-05 22:27:41.000000000 +0100
-+++ bash-workdir/shell.c	2022-11-05 22:27:41.000000000 +0100
+--- bash-clean/shell.c
++++ bash-workdir/shell.c
 @@ -1647,7 +1647,7 @@
  #endif
  
@@ -438,8 +438,8 @@ diff -urN --no-dereference bash-clean/shell.c bash-workdir/shell.c
  
    /* Open the script.  But try to move the file descriptor to a randomly
 diff -urN --no-dereference bash-clean/subst.c bash-workdir/subst.c
---- bash-clean/subst.c	2024-02-22 17:08:16.000000000 +0100
-+++ bash-workdir/subst.c	2024-02-22 17:08:16.000000000 +0100
+--- bash-clean/subst.c
++++ bash-workdir/subst.c
 @@ -10727,6 +10727,7 @@
  	    {
  	      chk_atstar (temp, quoted, pflags, quoted_dollar_at_p, contains_dollar_at);
@@ -457,8 +457,8 @@ diff -urN --no-dereference bash-clean/subst.c bash-workdir/subst.c
  	    }
  	  else
 diff -urN --no-dereference bash-clean/support/bashversion.c bash-workdir/support/bashversion.c
---- bash-clean/support/bashversion.c	2021-11-04 19:24:46.000000000 +0100
-+++ bash-workdir/support/bashversion.c	2021-11-04 19:24:46.000000000 +0100
+--- bash-clean/support/bashversion.c
++++ bash-workdir/support/bashversion.c
 @@ -18,15 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -478,8 +478,8 @@ diff -urN --no-dereference bash-clean/support/bashversion.c bash-workdir/support
  #include "bashansi.h"
  
 diff -urN --no-dereference bash-clean/support/man2html.c bash-workdir/support/man2html.c
---- bash-clean/support/man2html.c	2019-12-10 20:48:26.000000000 +0100
-+++ bash-workdir/support/man2html.c	2019-12-10 20:48:26.000000000 +0100
+--- bash-clean/support/man2html.c
++++ bash-workdir/support/man2html.c
 @@ -62,9 +62,6 @@
   *    that all these features work on all manpages. (I didn't have the
   *    time to look through all the available manpages.)
@@ -519,8 +519,8 @@ diff -urN --no-dereference bash-clean/support/man2html.c bash-workdir/support/ma
  strgrow(char *old, int len)
  {
 diff -urN --no-dereference bash-clean/support/mksignames.c bash-workdir/support/mksignames.c
---- bash-clean/support/mksignames.c	2020-06-05 20:07:12.000000000 +0200
-+++ bash-workdir/support/mksignames.c	2020-06-05 20:07:12.000000000 +0200
+--- bash-clean/support/mksignames.c
++++ bash-workdir/support/mksignames.c
 @@ -19,17 +19,11 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -541,8 +541,8 @@ diff -urN --no-dereference bash-clean/support/mksignames.c bash-workdir/support/
  /* Duplicated from signames.c */
  #if !defined (NSIG)
 diff -urN --no-dereference bash-clean/support/signames.c bash-workdir/support/signames.c
---- bash-clean/support/signames.c	2022-07-26 16:21:18.000000000 +0200
-+++ bash-workdir/support/signames.c	2022-07-26 16:21:18.000000000 +0200
+--- bash-clean/support/signames.c
++++ bash-workdir/support/signames.c
 @@ -18,18 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */

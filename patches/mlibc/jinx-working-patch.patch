@@ -1,6 +1,6 @@
 diff -urN --no-dereference mlibc-clean/abis/ironclad/vm-flags.h mlibc-workdir/abis/ironclad/vm-flags.h
---- mlibc-clean/abis/ironclad/vm-flags.h	2025-05-03 17:21:51.970391240 +0200
-+++ mlibc-workdir/abis/ironclad/vm-flags.h	2025-05-03 17:21:51.970391240 +0200
+--- mlibc-clean/abis/ironclad/vm-flags.h
++++ mlibc-workdir/abis/ironclad/vm-flags.h
 @@ -14,7 +14,6 @@
  #define MAP_ANON      0x08
  #define MAP_ANONYMOUS 0x08
@@ -10,8 +10,8 @@ diff -urN --no-dereference mlibc-clean/abis/ironclad/vm-flags.h mlibc-workdir/ab
  #define MS_ASYNC 0x01
  #define MS_SYNC 0x02
 diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
---- mlibc-clean/meson.build	2025-05-03 17:21:51.972469782 +0200
-+++ mlibc-workdir/meson.build	2025-05-03 17:21:51.972469782 +0200
+--- mlibc-clean/meson.build
++++ mlibc-workdir/meson.build
 @@ -239,6 +239,7 @@
  elif host_machine.system() == 'ironclad'
  	rtld_include_dirs += include_directories('sysdeps/ironclad/include')
@@ -21,8 +21,8 @@ diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
  elif host_machine.system() == 'keyronex'
  	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
 diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
---- mlibc-clean/options/internal/generic/charset.cpp	2025-05-03 17:21:51.980899262 +0200
-+++ mlibc-workdir/options/internal/generic/charset.cpp	2025-05-03 17:21:51.980899262 +0200
+--- mlibc-clean/options/internal/generic/charset.cpp
++++ mlibc-workdir/options/internal/generic/charset.cpp
 @@ -13,36 +13,28 @@
  bool charset::is_alpha(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
@@ -158,8 +158,8 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlib
  }
  
 diff -urN --no-dereference mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
---- mlibc-clean/options/posix/generic/posix_locale.cpp	2025-05-03 17:21:51.983520227 +0200
-+++ mlibc-workdir/options/posix/generic/posix_locale.cpp	2025-05-03 17:21:51.983520227 +0200
+--- mlibc-clean/options/posix/generic/posix_locale.cpp
++++ mlibc-workdir/options/posix/generic/posix_locale.cpp
 @@ -25,7 +25,7 @@
  
  locale_t uselocale(locale_t) {
@@ -170,8 +170,8 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/posix_locale.cpp ml
  	}
  	return nullptr;
 diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
---- mlibc-clean/options/posix/generic/sys-shm.cpp	2025-05-03 17:21:51.983520227 +0200
-+++ mlibc-workdir/options/posix/generic/sys-shm.cpp	2025-05-03 17:21:51.983520227 +0200
+--- mlibc-clean/options/posix/generic/sys-shm.cpp
++++ mlibc-workdir/options/posix/generic/sys-shm.cpp
 @@ -4,6 +4,7 @@
  #include <bits/ensure.h>
  #include <mlibc/debug.hpp>
@@ -194,8 +194,8 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-w
  }
  
 diff -urN --no-dereference mlibc-clean/options/posix/generic/unistd.cpp mlibc-workdir/options/posix/generic/unistd.cpp
---- mlibc-clean/options/posix/generic/unistd.cpp	2025-05-03 17:21:51.984014498 +0200
-+++ mlibc-workdir/options/posix/generic/unistd.cpp	2025-05-03 17:21:51.984014498 +0200
+--- mlibc-clean/options/posix/generic/unistd.cpp
++++ mlibc-workdir/options/posix/generic/unistd.cpp
 @@ -1208,13 +1208,13 @@
  	/* deferring to fork as implementing vfork correctly requires assembly
  	 * to handle not mucking up the stack
@@ -213,8 +213,8 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/unistd.cpp mlibc-wo
  		return -1;
  	}
 diff -urN --no-dereference mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
---- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp	2025-05-03 17:21:51.985367290 +0200
-+++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp	2025-05-03 17:21:51.985367290 +0200
+--- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
++++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
 @@ -100,6 +100,7 @@
  [[gnu::weak]] void sys_yield();
  [[gnu::weak]] int sys_sleep(time_t *secs, long *nanos);
@@ -224,8 +224,8 @@ diff -urN --no-dereference mlibc-clean/options/posix/include/mlibc/posix-sysdeps
  [[gnu::weak]] int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set,
  		fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events);
 diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
---- mlibc-clean/options/rtld/generic/linker.cpp	2025-05-03 17:21:51.987011268 +0200
-+++ mlibc-workdir/options/rtld/generic/linker.cpp	2025-05-03 17:21:51.987011268 +0200
+--- mlibc-clean/options/rtld/generic/linker.cpp
++++ mlibc-workdir/options/rtld/generic/linker.cpp
 @@ -521,6 +521,7 @@
  		return LinkerError::outOfMemory;
  	}
@@ -235,8 +235,8 @@ diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-wor
  #else
  	object->baseAddress = libraryBase;
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
---- mlibc-clean/sysdeps/ironclad/generic/generic.cpp	2025-05-03 17:21:51.989974950 +0200
-+++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp	2025-05-03 17:21:51.989974950 +0200
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -25,13 +25,9 @@
  namespace mlibc {
  
@@ -366,8 +366,8 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
  			if (ret == 0) {
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
---- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h	2025-05-03 17:21:51.990701870 +0200
-+++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h	2025-05-03 17:21:51.990701870 +0200
+--- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
++++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -36,7 +36,6 @@
  #define SYSCALL_GETUID               24
  #define SYSCALL_RENAME               25

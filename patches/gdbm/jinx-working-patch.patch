@@ -1,6 +1,6 @@
 diff -urN --no-dereference gdbm-clean/tools/gdbmapp.h gdbm-workdir/tools/gdbmapp.h
---- gdbm-clean/tools/gdbmapp.h	2025-03-06 16:51:59.000000000 +0100
-+++ gdbm-workdir/tools/gdbmapp.h	2025-03-06 16:51:59.000000000 +0100
+--- gdbm-clean/tools/gdbmapp.h
++++ gdbm-workdir/tools/gdbmapp.h
 @@ -16,6 +16,7 @@
  
  #include <stdlib.h>
@@ -10,8 +10,8 @@ diff -urN --no-dereference gdbm-clean/tools/gdbmapp.h gdbm-workdir/tools/gdbmapp
  #ifdef HAVE_LOCALE_H
  # include <locale.h>
 diff -urN --no-dereference gdbm-clean/tools/var.c gdbm-workdir/tools/var.c
---- gdbm-clean/tools/var.c	2025-03-06 16:51:59.000000000 +0100
-+++ gdbm-workdir/tools/var.c	2025-03-06 16:51:59.000000000 +0100
+--- gdbm-clean/tools/var.c
++++ gdbm-workdir/tools/var.c
 @@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */

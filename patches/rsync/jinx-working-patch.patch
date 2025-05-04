@@ -1,6 +1,6 @@
 diff -urN --no-dereference rsync-clean/lib/compat.c rsync-workdir/lib/compat.c
---- rsync-clean/lib/compat.c	2020-07-11 20:39:36.000000000 +0200
-+++ rsync-workdir/lib/compat.c	2020-07-11 20:39:36.000000000 +0200
+--- rsync-clean/lib/compat.c
++++ rsync-workdir/lib/compat.c
 @@ -156,11 +156,11 @@
  /* some systems don't take the 2nd argument */
  int sys_gettimeofday(struct timeval *tv)

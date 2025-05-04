@@ -1,6 +1,6 @@
 diff -urN --no-dereference mesa-demos-clean/meson.build mesa-demos-workdir/meson.build
---- mesa-demos-clean/meson.build	2023-03-22 13:13:43.000000000 +0100
-+++ mesa-demos-workdir/meson.build	2023-03-22 13:13:43.000000000 +0100
+--- mesa-demos-clean/meson.build
++++ mesa-demos-workdir/meson.build
 @@ -99,7 +99,7 @@
  endif
  

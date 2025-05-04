@@ -1,6 +1,6 @@
 diff -urN --no-dereference xorriso-clean/libjte/checksum.c xorriso-workdir/libjte/checksum.c
---- xorriso-clean/libjte/checksum.c	2023-06-07 18:43:33.000000000 +0200
-+++ xorriso-workdir/libjte/checksum.c	2023-06-07 18:43:33.000000000 +0200
+--- xorriso-clean/libjte/checksum.c
++++ xorriso-workdir/libjte/checksum.c
 @@ -16,6 +16,7 @@
  #include <regex.h>
  #include <stdlib.h>

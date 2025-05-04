@@ -1,6 +1,6 @@
 diff -urN --no-dereference cmatrix-clean/cmatrix.c cmatrix-workdir/cmatrix.c
---- cmatrix-clean/cmatrix.c	2019-03-27 14:21:44.000000000 +0100
-+++ cmatrix-workdir/cmatrix.c	2019-03-27 14:21:44.000000000 +0100
+--- cmatrix-clean/cmatrix.c
++++ cmatrix-workdir/cmatrix.c
 @@ -32,6 +32,8 @@
  #include <termios.h>
  #include <signal.h>

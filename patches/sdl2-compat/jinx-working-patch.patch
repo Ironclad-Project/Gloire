@@ -1,6 +1,6 @@
 diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/CMakeLists.txt
---- sdl2-compat-clean/CMakeLists.txt	2025-03-31 22:56:41.000000000 +0200
-+++ sdl2-compat-workdir/CMakeLists.txt	2025-03-31 22:56:41.000000000 +0200
+--- sdl2-compat-clean/CMakeLists.txt
++++ sdl2-compat-workdir/CMakeLists.txt
 @@ -79,7 +79,8 @@
  set(SDL_DYLIB_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION_MAJOR}.${SDL_DYLIB_CURRENT_VERSION_MINOR}.${SDL_DYLIB_CURRENT_VERSION_MICRO}")
  set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMPAT_VERSION_MINOR}.${SDL_DYLIB_COMPAT_VERSION_MICRO}")

@@ -1,6 +1,6 @@
 diff -urN --no-dereference cal-clean/src/cal.c cal-workdir/src/cal.c
---- cal-clean/src/cal.c	2014-06-21 00:56:21.000000000 +0200
-+++ cal-workdir/src/cal.c	2014-06-21 00:56:21.000000000 +0200
+--- cal-clean/src/cal.c
++++ cal-workdir/src/cal.c
 @@ -173,6 +173,7 @@
  #include <time.h>
  #include <ctype.h>

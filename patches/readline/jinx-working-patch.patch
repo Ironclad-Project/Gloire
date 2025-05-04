@@ -1,8 +1,7 @@
-diff --git readline-clean/support/shlib-install readline-workdir/support/shlib-install
-index 661355d..4e80698 100644
---- readline-clean/support/shlib-install
-+++ readline-workdir/support/shlib-install
-@@ -71,7 +71,7 @@ fi
+diff -urN --no-dereference readline-clean/support/shlib-install readline-workdir/support/shlib-install
+--- readline-clean/support/shlib-install	2019-12-13 15:46:13.000000000 +0100
++++ readline-workdir/support/shlib-install	2019-12-13 15:46:13.000000000 +0100
+@@ -71,7 +71,7 @@
  # Cygwin installs both a dll (which must go in $BINDIR) and an implicit
  # link library (in $libdir)
  case "$host_os" in
@@ -11,7 +10,7 @@ index 661355d..4e80698 100644
  	if [ -z "$uninstall" ]; then
  		chmod 755 ${INSTALLDIR}/${LIBNAME}
  	fi ;;
-@@ -146,7 +146,7 @@ bsdi4*|*gnu*|darwin*|macosx*|netbsd*|mirbsd*)
+@@ -146,7 +146,7 @@
  	fi
  	;;
  
@@ -20,11 +19,10 @@ index 661355d..4e80698 100644
  	# libname.so -> libname.so.M
  	${echo} ${RM} ${INSTALLDIR}/$LINK1
  	if [ -z "$uninstall" ]; then
-diff --git readline-clean/support/shobj-conf readline-workdir/support/shobj-conf
-index cd7634d..2beb0e6 100644
---- readline-clean/support/shobj-conf
-+++ readline-workdir/support/shobj-conf
-@@ -123,12 +123,12 @@ sunos5*|solaris2*)
+diff -urN --no-dereference readline-clean/support/shobj-conf readline-workdir/support/shobj-conf
+--- readline-clean/support/shobj-conf	2021-12-03 16:54:46.000000000 +0100
++++ readline-workdir/support/shobj-conf	2021-12-03 16:54:46.000000000 +0100
+@@ -123,12 +123,12 @@
  	;;
  
  # All versions of Linux (including Gentoo/FreeBSD) or the semi-mythical GNU Hurd.
@@ -39,11 +37,10 @@ index cd7634d..2beb0e6 100644
  	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)'
  	;;
  
-diff --git readline-clean/terminal.c readline-workdir/terminal.c
-index 9997161..6fdf423 100644
---- readline-clean/terminal.c
-+++ readline-workdir/terminal.c
-@@ -102,12 +102,12 @@ static char *term_string_buffer = (char *)NULL;
+diff -urN --no-dereference readline-clean/terminal.c readline-workdir/terminal.c
+--- readline-clean/terminal.c	2022-04-05 16:44:17.000000000 +0200
++++ readline-workdir/terminal.c	2022-04-05 16:44:17.000000000 +0200
+@@ -102,12 +102,12 @@
  
  static int tcap_initialized;
  

@@ -1,8 +1,7 @@
-diff --git sl-clean/Makefile sl-workdir/Makefile
-index 515b96d..332ebca 100644
---- sl-clean/Makefile
-+++ sl-workdir/Makefile
-@@ -12,7 +12,7 @@ CFLAGS=-O3 -Wall
+diff -urN --no-dereference sl-clean/Makefile sl-workdir/Makefile
+--- sl-clean/Makefile	2025-05-03 18:03:23.014236322 +0200
++++ sl-workdir/Makefile	2025-05-03 18:03:23.014236322 +0200
+@@ -12,7 +12,7 @@
  all: sl
  
  sl: sl.c sl.h

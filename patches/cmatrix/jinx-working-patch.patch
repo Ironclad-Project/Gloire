@@ -1,7 +1,6 @@
-diff --git cmatrix-clean/cmatrix.c cmatrix-workdir/cmatrix.c
-index 90284cb..b6a7a10 100644
---- cmatrix-clean/cmatrix.c
-+++ cmatrix-workdir/cmatrix.c
+diff -urN --no-dereference cmatrix-clean/cmatrix.c cmatrix-workdir/cmatrix.c
+--- cmatrix-clean/cmatrix.c	2019-03-27 14:21:44.000000000 +0100
++++ cmatrix-workdir/cmatrix.c	2019-03-27 14:21:44.000000000 +0100
 @@ -32,6 +32,8 @@
  #include <termios.h>
  #include <signal.h>

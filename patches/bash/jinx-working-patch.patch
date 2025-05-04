@@ -1,8 +1,7 @@
-diff --git bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
-index 4125622..eecd550 100644
---- bash-clean/arrayfunc.c
-+++ bash-workdir/arrayfunc.c
-@@ -208,7 +208,10 @@ bind_assoc_var_internal (entry, hash, key, value, flags)
+diff -urN --no-dereference bash-clean/arrayfunc.c bash-workdir/arrayfunc.c
+--- bash-clean/arrayfunc.c	2024-02-22 17:08:16.000000000 +0100
++++ bash-workdir/arrayfunc.c	2024-02-22 17:08:16.000000000 +0100
+@@ -208,7 +208,10 @@
    newval = make_array_variable_value (entry, 0, key, value, flags);
  
    if (entry->assign_func)
@@ -14,7 +13,7 @@ index 4125622..eecd550 100644
    else
      assoc_insert (hash, key, newval);
  
-@@ -985,6 +988,7 @@ quote_compound_array_word (w, type)
+@@ -985,6 +988,7 @@
    if (t != w+ind)
     free (t);
    strcpy (nword + i, value);
@@ -22,11 +21,10 @@ index 4125622..eecd550 100644
  
    return nword;
  }
-diff --git bash-clean/bashline.c bash-workdir/bashline.c
-index c85b05b..bd7548c 100644
---- bash-clean/bashline.c
-+++ bash-workdir/bashline.c
-@@ -1928,6 +1928,7 @@ bash_command_name_stat_hook (name)
+diff -urN --no-dereference bash-clean/bashline.c bash-workdir/bashline.c
+--- bash-clean/bashline.c	2022-04-18 00:37:12.000000000 +0200
++++ bash-workdir/bashline.c	2022-04-18 00:37:12.000000000 +0200
+@@ -1928,6 +1928,7 @@
    result = search_for_command (cname, 0);
    if (result)
      {
@@ -34,11 +32,10 @@ index c85b05b..bd7548c 100644
        *name = result;
        return 1;
      }
-diff --git bash-clean/builtins/evalstring.c bash-workdir/builtins/evalstring.c
-index 53a7c0b..e43caa2 100644
---- bash-clean/builtins/evalstring.c
-+++ bash-workdir/builtins/evalstring.c
-@@ -461,6 +461,8 @@ parse_and_execute (string, from_file, flags)
+diff -urN --no-dereference bash-clean/builtins/evalstring.c bash-workdir/builtins/evalstring.c
+--- bash-clean/builtins/evalstring.c	2024-07-31 17:15:44.000000000 +0200
++++ bash-workdir/builtins/evalstring.c	2024-07-31 17:15:44.000000000 +0200
+@@ -461,6 +461,8 @@
  		      should_jump_to_top_level = 0;
  		      last_result = last_command_exit_value = EX_BADUSAGE;
  		      set_pipestatus_from_exit (last_command_exit_value);
@@ -47,10 +44,9 @@ index 53a7c0b..e43caa2 100644
  		      reset_parser ();
  		      break;
  		    }
-diff --git bash-clean/builtins/psize.c bash-workdir/builtins/psize.c
-index 30881fb..fec55ae 100644
---- bash-clean/builtins/psize.c
-+++ bash-workdir/builtins/psize.c
+diff -urN --no-dereference bash-clean/builtins/psize.c bash-workdir/builtins/psize.c
+--- bash-clean/builtins/psize.c	2008-08-14 21:56:53.000000000 +0200
++++ bash-workdir/builtins/psize.c	2008-08-14 21:56:53.000000000 +0200
 @@ -21,33 +21,14 @@
  /*  Write output in 128-byte chunks until we get a sigpipe or write gets an
      EPIPE.  Then report how many bytes we wrote.  We assume that this is the
@@ -89,11 +85,10 @@ index 30881fb..fec55ae 100644
  sigpipe (sig)
       int sig;
  {
-diff --git bash-clean/builtins/read.def bash-workdir/builtins/read.def
-index ddd91d3..53b4bd8 100644
---- bash-clean/builtins/read.def
-+++ bash-workdir/builtins/read.def
-@@ -130,7 +130,7 @@ static void set_readline_timeout PARAMS((sh_timer *t, time_t, long));
+diff -urN --no-dereference bash-clean/builtins/read.def bash-workdir/builtins/read.def
+--- bash-clean/builtins/read.def	2022-11-23 23:09:15.000000000 +0100
++++ bash-workdir/builtins/read.def	2022-11-23 23:09:15.000000000 +0100
+@@ -130,7 +130,7 @@
  #endif
  static SHELL_VAR *bind_read_variable PARAMS((char *, char *, int));
  #if defined (HANDLE_MULTIBYTE)
@@ -102,7 +97,7 @@ index ddd91d3..53b4bd8 100644
  #endif
  static void ttyrestore PARAMS((struct ttsave *));
  
-@@ -806,7 +806,7 @@ add_char:
+@@ -806,7 +806,7 @@
  	  else
  #  endif
  	  if (locale_utf8locale == 0 || ((c & 0x80) != 0))
@@ -111,7 +106,7 @@ index ddd91d3..53b4bd8 100644
  	}
  #endif
  
-@@ -1064,10 +1064,10 @@ bind_read_variable (name, value, flags)
+@@ -1064,10 +1064,10 @@
  
  #if defined (HANDLE_MULTIBYTE)
  static int
@@ -124,7 +119,7 @@ index ddd91d3..53b4bd8 100644
  {
    char mbchar[MB_LEN_MAX + 1];
    int i, n, r;
-@@ -1101,8 +1101,21 @@ read_mbchar (fd, string, ind, ch, unbuffered)
+@@ -1101,8 +1101,21 @@
  	  mbchar[i++] = c;	
  	  continue;
  	}
@@ -148,11 +143,10 @@ index ddd91d3..53b4bd8 100644
      }
  
  mbchar_return:
-diff --git bash-clean/examples/loadables/stat.c bash-workdir/examples/loadables/stat.c
-index 1e60e7b..ed5c976 100644
---- bash-clean/examples/loadables/stat.c
-+++ bash-workdir/examples/loadables/stat.c
-@@ -349,6 +349,7 @@ loadstat (vname, var, fname, flags, fmt, sp)
+diff -urN --no-dereference bash-clean/examples/loadables/stat.c bash-workdir/examples/loadables/stat.c
+--- bash-clean/examples/loadables/stat.c	2022-03-11 16:27:06.000000000 +0100
++++ bash-workdir/examples/loadables/stat.c	2022-03-11 16:27:06.000000000 +0100
+@@ -349,6 +349,7 @@
        key = savestring (arraysubs[i]);
        value = statval (i, fname, flags, fmt, sp);
        v = bind_assoc_variable (var, vname, key, value, ASS_FORCE);
@@ -160,11 +154,10 @@ index 1e60e7b..ed5c976 100644
      }
    return 0;
  }
-diff --git bash-clean/externs.h bash-workdir/externs.h
-index 931dba9..1b70a13 100644
---- bash-clean/externs.h
-+++ bash-workdir/externs.h
-@@ -536,6 +536,7 @@ extern ssize_t zreadintr PARAMS((int, char *, size_t));
+diff -urN --no-dereference bash-clean/externs.h bash-workdir/externs.h
+--- bash-clean/externs.h	2022-07-05 17:08:50.000000000 +0200
++++ bash-workdir/externs.h	2022-07-05 17:08:50.000000000 +0200
+@@ -536,6 +536,7 @@
  extern ssize_t zreadc PARAMS((int, char *));
  extern ssize_t zreadcintr PARAMS((int, char *));
  extern ssize_t zreadn PARAMS((int, char *, size_t));
@@ -172,11 +165,10 @@ index 931dba9..1b70a13 100644
  extern void zreset PARAMS((void));
  extern void zsyncfd PARAMS((int));
  
-diff --git bash-clean/lib/sh/random.c bash-workdir/lib/sh/random.c
-index 1eaa71a..27aa87b 100644
---- bash-clean/lib/sh/random.c
-+++ bash-workdir/lib/sh/random.c
-@@ -76,7 +76,7 @@ intrand32 (last)
+diff -urN --no-dereference bash-clean/lib/sh/random.c bash-workdir/lib/sh/random.c
+--- bash-clean/lib/sh/random.c	2020-05-29 20:21:10.000000000 +0200
++++ bash-workdir/lib/sh/random.c	2020-05-29 20:21:10.000000000 +0200
+@@ -76,7 +76,7 @@
    /* Can't seed with 0. */
    ret = (last == 0) ? 123459876 : last;
    h = ret / 127773;
@@ -185,7 +177,7 @@ index 1eaa71a..27aa87b 100644
    t = 16807 * l - 2836 * h;
    ret = (t < 0) ? t + 0x7fffffff : t;
  
-@@ -90,7 +90,7 @@ genseed ()
+@@ -90,7 +90,7 @@
    u_bits32_t iv;
  
    gettimeofday (&tv, NULL);
@@ -194,11 +186,10 @@ index 1eaa71a..27aa87b 100644
    iv = tv.tv_sec ^ tv.tv_usec ^ getpid () ^ getppid () ^ current_user.uid ^ iv;
    return (iv);
  }
-diff --git bash-clean/lib/sh/zread.c bash-workdir/lib/sh/zread.c
-index dafb7f6..7cfbb28 100644
---- bash-clean/lib/sh/zread.c
-+++ bash-workdir/lib/sh/zread.c
-@@ -41,6 +41,10 @@ extern int errno;
+diff -urN --no-dereference bash-clean/lib/sh/zread.c bash-workdir/lib/sh/zread.c
+--- bash-clean/lib/sh/zread.c	2021-05-06 17:21:20.000000000 +0200
++++ bash-workdir/lib/sh/zread.c	2021-05-06 17:21:20.000000000 +0200
+@@ -41,6 +41,10 @@
  #  define ZBUFSIZ 4096
  #endif
  
@@ -209,7 +200,7 @@ index dafb7f6..7cfbb28 100644
  extern int executing_builtin;
  
  extern void check_signals_and_traps (void);
-@@ -48,6 +52,11 @@ extern void check_signals (void);
+@@ -48,6 +52,11 @@
  extern int signal_is_trapped (int);
  extern int read_builtin_timeout (int);
  
@@ -221,7 +212,7 @@ index dafb7f6..7cfbb28 100644
  /* Read LEN bytes from FD into BUF.  Retry the read on EINTR.  Any other
     error causes the loop to break. */
  ssize_t
-@@ -59,6 +68,15 @@ zread (fd, buf, len)
+@@ -59,6 +68,15 @@
    ssize_t r;
  
    check_signals ();	/* check for signals before a blocking read */
@@ -237,7 +228,7 @@ index dafb7f6..7cfbb28 100644
    /* should generalize into a mechanism where different parts of the shell can
       `register' timeouts and have them checked here. */
    while (((r = read_builtin_timeout (fd)) < 0 || (r = read (fd, buf, len)) < 0) &&
-@@ -95,6 +113,14 @@ zreadretry (fd, buf, len)
+@@ -95,6 +113,14 @@
    ssize_t r;
    int nintr;
  
@@ -252,7 +243,7 @@ index dafb7f6..7cfbb28 100644
    for (nintr = 0; ; )
      {
        r = read (fd, buf, len);
-@@ -118,6 +144,15 @@ zreadintr (fd, buf, len)
+@@ -118,6 +144,15 @@
       size_t len;
  {
    check_signals ();
@@ -268,7 +259,7 @@ index dafb7f6..7cfbb28 100644
    return (read (fd, buf, len));
  }
  
-@@ -135,6 +170,14 @@ zreadc (fd, cp)
+@@ -135,6 +170,14 @@
  {
    ssize_t nr;
  
@@ -283,7 +274,7 @@ index dafb7f6..7cfbb28 100644
    if (lind == lused || lused == 0)
      {
        nr = zread (fd, lbuf, sizeof (lbuf));
-@@ -160,6 +203,14 @@ zreadcintr (fd, cp)
+@@ -160,6 +203,14 @@
  {
    ssize_t nr;
  
@@ -298,7 +289,7 @@ index dafb7f6..7cfbb28 100644
    if (lind == lused || lused == 0)
      {
        nr = zreadintr (fd, lbuf, sizeof (lbuf));
-@@ -186,6 +237,13 @@ zreadn (fd, cp, len)
+@@ -186,6 +237,13 @@
  {
    ssize_t nr;
  
@@ -312,7 +303,7 @@ index dafb7f6..7cfbb28 100644
    if (lind == lused || lused == 0)
      {
        if (len > sizeof (lbuf))
-@@ -204,6 +262,22 @@ zreadn (fd, cp, len)
+@@ -204,6 +262,22 @@
    return 1;
  }
  
@@ -335,11 +326,10 @@ index dafb7f6..7cfbb28 100644
  void
  zreset ()
  {
-diff --git bash-clean/lib/termcap/termcap.c bash-workdir/lib/termcap/termcap.c
-index 87fae05..ed9d105 100644
---- bash-clean/lib/termcap/termcap.c
-+++ bash-workdir/lib/termcap/termcap.c
-@@ -630,7 +630,7 @@ scan_file (str, fd, bufp)
+diff -urN --no-dereference bash-clean/lib/termcap/termcap.c bash-workdir/lib/termcap/termcap.c
+--- bash-clean/lib/termcap/termcap.c	2021-09-03 20:17:58.000000000 +0200
++++ bash-workdir/lib/termcap/termcap.c	2021-09-03 20:17:58.000000000 +0200
+@@ -630,7 +630,7 @@
    bufp->ateof = 0;
    *bufp->ptr = '\0';
  
@@ -348,10 +338,9 @@ index 87fae05..ed9d105 100644
  
    while (!bufp->ateof)
      {
-diff --git bash-clean/mksyntax.c bash-workdir/mksyntax.c
-index 0385686..f09fdeb 100644
---- bash-clean/mksyntax.c
-+++ bash-workdir/mksyntax.c
+diff -urN --no-dereference bash-clean/mksyntax.c bash-workdir/mksyntax.c
+--- bash-clean/mksyntax.c	2012-07-30 01:48:38.000000000 +0200
++++ bash-workdir/mksyntax.c	2012-07-30 01:48:38.000000000 +0200
 @@ -20,30 +20,19 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -385,7 +374,7 @@ index 0385686..f09fdeb 100644
  struct wordflag {
  	int	flag;
  	char	*fstr;
-@@ -375,41 +364,3 @@ main(argc, argv)
+@@ -375,41 +364,3 @@
      fclose (fp);
    exit (0);
  }
@@ -427,11 +416,10 @@ index 0385686..f09fdeb 100644
 -    }
 -}
 -#endif /* HAVE_STRERROR */
-diff --git bash-clean/shell.c bash-workdir/shell.c
-index ebd8965..05d6a85 100644
---- bash-clean/shell.c
-+++ bash-workdir/shell.c
-@@ -1647,7 +1647,7 @@ open_shell_script (script_name)
+diff -urN --no-dereference bash-clean/shell.c bash-workdir/shell.c
+--- bash-clean/shell.c	2022-11-05 22:27:41.000000000 +0100
++++ bash-workdir/shell.c	2022-11-05 22:27:41.000000000 +0100
+@@ -1647,7 +1647,7 @@
  #endif
  
    /* Only do this with non-tty file descriptors we can seek on. */
@@ -440,7 +428,7 @@ index ebd8965..05d6a85 100644
      {
        /* Check to see if the `file' in `bash file' is a binary file
  	 according to the same tests done by execute_simple_command (),
-@@ -1684,7 +1684,7 @@ open_shell_script (script_name)
+@@ -1684,7 +1684,7 @@
  	  exit (EX_BINARY_FILE);
  	}
        /* Now rewind the file back to the beginning. */
@@ -449,11 +437,10 @@ index ebd8965..05d6a85 100644
      }
  
    /* Open the script.  But try to move the file descriptor to a randomly
-diff --git bash-clean/subst.c bash-workdir/subst.c
-index 2012e1f..d161517 100644
---- bash-clean/subst.c
-+++ bash-workdir/subst.c
-@@ -10727,6 +10727,7 @@ comsub:
+diff -urN --no-dereference bash-clean/subst.c bash-workdir/subst.c
+--- bash-clean/subst.c	2024-02-22 17:08:16.000000000 +0100
++++ bash-workdir/subst.c	2024-02-22 17:08:16.000000000 +0100
+@@ -10727,6 +10727,7 @@
  	    {
  	      chk_atstar (temp, quoted, pflags, quoted_dollar_at_p, contains_dollar_at);
  	      tdesc = parameter_brace_expand_word (temp, SPECIAL_VAR (temp, 0), quoted, pflags, 0);
@@ -461,7 +448,7 @@ index 2012e1f..d161517 100644
  	      if (tdesc == &expand_wdesc_error || tdesc == &expand_wdesc_fatal)
  		return (tdesc);
  	      ret = tdesc;
-@@ -10739,6 +10740,7 @@ comsub:
+@@ -10739,6 +10740,7 @@
  	    {
  	      set_exit_status (EXECUTION_FAILURE);
  	      report_error (_("%s: invalid variable name for name reference"), temp);
@@ -469,10 +456,9 @@ index 2012e1f..d161517 100644
  	      return (&expand_wdesc_error);	/* XXX */
  	    }
  	  else
-diff --git bash-clean/support/bashversion.c bash-workdir/support/bashversion.c
-index ad02d46..309574b 100644
---- bash-clean/support/bashversion.c
-+++ bash-workdir/support/bashversion.c
+diff -urN --no-dereference bash-clean/support/bashversion.c bash-workdir/support/bashversion.c
+--- bash-clean/support/bashversion.c	2021-11-04 19:24:46.000000000 +0100
++++ bash-workdir/support/bashversion.c	2021-11-04 19:24:46.000000000 +0100
 @@ -18,15 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -491,10 +477,9 @@ index ad02d46..309574b 100644
  
  #include "bashansi.h"
  
-diff --git bash-clean/support/man2html.c bash-workdir/support/man2html.c
-index e6f441b..846bd54 100644
---- bash-clean/support/man2html.c
-+++ bash-workdir/support/man2html.c
+diff -urN --no-dereference bash-clean/support/man2html.c bash-workdir/support/man2html.c
+--- bash-clean/support/man2html.c	2019-12-10 20:48:26.000000000 +0100
++++ bash-workdir/support/man2html.c	2019-12-10 20:48:26.000000000 +0100
 @@ -62,9 +62,6 @@
   *    that all these features work on all manpages. (I didn't have the
   *    time to look through all the available manpages.)
@@ -505,7 +490,7 @@ index e6f441b..846bd54 100644
  
  #define NROFF 0
  
-@@ -123,27 +120,6 @@ char *manpage;
+@@ -123,27 +120,6 @@
  #define BD_LITERAL  1
  #define BD_INDENT   2
  
@@ -533,10 +518,9 @@ index e6f441b..846bd54 100644
  static char *
  strgrow(char *old, int len)
  {
-diff --git bash-clean/support/mksignames.c bash-workdir/support/mksignames.c
-index ba87ae8..5bcbb16 100644
---- bash-clean/support/mksignames.c
-+++ bash-workdir/support/mksignames.c
+diff -urN --no-dereference bash-clean/support/mksignames.c bash-workdir/support/mksignames.c
+--- bash-clean/support/mksignames.c	2020-06-05 20:07:12.000000000 +0200
++++ bash-workdir/support/mksignames.c	2020-06-05 20:07:12.000000000 +0200
 @@ -19,17 +19,11 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -556,10 +540,9 @@ index ba87ae8..5bcbb16 100644
  
  /* Duplicated from signames.c */
  #if !defined (NSIG)
-diff --git bash-clean/support/signames.c bash-workdir/support/signames.c
-index 84864fd..67c5298 100644
---- bash-clean/support/signames.c
-+++ bash-workdir/support/signames.c
+diff -urN --no-dereference bash-clean/support/signames.c bash-workdir/support/signames.c
+--- bash-clean/support/signames.c	2022-07-26 16:21:18.000000000 +0200
++++ bash-workdir/support/signames.c	2022-07-26 16:21:18.000000000 +0200
 @@ -18,18 +18,12 @@
     along with Bash.  If not, see <http://www.gnu.org/licenses/>.
  */

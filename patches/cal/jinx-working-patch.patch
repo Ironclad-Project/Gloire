@@ -1,8 +1,7 @@
-diff --git ccal-clean/src/cal.c ccal-workdir/src/cal.c
-index 5f740a6..605d01f 100644
---- ccal-clean/src/cal.c
-+++ ccal-workdir/src/cal.c
-@@ -164,6 +164,7 @@ BASIC DATA STRUCTURE:                                          specialdays()
+diff -urN --no-dereference cal-clean/src/cal.c cal-workdir/src/cal.c
+--- cal-clean/src/cal.c	2014-06-21 00:56:21.000000000 +0200
++++ cal-workdir/src/cal.c	2014-06-21 00:56:21.000000000 +0200
+@@ -173,6 +173,7 @@
  #include <time.h>
  #include <ctype.h>
  #include <string.h>

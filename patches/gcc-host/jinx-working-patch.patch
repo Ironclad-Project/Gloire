@@ -1,6 +1,6 @@
 diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workdir/fixincludes/mkfixinc.sh
 --- gcc-host-clean/fixincludes/mkfixinc.sh	2025-04-25 10:17:59.000000000 +0200
-+++ gcc-host-workdir/fixincludes/mkfixinc.sh	2025-05-02 17:07:37.123037666 +0200
++++ gcc-host-workdir/fixincludes/mkfixinc.sh	2025-04-25 10:17:59.000000000 +0200
 @@ -12,6 +12,7 @@
  # Check for special fix rules for particular targets
  case $machine in
@@ -95,7 +95,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-w
 +  } while (0);
 diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
 --- gcc-host-clean/gcc/config.build	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/config.build	2025-05-02 17:07:37.124164085 +0200
++++ gcc-host-workdir/gcc/config.build	2025-04-25 10:18:00.000000000 +0200
 @@ -45,7 +45,7 @@
  build_xm_file=
  build_xm_defines=
@@ -107,7 +107,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/
  # System-specific settings.
 diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
 --- gcc-host-clean/gcc/config.gcc	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/config.gcc	2025-05-02 17:07:37.124397382 +0200
++++ gcc-host-workdir/gcc/config.gcc	2025-04-25 10:18:00.000000000 +0200
 @@ -879,6 +879,15 @@
    rust_target_objs="${rust_target_objs} freebsd-rust.o"
    target_has_targetrustm=yes
@@ -150,7 +150,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/co
  	case "x${enable_multilib}" in
 diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
 --- gcc-host-clean/gcc/cp/module.cc	2025-04-25 10:18:00.000000000 +0200
-+++ gcc-host-workdir/gcc/cp/module.cc	2025-05-02 19:25:48.859692873 +0200
++++ gcc-host-workdir/gcc/cp/module.cc	2025-04-25 10:18:00.000000000 +0200
 @@ -1697,8 +1697,10 @@
  	      set_error (errno);
  	  else
@@ -175,7 +175,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/
  #else
 diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workdir/libatomic/configure.tgt
 --- gcc-host-clean/libatomic/configure.tgt	2025-04-25 10:18:04.000000000 +0200
-+++ gcc-host-workdir/libatomic/configure.tgt	2025-05-02 17:07:37.124626891 +0200
++++ gcc-host-workdir/libatomic/configure.tgt	2025-04-25 10:18:04.000000000 +0200
 @@ -151,7 +151,7 @@
    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
    | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
@@ -187,7 +187,7 @@ diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workd
  	;;
 diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
 --- gcc-host-clean/libcpp/Makefile.in	2025-04-25 10:21:27.000000000 +0200
-+++ gcc-host-workdir/libcpp/Makefile.in	2025-05-02 17:07:37.124683595 +0200
++++ gcc-host-workdir/libcpp/Makefile.in	2025-04-25 10:21:27.000000000 +0200
 @@ -32,10 +32,10 @@
  AUTOHEADER = @AUTOHEADER@
  CATALOGS = $(patsubst %,po/%,@CATALOGS@)
@@ -212,7 +212,7 @@ diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/li
  PACKAGE = @PACKAGE@
 diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
 --- gcc-host-clean/libgcc/config.host	2025-04-25 10:18:04.000000000 +0200
-+++ gcc-host-workdir/libgcc/config.host	2025-05-02 17:07:37.124778022 +0200
++++ gcc-host-workdir/libgcc/config.host	2025-04-25 10:18:04.000000000 +0200
 @@ -310,6 +310,11 @@
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
@@ -249,7 +249,7 @@ diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/li
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 diff -urN --no-dereference gcc-host-clean/libstdc++-v3/configure gcc-host-workdir/libstdc++-v3/configure
 --- gcc-host-clean/libstdc++-v3/configure	2025-04-25 10:18:05.000000000 +0200
-+++ gcc-host-workdir/libstdc++-v3/configure	2025-05-02 17:07:37.126037666 +0200
++++ gcc-host-workdir/libstdc++-v3/configure	2025-04-25 10:18:05.000000000 +0200
 @@ -38856,7 +38856,7 @@
  
    fi

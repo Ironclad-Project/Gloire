@@ -1,8 +1,7 @@
-diff --git qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
-index ee2dd15..24e88da 100644
---- qemu-clean/backends/tpm/tpm_ioctl.h
-+++ qemu-workdir/backends/tpm/tpm_ioctl.h
-@@ -285,30 +285,6 @@ typedef struct ptm_lockstorage ptm_lockstorage;
+diff -urN --no-dereference qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
+--- qemu-clean/backends/tpm/tpm_ioctl.h	2025-04-22 22:26:10.000000000 +0200
++++ qemu-workdir/backends/tpm/tpm_ioctl.h	2025-04-22 22:26:10.000000000 +0200
+@@ -285,30 +285,6 @@
  #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
  #define PTM_CAP_LOCK_STORAGE       (1 << 16)
  
@@ -33,10 +32,9 @@ index ee2dd15..24e88da 100644
  /*
   * Commands used by the non-CUSE TPMs
   *
-diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
-index 90fa543..0a1ce62 100644
---- qemu-clean/block/file-posix.c
-+++ qemu-workdir/block/file-posix.c
+diff -urN --no-dereference qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
+--- qemu-clean/block/file-posix.c	2025-04-22 22:26:10.000000000 +0200
++++ qemu-workdir/block/file-posix.c	2025-04-22 22:26:10.000000000 +0200
 @@ -119,6 +119,8 @@
  #endif
  #endif
@@ -46,11 +44,10 @@ index 90fa543..0a1ce62 100644
  /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
-diff --git qemu-clean/configure qemu-workdir/configure
-index 1833637..caccd97 100755
---- qemu-clean/configure
-+++ qemu-workdir/configure
-@@ -340,7 +340,9 @@ int main(void) { return 0; }
+diff -urN --no-dereference qemu-clean/configure qemu-workdir/configure
+--- qemu-clean/configure	2025-04-22 22:26:10.000000000 +0200
++++ qemu-workdir/configure	2025-04-22 22:26:10.000000000 +0200
+@@ -340,7 +340,9 @@
  EOF
  }
  
@@ -61,10 +58,9 @@ index 1833637..caccd97 100755
    host_os=linux
  elif check_define _WIN32 ; then
    host_os=windows
-diff --git qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
-index d63228e..62c57e1 100644
---- qemu-clean/include/gdbstub/syscalls.h
-+++ qemu-workdir/include/gdbstub/syscalls.h
+diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
+--- qemu-clean/include/gdbstub/syscalls.h	2025-04-22 22:26:11.000000000 +0200
++++ qemu-workdir/include/gdbstub/syscalls.h	2025-04-22 22:26:11.000000000 +0200
 @@ -41,9 +41,10 @@
  #define GDB_EUNKNOWN       9999
  
@@ -79,11 +75,10 @@ index d63228e..62c57e1 100644
  
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
-diff --git qemu-clean/meson.build qemu-workdir/meson.build
-index 147097c..7c3118a 100644
---- qemu-clean/meson.build
-+++ qemu-workdir/meson.build
-@@ -835,7 +835,7 @@ endif
+diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
+--- qemu-clean/meson.build	2025-04-22 22:26:11.000000000 +0200
++++ qemu-workdir/meson.build	2025-04-22 22:26:11.000000000 +0200
+@@ -867,7 +867,7 @@
  ###############################################
  
  accelerators = []
@@ -92,7 +87,7 @@ index 147097c..7c3118a 100644
    accelerators += 'CONFIG_KVM'
  endif
  if get_option('whpx').allowed() and host_os == 'windows'
-@@ -2487,6 +2487,7 @@ config_host_data.set('CONFIG_PIXMAN', pixman.found())
+@@ -2519,6 +2519,7 @@
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')
@@ -100,11 +95,10 @@ index 147097c..7c3118a 100644
  if get_option('tcg').allowed()
    config_host_data.set('CONFIG_TCG', 1)
    config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
-diff --git qemu-clean/os-posix.c qemu-workdir/os-posix.c
-index 43f9a43..12da1c0 100644
---- qemu-clean/os-posix.c
-+++ qemu-workdir/os-posix.c
-@@ -262,7 +262,7 @@ void os_setup_limits(void)
+diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
+--- qemu-clean/os-posix.c	2025-04-22 22:26:11.000000000 +0200
++++ qemu-workdir/os-posix.c	2025-04-22 22:26:11.000000000 +0200
+@@ -262,7 +262,7 @@
      struct rlimit nofile;
  
      if (getrlimit(RLIMIT_NOFILE, &nofile) < 0) {
@@ -113,7 +107,7 @@ index 43f9a43..12da1c0 100644
          return;
      }
  
-@@ -277,7 +277,7 @@ void os_setup_limits(void)
+@@ -277,7 +277,7 @@
  #endif
  
      if (setrlimit(RLIMIT_NOFILE, &nofile) < 0) {
@@ -122,11 +116,10 @@ index 43f9a43..12da1c0 100644
          return;
      }
  }
-diff --git qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
-index 11b35e4..9eeb644 100644
---- qemu-clean/util/oslib-posix.c
-+++ qemu-workdir/util/oslib-posix.c
-@@ -693,10 +693,10 @@ void *qemu_alloc_stack(size_t *sz)
+diff -urN --no-dereference qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
+--- qemu-clean/util/oslib-posix.c	2025-04-22 22:26:11.000000000 +0200
++++ qemu-workdir/util/oslib-posix.c	2025-04-22 22:26:11.000000000 +0200
+@@ -708,10 +708,10 @@
      }
  
      /* Stack grows down -- guard page at the bottom. */

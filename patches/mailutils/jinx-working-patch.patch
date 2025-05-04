@@ -1,8 +1,7 @@
-diff --git mailutils-clean/libmailutils/base/hostname.c mailutils-workdir/libmailutils/base/hostname.c
-index 0a68151..f367a44 100644
---- mailutils-clean/libmailutils/base/hostname.c
-+++ mailutils-workdir/libmailutils/base/hostname.c
-@@ -26,6 +26,8 @@
+diff -urN --no-dereference mailutils-clean/libmailutils/base/hostname.c mailutils-workdir/libmailutils/base/hostname.c
+--- mailutils-clean/libmailutils/base/hostname.c	2025-01-02 14:36:29.000000000 +0100
++++ mailutils-workdir/libmailutils/base/hostname.c	2025-01-02 14:36:29.000000000 +0100
+@@ -28,6 +28,8 @@
  #include <netdb.h>
  #include <mailutils/alloc.h>
  
@@ -11,10 +10,9 @@ index 0a68151..f367a44 100644
  #ifndef MAXHOSTNAMELEN
  # define MAXHOSTNAMELEN 64
  #endif
-diff --git mailutils-clean/libmailutils/string/cstrcasestr.c mailutils-workdir/libmailutils/string/cstrcasestr.c
-index ce2209d..d496b73 100644
---- mailutils-clean/libmailutils/string/cstrcasestr.c
-+++ mailutils-workdir/libmailutils/string/cstrcasestr.c
+diff -urN --no-dereference mailutils-clean/libmailutils/string/cstrcasestr.c mailutils-workdir/libmailutils/string/cstrcasestr.c
+--- mailutils-clean/libmailutils/string/cstrcasestr.c	2025-01-02 14:36:33.000000000 +0100
++++ mailutils-workdir/libmailutils/string/cstrcasestr.c	2025-01-02 14:36:33.000000000 +0100
 @@ -19,6 +19,8 @@
  # include <config.h>
  #endif
@@ -24,10 +22,9 @@ index ce2209d..d496b73 100644
  #include <unistd.h>
  #include <mailutils/cctype.h>
  
-diff --git mailutils-clean/mh/mh_init.c mailutils-workdir/mh/mh_init.c
-index a14e115..9471c74 100644
---- mailutils-clean/mh/mh_init.c
-+++ mailutils-workdir/mh/mh_init.c
+diff -urN --no-dereference mailutils-clean/mh/mh_init.c mailutils-workdir/mh/mh_init.c
+--- mailutils-clean/mh/mh_init.c	2025-01-02 14:36:42.000000000 +0100
++++ mailutils-workdir/mh/mh_init.c	2025-01-02 14:36:42.000000000 +0100
 @@ -30,6 +30,8 @@
  #include <fnmatch.h>
  #include <sys/ioctl.h>

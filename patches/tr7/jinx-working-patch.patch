@@ -1,8 +1,7 @@
-diff --git tr7-clean/Makefile tr7-workdir/Makefile
-index e3ed4f6..028198b 100644
---- tr7-clean/Makefile
-+++ tr7-workdir/Makefile
-@@ -48,10 +48,10 @@ BINDIR = $(PREFIX)/bin
+diff -urN --no-dereference tr7-clean/Makefile tr7-workdir/Makefile
+--- tr7-clean/Makefile	2025-01-16 07:12:24.000000000 +0100
++++ tr7-workdir/Makefile	2025-01-16 07:12:24.000000000 +0100
+@@ -53,10 +53,10 @@
  LIBDIR = $(PREFIX)/lib
  INCDIR = $(PREFIX)/include
  DATADIR = $(PREFIX)/share
@@ -15,7 +14,7 @@ index e3ed4f6..028198b 100644
  
  # uncomment below to compile shared library
  #ALL += $(LIBSO)
-@@ -76,7 +76,7 @@ libtr7.so: $(LIBSO)
+@@ -81,7 +81,7 @@
  	$(LN) -sf $(LIBSO) libtr7.so
  
  $(LIBSO): tr7.dyn.o

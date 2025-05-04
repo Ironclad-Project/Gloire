@@ -1,7 +1,7 @@
 diff -urN --no-dereference xf86-input-mouse-clean/configure xf86-input-mouse-workdir/configure
 --- xf86-input-mouse-clean/configure	2023-05-05 02:25:26.000000000 +0200
-+++ xf86-input-mouse-workdir/configure	2025-04-26 17:00:01.513343944 +0200
-@@ -19591,7 +19591,7 @@ 
++++ xf86-input-mouse-workdir/configure	2023-05-05 02:25:26.000000000 +0200
+@@ -19591,7 +19591,7 @@
  
  # X Server SDK location is required to install xf86-mouse-properties.h
  # This location is also relayed in the xorg-mouse.pc file

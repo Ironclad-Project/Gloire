@@ -1,7 +1,6 @@
-diff --git m4-clean/tests/strerror_r.c m4-workdir/tests/strerror_r.c
-index 71965fb..be88d71 100644
---- m4-clean/tests/strerror_r.c
-+++ m4-workdir/tests/strerror_r.c
+diff -urN --no-dereference m4-clean/tests/strerror_r.c m4-workdir/tests/strerror_r.c
+--- m4-clean/tests/strerror_r.c	2021-04-22 22:28:47.000000000 +0200
++++ m4-workdir/tests/strerror_r.c	2021-04-22 22:28:47.000000000 +0200
 @@ -21,7 +21,7 @@
  
  /* Enable declaration of sys_nerr and sys_errlist in <errno.h> on NetBSD.  */

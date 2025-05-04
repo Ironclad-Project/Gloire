@@ -1,8 +1,7 @@
-diff --git jwm-clean/src/client.c jwm-workdir/src/client.c
-index 4856fd4..3837239 100644
---- jwm-clean/src/client.c
-+++ jwm-workdir/src/client.c
-@@ -879,11 +879,7 @@ void DeleteClient(ClientNode *np)
+diff -urN --no-dereference jwm-clean/src/client.c jwm-workdir/src/client.c
+--- jwm-clean/src/client.c	2024-11-09 18:29:29.000000000 +0100
++++ jwm-workdir/src/client.c	2024-11-09 18:29:29.000000000 +0100
+@@ -879,11 +879,7 @@
  {
     Assert(np);
     ReadWMProtocols(np->window, &np->state);
@@ -13,9 +12,9 @@ index 4856fd4..3837239 100644
 -   }
 +   KillClient(np);
  }
-
+ 
  /** Callback to kill a client after a confirm dialog. */
-@@ -900,10 +896,7 @@ void KillClientHandler(ClientNode *np)
+@@ -900,10 +896,7 @@
  void KillClient(ClientNode *np)
  {
     Assert(np);
@@ -25,5 +24,5 @@ index 4856fd4..3837239 100644
 -      NULL);
 +   KillClientHandler(np);
  }
-
+ 
  /** Place transients on top of the owner. */

@@ -1,7 +1,6 @@
-diff --git gdbm-clean/tools/gdbmapp.h gdbm-workdir/tools/gdbmapp.h
-index 3ea826b..e20253a 100644
---- gdbm-clean/tools/gdbmapp.h
-+++ gdbm-workdir/tools/gdbmapp.h
+diff -urN --no-dereference gdbm-clean/tools/gdbmapp.h gdbm-workdir/tools/gdbmapp.h
+--- gdbm-clean/tools/gdbmapp.h	2025-03-06 16:51:59.000000000 +0100
++++ gdbm-workdir/tools/gdbmapp.h	2025-03-06 16:51:59.000000000 +0100
 @@ -16,6 +16,7 @@
  
  #include <stdlib.h>
@@ -10,10 +9,9 @@ index 3ea826b..e20253a 100644
  #include "gettext.h"
  #ifdef HAVE_LOCALE_H
  # include <locale.h>
-diff --git gdbm-clean/tools/var.c gdbm-workdir/tools/var.c
-index 2cf922e..6aed417 100644
---- gdbm-clean/tools/var.c
-+++ gdbm-workdir/tools/var.c
+diff -urN --no-dereference gdbm-clean/tools/var.c gdbm-workdir/tools/var.c
+--- gdbm-clean/tools/var.c	2025-03-06 16:51:59.000000000 +0100
++++ gdbm-workdir/tools/var.c	2025-03-06 16:51:59.000000000 +0100
 @@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */

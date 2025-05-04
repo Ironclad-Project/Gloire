@@ -1,8 +1,7 @@
-diff --git a/src/do_command.c b/src/do_command.c
-index ee815b6..ca04469 100644
---- a/src/do_command.c
-+++ b/src/do_command.c
-@@ -264,7 +264,7 @@ static int child_process(entry * e, char **jobenv) {
+diff -urN --no-dereference cronie-clean/src/do_command.c cronie-workdir/src/do_command.c
+--- cronie-clean/src/do_command.c	2024-01-19 11:20:51.000000000 +0100
++++ cronie-workdir/src/do_command.c	2024-01-19 11:20:51.000000000 +0100
+@@ -264,7 +264,7 @@
  		 */
  		{
  			char *shell = env_get("SHELL", jobenv);
@@ -11,11 +10,10 @@ index ee815b6..ca04469 100644
  			DIR *dir;
  			struct dirent *dent;
  
-diff --git a/src/env.c b/src/env.c
-index b5645b5..8feb690 100644
---- a/src/env.c
-+++ b/src/env.c
-@@ -261,7 +261,7 @@ int load_env(char *envstr, FILE * f) {
+diff -urN --no-dereference cronie-clean/src/env.c cronie-workdir/src/env.c
+--- cronie-clean/src/env.c	2024-01-19 11:20:51.000000000 +0100
++++ cronie-workdir/src/env.c	2024-01-19 11:20:51.000000000 +0100
+@@ -261,7 +261,7 @@
  	}
  	if (state != FINI && state != EQ2 && !(state == VALUE && !quotechar)) {
  		Debug(DPARS, ("load_env, not an env var, state = %d\n", state));
@@ -24,11 +22,10 @@ index b5645b5..8feb690 100644
  			return ERR;
  		}
  		Set_LineNum(fileline);
-diff --git a/src/popen.c b/src/popen.c
-index dadff0d..570c5a6 100644
---- a/src/popen.c
-+++ b/src/popen.c
-@@ -79,7 +79,7 @@ FILE *cron_popen(char *program, const char *type, struct passwd *pw, char **jobe
+diff -urN --no-dereference cronie-clean/src/popen.c cronie-workdir/src/popen.c
+--- cronie-clean/src/popen.c	2024-04-08 10:05:57.000000000 +0200
++++ cronie-workdir/src/popen.c	2024-04-08 10:05:57.000000000 +0200
+@@ -79,7 +79,7 @@
  		return (NULL);
  
  	if (!pids) {

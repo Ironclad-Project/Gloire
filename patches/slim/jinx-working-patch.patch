@@ -1,7 +1,6 @@
-diff --git slim-clean/app.cpp slim-workdir/app.cpp
-index 237477d..61dd255 100644
---- slim-clean/app.cpp
-+++ slim-workdir/app.cpp
+diff -urN --no-dereference slim-clean/app.cpp slim-workdir/app.cpp
+--- slim-clean/app.cpp	2023-01-14 21:34:20.000000000 +0100
++++ slim-workdir/app.cpp	2023-01-14 21:34:20.000000000 +0100
 @@ -23,6 +23,7 @@
  #include <sstream>
  #include <vector>
@@ -10,7 +9,7 @@ index 237477d..61dd255 100644
  
  #include "const.h"
  #include "log.h"
-@@ -1113,7 +1114,10 @@ int App::StartServer()
+@@ -1113,7 +1114,10 @@
  	server[0] = (char *)cfg->getOption("default_xserver").c_str();
  	string argOption = cfg->getOption("xserver_arguments");
  	/* Add mandatory -xauth option */
@@ -22,7 +21,7 @@ index 237477d..61dd255 100644
  	char* args = new char[argOption.length()+2]; /* NULL plus vt */
  	strcpy(args, argOption.c_str());
  
-@@ -1155,10 +1159,12 @@ int App::StartServer()
+@@ -1155,10 +1159,12 @@
  		}
  	}
  

@@ -1,21 +1,19 @@
-diff --git python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
-index 94260ba..4e68377 100644
---- python-clean/Modules/timemodule.c
-+++ python-workdir/Modules/timemodule.c
-@@ -185,7 +185,7 @@ py_clock(time_module_state *state, PyTime_t *tp, _Py_clock_info_t *info)
+diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
+--- python-clean/Modules/timemodule.c	2025-04-08 15:54:08.000000000 +0200
++++ python-workdir/Modules/timemodule.c	2025-04-08 15:54:08.000000000 +0200
+@@ -185,7 +185,7 @@
  static int
  time_clockid_converter(PyObject *obj, clockid_t *p)
  {
 -#ifdef _AIX
 +#if defined(_AIX) || defined(__ironclad__)
      long long clk_id = PyLong_AsLongLong(obj);
- #else
-     int clk_id = PyLong_AsInt(obj);
-diff --git python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
-index 4d3fb65..55c7139 100644
---- python-clean/Objects/mimalloc/prim/unix/prim.c
-+++ python-workdir/Objects/mimalloc/prim/unix/prim.c
-@@ -29,6 +29,10 @@ terms of the MIT license. A copy of the license can be found in the file
+ #elif defined(__DragonFly__)
+     long clk_id = PyLong_AsLong(obj);
+diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
+--- python-clean/Objects/mimalloc/prim/unix/prim.c	2025-04-08 15:54:08.000000000 +0200
++++ python-workdir/Objects/mimalloc/prim/unix/prim.c	2025-04-08 15:54:08.000000000 +0200
+@@ -29,6 +29,10 @@
  #include <unistd.h>    // sysconf
  #include <fcntl.h>     // open, close, read, access
  
@@ -26,7 +24,7 @@ index 4d3fb65..55c7139 100644
  #if defined(__linux__)
    #include <features.h>
    #include <fcntl.h>
-@@ -156,6 +160,9 @@ int _mi_prim_free(void* addr, size_t size ) {
+@@ -156,6 +160,9 @@
  static int unix_madvise(void* addr, size_t size, int advice) {
    #if defined(__sun)
    return madvise((caddr_t)addr, size, advice);  // Solaris needs cast (issue #520)
@@ -38,7 +36,7 @@ index 4d3fb65..55c7139 100644
    #endif
 diff -urN --no-dereference python-clean/configure python-workdir/configure
 --- python-clean/configure	2025-04-08 15:54:08.000000000 +0200
-+++ python-workdir/configure	2025-04-26 16:20:57.317469181 +0200
++++ python-workdir/configure	2025-04-08 15:54:08.000000000 +0200
 @@ -4067,6 +4067,9 @@
  	*-*-wasi*)
  	    ac_sys_system=WASI

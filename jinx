@@ -948,6 +948,11 @@ do_cmd_prepare() {
             mv $1-workdir/.hg "${vc_dir_workdir}"
         fi
 
+        # make sure timestamps match
+        for f in $(diff -rq --no-dereference $1-clean $1-workdir | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
+            touch --reference="$f" "$(echo "$f" | sed "s/$1-clean/$1-workdir/g")"
+        done
+
         diff -urN --no-dereference $1-clean $1-workdir >"${patch_file}" || true
 
         if ! [ -z "${git_url}" ]; then

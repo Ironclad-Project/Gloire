@@ -1,6 +1,6 @@
 diff -urN --no-dereference ace-of-penguins-clean/lib/Makefile.in ace-of-penguins-workdir/lib/Makefile.in
 --- ace-of-penguins-clean/lib/Makefile.in	2012-03-24 19:10:53.000000000 +0100
-+++ ace-of-penguins-workdir/lib/Makefile.in	2025-05-01 21:32:23.020666345 +0200
++++ ace-of-penguins-workdir/lib/Makefile.in	2012-03-24 19:10:53.000000000 +0100
 @@ -565,10 +565,10 @@
  	./make-imglib -n cards -i $(srcdir)/png -d images.d $(srcdir)/images.in images.c
  
@@ -16,7 +16,7 @@ diff -urN --no-dereference ace-of-penguins-clean/lib/Makefile.in ace-of-penguins
  # Otherwise a system limit (for SysV at least) may be exceeded.
 diff -urN --no-dereference ace-of-penguins-clean/lib/imagelib.c ace-of-penguins-workdir/lib/imagelib.c
 --- ace-of-penguins-clean/lib/imagelib.c	2012-03-24 19:00:49.000000000 +0100
-+++ ace-of-penguins-workdir/lib/imagelib.c	2025-05-01 20:01:29.908411523 +0200
++++ ace-of-penguins-workdir/lib/imagelib.c	2012-03-24 19:00:49.000000000 +0100
 @@ -1,5 +1,6 @@
  #include <stdio.h>
  #include <string.h>
@@ -26,7 +26,7 @@ diff -urN --no-dereference ace-of-penguins-clean/lib/imagelib.c ace-of-penguins-
  
 diff -urN --no-dereference ace-of-penguins-clean/lib/make-imglib.c ace-of-penguins-workdir/lib/make-imglib.c
 --- ace-of-penguins-clean/lib/make-imglib.c	2012-03-24 19:00:49.000000000 +0100
-+++ ace-of-penguins-workdir/lib/make-imglib.c	2025-05-01 20:01:29.908458311 +0200
++++ ace-of-penguins-workdir/lib/make-imglib.c	2012-03-24 19:00:49.000000000 +0100
 @@ -1,6 +1,7 @@
  #include <stdio.h>
  #include <stdlib.h>
@@ -55,7 +55,7 @@ diff -urN --no-dereference ace-of-penguins-clean/lib/make-imglib.c ace-of-pengui
    if (!*next) return 0;
 diff -urN --no-dereference ace-of-penguins-clean/lib/xwin.c ace-of-penguins-workdir/lib/xwin.c
 --- ace-of-penguins-clean/lib/xwin.c	2012-03-24 19:00:49.000000000 +0100
-+++ ace-of-penguins-workdir/lib/xwin.c	2025-05-01 20:01:29.908523092 +0200
++++ ace-of-penguins-workdir/lib/xwin.c	2012-03-24 19:00:49.000000000 +0100
 @@ -55,7 +55,7 @@
    { "-visual", OPTION_INTEGER, &visual_id },
    { 0, 0, 0 }

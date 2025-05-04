@@ -1,8 +1,7 @@
-diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
-index 92c56e2..fe262e9 100644
---- epoch-clean/src/actions.c
-+++ epoch-workdir/src/actions.c
-@@ -35,57 +35,6 @@ struct _EnvVarList *GlobalEnvVars;
+diff -urN --no-dereference epoch-clean/src/actions.c epoch-workdir/src/actions.c
+--- epoch-clean/src/actions.c	2015-06-24 01:16:06.000000000 +0200
++++ epoch-workdir/src/actions.c	2015-06-24 01:16:06.000000000 +0200
+@@ -35,57 +35,6 @@
  /*Functions.*/
  static void MountVirtuals(void)
  {
@@ -60,7 +59,7 @@ index 92c56e2..fe262e9 100644
  }
  
  static void PrimaryLoop(void)
-@@ -669,7 +618,9 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+@@ -669,7 +618,9 @@
  	sync();
  
  	/*pivot_root now.*/
@@ -71,10 +70,9 @@ index 92c56e2..fe262e9 100644
  	{
  		SpitError("Failed to pivot_root()!");
  		EmergencyShell();
-diff --git epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
-index 8130386..66800b7 100644
---- epoch-clean/src/epoch.h
-+++ epoch-workdir/src/epoch.h
+diff -urN --no-dereference epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
+--- epoch-clean/src/epoch.h	2015-06-24 01:16:06.000000000 +0200
++++ epoch-workdir/src/epoch.h	2015-06-24 01:16:06.000000000 +0200
 @@ -67,9 +67,9 @@
  #define VERSIONSTRING "Epoch Init System 1.3.0 \"Fluoxetine\""
  
@@ -88,10 +86,9 @@ index 8130386..66800b7 100644
  #define OSCTL_DISABLE_CTRLALTDEL 0 /*Now isn't this hilarious. It's zero.*/
  #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
  
-diff --git epoch-clean/src/main.c epoch-workdir/src/main.c
-index 62bff39..28b2123 100644
---- epoch-clean/src/main.c
-+++ epoch-workdir/src/main.c
+diff -urN --no-dereference epoch-clean/src/main.c epoch-workdir/src/main.c
+--- epoch-clean/src/main.c	2015-06-24 01:16:06.000000000 +0200
++++ epoch-workdir/src/main.c	2015-06-24 01:16:06.000000000 +0200
 @@ -17,6 +17,8 @@
  #include <sys/reboot.h>
  #include <sys/shm.h>
@@ -101,7 +98,7 @@ index 62bff39..28b2123 100644
  
  #ifndef NO_EXECINFO
  #include <execinfo.h>
-@@ -1746,6 +1748,19 @@ int main(int argc, char **argv)
+@@ -1746,6 +1748,19 @@
  		const Bool NoKArgs = NoKArgsFileExists();
  		const char *TConfigFile = NoKArgs ? NULL : getenv("epochconfig");
  		
@@ -121,11 +118,10 @@ index 62bff39..28b2123 100644
  		if (TConfigFile != NULL)
  		{ /*Someone specified a config file from disk?*/
  			snprintf(ConfigFile, MAX_LINE_SIZE, "%s", TConfigFile);
-diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
-index b52068c..7f6f837 100644
---- epoch-clean/src/modes.c
-+++ epoch-workdir/src/modes.c
-@@ -137,6 +137,18 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
+diff -urN --no-dereference epoch-clean/src/modes.c epoch-workdir/src/modes.c
+--- epoch-clean/src/modes.c	2015-06-24 01:16:06.000000000 +0200
++++ epoch-workdir/src/modes.c	2015-06-24 01:16:06.000000000 +0200
+@@ -137,6 +137,18 @@
  	}
  }
  
@@ -144,7 +140,7 @@ index b52068c..7f6f837 100644
  ReturnCode EmulKillall5(unsigned InSignal)
  { /*Used as the killall5 utility.*/
  	DIR *ProcDir;
-@@ -144,42 +156,28 @@ ReturnCode EmulKillall5(unsigned InSignal)
+@@ -144,42 +156,28 @@
  	pid_t CurPID;
  	const pid_t OurPID = getpid(), OurSID = getsid(0);
  

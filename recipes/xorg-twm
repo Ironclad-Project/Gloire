@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=xorg-twm
+repology_id=twm
+version=1.0.13
+revision=1
+tarball_url="https://www.x.org/pub/individual/app/twm-${version}.tar.xz"
+tarball_blake2b="6bbcaa3f28b97c80c9d6f431cbd3b37f2e240e2b9d2131f76f789ac6a1444e92ea2691443e16f30d0bfd77fb1998a1c91642fcb0cb3d79312f5329c4a49886fa"
+hostdeps="gcc pkg-config"
+deps="core-libs libxmu"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

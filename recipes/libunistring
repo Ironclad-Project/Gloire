@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 
 name=libunistring
 version=1.3

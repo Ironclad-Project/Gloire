@@ -119,6 +119,24 @@ diff -urN --no-dereference xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:8
 -	<string>Void Linux</string>
 -</dict>
 -</plist>
+diff -urN --no-dereference xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist
+--- xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist	1970-01-01 01:00:00.000000000 +0100
++++ xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>public-key</key>
++	<data>LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUEwdlNnbUdMTGswbzBIMmNVM0Y5RwpnYlVieUZoQVlOQWJiS0RaNHdJZ0k3TWoyamErU1h4REJ3OWxWcGZVZ28zZlcwVjBzUTN1ZUhOQitpZ0JOMjdVCjB5Z1BIWFYxeko2MVc3Rmh3UVBZRlVHMjZWN25sV0gzN3Q4dDBKQnNzakphZXVTSmdYNkwvalcySDZFeEQvaWUKMnl5OWhVT0RBQTZlLzNENWxuMkZGaUFWMlJDMGdWNFR1ZlVvRHFxWVRJN2xzNVNYTUdWb0cvRklXdThiYVg5YQpxeEpvZVVDNXFBZEQxWnVuUlhPRkZaRnVReW1pcnBvVTJPNDJlSDBNY1piOWpvZXg1MFNwSFFBNmVmbDRDUkZGClZtaGp4UndxbmFTT0p5a2FpamdzN1VudXdhZ1NxaGZuZlpBY1F1ZHg2TTNWQWkySmttY1kwQU9vMThCZ1hnQU4KSlUxakhjc3VpU1IrcUV2V2hzZXBKK29WZDlrUlBUZmNzK3R1ek8xN3pLTVlJYVhha3dVUE5KR2RjZFk4Vk1KZwpTdUhMOVhaTHlBZ0x3eVZTNjFYWGZUNjhhUkhpYkh3d29rVVllM3lIUjE0VjZ5WG5oQkF5dlRFMUl0U0ZNZTZPCkk4OEwyQ1QvZlowc2ZBMmRIcEdGdXV5UVJoS3hPMzVIUTlkNG5FY1BlNWxsR1B6N0lLU25scEJZZ3piU3JUSzUKS2NhZ3hTU25vZ3NzSmdjbUYzUXZTdWFkVnByMjRic2k3aFJFRmcxbWsyMXJiZDFrRWJGOW9iZ3VnRTZsSUl4Ygp2WVhsUGc4RTl1ZVhBZnR0V0EwbGpYMnZYdUtXUmtuN2hwN0taekU5SGJxeHZKOGhYL2tnNzNyV3BlZktPT3JXCnBRcVZERHhRR1FPbFFGY0pHdW5IajIwQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=</data>
++	<key>public-key-size</key>
++	<integer>4096</integer>
++	<key>signature-by</key>
++	<string>Gloire development team</string>
++	<key>signature-type</key>
++	<string>rsa</string>
++</dict>
++</plist>
 diff -urN --no-dereference xbps-clean/data/Makefile xbps-workdir/data/Makefile
 --- xbps-clean/data/Makefile
 +++ xbps-workdir/data/Makefile
@@ -136,7 +154,7 @@ diff -urN --no-dereference xbps-clean/data/repod-main.conf xbps-workdir/data/rep
 +++ xbps-workdir/data/repod-main.conf
 @@ -1 +1 @@
 -repository=https://a-hel-fi.m.voidlinux.org/current
-+repository=https://ironclad-os.org/repo/current
++repository=https://gloire-repo.ironclad-os.org
 diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
 --- xbps-clean/lib/Makefile
 +++ xbps-workdir/lib/Makefile

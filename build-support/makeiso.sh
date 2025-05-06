@@ -7,8 +7,8 @@ set -ex
 
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d ironclad ]; then
-    git clone https://codeberg.org/Ironclad/Ironclad ironclad
-    git -C ironclad checkout $(cat .ironclad-commit)
+    git clone https://github.com/SW480C-O25T18/ironclad.git ironclad
+    #git -C ironclad checkout $(cat .ironclad-commit)
 fi
 
 # Build the sysroot with jinx, and make sure the packages the particular

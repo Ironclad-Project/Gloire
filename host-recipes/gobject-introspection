@@ -1,0 +1,18 @@
+#! /bin/sh
+
+name=gobject-introspection
+from_source=gobject-introspection
+#imagedeps="meson ninja-build libglib2.0-dev build-essential python3-pygments itstool libpython3-dev"
+imagedeps="meson build-essential ninja-build libpython3-dev libglib2.0-dev"
+
+configure() {
+    meson setup "${source_dir}" --prefix="${prefix}"
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+}

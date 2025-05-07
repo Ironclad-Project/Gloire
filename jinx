@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -491,12 +491,19 @@ do_hg_fetch() {
 do_git_fetch() {
     [ -d "${source_dir}" ] && return
     if ! [ -z "${commit}" ]; then
-        git clone "${git_url}" "${base_dir}"/sources/${name}
-        ( cd "${base_dir}"/sources/${name} && git checkout ${commit} )
-    elif [ "${shallow}" = "no" ]; then
-        git clone "${git_url}" --branch="${branch}" "${base_dir}"/sources/${name}
+        if [ "${shallow}" = "no" ]; then
+            git clone "${git_url}" --revision="${commit}" "${base_dir}"/sources/${name}
+        else
+            git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
+            git -C "${base_dir}"/sources/${name} fetch --tags
+        fi
     else
-        git clone "${git_url}" --branch="${branch}" --depth=1 "${base_dir}"/sources/${name}
+        if [ "${shallow}" = "no" ]; then
+            git clone "${git_url}" --branch="${branch}" "${base_dir}"/sources/${name}
+        else
+            git clone "${git_url}" --branch="${branch}" --depth=1 "${base_dir}"/sources/${name}
+            git -C "${base_dir}"/sources/${name} fetch --tags
+        fi
     fi
 }
 
@@ -1007,14 +1014,14 @@ do_host_pkg() {
 
     echo "* building host package: $name"
 
+    cross_compile=yes
+    prepare_container
+
     if ! [ -z "${from_source}" ]; then
         from_source="$(. "${base_dir}"/host-recipes/$1 && echo "$from_source")"
         [ -f "${base_dir}"/sources/${from_source}.prepared ] || \
             "${script}" internal-source "${from_source}"
     fi
-
-    cross_compile=yes
-    prepare_container
 
     if ! [ "${allow_source_writes}" = "yes" ]; then
         container_sources_ro=":ro"
@@ -1032,6 +1039,31 @@ do_host_pkg() {
     unset container_sources_ro
 
     destroy_container
+
+    if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
+        (
+        unset from_source
+        unset clean_workdirs
+        . "${base_dir}"/host-recipes/$1
+
+        if ! [ "$clean_workdirs" = "no" ]; then
+            rm -rf "${build_dir}"/host-builds/$1
+
+            if [ -z "${from_source}" ]; then
+                source_source_recipe $1
+            else
+                source_source_recipe ${from_source}
+            fi
+
+            rm -rf \
+                "${base_dir}"/sources/"${name}" \
+                "${base_dir}"/sources/"${name}"-clean \
+                "${base_dir}"/sources/"${name}"-workdir \
+                "${base_dir}"/sources/"${name}".patched \
+                "${base_dir}"/sources/"${name}".prepared
+        fi
+        )
+    fi
 }
 
 do_pkg() {
@@ -1047,11 +1079,11 @@ do_pkg() {
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
     fi
 
+    prepare_container
+
     if ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
         "${script}" internal-source "${name}"
     fi
-
-    prepare_container
 
     if ! [ "${allow_source_writes}" = "yes" ]; then
         container_sources_ro=":ro"
@@ -1076,6 +1108,31 @@ do_pkg() {
     "$JINX_CACHE_DIR"/xbps-bin/xbps-rindex \
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
+
+    if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
+        (
+        unset from_source
+        unset clean_workdirs
+        . "${base_dir}"/recipes/$1
+
+        if ! [ "$clean_workdirs" = "no" ]; then
+            rm -rf "${build_dir}"/builds/$1
+
+            if [ -z "${from_source}" ]; then
+                source_source_recipe $1
+            else
+                source_source_recipe ${from_source}
+            fi
+
+            rm -rf \
+                "${base_dir}"/sources/"${name}" \
+                "${base_dir}"/sources/"${name}"-clean \
+                "${base_dir}"/sources/"${name}"-workdir \
+                "${base_dir}"/sources/"${name}".patched \
+                "${base_dir}"/sources/"${name}".prepared
+        fi
+        )
+    fi
 }
 
 cmd_host_build() {
@@ -1199,6 +1256,11 @@ cmd_check_updates() {
 }
 
 cmd_install() {
+    force_install=""
+    if [ "$1" = "-f" ]; then
+        force_install="$1"
+        shift 1
+    fi
     sysroot="$1"
     shift 1
     mkdir -m 755 -p "${sysroot}"
@@ -1229,7 +1291,7 @@ cmd_install() {
 
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
+            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
     done
 }
 
@@ -2084,6 +2146,10 @@ case "$1" in
     install)
         shift 1
         cmd_install "$@"
+        ;;
+    reinstall)
+        shift 1
+        cmd_install -f "$@"
         ;;
     rbrt)
         rebuild_rbrt

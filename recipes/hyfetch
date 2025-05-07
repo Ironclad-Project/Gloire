@@ -2,7 +2,7 @@
 
 name=hyfetch
 version=0.0git
-revision=1
+revision=2
 git_url="https://github.com/hykilpikonna/hyfetch.git"
 commit=8a536c30f07a1cc599285dc14f6020b0d7d9e44d
 

@@ -1,0 +1,12 @@
+diff -urN --no-dereference hyfetch-clean/neofetch hyfetch-workdir/neofetch
+--- hyfetch-clean/neofetch
++++ hyfetch-workdir/neofetch
+@@ -2152,7 +2152,7 @@
+ 
+     # OS-specific package managers.
+     case $os in
+-        Linux|BSD|"iPhone OS"|Solaris|illumos|Interix)
++        Linux|BSD|"iPhone OS"|Solaris|illumos|Interix|Ironclad)
+             # Package Manager Programs.
+             has kiss       && tot kiss l
+             has cpt-list   && tot cpt-list

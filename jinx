@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -366,6 +366,7 @@ prepare_container() {
                 continue
             fi
 
+            rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
             make_dir "$JINX_CACHE_DIR/sets/${pkgset}"
 
             cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
@@ -378,7 +379,7 @@ prepare_container() {
                 pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
             fi
 
-            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"; then
+            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" env TERM='' LD_PRELOAD='/root/nochown.so' apt-get install -y ${want_experimental} "${pkg}"; then
                 die 'Jinx error: Installing an imagedep failed.'
             fi
 
@@ -483,33 +484,28 @@ destroy_container() {
 }
 
 do_hg_fetch() {
-    [ -d "${source_dir}" ] && return
     hg clone "${hg_url}" "${base_dir}"/sources/${name}
     ( cd "${base_dir}"/sources/${name} && hg up "${tag}" )
 }
 
 do_git_fetch() {
-    [ -d "${source_dir}" ] && return
-    if ! [ -z "${commit}" ]; then
-        if [ "${shallow}" = "no" ]; then
-            git clone "${git_url}" --revision="${commit}" "${base_dir}"/sources/${name}
-        else
-            git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
-            git -C "${base_dir}"/sources/${name} fetch --tags
-        fi
+    if [ -z "${commit}" ]; then
+        die "* error: Git commit not specified"
+    fi
+
+    if ! ( echo "${commit}" | grep -qE '^[0-9a-f]{40}$' ); then
+        die "* error: Invalid commit hash"
+    fi
+
+    if [ "${shallow}" = "no" ]; then
+        git clone "${git_url}" --revision="${commit}" "${base_dir}"/sources/${name}
     else
-        if [ "${shallow}" = "no" ]; then
-            git clone "${git_url}" --branch="${branch}" "${base_dir}"/sources/${name}
-        else
-            git clone "${git_url}" --branch="${branch}" --depth=1 "${base_dir}"/sources/${name}
-            git -C "${base_dir}"/sources/${name} fetch --tags
-        fi
+        git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
+        git -C "${base_dir}"/sources/${name} fetch --tags
     fi
 }
 
 do_tarball_fetch() {
-    [ -d "${source_dir}" ] && return
-
     tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
 
     if ! [ -f "$tarball_path" ]; then
@@ -576,8 +572,12 @@ get_real_source_dir() {
     fi
 }
 
-do_fetch() {
+cont_fetch() {
     make_dir "${base_dir}"/sources
+
+    source_source_recipe $1
+
+    get_real_source_dir
 
     if ! [ -z "${git_url}" ]; then
         do_git_fetch
@@ -909,6 +909,21 @@ do_package() {
     cd "${base_dir}"
 }
 
+precont_fetch() {
+    source_source_recipe $1
+
+    get_real_source_dir
+
+    [ -d "${source_dir}" ] && return
+
+    cross_compile=yes
+    imagedeps="git mercurial"
+    allow_network="yes"
+    prepare_container
+    run_in_container internal-cont-fetch $1
+    destroy_container
+}
+
 precont_patch() {
     [ -f "${base_dir}"/sources/$1.patched ] && return
 
@@ -923,7 +938,7 @@ do_source() {
 
     get_real_source_dir
 
-    do_fetch
+    "${script}" internal-precont-fetch $1
 
     "${script}" internal-precont-patch $1
 
@@ -1199,6 +1214,7 @@ cmd_check_updates() {
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
             unset repology_id
             unset repology_srcname
+            unset repology_status
             unset skip_pkg_check
 
             . "${base_dir}/recipes/${pkg}"
@@ -1222,17 +1238,22 @@ cmd_check_updates() {
                 srcname_to_check=".srcname==\"$repology_srcname\" and"
             fi
 
+            if [ -z "$repology_status" ]; then
+                status_to_check=""
+            else
+                status_to_check=".status == \"$repology_status\" and"
+            fi
             sleep 1
             repology_response="$(curl -s -A '' https://repology.org/api/v1/project/$name_to_check)"
-            checked_vers=$(echo "$repology_response" | jq '.[] | select('"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera")).version' | sort -Vr | head -n 1)
+            checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera")).version' | sort -Vr | head -n 1)
             if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)
+                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)
             fi
             if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$srcname_to_check"' .repo=="debian_unstable").version' | sort -Vr | head -n 1)
+                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="debian_unstable").version' | sort -Vr | head -n 1)
             fi
             if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$srcname_to_check"' .repo=="aur").version' | sort -Vr | head -n 1)
+                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="aur").version' | sort -Vr | head -n 1)
             fi
             if [ -z "$checked_vers" ]; then
                 printf " \033[0;97;101mis not checkable\033[0m\n"
@@ -2007,6 +2028,48 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         mv "$f" "${f%.static*}"
     done
     mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
+
+    cat >"${XBPS_BUILDENV}/nochown.c" <<'EOF'
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int chown(const char *pathname, uid_t owner, gid_t group) {
+    if (owner == 0 && group == 0) {
+        return 0;
+    }
+    printf("\e[93mchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
+    return 0;
+}
+
+int fchown(int fd, uid_t owner, gid_t group) {
+    if (owner == 0 && group == 0) {
+        return 0;
+    }
+    printf("\e[93mfchown(%d, %d, %d); suppressed\e[0m\n", fd, owner, group);
+    return 0;
+}
+
+int lchown(const char *pathname, uid_t owner, gid_t group) {
+    if (owner == 0 && group == 0) {
+        return 0;
+    }
+    printf("\e[93mlchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
+    return 0;
+}
+
+int fchownat(int dirfd, const char *pathname,
+             uid_t owner, gid_t group, int flags) {
+    if (owner == 0 && group == 0) {
+        return 0;
+    }
+    printf("\e[93mfchownat(%d, %s, %d, %d, %d); suppressed\e[0m\n", dirfd, pathname, owner, group, flags);
+    return 0;
+}
+EOF
+    run_in_container1 "${XBPS_BUILDENV}" gcc -O2 -fPIC -shared /nochown.c -o /nochown.so
+    mv "${XBPS_BUILDENV}/nochown.so" "$JINX_CACHE_DIR/sets/.image/root/"
+
     chmod -R 777 "${XBPS_BUILDENV}"
     rm -rf "${XBPS_BUILDENV}"
 }
@@ -2062,6 +2125,12 @@ fi
 case "$1" in
     internal-prepare)
         do_prepare "$2"
+        ;;
+    internal-precont-fetch)
+        precont_fetch "$2"
+        ;;
+    internal-cont-fetch)
+        cont_fetch "$2"
         ;;
     internal-precont-patch)
         precont_patch "$2"

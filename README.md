@@ -90,6 +90,14 @@ You can visit our list of community channels on Ironclad's
 
 ## Building
 
+A list of the tools needed for compilation of the OS are:
+
+- `git` for cloning packages.
+- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `find`, `free` (usually from `procps`), `grep`, `gzip`, `tar`, `xargs` (usually from `findutils`), and `xz` for Jinx.
+- `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
+- `xorriso` for building the final ISO image.
+- `qemu` for testing, if wanted.
+
 The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
@@ -128,25 +136,9 @@ can pass `""` (or a list of desired packages, `base` is implied) as `PKGS_TO_INS
 Any of those routes will generate a bootable disk image that can be burned to
 storage media or be booted by several emulators.
 
-A list of the tools needed for compilation of the OS are:
-
-- `git` for cloning packages.
-- `curl` and a working C compiler (as `cc`) for setting up jinx.
-- Common UNIX tools like `bash`, `coreutils`, `grep`, `find`, etc.
-- `sgdisk` from the `gptfdisk` package for building the image.
-- `qemu` for testing, if wanted.
-- `tar` and `lzip` for extracting packages.
-- `xorriso` to build the final ISO file.
-
-All of said things can be installed in debian-based systems with
-
-```bash
-sudo apt install lzip git build-essentials xorriso
-```
-
 ## Licensing
 
-A list of the licenses used by the software ported to Gloire is:
+A non-exhaustive list of the licenses used by the software ported to Gloire is:
 
 - [GPLv3 (Or-Later and Only)](https://www.gnu.org/licenses/gpl-3.0.html)
 - [GPLv2 (Or-Later and Only)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
@@ -156,7 +148,8 @@ A list of the licenses used by the software ported to Gloire is:
 
 ## Thanks to
 
-- [mintsuki](https://github.com/mintsuki) for the Limine Bootloader and
-[jinx](https://github.com/mintsuki/jinx).
+- [Mintsuki](https://codeberg.org/mintsuki) for the
+[Limine Bootloader](https://github.com/limine-bootloader/limine) and
+[Jinx](https://codeberg.org/mintsuki/jinx).
 - [The Managarm Project](https://github.com/managarm) for help with some
 of the recipes and [mlibc](https://github.com/managarm/mlibc).

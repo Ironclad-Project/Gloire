@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="6"
+jinx_minor_ver="7"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -68,13 +68,7 @@ case "$1" in
         ;;
     *)
         if [ "$(id -u)" = "0" ]; then
-            case "$LD_LIBRARY_PATH" in
-                *libfakeroot*)
-                    ;;
-                *)
-                    die "$0: Jinx does not support running as root."
-                    ;;
-            esac
+            die "$0: Jinx does not support running as root."
         fi
         ;;
 esac
@@ -191,8 +185,8 @@ fi
 
 apt_cache="$JINX_CACHE_DIR/apt-cache"
 
-temp_collect="${build_dir}/.jinx-errcode"
-trap 'echo $? >"${build_dir}"/.jinx-errcode; eval rm -rf "$temp_collect"' EXIT
+temp_collect=""
+trap 'eval rm -rf "$temp_collect"' EXIT
 
 make_temp() {
     tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
@@ -286,16 +280,15 @@ get_deps_file() {
 }
 
 run_in_container1() {
-    if ! [ -z "$TERM" ]; then
-        run_in_cont1_term="--env TERM=\"$TERM\""
-    fi
-
-    if ! [ -z "$COLORTERM" ]; then
-        run_in_cont1_colorterm="--env COLORTERM=\"$COLORTERM\""
-    fi
-
     run_in_cont1_root="$1"
     shift 1
+
+    make_dir "$run_in_cont1_root"/jinx-cache
+
+    nochown_so=""
+    if [ -f "$JINX_CACHE_DIR/nochown.so" ]; then
+        nochown_so="--env LD_PRELOAD=/jinx-cache/nochown.so"
+    fi
 
     "$JINX_CACHE_DIR/rbrt" \
         --root "$run_in_cont1_root" rw \
@@ -306,11 +299,14 @@ run_in_container1() {
         --env LC_COLLATE=C \
         --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
         --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-        ${run_in_cont1_term} \
-        ${run_in_cont1_colorterm} \
+        --env DEBIAN_FRONTEND=noninteractive \
+        ${nochown_so} \
         -m"${apt_cache}":/var/cache/apt/archives \
+        -m"$JINX_CACHE_DIR":/jinx-cache:ro \
         -- \
         "$@"
+
+    rm -rf "$run_in_cont1_root"/jinx-cache
 }
 
 check_duplicates() {
@@ -379,7 +375,7 @@ prepare_container() {
                 pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
             fi
 
-            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" env TERM='' LD_PRELOAD='/root/nochown.so' apt-get install -y ${want_experimental} "${pkg}"; then
+            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"; then
                 die 'Jinx error: Installing an imagedep failed.'
             fi
 
@@ -448,6 +444,11 @@ run_in_container() {
         shadow_git_dir_base="-m${tmp}:/base_dir/.git"
     fi
 
+    nochown_so=""
+    if [ -f "$JINX_CACHE_DIR/nochown.so" ]; then
+        nochown_so="--env LD_PRELOAD=/base_dir/.jinx-cache/nochown.so"
+    fi
+
     "$JINX_CACHE_DIR/rbrt" \
         --root "${imgroot}" \
         --uid $(id -u) \
@@ -474,7 +475,7 @@ run_in_container() {
         ${unshare_net_flag} \
         --workdir / \
         -- \
-        /bin/bash -c "cd /build_dir && ${use_fakeroot} /bin/bash /jinx $run_in_cont_argvar"
+        /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
 
     rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
@@ -498,7 +499,8 @@ do_git_fetch() {
     fi
 
     if [ "${shallow}" = "no" ]; then
-        git clone "${git_url}" --revision="${commit}" "${base_dir}"/sources/${name}
+        git clone "${git_url}" "${base_dir}"/sources/${name}
+        git -C "${base_dir}"/sources/${name} checkout "${commit}"
     else
         git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
         git -C "${base_dir}"/sources/${name} fetch --tags
@@ -891,6 +893,11 @@ do_package() {
 
     xbps_deps=""
     for dep in ${deps}; do
+        bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${dep} && echo "${bootstrap_pkg}")
+        if [ "${bootstrap_pkg}" = "yes" ]; then
+            continue
+        fi
+
         xbps_deps="${xbps_deps} ${dep}>=0.0"
     done
 
@@ -1038,10 +1045,7 @@ do_host_pkg() {
             "${script}" internal-source "${from_source}"
     fi
 
-    if ! [ "${allow_source_writes}" = "yes" ]; then
-        container_sources_ro=":ro"
-    fi
-
+    container_sources_ro=":ro"
     if ! [ -d "${base_dir}"/host-builds/$1 ]; then
         run_in_container internal-configure-host $1
     fi
@@ -1100,17 +1104,13 @@ do_pkg() {
         "${script}" internal-source "${name}"
     fi
 
-    if ! [ "${allow_source_writes}" = "yes" ]; then
-        container_sources_ro=":ro"
-    fi
-
+    container_sources_ro=":ro"
     if ! [ -d "${base_dir}"/builds/$1 ]; then
         run_in_container internal-configure $1
     fi
     run_in_container internal-build $1
     rm -rf "${base_dir}"/pkgs/$1
-    use_fakeroot=fakeroot run_in_container internal-package $1
-    if [ -f "${build_dir}"/.jinx-errcode ] && ! [ "$(cat "${build_dir}"/.jinx-errcode)" = "0" ]; then
+    if ! run_in_container internal-package $1; then
         rm -rf "${base_dir}"/pkgs/$1
         return 1
     fi
@@ -1289,6 +1289,11 @@ cmd_install() {
     pkgs_to_install=""
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${pkg} && echo "${bootstrap_pkg}")
+            if [ "${bootstrap_pkg}" = "yes" ]; then
+                continue
+            fi
+
             pkgs_to_install="${pkgs_to_install} ${pkg}"
         done
     done
@@ -1308,6 +1313,14 @@ cmd_install() {
 
         if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
             die "* package '${name}' not built"
+        fi
+
+        # xbps seems to only install the package every second time when reinstalling.
+        # Remove the package to be sure it gets reinstalled.
+        if ! [ -z "${force_install}" ]; then
+            XBPS_ARCH=invalid \
+            XBPS_TARGET_ARCH="${JINX_ARCH}" \
+                "$JINX_CACHE_DIR"/xbps-bin/xbps-remove -Ffy -r "${sysroot}" ${pkg} >/dev/null 2>&1 || true
         fi
 
         XBPS_ARCH=invalid \
@@ -2007,7 +2020,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         chmod 755 "$f"
     done
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen fakeroot file findutils flex gawk gettext grep gzip xsltproc m4 make patch perl python3 sed tar texinfo w3m which xmlto xz-utils zstd
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen file findutils flex gawk gettext grep gzip lzip m4 make patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
     # Build xbps
     XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
@@ -2067,8 +2080,8 @@ int fchownat(int dirfd, const char *pathname,
     return 0;
 }
 EOF
-    run_in_container1 "${XBPS_BUILDENV}" gcc -O2 -fPIC -shared /nochown.c -o /nochown.so
-    mv "${XBPS_BUILDENV}/nochown.so" "$JINX_CACHE_DIR/sets/.image/root/"
+    run_in_container1 "${XBPS_BUILDENV}" gcc -O2 -pipe -Wall -Wextra -fPIC -shared /nochown.c -o /nochown.so
+    mv "${XBPS_BUILDENV}/nochown."* "$JINX_CACHE_DIR/"
 
     chmod -R 777 "${XBPS_BUILDENV}"
     rm -rf "${XBPS_BUILDENV}"

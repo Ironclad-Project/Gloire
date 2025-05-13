@@ -1,11 +1,11 @@
 #! /bin/sh
 
 name=gcon
-skip_pkg_check=yes
-version=0.0git
+version=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
 revision=1
 git_url="https://codeberg.org/Ironclad/gcon"
-commit=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
+commit=${version}
+
 source_imagedeps="git"
 source_hostdeps="automake autoconf pkg-config"
 source_allow_network="yes"

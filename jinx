@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="7"
+jinx_minor_ver="8"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -375,9 +375,7 @@ prepare_container() {
                 pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
             fi
 
-            if ! run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"; then
-                die 'Jinx error: Installing an imagedep failed.'
-            fi
+            run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"
 
             # Fix permissions of files
             for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
@@ -463,6 +461,7 @@ run_in_container() {
         --env JINX_PARALLELISM="$parallelism" \
         --env JINX_CONFIG_FILE=/jinx-config \
         --env JINX_SOURCE_DIR=/base_dir \
+        ${nochown_so} \
         ${container_pkgs_native_mount:+"${container_pkgs_native_mount}"} \
         ${sysroot_native_mount:+"${sysroot_native_mount}"} \
         -m"${script}":/jinx:ro \
@@ -1051,10 +1050,7 @@ do_host_pkg() {
     fi
     run_in_container internal-build-host $1
     rm -rf "${base_dir}"/host-pkgs/$1
-    if ! run_in_container internal-package-host $1; then
-        rm -rf "${base_dir}"/host-pkgs/$1
-        return 1
-    fi
+    run_in_container internal-package-host $1
     unset container_sources_ro
 
     destroy_container
@@ -1110,10 +1106,7 @@ do_pkg() {
     fi
     run_in_container internal-build $1
     rm -rf "${base_dir}"/pkgs/$1
-    if ! run_in_container internal-package $1; then
-        rm -rf "${base_dir}"/pkgs/$1
-        return 1
-    fi
+    run_in_container internal-package $1
     unset container_sources_ro
 
     destroy_container

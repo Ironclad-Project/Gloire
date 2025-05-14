@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="8"
+jinx_minor_ver="9"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -2035,13 +2035,14 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     done
     mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
 
-    cat >"${XBPS_BUILDENV}/nochown.c" <<'EOF'
+    cat >"${XBPS_BUILDENV}/nochown.c" <<EOF
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 
 int chown(const char *pathname, uid_t owner, gid_t group) {
-    if (owner == 0 && group == 0) {
+    if ((owner == 0 && group == 0)
+     || (owner == $(id -u) && group == $(id -g))) {
         return 0;
     }
     printf("\e[93mchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
@@ -2049,7 +2050,8 @@ int chown(const char *pathname, uid_t owner, gid_t group) {
 }
 
 int fchown(int fd, uid_t owner, gid_t group) {
-    if (owner == 0 && group == 0) {
+    if ((owner == 0 && group == 0)
+     || (owner == $(id -u) && group == $(id -g))) {
         return 0;
     }
     printf("\e[93mfchown(%d, %d, %d); suppressed\e[0m\n", fd, owner, group);
@@ -2057,7 +2059,8 @@ int fchown(int fd, uid_t owner, gid_t group) {
 }
 
 int lchown(const char *pathname, uid_t owner, gid_t group) {
-    if (owner == 0 && group == 0) {
+    if ((owner == 0 && group == 0)
+     || (owner == $(id -u) && group == $(id -g))) {
         return 0;
     }
     printf("\e[93mlchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
@@ -2066,7 +2069,8 @@ int lchown(const char *pathname, uid_t owner, gid_t group) {
 
 int fchownat(int dirfd, const char *pathname,
              uid_t owner, gid_t group, int flags) {
-    if (owner == 0 && group == 0) {
+    if ((owner == 0 && group == 0)
+     || (owner == $(id -u) && group == $(id -g))) {
         return 0;
     }
     printf("\e[93mfchownat(%d, %s, %d, %d, %d); suppressed\e[0m\n", dirfd, pathname, owner, group, flags);

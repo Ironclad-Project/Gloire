@@ -5,7 +5,7 @@ _base_patch=37
 _patch=37
 version=5.2.p${_patch}
 revision=1
-tarball_url="https://ftp.gnu.org/gnu/bash/bash-5.2.${_base_patch}.tar.gz"
+tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-5.2.${_base_patch}.tar.gz"
 tarball_blake2b="7b4dbb7497ab8b54fa30e82591a0557daf0a0668f458db36a032918abc66c7ed35339e947bd95ff1ffbf353403ebee789d27ffa9c037b51c817c074d7a28bb3b"
 source_allow_network=yes
 imagedeps="build-essential"
@@ -15,7 +15,7 @@ deps="core-libs ncurses readline"
 prepare() {
     if ! [ "${_base_patch}" = "${_patch}" ]; then
         for p in $(seq -w ${_base_patch} ${_patch}); do
-            curl -L https://ftp.gnu.org/gnu/bash/bash-5.2-patches/bash52-0$p | patch -p0
+            curl -L https://ftpmirror.gnu.org/gnu/bash/bash-5.2-patches/bash52-0$p | patch -p0
         done
     fi
 
@@ -35,7 +35,7 @@ configure() {
         --with-curses \
         --enable-readline \
         --without-bash-malloc \
-        --with-installed-readline="${sysroot}/usr/lib"
+        --with-installed-readline="${sysroot}${prefix}/lib"
 }
 
 build() {

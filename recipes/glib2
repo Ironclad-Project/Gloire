@@ -1,6 +1,7 @@
 #! /bin/sh
 
-name=glib
+name=glib2
+repology_id=glib
 version=2.84.1
 revision=1
 tarball_url="https://download.gnome.org/sources/glib/2.84/glib-${version}.tar.xz"
@@ -19,11 +20,11 @@ configure() {
 }
 
 build() {
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

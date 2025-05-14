@@ -1,6 +1,6 @@
 #! /bin/sh
 
-name=gtk+-3
+name=gtk3
 repology_id=gtk
 repology_srcname=gtk3
 version=3.24.49
@@ -9,7 +9,7 @@ git_url="https://gitlab.gnome.org/GNOME/gtk.git"
 commit=198aeace1e9e119c77f4d669bd8efdf337828ad1
 imagedeps="meson ninja-build libglib2.0-dev libgdk-pixbuf-2.0 python3-packaging"
 hostdeps="gcc pkg-config"
-deps="core-libs at-spi2-core cairo glib gdk-pixbuf libx11 libxext libxcb libxinerama libxrender libxrandr libxfixes libxdamage pango fribidi libepoxy libxkbcommon fontconfig freetype2 libxi harfbuzz libxcursor gsettings-desktop-schemas dbus hicolor-icon-theme"
+deps="core-libs at-spi2-core cairo glib2 gdk-pixbuf libx11 libxext libxcb libxinerama libxrender libxrandr libxfixes libxdamage pango fribidi libepoxy libxkbcommon fontconfig freetype2 libxi harfbuzz libxcursor gsettings-desktop-schemas dbus hicolor-icon-theme"
 
 configure() {
     meson_configure \
@@ -22,11 +22,11 @@ configure() {
 }
 
 build() {
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     glib-compile-schemas "${dest_dir}${prefix}"/share/glib-2.0/schemas
     rm "${dest_dir}${prefix}"/share/glib-2.0/schemas/gschemas.compiled

@@ -2,7 +2,7 @@
 
 name=mesa
 version=25.0.5
-revision=1
+revision=2
 tarball_url="https://archive.mesa3d.org/mesa-${version}.tar.xz"
 tarball_blake2b="f17f8c2a733fd3c37f346b9304241dc1d13e01df9c8c723b73b10279dd3c2ebed062ec1f15cdbc8b9936bae840a087b23ac38cae7d8982228d582d468ab8c9c9"
 imagedeps="meson ninja-build python3-mako python3-yaml glslang-tools"
@@ -16,15 +16,15 @@ configure() {
         -Dgallium-drivers=llvmpipe,softpipe \
         -Dvulkan-drivers=swrast \
         -Dosmesa=true \
-        -Dvideo-codecs=all
+        -Dvideo-codecs=all_free
 }
 
 build() {
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

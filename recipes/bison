@@ -3,7 +3,7 @@
 name=bison
 version=3.8.2
 revision=1
-tarball_url="https://ftp.gnu.org/gnu/bison/bison-${version}.tar.xz"
+tarball_url="https://ftpmirror.gnu.org/gnu/bison/bison-${version}.tar.xz"
 tarball_blake2b="e211b61494c911f55b72a8b70b5a48cdf4000ce9e675a1f1f52735bb8f57d93a3f8075341451263af9c9c531004907ae2b62b1873e7e4664c2cd26fa3b12271c"
 hostdeps="gcc pkg-config"
 deps="core-libs"

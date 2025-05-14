@@ -3,7 +3,7 @@
 name=slim
 repology_id=slim-login-manager
 version=1.4.0
-revision=1
+revision=2
 tarball_url="https://downloads.sourceforge.net/project/slim-fork/slim-${version}.tar.gz"
 tarball_blake2b="507f22d09a3449b870bb5fd5a5f0ab1002ceee5372c82f702582809a5fc442088c17d79fedff6712e198cee672696388479604a194e5729c7bc12139770c833d"
 imagedeps="cmake ninja-build"
@@ -17,11 +17,11 @@ configure() {
 }
 
 build() {
-    ninja -j${parallelism}
+    cmake --build . -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" cmake --install .
 
     cp -v "${base_dir}"/build-support/slim/slim.conf "${dest_dir}"/etc/
 

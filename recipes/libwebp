@@ -2,31 +2,24 @@
 
 name=libwebp
 version=1.5.0
-revision=1
+revision=2
 tarball_url="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}.tar.gz"
 tarball_blake2b="68e94f5592556ac4b57011a94abc651a187b23ca7cddd6791aec3f62bede7a7c176d4a67f8170a83990a6ff290a6716011bdb117818657b63bd3e21a8d5ed59e"
+imagedeps="cmake ninja-build"
 hostdeps="gcc pkg-config"
 deps="core-libs libjpeg-turbo libpng freeglut sdl2-compat libtiff"
 
-prepare() {
-    autotools_recursive_regen
-}
-
 configure() {
-    autotools_configure \
-        --enable-libwebpmux \
-        --enable-libwebpdemux \
-        --enable-libwebpdecoder \
-        --enable-libwebpextras \
-        --enable-swap-16bit-csp
+    cmake_configure \
+        -DWEBP_ENABLE_SWAP_16BIT_CSP=ON
 }
 
 build() {
-    make -j${parallelism}
+    cmake --build . -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" cmake --install .
 
     post_package_strip
 }

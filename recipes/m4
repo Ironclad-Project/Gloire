@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=m4
-version=1.4.19
+version=1.4.20
 revision=1
-tarball_url="https://ftp.gnu.org/gnu/m4/m4-${version}.tar.xz"
-tarball_blake2b="08694485a49c542761fa9a7db4d7609f4dfb08a5c6b785b57f2e14cf1f696c2a1c788bb5eb934e8159a632b63ff071dfe42511d0109d7b1828f46d33c8bf416a"
+tarball_url="https://ftpmirror.gnu.org/gnu/m4/m4-${version}.tar.xz"
+tarball_blake2b="d8e6716dd4f35e17b866917f0697f980d7b6fbfa9aa92feb1234fdb49fb62107dc48405036a8ca97db73889d7638b90b69ea005352992b7bf45e8605127b318f"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
@@ -13,8 +13,7 @@ prepare() {
 }
 
 configure() {
-    autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17"
+    autotools_configure
 }
 
 build() {

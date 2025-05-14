@@ -2,7 +2,7 @@
 
 name=libgpg-error
 version=1.55
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${version}.tar.gz"
 tarball_blake2b="5d222849c48aba34257f8c402c51318bcdf66a2c485668b852b322763d090b90d0724e2a0d9857f615bb87227d36720b2595593f7727c54688f5ba08c3c8eafc"
 imagedeps="build-essential"
@@ -16,7 +16,9 @@ prepare() {
 }
 
 configure() {
-    autotools_configure
+    autotools_configure \
+        --enable-threads \
+        --enable-install-gpg-error-config
 }
 
 build() {

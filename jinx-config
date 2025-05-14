@@ -179,8 +179,9 @@ cmake_configure_noflags() {
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_INSTALL_SBINDIR=bin \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=True \
-        -DENABLE_STATIC=False \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -DENABLE_STATIC=OFF \
         -DPKG_CONFIG_EXECUTABLE="/usr/local/bin/$OS_TRIPLET-pkg-config" \
         -GNinja \
         "$@"

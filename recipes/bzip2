@@ -17,7 +17,9 @@ build() {
 }
 
 package() {
-    install -dm755 "${dest_dir}${prefix}/"{bin,lib,lib/pkgconfig,include,share/man/man1}
+    for x in bin lib lib/pkgconfig include share share/man share/man/man1; do
+        install -dm755 "${dest_dir}${prefix}/$x"
+    done
 
     install -m755 bzip2-shared "${dest_dir}${prefix}/bin/bzip2"
     install -m755 bzip2recover bzdiff bzgrep bzmore "${dest_dir}${prefix}/bin/"

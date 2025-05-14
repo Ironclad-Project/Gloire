@@ -1,13 +1,13 @@
 #! /bin/sh
 
 name=qemu
-revision=1
+revision=2
 version=10.0.0
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_sha512="2215458ed8be3ab0b0032fe2a96e79183f5fc2da323d927018412ea3d980b022a07ba87d4f446229eaaa7d1b19a577d438dbcaa3af3bd537c7720b56734a2d8b"
 imagedeps="build-essential python3-venv ninja-build meson git"
 hostdeps="gcc pkg-config"
-deps="core-libs sdl2-compat gtk+-3 glib ncurses pixman nettle"
+deps="core-libs sdl2-compat gtk3 glib2 ncurses pixman nettle"
 allow_network="yes"
 
 configure() {

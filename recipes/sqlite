@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sqlite
-version=3.49.1
+version=3.49.2
 revision=1
-tarball_url="https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz"
-tarball_blake2b="08f9379977b9a7962de5283cb532ecdd500e6e9b00d5e64e14e323777b47ea90e15745528d441328b7907060b7f594dc5054b327b471189477e595c0575c43a0"
+tarball_url="https://sqlite.org/2025/sqlite-autoconf-3490200.tar.gz"
+tarball_blake2b="588e881e986c618d7321546a5b236fe68371898295d80ff54f8d7037e5ae28d5384808f85e395e3467aa3494f84234709a1e9310277d6f0866e4c750f04c2fbb"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs readline zlib"
@@ -22,7 +22,6 @@ configure() {
         --bindir=${prefix}/bin \
         --sbindir=${prefix}/bin \
         --libdir=${prefix}/lib \
-        --sysroot=${sysroot_dir} \
         --soname=legacy \
         --disable-static \
         --enable-shared \

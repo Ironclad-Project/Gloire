@@ -2,18 +2,16 @@
 
 name=dbus
 version=1.16.2
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/dbus/dbus.git"
 commit=958bf9db2100553bcd2fe2a854e1ebb42e886054
 imagedeps="git meson ninja-build"
 hostdeps="gcc pkg-config"
-deps="core-libs libexpat"
+deps="core-libs libexpat libx11"
 
 configure() {
     meson_configure \
         -Druntime_dir=/run \
-        -Ddoxygen_docs=disabled \
-        -Dxml_docs=disabled \
         -Dsystemd_system_unitdir=no \
         -Dsystemd_user_unitdir=no \
         -Dsystem_pid_file=/run/dbus/pid \
@@ -28,13 +26,13 @@ configure() {
 }
 
 build() {
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
-    touch "${dest_dir}/${prefix}"/share/dbus-1/session.d/.keep
+    touch "${dest_dir}${prefix}"/share/dbus-1/session.d/.keep
     touch "${dest_dir}"/var/lib/dbus/.keep
 
     post_package_strip

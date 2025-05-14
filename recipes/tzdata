@@ -33,23 +33,23 @@ package() {
     timezones="africa antarctica asia australasia europe northamerica southamerica etcetera backward factory"
 
     # Create the required directories
-    mkdir -p "${dest_dir}"/etc
-    mkdir -p "${dest_dir}"/usr/share/zoneinfo/posix
-    mkdir -p "${dest_dir}"/usr/share/zoneinfo/right
+    mkdir -p ${dest_dir}/etc
+    mkdir -p ${dest_dir}${prefix}/share/zoneinfo/posix
+    mkdir -p ${dest_dir}${prefix}/share/zoneinfo/right
 
     # Create the time zone files without leap seconds, convention puts these in both zoneinfo and zoneinfo/posix.
     # After that. create time time zone files with leap seconds
-    zic -b fat -d "${dest_dir}"/usr/share/zoneinfo $timezones
-    zic -b fat -d "${dest_dir}"/usr/share/zoneinfo/posix $timezones
-    zic -b fat -d "${dest_dir}"/usr/share/zoneinfo/right -L leapseconds $timezones
+    zic -b fat -d ${dest_dir}${prefix}/share/zoneinfo $timezones
+    zic -b fat -d ${dest_dir}${prefix}/share/zoneinfo/posix $timezones
+    zic -b fat -d ${dest_dir}${prefix}/share/zoneinfo/right -L leapseconds $timezones
 
     # Create the posixrules file, POSIX requires daylight saving rules to be in accordance with US rules, thus use New York
-    zic -b fat -d "${dest_dir}"/usr/share/zoneinfo -p America/New_York
+    zic -b fat -d ${dest_dir}${prefix}/share/zoneinfo -p America/New_York
 
     # Default to UTC for localtime.
-    ln -sf /usr/share/zoneinfo/UTC "${dest_dir}"/etc/localtime
+    ln -sf ${prefix}/share/zoneinfo/UTC ${dest_dir}/etc/localtime
 
-    install -m644 -t "${dest_dir}"/usr/share/zoneinfo iso3166.tab leap-seconds.list zone1970.tab zone.tab SECURITY
+    install -m644 -t ${dest_dir}${prefix}/share/zoneinfo iso3166.tab leap-seconds.list zone1970.tab zone.tab SECURITY
 
     post_package_strip
 }

@@ -1,13 +1,13 @@
 #! /bin/sh
 
 name=libxkbcommon
-version=1.9.1
+version=1.9.2
 revision=1
 git_url="https://github.com/xkbcommon/libxkbcommon.git"
-commit=7df431ac4d0d36639876318a4c69198b03ee50ba
+commit=dd642359f8d43c09968e34ca7f1eb1121b2dfd70
 imagedeps="git meson ninja-build"
 hostdeps="gcc pkg-config"
-deps="core-libs libxcb libxml xkeyboard-config"
+deps="core-libs libxcb libxml2 xkeyboard-config"
 
 configure() {
     meson_configure \
@@ -17,11 +17,11 @@ configure() {
 }
 
 build() {
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" ninja install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     mkdir -p "${dest_dir}${prefix}/share/X11/xkb"
     touch "${dest_dir}${prefix}/share/X11/xkb/.keep"

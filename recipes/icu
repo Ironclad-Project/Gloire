@@ -11,7 +11,7 @@ deps="core-libs"
 
 prepare() {
     autotools_recursive_regen
-    cp source/config/{mh-linux,mh-unknown}
+    cp source/config/mh-linux source/config/mh-unknown
 
     mkdir -p cross-build
     cd cross-build

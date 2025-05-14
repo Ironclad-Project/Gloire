@@ -15,7 +15,7 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --with-keysymdefdir=${sysroot_dir}/usr/include/X11
+        --with-keysymdefdir=${sysroot_dir}${prefix}/include/X11
 }
 
 build() {

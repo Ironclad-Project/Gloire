@@ -5,7 +5,7 @@ version=48.0
 revision=2
 tarball_url="https://download.gnome.org/sources/gsettings-desktop-schemas/48/gsettings-desktop-schemas-${version}.tar.xz"
 tarball_blake2b="b65b7c2e5c1951623b07cbe6e5c7b39c8dd5ccf222bcac18a1fb5b92d21ce072ffe51d89202b173394ece4dcd23ad1936b844c39fc76facaf1f704583a0603bd"
-imagedeps="meson ninja-build libglib2.0-dev"
+imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2"
 

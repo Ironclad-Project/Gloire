@@ -6,7 +6,6 @@ version=0.0git
 revision=2
 git_url="https://github.com/managarm/mlibc.git"
 commit=6b5d076e6d54b6230f2bff188dd132702e1b1993
-imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
 deps="mlibc-headers"

@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.5"
-jinx_minor_ver="9"
+jinx_minor_ver="10"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -52,9 +52,29 @@ if [ -z "$1" ]; then
     die "$0: no command specified."
 fi
 
+cmd_help() {
+    echo "usage: $0 <command> <package>"
+    printf "\n   help|--help        Displays this message"
+    printf "\n   version|--version  Prints the version"
+    printf "\n   build              Builds package(s), does incremental builds"
+    printf "\n   build-if-needed    Builds package(s) if necessary"
+    printf "\n   rebuild            Rebuilds package(s)"
+    printf "\n   host-build         Same as build, but for host package(s)"
+    printf "\n   host-rebuild       Same as rebuild, but for host package(s)"
+    printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
+    printf "\n   install            Installs package(s)"
+    printf "\n   check-updates      Checks on repology whether package(s) are up to date"
+    printf "\n   rebuild-cache      Rebuilds Jinx cache"
+    printf "\n\nexample: \"./jinx check-updates '*'\"\n"
+}
+
 case "$1" in
     version|--version)
         echo "Jinx version $jinx_version"
+        exit 0
+        ;;
+    help|--help)
+        cmd_help
         exit 0
         ;;
 esac
@@ -502,7 +522,7 @@ do_git_fetch() {
         git -C "${base_dir}"/sources/${name} checkout "${commit}"
     else
         git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
-        git -C "${base_dir}"/sources/${name} fetch --tags
+        git -C "${base_dir}"/sources/${name} fetch --tags --depth=1
     fi
 }
 
@@ -2013,7 +2033,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         chmod 755 "$f"
     done
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 curl diffutils docbook-xsl doxygen file findutils flex gawk gettext grep gzip lzip m4 make patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
     # Build xbps
     XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"

@@ -5,7 +5,6 @@ version=1.16.2
 revision=2
 git_url="https://gitlab.freedesktop.org/dbus/dbus.git"
 commit=958bf9db2100553bcd2fe2a854e1ebb42e886054
-imagedeps="git meson ninja-build"
 hostdeps="gcc pkg-config"
 deps="core-libs libexpat libx11"
 

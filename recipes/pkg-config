@@ -6,7 +6,6 @@ version=2.4.3
 revision=2
 tarball_url="https://distfiles.ariadne.space/pkgconf/pkgconf-${version}.tar.xz"
 tarball_blake2b="5ca90b1b97e5516369e7042952418d5046faee02ff67144b0805c3c007507c42400825cfe73ac2c4df3f11dab4d5abba24b52abe930a3b25abbcbbddb3a06a31"
-imagedeps="meson ninja-build"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

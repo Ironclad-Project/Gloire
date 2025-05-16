@@ -6,7 +6,7 @@ version=20.1.4
 revision=1
 tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"
 tarball_blake2b="756799d104f94931a6bdca182c4b23983aad9c7ea5acf77f2f5519540137a8dc9a4ec227293c6ba7ddc7fb0fa10cc92e65808f1c07f04bea34a304bb0e2df612"
-imagedeps="build-essential cmake ninja-build git"
+imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses zlib zstd libffi"
 

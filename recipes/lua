@@ -5,7 +5,7 @@ version=5.4.7
 revision=1
 tarball_url="https://github.com/lua/lua/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="9e4f589e78ded6d0665bf38c94080dc642762fc5b91fa47d6bd440a241e86000b6a82f9c4175b5ec509d01f753cc4a257c70c6219f41c1527742615425b9f876"
-imagedeps="git nasm"
+imagedeps="nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs readline"
 

@@ -3,9 +3,9 @@
 name=gcon
 skip_pkg_check=yes
 version=0.0git
-revision=1
+revision=2
 git_url="https://codeberg.org/Ironclad/gcon"
-commit=8c5cd8d5469437832b72fd4d0edeecdbe6c80029
+commit=82e546616875125ac0cb78369e9c89eb0f823ff1
 source_imagedeps="git"
 source_hostdeps="automake autoconf pkg-config"
 source_allow_network="yes"

@@ -385,15 +385,17 @@ prepare_container() {
             rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
             make_dir "$JINX_CACHE_DIR/sets/${pkgset}"
 
-            cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
-
-            rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
-
+            want_link='l'
             want_experimental=''
             if echo "${pkg}" | grep -q '^experimental:'; then
+                want_link=''
                 want_experimental='-t experimental'
                 pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
             fi
+
+            cp -Pp${want_link}rf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+
+            rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
 
             run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"
 

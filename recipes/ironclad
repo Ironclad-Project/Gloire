@@ -3,7 +3,7 @@
 name=ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=5
+revision=6
 source_dir="ironclad"
 source_imagedeps="git"
 source_hostdeps="automake autoconf pkg-config"

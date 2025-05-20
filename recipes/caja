@@ -10,12 +10,9 @@ source_imagedeps="gtk-doc-tools gobject-introspection libglib2.0-dev-bin autocon
 source_deps="autoconf-archive"
 imagedeps="libglib2.0-dev-bin autoconf-archive"
 hostdeps="gcc autoconf automake libtool pkg-config autoconf-archive glib"
-#builddeps="autoconf-archive"
-deps="core-libs at-spi2-core glib libxml dconf mate-desktop cairo gdk-pixbuf gtk+-3 libice libsm libx11 libxext libxft libxrender pango libnotify mate-common autoconf-archive"
+deps="core-libs at-spi2-core glib2 libxml2 dconf mate-desktop cairo gdk-pixbuf gtk3 libice libsm libx11 libxext libxft libxrender pango libnotify mate-common autoconf-archive"
 
 prepare() {
-    # autotools_recursive_regen
-    # ACLOCAL_INCLUDE="-I${sysroot_dir}/usr/share/aclocal" mate-autogen
     ACLOCAL_INCLUDE="-I${sysroot_dir}/usr/share/aclocal" NOCONFIGURE=true mate-autogen
 }
 

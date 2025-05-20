@@ -1,0 +1,40 @@
+#! /bin/sh
+
+name=caja
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/caja/releases/download/v${version}/caja-${version}.tar.xz"
+tarball_blake2b="3fd97d20081fc1b8dde845f899f13270b164e3fd7116f32d8f5248e27f75e49e0668cb928417e74abac908a93a7fb6a81927c43443dc752e30d13fdec6b7ab09"
+source_hostdeps="automake autoconf libtool pkg-config mate-common gtk-doc gobject-introspection autoconf-archive glib"
+#source_hostdeps="automake autoconf libtool pkg-config mate-common gtk-doc gobject-introspection glib"
+source_imagedeps="gtk-doc-tools gobject-introspection libglib2.0-dev-bin autoconf-archive"
+source_deps="autoconf-archive"
+imagedeps="libglib2.0-dev-bin autoconf-archive"
+hostdeps="gcc autoconf automake libtool pkg-config autoconf-archive glib"
+#hostdeps="gcc autoconf automake libtool pkg-config glib"
+#builddeps="autoconf-archive"
+deps="core-libs at-spi2-core glib2 libxml2 dconf mate-desktop cairo gdk-pixbuf gtk3 libice libsm libx11 libxext libxft libxrender pango libnotify mate-common autoconf-archive"
+
+prepare() {
+    # autotools_recursive_regen
+    # ACLOCAL_INCLUDE="-I${sysroot_dir}/usr/share/aclocal" mate-autogen
+    ACLOCAL_INCLUDE="-I${sysroot_dir}/usr/share/aclocal" NOCONFIGURE=true mate-autogen
+}
+
+configure() {
+    autotools_configure \
+        --disable-update-mimedb \
+        --disable-nls \
+        --disable-xmp \
+        --disable-dependency-tracking
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

@@ -1,0 +1,21 @@
+diff -urN --no-dereference openssh-clean/openbsd-compat/arc4random.c openssh-workdir/openbsd-compat/arc4random.c
+--- openssh-clean/openbsd-compat/arc4random.c
++++ openssh-workdir/openbsd-compat/arc4random.c
+@@ -43,17 +43,6 @@
+ 
+ #ifndef HAVE_ARC4RANDOM
+ 
+-/*
+- * Always use the getentropy implementation from bsd-getentropy.c, which
+- * will call a native getentropy if available then fall back as required.
+- * We use a different name so that OpenSSL cannot call the wrong getentropy.
+- */
+-int _ssh_compat_getentropy(void *, size_t);
+-#ifdef getentropy
+-# undef getentropy
+-#endif
+-#define getentropy(x, y) (_ssh_compat_getentropy((x), (y)))
+-
+ #include "log.h"
+ 
+ #define KEYSTREAM_ONLY

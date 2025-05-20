@@ -2,7 +2,7 @@
 
 name=openssh
 version=10.0p1
-revision=1
+revision=2
 tarball_url="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${version}.tar.gz"
 tarball_blake2b="4ce353adf75aade8f4b2a223ad13e2f92cd23d1e60b4ee52bad0eaf036571229438cd9760dfa99c0e10fa09a8ac47b2bfb04eb183fb7b9287ac564ec75316a75"
 hostdeps="gcc pkg-config"

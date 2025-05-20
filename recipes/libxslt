@@ -7,7 +7,7 @@ tarball_url="https://download.gnome.org/sources/libxslt/1.1/libxslt-${version}.t
 tarball_blake2b="91b2ca38807ae21b6629b8e19f4ab9d7d19bc0af17f2546e1cf278b2f2fff62b86bbbd996085fff322f3d5ae6c2b20bcfc4e9fb501c301d3fd5d56cf5b205ede"
 source_hostdeps="automake autoconf libtool pkg-config"
 hostdeps="gcc autoconf automake libtool pkg-config"
-deps="core-libs libxml"
+deps="core-libs libxml2"
 
 prepare() {
     autotools_recursive_regen

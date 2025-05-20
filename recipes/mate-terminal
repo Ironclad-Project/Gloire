@@ -8,7 +8,7 @@ tarball_blake2b="9bf50305426758204782ffa8921accd506c5859a10dedef7ee4d74ea35560c5
 allow_network=yes
 imagedeps="meson ninja-build libglib2.0-dev git itstool"
 hostdeps="gcc pkg-config"
-deps="core-libs at-spi2-core glib dconf gdk-pixbuf libice libsm libx11 pango gtk+-3 vte mate-desktop"
+deps="core-libs at-spi2-core glib2 dconf gdk-pixbuf libice libsm libx11 pango gtk3 vte mate-desktop"
 
 configure() {
     cp -rp "${source_dir}"/. ./

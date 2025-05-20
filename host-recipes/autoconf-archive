@@ -4,20 +4,9 @@ name=autoconf-archive
 from_source=autoconf-archive
 revision=1
 
-configure() {
-        CFLAGS="$HOST_CFLAGS" \
-        CXXFLAGS="$HOST_CXXFLAGS" \
-        LDFLAGS="$HOST_LDFLAGS" \
-    "${source_dir}"/configure --prefix="${prefix}"
-}
-
-build() {
-    make -j${parallelism}
-}
-
 package() {
-    DESTDIR="${dest_dir}" make install
+    mkdir -p "${dest_dir}${prefix}"/share/aclocal
+    cp -r "${source_dir}"/m4/. "${dest_dir}${prefix}"/share/aclocal/
 
-        strip_command=strip \
     post_package_strip
 }

@@ -7,7 +7,7 @@ tarball_url="https://gitlab.gnome.org/api/v4/projects/1893/packages/generic/vte/
 tarball_blake2b="273702dede11b0a6dba6bcc8fb1fe7d4fdf3b5194128e39a5e8c285139afb363676e9be6b2e6642f5f6924928b1aeeabd045ddd9f606a14340ea069a2c7d4aeb"
 imagedeps="meson ninja-build libglib2.0-dev"
 hostdeps="gcc pkg-config"
-deps="core-libs gtk+-3 cairo fribidi glib icu pango pcre2 lz4 libxml"
+deps="core-libs gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
 
 configure() {
     meson_configure \

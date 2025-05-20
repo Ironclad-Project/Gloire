@@ -309,6 +309,15 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
+@@ -674,7 +703,7 @@
+ int sys_getentropy(void *buffer, size_t length) {
+ 	ssize_t ret;
+ 	int errno;
+-	SYSCALL2(SYSCALL_GETRANDOM, buffer, length);
++	SYSCALL2(SYSCALL_GETENTROPY, buffer, length);
+ 	return errno;
+ }
+ 
 @@ -692,15 +721,14 @@
  int sys_rmdir(const char* path){
  	int ret, errno;
@@ -368,7 +377,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -36,7 +36,6 @@
+@@ -36,12 +36,11 @@
  #define SYSCALL_GETUID               24
  #define SYSCALL_RENAME               25
  #define SYSCALL_LISTPROCS            26
@@ -376,6 +385,12 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETTID               28
  #define SYSCALL_MANAGE_TCLUSTER      29
  #define SYSCALL_FCNTL                30
+ #define SYSCALL_EXIT_THREAD          31
+-#define SYSCALL_GETRANDOM            32
++#define SYSCALL_GETENTROPY           32
+ #define SYSCALL_MPROTECT             33
+ #define SYSCALL_SYNC                 34
+ #define SYSCALL_SET_MAC_CAPABILITIES 35
 @@ -124,6 +123,8 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113

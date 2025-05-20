@@ -44,11 +44,7 @@ rm -rf mount_dir
 # Allocate the image. If a size is passed, we just use that size, else, we try
 # to guesstimate calculate a rough size.
 if [ -z "$IMAGE_SIZE" ]; then
-    if [ -f sysroot/usr/bin/slim ]; then
-        IMAGE_SIZE=3G
-    else
-        IMAGE_SIZE=750M
-    fi
+    IMAGE_SIZE=3.5G
 fi
 rm -f gloire.img
 fallocate -l "${IMAGE_SIZE}" gloire.img

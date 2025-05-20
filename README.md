@@ -26,15 +26,10 @@ with the option for installing. So keep in mind that when doing changes to the
 filesystem.
 
 > [!IMPORTANT]
-> For the live images, the minimum amount of memory is dependent on the size
-> of the image. A good formula is `size of the image + 1G`.
->
-> For disk images, the minimum amount of memory is  500M for the graphical
+> For disk images, the minimum amount of memory is 500M for the graphical
 > targets and 200M for the terminal-only ones.
 >
-> Additionally, for x86_64 platforms, Ironclad requires a system with a working
-> HPET, among others.
-> For more information on the current hardware requirements of the
+> For information on the current hardware requirements of the
 > kernel, please visit [Ironclad's hardware support section](https://ironclad-os.org/supportedhardware.html).
 
 ### On virtual machines
@@ -44,17 +39,17 @@ built image with an emulator like QEMU, for using QEMU with an x86_64
 image, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -drive format=raw,file=gloire.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -drive format=raw,file=gloire.img -serial stdio
 ```
 
-Where `gloire.iso` is your image of choice.
+Where `gloire.img` is your image of choice.
 
 To do the same with a riscv64 image, you can do:
 
 ```bash
 qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -device ramfb -device qemu-xhci -m 4G         \
    -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
-   -hda gloire.iso -serial stdio
+   -hda gloire.img -serial stdio
 ```
 
 For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),
@@ -102,7 +97,7 @@ The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
 ```bash
-PKGS_TO_INSTALL="*" ./build-support/makeiso.sh
+PKGS_TO_INSTALL="*" ./build-support/makeimg.sh
 ```
 
 *Note:* on certain distros, like Ubuntu 24.04, one may get an error like:
@@ -126,7 +121,7 @@ this value, use the environment variable `IMAGE_SIZE`.
 To build the very experimental riscv64 port, one can instead use:
 
 ```bash
-PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeiso.sh
+PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeimg.sh
 ```
 
 Regardless of architecture, if, instead of building all packages, building

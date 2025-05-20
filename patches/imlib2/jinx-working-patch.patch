@@ -1,0 +1,33 @@
+diff --git imlib2-clean/src/lib/image.c imlib2-workdir/src/lib/image.c
+index d42195c..8d19751 100644
+--- imlib2-clean/src/lib/image.c
++++ imlib2-workdir/src/lib/image.c
+@@ -12,6 +12,7 @@
+ #include <sys/mman.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <unistd.h>
+ 
+ #include "debug.h"
+ #include "file.h"
+@@ -116,8 +117,9 @@ __imlib_FileContextOpen(ImlibImageFileInfo *fi, FILE *fp,
+ 
+     if (!fdata)
+     {
+-        fdata = mmap(NULL, fi->fsize, PROT_READ, MAP_SHARED, fileno(fi->fp), 0);
+-        if (fdata == MAP_FAILED)
++        fdata = malloc(fi->fsize);
++        ssize_t rsz = read(fileno(fi->fp), fdata, fi->fsize);
++        if (rsz != fi->fsize)
+             return -1;
+     }
+ 
+@@ -131,7 +133,7 @@ __imlib_FileContextClose(ImlibImageFileInfo *fi)
+ {
+     if (fi->fdata && !fi->keep_mem)
+     {
+-        munmap((void *)fi->fdata, fi->fsize);
++        free((void *)fi->fdata);
+         fi->fdata = NULL;
+     }
+ 

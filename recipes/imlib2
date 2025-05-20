@@ -2,7 +2,7 @@
 
 name=imlib2
 version=1.12.5
-revision=1
+revision=2
 tarball_url="https://downloads.sourceforge.net/enlightenment/imlib2-${version}.tar.xz"
 tarball_blake2b="13370398b8aaa876d98910122949ec40ae8f7eea6c68fd8cdea991cef617e7619cc7b5dc59871b09fc08100c4d4039e13b82467ee6ee5a8f4d0aa41ee3d624a9"
 hostdeps="gcc pkg-config"

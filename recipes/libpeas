@@ -1,0 +1,26 @@
+#! /bin/sh
+
+name=libpeas
+version=1.36.0
+revision=1
+tarball_url="https://download.gnome.org/sources/libpeas/1.36/libpeas-${version}.tar.xz"
+tarball_blake2b="12b12f041784e5fbeb03a36cad62625f7b60f770f7ff83d0660b28288262e125c2ca5f83032d4ae96faaa7b815ba9dcb245d3cbdac823765435a21e1eb08f663"
+imagedeps="libglib2.0-dev"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 gtk3 gobject-introspection"
+
+configure() {
+    meson_configure \
+        -Dpython3=false \
+        -Dintrospection=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

@@ -8,5 +8,9 @@ fi
 
 xbps-reconfigure -a >/dev/null
 
+if command -v glib-compile-schemas 2>&1 >/dev/null; then
+    glib-compile-schemas /usr/share/glib-2.0/schemas/ >/dev/null
+fi
+
 mkdir -p /var/db/gloire-first-boot
 touch /var/db/gloire-first-boot/done

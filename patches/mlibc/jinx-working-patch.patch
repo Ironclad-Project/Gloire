@@ -270,20 +270,31 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_flock(int fd, int options) {
  	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
  	struct flock lock;
-@@ -268,6 +274,12 @@
- 	return errno;
- }
- 
-+int sys_posix_madvise(void *addr, size_t length, int advice) {
-+	int ret, errno;
-+	SYSCALL3(SYSCALL_MADVISE, addr, length, advice);
+@@ -265,6 +271,23 @@
+ 	int errno;
+ 	SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
+ 	*window = ret;
++
++	if ((errno == ENOMEM) && ((flags & MAP_ANON) == 0)) {
++		int ret = sys_anon_allocate(size, window);
++		if (ret) {
++			return ret;
++		}
++		ssize_t len;
++		ret = sys_pread(fd, *window, size, offset, &len);
++		return 0;
++	}
++
 +	return errno;
 +}
 +
- int sys_getsockopt(int fd, int layer, int number, void *__restrict buffer, socklen_t *__restrict size) {
- 	int ret, errno;
- 	SYSCALL5(SYSCALL_GETSOCKOPT, fd, layer, number, buffer, size);
-@@ -406,7 +418,24 @@
++int sys_posix_madvise(void *addr, size_t length, int advice) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_MADVISE, addr, length, advice);
+ 	return errno;
+ }
+ 
+@@ -406,7 +429,24 @@
  	pid_t ret;
  	int errno;
  
@@ -309,7 +320,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -674,7 +703,7 @@
+@@ -674,7 +714,7 @@
  int sys_getentropy(void *buffer, size_t length) {
  	ssize_t ret;
  	int errno;
@@ -318,7 +329,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -692,15 +721,14 @@
+@@ -692,15 +732,14 @@
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -336,7 +347,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -713,8 +741,9 @@
+@@ -713,8 +752,9 @@
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -347,7 +358,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +752,13 @@
+@@ -723,6 +763,13 @@
  	}
  }
  
@@ -361,7 +372,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1193,12 @@
+@@ -1157,6 +1204,12 @@
  	int ret, errno;
  
  	switch (num) {

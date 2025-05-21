@@ -43,8 +43,10 @@ rm -rf mount_dir
 
 # Allocate the image. If a size is passed, we just use that size, else, we try
 # to guesstimate calculate a rough size.
+# Try to not use fractional sizes (3.X for example) since certain Linux distros
+# like debian struggle to use it.
 if [ -z "$IMAGE_SIZE" ]; then
-    IMAGE_SIZE=3.5G
+    IMAGE_SIZE=4G
 fi
 rm -f gloire.img
 fallocate -l "${IMAGE_SIZE}" gloire.img

@@ -34,3 +34,8 @@ diff -urN --no-dereference slim-clean/app.cpp slim-workdir/app.cpp
  	server[argc] = NULL;
  
  	switch (ServerPID) {
+diff -urN --no-dereference slim-clean/cmake/modules/Platform/Ironclad.cmake slim-workdir/cmake/modules/Platform/Ironclad.cmake
+--- slim-clean/cmake/modules/Platform/Ironclad.cmake	1970-01-01 01:00:00.000000000 +0100
++++ slim-workdir/cmake/modules/Platform/Ironclad.cmake
+@@ -0,0 +1 @@
++include(Platform/UnixPaths)

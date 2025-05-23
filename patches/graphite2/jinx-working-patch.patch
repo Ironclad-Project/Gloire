@@ -1,0 +1,5 @@
+diff -urN --no-dereference graphite2-clean/Platform/Ironclad.cmake graphite2-workdir/Platform/Ironclad.cmake
+--- graphite2-clean/Platform/Ironclad.cmake	1970-01-01 01:00:00.000000000 +0100
++++ graphite2-workdir/Platform/Ironclad.cmake
+@@ -0,0 +1 @@
++include(Platform/UnixPaths)

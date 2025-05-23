@@ -1,6 +1,8 @@
+#! /bin/sh
+
 name=figlet
 version=2.2.5
-revision=1
+revision=2
 tarball_url="https://github.com/cmatsuoka/figlet/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="35214f3c5d4f1ef238358117c2369150ae968375ddee49c58798c8cebdf53bcead2c4f05734fb462651835c8e8ae134f7df8080fb206337bc117fb410772726d"
 hostdeps="gcc pkg-config"
@@ -9,7 +11,13 @@ deps="core-libs"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    make CC=${OS_TRIPLET}-gcc CFLAGS="${CFLAGS}" LD=${OS_TRIPLET}-gcc LDFLAGS="${CFLAGS}" prefix="${prefix}" -j${parallelism}
+    make \
+        CC=${OS_TRIPLET}-gcc \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LD=${OS_TRIPLET}-gcc \
+        LDFLAGS="${TARGET_CFLAGS} ${TARGET_LDFLAGS}" \
+        prefix="${prefix}" \
+        -j${parallelism}
 }
 
 package() {

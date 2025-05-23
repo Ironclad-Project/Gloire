@@ -1313,6 +1313,14 @@ cmd_install() {
         done
     done
 
+    files_to_ignore='\.keep
+\.plist
+/INSTALL
+/REMOVE'
+
+    make_temp
+    all_files="${tmp}"
+
     for pkg in ${pkgs_to_install}; do
         echo "* installing ${pkg}..."
 
@@ -1341,7 +1349,47 @@ cmd_install() {
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
             "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null
+
+        tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
     done
+
+    echo "* checking for conflicts..."
+
+    make_temp
+    all_files_sorted="${tmp}"
+
+    make_temp
+    all_files_uniq="${tmp}"
+
+    sort <"${all_files}" >"${all_files_sorted}"
+    uniq <"${all_files_sorted}" >"${all_files_uniq}"
+
+    dup_elements="$(comm -23 "${all_files_sorted}" "${all_files_uniq}" | uniq)"
+
+    if ! [ -z "${dup_elements}" ]; then
+        echo "* error: duplicate files were found."
+        for elem in ${dup_elements}; do
+            echo "  file path: ${elem}"
+            printf "  in packages:"
+            for pkg in ${pkgs_to_install}; do
+                unset name
+                unset version
+                unset revision
+                unset from_source
+                . "${base_dir}"/recipes/${pkg}
+
+                if ! [ -z "${from_source}" ]; then
+                    version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+                fi
+
+                if tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
+                    printf " ${pkg}"
+                fi
+            done
+            printf "\n"
+        done
+        exit 1
+    fi
 }
 
 rebuild_b2sum() {

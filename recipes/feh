@@ -2,7 +2,7 @@
 
 name=feh
 version=3.10.3
-revision=1
+revision=2
 tarball_url="https://feh.finalrewind.org/feh-${version}.tar.bz2"
 tarball_blake2b="052848b222babbcb6a0d9b6c109c7a382052072c03482f47c7784e4b923fba470039d2f75db663b2d70515eb73234141c2871858825489044febea4bf1693b20"
 hostdeps="gcc pkg-config"
@@ -15,6 +15,7 @@ build() {
         CPPFLAGS="${TARGET_CPPFLAGS}" \
         LDFLAGS="${TARGET_LDFLAGS}" \
     make \
+        PREFIX="${prefix}" \
         curl=0 \
         xinerama=0 \
         -j${parallelism}

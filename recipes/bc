@@ -2,10 +2,10 @@
 
 name=bc
 repology_id=gnu-bc
-version=1.08.1
+version=1.08.2
 revision=1
 tarball_url="https://ftpmirror.gnu.org/gnu/bc/bc-${version}.tar.gz"
-tarball_blake2b="51d1bac17f31bb7dbb044c28752cccfe59dd5bcb78a2c3bfa66a345577ea3aee37fef8d7efae83a57e41ae77d7317008f3682dfbc3165c76888770636deead01"
+tarball_blake2b="6ff6d5083aa67d4075116c691b1f975127ab5079e1a1b63d916fbd3e6d5e95c7f4bc7fe196cac0e2a51a7f4c56d91da60495f3ce60f08bee8f2ba4278a791834"
 hostdeps="gcc pkg-config"
 deps="core-libs mpfr gmp readline"
 
@@ -17,8 +17,7 @@ configure() {
     cp -rp "${source_dir}"/. ./
 
         configure_script_path=./configure \
-    autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17"
+    autotools_configure
 }
 
 build() {

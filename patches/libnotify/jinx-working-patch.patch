@@ -1,0 +1,12 @@
+diff --git libnotify-clean/tools/notify-send.c libnotify-workdir/tools/notify-send.c
+index 367dfb0..2c78608 100644
+--- libnotify-clean/tools/notify-send.c
++++ libnotify-workdir/tools/notify-send.c
+@@ -25,6 +25,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <glib.h>
+ #include <glib-unix.h>
+ #include <glib/gprintf.h>

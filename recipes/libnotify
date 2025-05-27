@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=libnotify
+version=0.8.3
+revision=1
+tarball_url="https://download.gnome.org/sources/libnotify/0.8/libnotify-${version}.tar.xz"
+tarball_blake2b="05852c866dc91d42cf01804333605ecb546f7d779b143fabc341752263c8cacea9acda40bb60af90dbc84ab8327ba99966e09924ccc337f7a97909b95d39a874"
+imagedeps="meson ninja-build libglib2.0-dev"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 gtk3"
+
+configure() {
+    meson_configure \
+        -Ddocbook_docs=disabled \
+        -Dgtk_doc=false \
+        -Dman=false \
+        -Dintrospection=disabled
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip
+}

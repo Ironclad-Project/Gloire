@@ -1,0 +1,25 @@
+#! /bin/sh
+
+name=mate-desktop
+version=1.28.2
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-desktop/releases/download/v${version}/mate-desktop-${version}.tar.xz"
+tarball_blake2b="f9a136087d1b4d009c1349ecc15edffbb23dfae2124c985070b294151c7234f098141a2a0380a6dfead48b4cffb2481a18d131f5bc0ef2e50fcf4e98329ded39"
+imagedeps="meson ninja-build libglib2.0-dev"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 dconf cairo libx11 libxrandr gtk3 iso-codes gdk-pixbuf"
+
+configure() {
+    meson_configure \
+        -Dmate-about=true
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+
+    post_package_strip
+}

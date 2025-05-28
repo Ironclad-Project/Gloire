@@ -1,0 +1,12 @@
+diff -urN --no-dereference libmatekbd-clean/libmatekbd/Makefile.in libmatekbd-workdir/libmatekbd/Makefile.in
+--- libmatekbd-clean/libmatekbd/Makefile.in
++++ libmatekbd-workdir/libmatekbd/Makefile.in
+@@ -534,7 +534,7 @@
+ 	$(NULL)
+ 
+ DISTCLEANFILES = $(gsettings_SCHEMAS)
+-GLIB_GENMARSHAL = $(shell pkg-config --variable=glib_genmarshal glib-2.0)
++GLIB_GENMARSHAL = /usr/bin/glib-genmarshal
+ INTROSPECTION_GIRS = Matekbd-1.0.gir
+ INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --warn-all
+ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)

@@ -1,0 +1,31 @@
+#! /bin/sh
+
+name=libmatekbd
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/libmatekbd/releases/download/v${version}/libmatekbd-${version}.tar.xz"
+tarball_blake2b="297559c75fec4d283a7c06a0bfa3d2c7a90f84f42b70970c2b5e4a533bba1ce411bae258871088a77c55eaa29045802dcba114c8966a24afb7cd1c46fdca1f66"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin pkg-config libgio-2.0-dev-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3 libxklavier libice"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --with-x \
+        --disable-introspection \
+        --disable-tests
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

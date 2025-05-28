@@ -1,0 +1,47 @@
+#! /bin/sh
+
+name=poppler
+version=25.05.0
+revision=2
+tarball_url="https://poppler.freedesktop.org/poppler-${version}.tar.xz"
+tarball_blake2b="a639e246aa1d7f8687e8aa94ceb5c636f0df75c7868c25d9a37e0b72d13154d577c458afacb2e4f6215ccdf2a897bc5114a767972e60dd74915eb8cb00a6d476"
+hostdeps="gcc pkg-config"
+deps="core-libs fontconfig glib2 cairo curl libjpeg-turbo libpng libtiff"
+
+configure() {
+    cmake_configure \
+        -DBUILD_GTK_TESTS=OFF \
+        -DBUILD_QT5_TESTS=OFF \
+        -DBUILD_QT6_TESTS=OFF \
+        -DBUILD_CPP_TESTS=OFF \
+        -DRUN_GPERF_IF_PRESENT=OFF \
+        -DENABLE_BOOST=OFF \
+        -DENABLE_ZLIB_UNCOMPRESS=OFF \
+        -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
+        -DUSE_FLOAT=OFF \
+        -DWITH_Cairo=ON \
+        -DENABLE_LIBCURL=ON \
+        -DENABLE_CPP=ON \
+        -DENABLE_GPGME=OFF \
+        -DWITH_JPEG=ON \
+        -DENABLE_DCTDECODER=libjpeg \
+        -DENABLE_LIBOPENJPEG=none \
+        -DENABLE_LCMS=OFF \
+        -DENABLE_NSS3=OFF \
+        -DWITH_PNG=ON \
+        -DENABLE_QT5=OFF \
+        -DENABLE_QT6=OFF \
+        -DENABLE_LIBTIFF=ON \
+        -DENABLE_UTILS=ON \
+        -DWITH_GObjectIntrospection=OFF
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

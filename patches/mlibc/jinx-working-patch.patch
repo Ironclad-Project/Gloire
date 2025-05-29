@@ -385,6 +385,16 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		case _SC_NPROCESSORS_CONF:
  			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
  			if (ret == 0) {
+@@ -1200,6 +1253,9 @@
+ 			} else {
+ 				return EFAULT;
+ 			}
++		case _SC_THREAD_STACK_MIN:
++			*rret = 0x1000;
++			return 0;
+ 		default:
+ 			return EINVAL;
+ 	}
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h

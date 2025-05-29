@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=libexif
+version=0.6.25
+revision=1
+tarball_url="https://github.com/libexif/libexif/releases/download/v${version}/libexif-${version}.tar.bz2"
+tarball_blake2b="a0f8a80194694fab295dcd9c72088055b83534b281cb5bdac67a781dfb56fab0e354e32a520eb31d9f4dd604524355d69ba62012056f5706051e8382e4d898b8"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --disable-docs
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

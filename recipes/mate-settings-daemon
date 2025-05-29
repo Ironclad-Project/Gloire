@@ -1,0 +1,37 @@
+#! /bin/sh
+
+name=mate-settings-daemon
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-settings-daemon/releases/download/v${version}/mate-settings-daemon-${version}.tar.xz"
+tarball_blake2b="fab6b5ffb28039474976b1ad3f82e8096c568186df8a7f796e95ce8b7dbed72e35feee30b5f6cff14de8df4d1048d697543ec9f29e59d37171e708b8a12556c9"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin libdbus-glib-1-dev-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3 dconf mate-desktop libnotify libice libmatekbd libcanberra libsm"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --with-x \
+        --with-libnotify \
+        --with-libcanberra \
+        --without-libmatemixer \
+        --disable-debug \
+        --disable-polkit \
+        --disable-pulse \
+        --disable-rfkill \
+        --disable-smartcard-support
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

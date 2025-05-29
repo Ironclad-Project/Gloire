@@ -1,0 +1,38 @@
+#! /bin/sh
+
+name=eom
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/eom/releases/download/v${version}/eom-${version}.tar.xz"
+tarball_blake2b="dec9915ddd63758f6a36eef094e13cdfddc6bb6d333369ff240cb4afa745b814a807fd69d0ed949924fff0337073a6467ec6f5b8037bb9b1e356e029ad2e06f6"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin itstool libgdk-pixbuf2.0-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3 mate-desktop libpeas shared-mime-info libexif lcms exempi"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --enable-thumbnailer \
+        --disable-debug \
+        --disable-introspection \
+        --enable-nls \
+        --with-libexif \
+        --with-cms \
+        --with-xmp \
+        --with-libjpeg \
+        --without-librsvg \
+        --with-x
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

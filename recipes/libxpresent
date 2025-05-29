@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=libxpresent
+version=1.0.1
+revision=1
+tarball_url="https://www.x.org/archive/individual/lib/libXpresent-${version}.tar.gz"
+tarball_blake2b="daae49bd99e7407bcf26605b84f598eb5781567bf10aab88933e789f0614c4abd65d4c306866f5878ab09ddf7aa14f8f39ef65d2fda520c18134d0ef4ed9136a"
+hostdeps="gcc pkg-config"
+deps="core-libs xorg-proto libx11 libxext libxfixes libxrandr"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

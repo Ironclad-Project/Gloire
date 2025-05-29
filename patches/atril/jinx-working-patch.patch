@@ -1,0 +1,11 @@
+diff -urN --no-dereference atril-clean/libdocument/ev-document.c atril-workdir/libdocument/ev-document.c
+--- atril-clean/libdocument/ev-document.c
++++ atril-workdir/libdocument/ev-document.c
+@@ -23,6 +23,7 @@
+ 
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ 
+ #include "ev-document.h"
+ #ifdef ENABLE_SYNCTEX

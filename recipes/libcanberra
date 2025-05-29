@@ -1,0 +1,34 @@
+#! /bin/sh
+
+name=libcanberra
+version=0.30
+revision=1
+tarball_url="https://0pointer.de/lennart/projects/libcanberra/libcanberra-${version}.tar.xz"
+tarball_blake2b="c90c6863738b103c256eeb0907060a0f74b73ef50ac0728d2114aa558a7a1ad7cbae4184860573d3fac0032eba77327a4de94c459b99a81c3dc19da0e98adfda"
+source_imagedeps="gtk-doc-tools"
+source_hostdeps="autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
+deps="core-libs libvorbis gtk3 libtool"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --disable-oss \
+        --disable-gtk \
+        --disable-gstreamer \
+        --disable-pulse \
+        --disable-alsa
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

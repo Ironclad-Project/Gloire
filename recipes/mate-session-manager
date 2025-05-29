@@ -1,0 +1,35 @@
+#! /bin/sh
+
+name=mate-session-manager
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-session-manager/releases/download/v${version}/mate-session-manager-${version}.tar.xz"
+tarball_blake2b="4d05d5d2f6ba2bac8bba010298a61451807435b03f97f79100b5f48d5bf0218fe333f15c4c78f6c4ca14790ee610b4981fa9483da07d9acf35cb600b03369ae7"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin libgdk-pixbuf2.0-bin libdbus-glib-1-dev-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs dbus-glib libxslt gtk3 libice libsm libx11 libxau libxext libxrender libxtst mate-desktop libxcomposite"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --without-elogind \
+        --without-systemd \
+        --without-libglesv2 \
+        --with-xtrans \
+        --disable-debug \
+        --enable-ipv6 \
+        --enable-nls
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

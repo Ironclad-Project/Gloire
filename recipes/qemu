@@ -20,13 +20,14 @@ configure() {
         --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu \
         --with-coroutine=sigaltstack                              \
         --disable-tpm                                             \
-        --disable-kvm
+        --enable-nvmm \
+        -Db_colorout=always
 }
 
 build() {
     cd build
 
-    ninja -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {

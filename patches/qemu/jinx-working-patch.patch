@@ -78,16 +78,17 @@ diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/in
 diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
-@@ -867,7 +867,7 @@
- ###############################################
- 
- accelerators = []
--if get_option('kvm').allowed() and host_os == 'linux'
-+if get_option('kvm').allowed() and (host_os == 'linux' or host_os == 'ironclad')
-   accelerators += 'CONFIG_KVM'
+@@ -889,6 +889,9 @@
  endif
- if get_option('whpx').allowed() and host_os == 'windows'
-@@ -2519,6 +2519,7 @@
+ 
+ nvmm = not_found
++if host_os == 'ironclad'
++  accelerators += 'CONFIG_NVMM'
++endif
+ if host_os == 'netbsd'
+   nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
+   if nvmm.found()
+@@ -2519,6 +2522,7 @@
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')

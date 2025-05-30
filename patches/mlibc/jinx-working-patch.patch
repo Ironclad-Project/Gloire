@@ -1836,6 +1836,42 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  void sys_libc_panic() {
+@@ -157,7 +153,7 @@
+ int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
+ 	ssize_t ret;
+ 	int errno;
+-	SYSCALL3(SYSCALL_READ, fd, buf, count);
++	SYSCALL5(SYSCALL_READ, fd, buf, count, 0, 0);
+ 	*bytes_read = ret;
+ 	return errno;
+ }
+@@ -165,7 +161,7 @@
+ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
+ 	ssize_t ret;
+ 	int errno;
+-	SYSCALL3(SYSCALL_WRITE, fd, buf, count);
++	SYSCALL5(SYSCALL_WRITE, fd, buf, count, 0, 0);
+ 	*bytes_written = ret;
+ 	return errno;
+ }
+@@ -173,7 +169,7 @@
+ int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read) {
+ 	ssize_t ret;
+ 	int errno;
+-	SYSCALL4(SYSCALL_PREAD, fd, buf, n, off);
++	SYSCALL5(SYSCALL_READ, fd, buf, n, off, 1);
+ 	*bytes_read = ret;
+ 	return errno;
+ }
+@@ -181,7 +177,7 @@
+ int sys_pwrite(int fd, const void *buf, size_t n, off_t off, ssize_t *bytes_written) {
+ 	ssize_t ret;
+ 	int errno;
+-	SYSCALL4(SYSCALL_WRITE, fd, buf, n, off);
++	SYSCALL5(SYSCALL_WRITE, fd, buf, n, off, 1);
+ 	*bytes_written = ret;
+ 	return errno;
+ }
 @@ -200,6 +196,16 @@
  	return errno;
  }
@@ -1995,7 +2031,16 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_MPROTECT             33
  #define SYSCALL_SYNC                 34
  #define SYSCALL_SET_MAC_CAPABILITIES 35
-@@ -124,6 +123,8 @@
+@@ -73,8 +72,6 @@
+ #define SYSCALL_UMASK                61
+ #define SYSCALL_REBOOT               62
+ #define SYSCALL_FCHOWN               63
+-#define SYSCALL_PREAD                64
+-#define SYSCALL_PWRITE               65
+ #define SYSCALL_GETSOCKNAME          66
+ #define SYSCALL_GETPEERNAME          67
+ #define SYSCALL_SHUTDOWN             68
+@@ -124,6 +121,8 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113
  #define SYSCALL_GETCPUINFO          114

@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=libproxy
+version=0.5.9
+revision=1
+tarball_url="https://github.com/libproxy/libproxy/archive/${version}/libproxy-${version}.tar.gz"
+tarball_blake2b="5ac24fa025d170eeaed94b6322bf60e6c81669cc2199f4c6a75e3810c62e2e126a0f9a69e48dda7e6773814a0252fa8f6350282488f442eb88975bfabf8238aa"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 gsettings-desktop-schemas"
+
+configure() {
+    meson_configure \
+        -Ddocs=false \
+        -Dpacrunner-duktape=false \
+        -Dcurl=false \
+        -Dvapi=false \
+        -Dintrospection=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

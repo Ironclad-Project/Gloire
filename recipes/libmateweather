@@ -1,0 +1,31 @@
+#! /bin/sh
+
+name=libmateweather
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/libmateweather/releases/download/v${version}/libmateweather-${version}.tar.xz"
+tarball_blake2b="8d7bd43bb3588cdc5a9c74e732171d8eb7a98dd3a755f8fdf1b3ef9679a7ec8b334fab1a8d5153223087bae7a634c1161e5b6825c0f54f87681645d049d56976"
+imagedeps="libglib2.0-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 libxml2 libsoup tzdata gtk3"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --enable-locations-compression \
+        --disable-all-translations-in-one-xml \
+        --disable-icon-update
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

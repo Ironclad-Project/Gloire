@@ -1,0 +1,29 @@
+#! /bin/sh
+
+name=gnutls
+version=3.8.9
+revision=1
+tarball_url="https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-${version}.tar.xz"
+tarball_blake2b="0fd4751e24649a9c4b8ee7616350a4b6a504ec10b3ef39b450af25abc4935f30df9e8f732435166516f89c692ac7cb7a0aafb76c4c86c1faff53119840d26ae7"
+hostdeps="gcc pkg-config"
+deps="core-libs libffi libunistring libtasn1 nettle p11-kit zlib brotli zstd libidn2"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --with-default-trust-store-pkcs11="pkcs11:" \
+        --enable-openssl-compatibility
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

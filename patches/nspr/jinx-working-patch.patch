@@ -1,0 +1,46 @@
+diff -urN --no-dereference nspr-clean/nspr/pr/src/pthreads/ptio.c nspr-workdir/nspr/pr/src/pthreads/ptio.c
+--- nspr-clean/nspr/pr/src/pthreads/ptio.c
++++ nspr-workdir/nspr/pr/src/pthreads/ptio.c
+@@ -149,7 +149,7 @@
+ #    endif /* HAVE_SEND_FILE */
+ #  endif   /* AIX */
+ 
+-#  ifdef LINUX
++#  if defined(LINUX) && !defined(__ironclad__)
+ #    include <sys/sendfile.h>
+ #  endif
+ 
+@@ -1090,6 +1090,11 @@
+ 
+ #  ifdef LINUX
+ static PRBool pt_linux_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
++#ifdef __ironclad__
++  op->syserrno = ENOSYS;
++  op->result.code = -1;
++  return PR_TRUE;
++#else
+   ssize_t rv;
+   off_t oldoffset;
+ 
+@@ -1111,6 +1116,7 @@
+     return PR_FALSE;
+   }
+   return PR_TRUE;
++#endif
+ }
+ #  endif /* LINUX */
+ 
+@@ -2641,8 +2647,13 @@
+   if (file_nbytes_to_send != 0) {
+     offset = sfd->file_offset;
+     do {
++#ifndef __ironclad__
+       rv = sendfile(sd->secret->md.osfd, sfd->fd->secret->md.osfd, &offset,
+                     file_nbytes_to_send);
++#else
++      count = -1;
++      goto failed;
++#endif
+     } while (rv == -1 && (syserrno = errno) == EINTR);
+     if (rv == -1) {
+       if (syserrno != EAGAIN && syserrno != EWOULDBLOCK) {

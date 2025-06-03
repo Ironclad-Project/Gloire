@@ -1,0 +1,46 @@
+#! /bin/sh
+
+name=nspr
+version=4.36
+revision=1
+tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
+tarball_blake2b="369d851db0f425f0c6c3cdaeb333320860b77b49b40b77cc983998de3f9128f9d987f143e9f2ce155d609fb23f3f9ed0d0abe7d74e20c59763e2b9bdd1835817"
+imagedeps="build-essential gcc"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    # Disable two unneeded scripts
+    sed -i '/^RELEASE/s|^|#|' ${source_dir}/nspr/pr/src/misc/Makefile.in
+    # Disable static libraries
+    sed -i 's|$(LIBRARY) ||'  ${source_dir}/nspr/config/rules.mk
+
+    autotools_recursive_regen
+}
+
+configure() {
+        CROSS_COMPILE=1 \
+        configure_script_path="${source_dir}/nspr/configure" \
+    autotools_configure \
+        --enable-optimize \
+        --with-mozilla \
+        --with-pthreads \
+        --enable-64bit \
+        --build=x86_64-linux \
+        --host=x86_64-linux
+}
+
+build() {
+    # Build a native nsinstall to use during the build
+    make CC=gcc CXX=g++ -C config/ -j${parallelism}
+    mv -v config/nsinstall config/native-nsinstall
+    sed -s 's#/nsinstall$#/native-nsinstall#' -i config/autoconf.mk
+    rm -v config/nsinstall.o
+    make CC=${OS_TRIPLET}-gcc CXX=${OS_TRIPLET}-g++ -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=mate-calc
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-calc/releases/download/v${version}/mate-calc-${version}.tar.xz"
+tarball_blake2b="a89026a90a7b13cb64a85f67dc81acab434c721982f3cfcd7820e3097a97de6abfd157fedab01c0ab1237caddfe249bd0eecd8d391e72fa64fa163aa3241f5a9"
+imagedeps="itstool libglib2.0-dev-bin libglib2.0-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3 mpfr mpc"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

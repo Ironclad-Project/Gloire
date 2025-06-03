@@ -1,0 +1,31 @@
+#! /bin/sh
+
+name=libsoup3
+repology_id=libsoup
+version=3.6.5
+revision=1
+tarball_url="https://download.gnome.org/sources/libsoup/3.6/libsoup-${version}.tar.xz"
+tarball_blake2b="525bb92614b4ce39405ca29fd960c181f86ff555361cfd231fa36c7eef3342b0b79742d382906605a44e021a943da2d6d41de9f51c3ec247ec19618a59c8cbb7"
+imagedeps="libglib2.0-dev-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs brotli glib-networking libpsl libxml2 nghttp2 sqlite glib2"
+
+configure() {
+    meson_configure \
+        --wrap-mode=nofallback \
+        -Dvapi=disabled \
+        -Dintrospection=disabled \
+        -Dgssapi=disabled \
+        -Dsysprof=disabled \
+        -Dtls_check=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

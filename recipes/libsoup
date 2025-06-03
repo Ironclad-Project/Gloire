@@ -1,0 +1,30 @@
+#! /bin/sh
+
+name=libsoup
+repology_status=legacy
+version=2.74.3
+revision=1
+tarball_url="https://download.gnome.org/sources/libsoup/2.74/libsoup-${version}.tar.xz"
+tarball_blake2b="91f441197414314bb78cf15e7c13b54714e669145784812fb7a68cc41c8965ea29c53dc686d690e00f28f711be9f767038e5cc43b11aa0136f190dd2d41ec2a0"
+imagedeps="libglib2.0-dev-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs brotli glib-networking libpsl libxml2 sqlite glib2"
+
+configure() {
+    meson_configure \
+        -Dvapi=disabled \
+        -Dintrospection=disabled \
+        -Dgssapi=disabled \
+        -Dsysprof=disabled \
+        -Dtls_check=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

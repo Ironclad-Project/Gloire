@@ -1,0 +1,11 @@
+diff -urN --no-dereference libevent-clean/sample/https-client.c libevent-workdir/sample/https-client.c
+--- libevent-clean/sample/https-client.c
++++ libevent-workdir/sample/https-client.c
+@@ -19,6 +19,7 @@
+ #include <assert.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <errno.h>
+ 
+ #ifdef _WIN32

@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=libxscrnsaver
+version=1.2.4
+revision=1
+tarball_url="https://www.x.org/archive/individual/lib/libXScrnSaver-${version}.tar.gz"
+tarball_blake2b="6eb2792a6e9c20091454c5fe9e5d547ff7d25493d53546648fd33897c1d58671410a347a03ce26efc9bf694075ebff8937eadd6ab1c04caaf9ffcd2584ec5e38"
+hostdeps="gcc pkg-config"
+deps="core-libs libxext libx11"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

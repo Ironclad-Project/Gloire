@@ -12,5 +12,9 @@ if command -v glib-compile-schemas 2>&1 >/dev/null; then
     glib-compile-schemas /usr/share/glib-2.0/schemas/ >/dev/null
 fi
 
+if command -v dbus-uuidgen 2>&1 >/dev/null; then
+    dbus-uuidgen >/var/lib/dbus/machine-id
+fi
+
 mkdir -p /var/db/gloire-first-boot
 touch /var/db/gloire-first-boot/done

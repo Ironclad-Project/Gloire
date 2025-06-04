@@ -26,7 +26,7 @@ Please open a pull request at our [Codeberg repository](https://codeberg.org/Iro
 
 Please open a pull request at our [Codeberg repository](https://codeberg.org/Ironclad/Gloire).
 It is fine to open a pull request without anything to show yet as to make sure
-that the feature is desired and appropiate, before comitting to any work.
+that the feature is desired and appropriate, before committing to any work.
 
 Optionally, you can join one of the
 [Ironclad communities](https://ironclad-os.org/community.html),

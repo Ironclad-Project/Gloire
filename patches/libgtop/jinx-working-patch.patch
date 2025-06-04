@@ -1,0 +1,71 @@
+diff -urN --no-dereference libgtop-clean/include/glibtop/machine.h libgtop-workdir/include/glibtop/machine.h
+--- libgtop-clean/include/glibtop/machine.h
++++ libgtop-workdir/include/glibtop/machine.h
+@@ -2,7 +2,17 @@
+ #define GLIBTOP_SYSDEPS_COMMON_MACHINE_H_1437506041
+ 
+ #include <glib.h>
++#ifndef __ironclad__
+ #include <glibtop_machine.h>
++#else
++struct _glibtop_machine
++{
++  uid_t uid;
++  uid_t euid;
++  gid_t gid;
++  gid_t egid;
++};
++#endif
+ 
+ /* private */
+ static inline void
+diff -urN --no-dereference libgtop-clean/lib/sysdeps.c libgtop-workdir/lib/sysdeps.c
+--- libgtop-clean/lib/sysdeps.c
++++ libgtop-workdir/lib/sysdeps.c
+@@ -25,6 +25,10 @@
+ #include <glibtop/sysdeps.h>
+ #include <glibtop/init_hooks.h>
+ 
++#ifndef GLIBTOP_SUID_PROC_OPEN_FILES
++#define GLIBTOP_SUID_PROC_OPEN_FILES 0
++#endif
++
+ const unsigned long glibtop_server_features =
+ GLIBTOP_SUID_CPU +
+ GLIBTOP_SUID_DISK +
+diff -urN --no-dereference libgtop-clean/sysdeps/stub/procstate.c libgtop-workdir/sysdeps/stub/procstate.c
+--- libgtop-clean/sysdeps/stub/procstate.c
++++ libgtop-workdir/sysdeps/stub/procstate.c
+@@ -22,8 +22,12 @@
+ #include <config.h>
+ #include <glibtop.h>
+ #include <glibtop/procstate.h>
++#ifdef __ironclad__
++#include <glibtop/procio.h>
++#endif
+ 
+ static const unsigned long _glibtop_sysdeps_proc_state = 0;
++static const unsigned long _glibtop_sysdeps_proc_io = 0;
+ 
+ /* Init function. */
+ 
+@@ -41,3 +45,19 @@
+ {
+ 	memset (buf, 0, sizeof (glibtop_proc_state));
+ }
++
++#ifdef __ironclad__
++void
++_glibtop_init_proc_io_s (glibtop *server)
++{
++	server->sysdeps.proc_io = _glibtop_sysdeps_proc_io;
++}
++
++/* Provides detailed information about a process. */
++
++void
++glibtop_get_proc_io_s (glibtop *server, glibtop_proc_io *buf, pid_t pid)
++{
++   memset (buf, 0, sizeof (glibtop_proc_io));
++}
++#endif

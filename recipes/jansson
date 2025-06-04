@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=jansson
-version=2.14
+version=2.14.1
 revision=1
 tarball_url="https://github.com/akheron/jansson/releases/download/v${version}/jansson-${version}.tar.bz2"
-tarball_blake2b="b7b7e98360fd73f7925b88e3729a7a18307b4f05fed4b37659d24ddc03208469471d508dcd245534f73af3b5e93f595e49e3cb2c99733955b03d471bd5a32f15"
+tarball_blake2b="b3efb1cbe018bb88664167249edca65c5194922c69fa82a0514d5bbcd24324464ddcc30ae57f8ab0f9c43f28d2364adc973f87146ceff0889ea2b6eafb91b1ea"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

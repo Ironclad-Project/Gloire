@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=libwnck
+version=43.2
+revision=1
+tarball_url="https://download.gnome.org/sources/libwnck/43/libwnck-${version}.tar.xz"
+tarball_blake2b="22008fe01284066722fb2c31451870266cc44eae81c03d2be8d424700224150fcfcc411c392b2fe784e7ff4da6f8d3560897a91999ba06ae14d9165401258231"
+imagedeps="libglib2.0-dev"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 gtk3"
+
+configure() {
+    meson_configure \
+        -Dinstall_tools=true \
+        -Dstartup_notification=disabled \
+        -Dintrospection=disabled \
+        -Dgtk_doc=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

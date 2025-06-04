@@ -1,0 +1,25 @@
+#! /bin/sh
+
+name=jansson
+version=2.14
+revision=1
+tarball_url="https://github.com/akheron/jansson/releases/download/v${version}/jansson-${version}.tar.bz2"
+tarball_blake2b="b7b7e98360fd73f7925b88e3729a7a18307b4f05fed4b37659d24ddc03208469471d508dcd245534f73af3b5e93f595e49e3cb2c99733955b03d471bd5a32f15"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure \
+        -DJANSSON_BUILD_SHARED_LIBS=ON \
+        -DJANSSON_BUILD_DOCS=OFF
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

@@ -1,0 +1,32 @@
+#! /bin/sh
+
+name=libtasn1
+version=4.20.0
+revision=1
+tarball_url="https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-${version}.tar.gz"
+tarball_blake2b="3219b48e691abd7f6f4e32164ab708bc7c29832a2a7669aa03751d4a519dffb78d5a5f94530a3f35cd6516b39400da9e634d7f46245ab934465c305a1d387561"
+source_imagedeps="gtk-doc-tools"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --disable-gtk-doc \
+        --disable-doc
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR=${dest_dir} make install
+
+    DESTDIR=${dest_dir} make -C doc/reference install-data-local
+
+    post_package_strip
+}

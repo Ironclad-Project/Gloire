@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=nghttp2
+version=1.65.0
+revision=1
+tarball_url="https://github.com/nghttp2/nghttp2/releases/download/v${version}/nghttp2-${version}.tar.xz"
+tarball_blake2b="8fb752f55936110a8b5c27873e7e262a0c84740beac46444a80596e25b256ca3a4b0f0cc97a91e104a0f1c59ac0304546310a2817af126efabd2ce26cfd0ee06"
+hostdeps="gcc pkg-config"
+deps="core-libs brotli jansson libevent libxml2 openssl"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

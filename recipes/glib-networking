@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=glib-networking
+version=2.80.1
+revision=1
+tarball_url="https://download.gnome.org/sources/glib-networking/2.80/glib-networking-${version}.tar.xz"
+tarball_blake2b="04df4d08a6d43cbd8ca9409aa566f72c9ef1041a098d6e9468f5345d78af96e5d85ade68f735f95acc8fe784467b9475bb9b51686d3316e523123639774bf6aa"
+imagedeps="libglib2.0-bin"
+hostdeps="gcc pkg-config"
+deps="core-libs gsettings-desktop-schemas glib2 gnutls libproxy"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

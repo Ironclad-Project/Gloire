@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=brotli
+version=1.1.0
+revision=1
+tarball_url="https://github.com/google/brotli/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="7ac767fd6dafaabfb4e3834d690f71abceb4d4e7f131849d6c328a04f3a16c54d0a9463a37f03663a4158c35e970a089512c8a5bc43eda79fb43c1f61223379e"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

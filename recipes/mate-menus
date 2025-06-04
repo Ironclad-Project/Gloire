@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=mate-menus
+version=1.28.0
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-menus/releases/download/v${version}/mate-menus-${version}.tar.xz"
+tarball_blake2b="3ed5b8b2f7973c4272714ee528766a4a8afbc5444804c6c750484e7ba0271c0916a37e71ac6ae6ff2d6e89dd5a7bd751bc5826c7e760ead32634d95ae1f6813e"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --disable-introspection
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

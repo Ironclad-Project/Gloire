@@ -1,6 +1,7 @@
 #! /bin/sh
 
 name=gtksourceview4
+repology_id=gtksourceview
 version=4.8.2
 revision=1
 tarball_url="https://gitlab.gnome.org/GNOME/gtksourceview/-/archive/${version}/gtksourceview-${version}.tar.gz"

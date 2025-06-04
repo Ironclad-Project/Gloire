@@ -13,7 +13,19 @@ if command -v glib-compile-schemas 2>&1 >/dev/null; then
 fi
 
 if command -v dbus-uuidgen 2>&1 >/dev/null; then
-    dbus-uuidgen >/var/lib/dbus/machine-id
+    dbus-uuidgen --ensure >/var/lib/dbus/machine-id
+fi
+
+if command -v gio-querymodules 2>&1 >/dev/null; then
+    gio-querymodules /usr/lib/gio/modules/ >/dev/null
+fi
+
+if command -v gdk-pixbuf-query-loaders 2>&1 >/dev/null; then
+    gdk-pixbuf-query-loaders --update-cache >/dev/null
+fi
+
+if command -v gtk-query-immodules-3.0 2>&1 >/dev/null; then
+    gtk-query-immodules-3.0 --update-cache >/dev/null
 fi
 
 mkdir -p /var/db/gloire-first-boot

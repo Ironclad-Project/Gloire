@@ -5,21 +5,13 @@ version=1.28.0
 revision=1
 tarball_url="https://github.com/mate-desktop/pluma/releases/download/v${version}/pluma-${version}.tar.xz"
 tarball_blake2b="10813717b7d18a0836059a10deb67a61b00a73cf3d5b18f12a9e760b8b65053b3a82dc0ac9af898d9f2bb4d6998db536bcaef143024ae91f9035fe6e1ee72fea"
-# source_hostdeps="automake autoconf libtool pkg-config mate-common gtk-doc gobject-introspection autoconf-archive glib"
-# source_imagedeps="gtk-doc-tools gobject-introspection libglib2.0-dev-bin autoconf-archive"
-# source_deps="autoconf-archive"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin itstool"
-# hostdeps="gcc autoconf automake libtool pkg-config autoconf-archive glib"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core glib2 libpeas libxml2 gtk3 cairo gdk-pixbuf gtksourceview4 libice libsm pango mate-desktop"
 
 prepare() {
-	autotools_recursive_regen
+    autotools_recursive_regen
 }
-
-# prepare() {
-#     ACLOCAL_INCLUDE="-I${sysroot_dir}/usr/share/aclocal" NOCONFIGURE=true mate-autogen
-# }
 
 configure() {
     autotools_configure \

@@ -2,26 +2,22 @@
 
 name=lcms
 version=2.17
-revision=1
+revision=2
 tarball_url="https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz"
 tarball_blake2b="746b0bdff61cbb12f4b27b42a17136a64fd6c437a9f6e620e0a27ba24ebeac595635c3e79929ae4f425b98fba7df1ce1e4a05ebd8bc2e03d23c99cf246fb46e0"
 hostdeps="gcc pkg-config"
 deps="core-libs libjpeg-turbo libtiff"
 
-prepare() {
-    autotools_recursive_regen
-}
-
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

@@ -16,10 +16,10 @@ prepare() {
 configure() {
     autotools_configure \
         --disable-gtk-doc \
-		--disable-introspection \
-		--disable-vala \
-		--with-xkb-base="${prefix}"/share/X11/xkb \
-		--with-xkb-bin-base="${prefix}"/bin
+        --disable-introspection \
+        --disable-vala \
+        --with-xkb-base="${prefix}"/share/X11/xkb \
+        --with-xkb-bin-base="${prefix}"/bin
 }
 
 build() {

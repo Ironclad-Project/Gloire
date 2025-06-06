@@ -16,27 +16,15 @@ configure() {
     mkdir build && cd build
 
         meson_source_dir=.. \
-    meson_configure \
-        # -Da11y=true \
-        # -Ddebug=false \
-        # -Ddocs=false \
-        # -Dgir=false \
-        # -Dfribidi=true \
-        # -Dglade=true \
-        # -Dgnutls=false \
-        # -Dgtk3=true \
-        # -Dgtk4=false \
-        # -Dicu=true \
-        # -D_systemd=false \
-        # -Dvapi=false
+    meson_configure
 }
 
 build() {
-    ( cd build && ninja -j${parallelism} )
+    ( cd build && meson compile -j${parallelism} )
 }
 
 package() {
-    ( cd build && DESTDIR="${dest_dir}" ninja install )
+    ( cd build && DESTDIR="${dest_dir}" meson install --no-rebuild )
 
     post_package_strip
 }

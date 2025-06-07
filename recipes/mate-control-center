@@ -1,0 +1,25 @@
+#! /bin/sh
+
+name=mate-control-center
+version=1.28.1
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-control-center/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="1f9e20a98eeaa9324c7acf3fc3cb59495e08cd474fedf1d2b9d373db3b591a277969176607d2d6cc9554d2c9d6edd24715560f4140755ff837b5dcafefd619b6"
+imagedeps="itstool libglib2.0-dev-bin libglib2.0-bin gtk-update-icon-cache"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3 mate-desktop marco mate-menus libmatekbd libxscrnsaver" # gtk3 mate-panel libnotify dbus-glib gtksourceview4"
+
+configure() {
+    meson_configure \
+        -Daccountsservice=disabled
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

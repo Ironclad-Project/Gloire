@@ -1,0 +1,106 @@
+diff -urN --no-dereference mate-control-center-clean/capplets/meson.build mate-control-center-workdir/capplets/meson.build
+--- mate-control-center-clean/capplets/meson.build
++++ mate-control-center-workdir/capplets/meson.build
+@@ -3,11 +3,11 @@
+ subdir('accessibility/at-properties')
+ subdir('appearance')
+ subdir('default-applications')
+-subdir('display')
++# subdir('display')
+ subdir('keybindings')
+ subdir('keyboard')
+ subdir('mouse')
+ subdir('network')
+-subdir('system-info')
+-subdir('time-admin')
++# subdir('system-info')
++# subdir('time-admin')
+ subdir('windows')
+diff -urN --no-dereference mate-control-center-clean/meson.build mate-control-center-workdir/meson.build
+--- mate-control-center-clean/meson.build
++++ mate-control-center-workdir/meson.build
+@@ -75,9 +75,9 @@
+ xcursor_dep = dependency('xcursor')
+ dconf_dep = dependency('dconf', version: '>= 0.13.4')
+ fontconfig_dep = dependency('fontconfig')
+-gtop_dep = dependency('libgtop-2.0')
+-udisks2_dep = dependency('udisks2')
+-polkit_dep = dependency('polkit-gobject-1')
++# gtop_dep = dependency('libgtop-2.0')
++# udisks2_dep = dependency('udisks2')
++# polkit_dep = dependency('polkit-gobject-1')
+ matekbd_dep = dependency('libmatekbd', version: '>=1.17.0')
+ matekbdui_dep = dependency('libmatekbdui', version: '>=1.17.0')
+ xklavier_dep = dependency('libxklavier', version: '>= 5.2')
+@@ -104,27 +104,27 @@
+   gtk_dep,
+ ]
+ 
+-enable_libappindicator = get_option('libappindicator')
+-if enable_libappindicator == 'yes'
+-  appindicator = true
+-  ayatana = false
+-elif enable_libappindicator == 'auto'
+-  if dependency('ayatana-appindicator3-0.1', required : false).found()
+-    appindicator = false
+-    ayatana = true
+-  elif dependency('appindicator3-0.1', required : false).found()
+-    appindicator = true
+-    ayatana = false
+-  else
+-    error ('Neither Ayatana AppIndicator nor Ubuntu AppIndicator library is present, but you enabled AppIndicator support.')
+-  endif
+-else
+-  appindicator = false
+-  ayatana = true
+-endif
+-appindicator_dep = dependency('appindicator3-0.1', version: '>= 0.0.13', required: appindicator)
+-ayatana_dep = dependency('ayatana-appindicator3-0.1', version: '>= 0.0.13', required: ayatana)
+-config_h.set('HAVE_UBUNTU_APPINDICATOR', appindicator)
++# enable_libappindicator = get_option('libappindicator')
++# if enable_libappindicator == 'yes'
++#   appindicator = true
++#   ayatana = false
++# elif enable_libappindicator == 'auto'
++#   if dependency('ayatana-appindicator3-0.1', required : false).found()
++#     appindicator = false
++#     ayatana = true
++#   elif dependency('appindicator3-0.1', required : false).found()
++#     appindicator = true
++#     ayatana = false
++#   else
++#     error ('Neither Ayatana AppIndicator nor Ubuntu AppIndicator library is present, but you enabled AppIndicator support.')
++#   endif
++# else
++#   appindicator = false
++#   ayatana = true
++# endif
++# appindicator_dep = dependency('appindicator3-0.1', version: '>= 0.0.13', required: appindicator)
++# ayatana_dep = dependency('ayatana-appindicator3-0.1', version: '>= 0.0.13', required: ayatana)
++config_h.set('HAVE_UBUNTU_APPINDICATOR', false)
+ gnome = import('gnome')
+ i18n = import('i18n')
+ pkg = import('pkgconfig')
+@@ -153,9 +153,9 @@
+ subdir('po')
+ subdir('man')
+ subdir('help')
+-subdir('font-viewer')
++# subdir('font-viewer')
+ subdir('capplets')
+-subdir('typing-break')
++# subdir('typing-break')
+ subdir('shell')
+ 
+ gnome.post_install(
+@@ -179,8 +179,8 @@
+   '                 project: @0@ @1@'.format(meson.project_name(), meson.project_version()),
+   '                  prefix: @0@'.format(mcc_prefix),
+   'accountsservice supports: @0@'.format(accounts_dep.found()),
+-  '    Ayatana AppIndicator: @0@'.format(ayatana),
+-  '     Ubuntu AppIndicator: @0@'.format(appindicator),
++  # '    Ayatana AppIndicator: @0@'.format(ayatana),
++  # '     Ubuntu AppIndicator: @0@'.format(appindicator),
+   ''
+ ]
+ message('\n'.join(summary))

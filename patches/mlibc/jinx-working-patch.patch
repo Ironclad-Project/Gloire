@@ -1820,7 +1820,14 @@ diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-wor
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -25,13 +25,9 @@
+@@ -19,19 +19,16 @@
+ #include <sys/stat.h>
+ #include <stdbool.h>
+ #include <stddef.h>
++#include <nvmm.h>
+ 
+ extern "C" void __mlibc_sigret(void);
+ 
  namespace mlibc {
  
  void sys_libc_log(const char *message) {
@@ -1836,7 +1843,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  void sys_libc_panic() {
-@@ -157,7 +153,7 @@
+@@ -157,7 +154,7 @@
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
@@ -1845,7 +1852,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_read = ret;
  	return errno;
  }
-@@ -165,7 +161,7 @@
+@@ -165,7 +162,7 @@
  int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
  	ssize_t ret;
  	int errno;
@@ -1854,7 +1861,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_written = ret;
  	return errno;
  }
-@@ -173,7 +169,7 @@
+@@ -173,7 +170,7 @@
  int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
@@ -1863,7 +1870,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_read = ret;
  	return errno;
  }
-@@ -181,7 +177,7 @@
+@@ -181,7 +178,7 @@
  int sys_pwrite(int fd, const void *buf, size_t n, off_t off, ssize_t *bytes_written) {
  	ssize_t ret;
  	int errno;
@@ -1872,7 +1879,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_written = ret;
  	return errno;
  }
-@@ -200,6 +196,16 @@
+@@ -200,6 +197,16 @@
  	return errno;
  }
  
@@ -1889,7 +1896,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_flock(int fd, int options) {
  	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
  	struct flock lock;
-@@ -265,6 +271,23 @@
+@@ -265,6 +272,23 @@
  	int errno;
  	SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
  	*window = ret;
@@ -1913,7 +1920,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -406,7 +429,24 @@
+@@ -406,7 +430,24 @@
  	pid_t ret;
  	int errno;
  
@@ -1939,7 +1946,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -674,7 +714,7 @@
+@@ -674,7 +715,7 @@
  int sys_getentropy(void *buffer, size_t length) {
  	ssize_t ret;
  	int errno;
@@ -1948,7 +1955,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -692,15 +732,14 @@
+@@ -692,15 +733,14 @@
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -1966,7 +1973,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -713,8 +752,9 @@
+@@ -713,8 +753,9 @@
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -1977,7 +1984,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +763,13 @@
+@@ -723,6 +764,13 @@
  	}
  }
  
@@ -1991,7 +1998,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1204,12 @@
+@@ -1157,6 +1205,12 @@
  	int ret, errno;
  
  	switch (num) {
@@ -2004,7 +2011,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		case _SC_NPROCESSORS_CONF:
  			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
  			if (ret == 0) {
-@@ -1200,6 +1253,9 @@
+@@ -1200,6 +1254,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -2014,6 +2021,150 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
+@@ -1446,5 +1503,143 @@
+ 	return 0;
+ }
+ 
++int sys_nvmm_init(void) {
++	return 0;
++}
++
++int sys_nvmm_root_init(void) {
++	return 0;
++}
++
++int sys_nvmm_capability(struct nvmm_capability *caps) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_NVMM_CAPABILITY, caps);
++	return errno;
++}
++
++int sys_nvmm_machine_create(struct nvmm_machine *machine) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_NVMM_MACHINE_CREATE, machine);
++	return errno;
++}
++
++int sys_nvmm_machine_destroy(struct nvmm_machine *machine) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_NVMM_MACHINE_DEL, machine);
++	return errno;
++}
++
++int sys_nvmm_machine_configure(struct nvmm_machine *machine, uint64_t op, void *arg) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_MACHINE_CONF, machine, op, arg);
++	return errno;
++}
++
++int sys_nvmm_vcpu_create(struct nvmm_machine *machine, nvmm_cpuid_t cpuid, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_VCPU_CREATE, machine, cpuid, cpu);
++	return errno;
++}
++
++int sys_nvmm_vcpu_destroy(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_VCPU_DESTROY, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_vcpu_configure(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op, void *arg) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_NVMM_VCPU_CONF, machine, cpu, op, arg);
++	return errno;
++}
++
++int sys_nvmm_vcpu_setstate(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_VCPU_SETSTATE, machine, cpu, op);
++	return errno;
++}
++
++int sys_nvmm_vcpu_getstate(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_VCPU_GETSTATE, machine, cpu, op);
++	return errno;
++}
++
++int sys_nvmm_vcpu_inject(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_VCPU_INJECT, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_vcpu_run(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_VCPU_RUN, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_gpa_map(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size, int prot) {
++	int ret, errno;
++	SYSCALL5(SYSCALL_NVMM_GPA_MAP, machine, hva, gva, size, prot);
++	return errno;
++}
++
++int sys_nvmm_gpa_unmap(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_NVMM_GPA_UNMAP, machine, hva, gva, size);
++	return errno;
++}
++
++int sys_nvmm_hva_map(struct nvmm_machine *machine, uintptr_t hva, size_t size) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_HVA_MAP, machine, hva, size);
++	return errno;
++}
++
++int sys_nvmm_hva_unmap(struct nvmm_machine *machine, uintptr_t hva, size_t size) {
++	int ret, errno;
++	SYSCALL3(SYSCALL_NVMM_HVA_UNMAP, machine, hva, size);
++	return errno;
++}
++
++int sys_nvmm_gva_to_gpa(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, gvaddr_t gva, gpaddr_t *gpa, nvmm_prot_t *prot) {
++	int ret, errno;
++	SYSCALL5(SYSCALL_NVMM_GVA2GPA, machine, cpu, gva, gpa, prot);
++	return errno;
++}
++
++int sys_nvmm_gpa_to_hva(struct nvmm_machine *machine, gpaddr_t gpa, uintptr_t *hva, nvmm_prot_t *prot) {
++	int ret, errno;
++	SYSCALL4(SYSCALL_NVMM_GPA2HVA, machine, gpa, hva, prot);
++	return errno;
++}
++
++int sys_nvmm_assist_io(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_ASSIST_IO, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_assist_mem(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_ASSIST_IO, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_ctl(int, void *, size_t) {
++	return 0;
++}
++
++int sys_nvmm_vcpu_dump(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_NVMM_VCPU_DUMP, machine, cpu);
++	return errno;
++}
++
++int sys_nvmm_vcpu_stop(struct nvmm_vcpu *cpu) {
++	int ret, errno;
++	SYSCALL1(SYSCALL_NVMM_VCPU_STOP, cpu);
++	return errno;
++}
++
+ #endif
+ } // namespace mlibc
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
@@ -2040,12 +2191,33 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -124,6 +121,8 @@
+@@ -124,6 +121,29 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113
  #define SYSCALL_GETCPUINFO          114
 +#define SYSCALL_SOCKETPAIR          115
 +#define SYSCALL_MADVISE             116
++#define SYSCALL_NVMM_CAPABILITY     117
++#define SYSCALL_NVMM_MACHINE_CREATE 118
++#define SYSCALL_NVMM_MACHINE_DEL    119
++#define SYSCALL_NVMM_MACHINE_CONF   120
++#define SYSCALL_NVMM_VCPU_CREATE    121
++#define SYSCALL_NVMM_VCPU_DESTROY   122
++#define SYSCALL_NVMM_VCPU_CONF      123
++#define SYSCALL_NVMM_VCPU_SETSTATE  124
++#define SYSCALL_NVMM_VCPU_GETSTATE  125
++#define SYSCALL_NVMM_VCPU_INJECT    126
++#define SYSCALL_NVMM_VCPU_RUN       127
++#define SYSCALL_NVMM_GPA_MAP        128
++#define SYSCALL_NVMM_GPA_UNMAP      129
++#define SYSCALL_NVMM_HVA_MAP        130
++#define SYSCALL_NVMM_HVA_UNMAP      131
++#define SYSCALL_NVMM_GVA2GPA        132
++#define SYSCALL_NVMM_GPA2HVA        133
++#define SYSCALL_NVMM_ASSIST_IO      134
++#define SYSCALL_NVMM_ASSIST_MEM     135
++#define SYSCALL_NVMM_VCPU_DUMP      136
++#define SYSCALL_NVMM_VCPU_STOP      137
  
  #if defined(__x86_64__)
  #define SYSCALL0(NUM) ({ \

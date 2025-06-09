@@ -2101,13 +2101,13 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
 +
 +int sys_nvmm_gpa_map(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size, int prot) {
 +	int ret, errno;
-+	SYSCALL5(SYSCALL_NVMM_GPA_MAP, machine, hva, gva, size, prot);
++	SYSCALL5(SYSCALL_NVMM_GPA_MAP, machine, hva, gpa, size, prot);
 +	return errno;
 +}
 +
 +int sys_nvmm_gpa_unmap(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size) {
 +	int ret, errno;
-+	SYSCALL4(SYSCALL_NVMM_GPA_UNMAP, machine, hva, gva, size);
++	SYSCALL4(SYSCALL_NVMM_GPA_UNMAP, machine, hva, gpa, size);
 +	return errno;
 +}
 +

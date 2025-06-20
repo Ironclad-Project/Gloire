@@ -90,7 +90,6 @@ A list of the tools needed for compilation of the OS are:
 - `git` for cloning packages.
 - POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `find`, `free` (usually from `procps`), `grep`, `gzip`, `tar`, `xargs` (usually from `findutils`), and `xz` for Jinx.
 - `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
-- `xorriso` for building the final ISO image.
 - `qemu` for testing, if wanted.
 
 The project uses `jinx` as its build system, which is included in the tree.

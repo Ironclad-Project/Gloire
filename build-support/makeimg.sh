@@ -56,6 +56,7 @@ $SUDO parted -s gloire.img mklabel gpt
 $SUDO parted -s gloire.img mkpart ESP fat32 2048s 5%
 $SUDO parted -s gloire.img mkpart gloire_data ext2 5% 100%
 $SUDO parted -s gloire.img set 1 esp on
+$SUDO sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614174001
 $SUDO sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 LOOPBACK_DEV=$($SUDO losetup -Pf --show gloire.img)
 $SUDO mkfs.fat ${LOOPBACK_DEV}p1
@@ -158,6 +159,14 @@ fi
 
 sudo cp "$CONFIG_TEMP" mount_dir/boot/limine.conf
 rm "$CONFIG_TEMP"
+
+# Modify the fstab to use our final partitions.
+sudo sh -c "
+cat << 'EOF' >> mount_dir/etc/fstab
+UUID=123e4567-e89b-12d3-a456-426614174000 / ext relatime 0 1
+UUID=123e4567-e89b-12d3-a456-426614174001 /boot fat relatime 0 1
+EOF
+"
 
 # Unmount after we are done.
 sync

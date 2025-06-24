@@ -40,8 +40,8 @@ jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 debian_snapshot="20250501T023311Z"
 
-XBPS_VERSION=0.60.2
-XBPS_B2SUM=98fb2244ec00e5b1e2d5767b87e7649bbf0fd3c9af3e9b7e4d67a358924335885e56012faede97e66406f9aa0fd2a089d5618296b53a4156c46c01fb0d77010e
+XBPS_VERSION=0.60.3
+XBPS_B2SUM=b9eebb0c41bc0ea318f492960a4de97a17b96098b1590f929c2baa3782ac663e4d3a8871373d09fee8fcef46ceb198cc281238da8f3801ec1e0b84a3fc8d9de1
 
 die() {
     echo "$1"
@@ -2094,7 +2094,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
     run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
     # XXX: xbps upstream forgot to bump version string
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.2/g' /xbps-${XBPS_VERSION}/configure
+    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.3/g' /xbps-${XBPS_VERSION}/configure
     run_in_container1 "${XBPS_BUILDENV}" sed -i 's/&& DEBUG=yes/&& DEBUG=no/g' /xbps-${XBPS_VERSION}/configure
     run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --verbose --enable-static --enable-rpath --prefix=/ --sysconfdir=/etc"
     run_in_container1 "${XBPS_BUILDENV}" sed -i 's/-lxml2/-lxml2 -llzma -lm/g' /xbps-${XBPS_VERSION}/config.mk

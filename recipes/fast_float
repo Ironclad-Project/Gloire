@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=fast_float
+version=8.0.2
+revision=1
+git_url="https://github.com/fastfloat/fast_float.git"
+commit=50a80a73ab2ab256ba1c3bf86923ddd8b4202bc7
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

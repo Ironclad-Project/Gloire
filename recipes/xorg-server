@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xorg-server
-version=21.1.16
+version=21.1.18
 revision=1
 tarball_url="https://www.x.org/releases/individual/xserver/xorg-server-${version}.tar.xz"
-tarball_blake2b="90a2aded6ab324dbaed976461062b7dccbc09466229cf8da8aaf0e9049144a8a5109ad35b1ee994451cdc5c33be45c6cb1f5a32ab6e8c021ca71f6ef180400f8"
+tarball_blake2b="48c7b745c07a31d11d3a95f8eba056ff46bf69f2c70d499f677cbd706347e0c3c28a8197be5c0d65670c5b2f87f559ea10e7c21ee88bdc767c6a921d5fa8d3b2"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-util-macros xorg-proto xcb-proto xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman"
 

@@ -3,7 +3,7 @@
 name=ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=14
+revision=15
 source_dir="ironclad"
 source_imagedeps="git"
 source_hostdeps="automake autoconf pkg-config"
@@ -17,10 +17,6 @@ prepare() {
 }
 
 configure() {
-        ADAFLAGS="$TARGET_CFLAGS -flto" \
-        CFLAGS="$TARGET_CFLAGS -flto" \
-        CXXFLAGS="$TARGET_CXXFLAGS -flto" \
-        LDFLAGS="$TARGET_LDFLAGS -flto" \
     autotools_configure_noflags
 }
 

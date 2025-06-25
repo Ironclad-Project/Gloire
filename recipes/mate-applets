@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mate-applets
-version=1.28.0
+version=1.28.1
 revision=1
 tarball_url="https://github.com/mate-desktop/mate-applets/releases/download/v${version}/mate-applets-${version}.tar.xz"
-tarball_blake2b="ed2a13e8c79daeb88706ee4b6ad3146e2d3795e6a430bfc494672cf4a0de2ec088ba453368afdc530ca7fffff82893d4d3929e21e224a418bd4382cfe36e5812"
+tarball_blake2b="95b8773f9cf1a6156385d1f548c46eb915a9ce16e382a23aabac9c598daf217c124fdad5995d2e30e91e8c5a2f08ca94aadb8591e5d10a359249b63e8c25d588"
 imagedeps="itstool libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
 # libgtop not specified as it's stubbed

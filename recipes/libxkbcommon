@@ -2,7 +2,7 @@
 
 name=libxkbcommon
 version=1.10.0
-revision=1
+revision=2
 git_url="https://github.com/xkbcommon/libxkbcommon.git"
 commit=7888474d0296dcad50c9ba4adfdfdf2be02d35e1
 hostdeps="gcc pkg-config"
@@ -21,9 +21,6 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
-
-    mkdir -p "${dest_dir}${prefix}/share/X11/xkb"
-    touch "${dest_dir}${prefix}/share/X11/xkb/.keep"
 
     post_package_strip
 }

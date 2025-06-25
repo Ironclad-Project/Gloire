@@ -6,8 +6,8 @@ index 8c4462b..baf78bb 100644
  # Check for symbols
  
  check_symbols_required = [
--  ['TIOCGWINSZ', 'sys/ioctl.h'],
-+  ['TIOCGWINSZ', 'asm/ioctls.h'],
+-  ['TIOCGWINSZ', ['sys/ioctl.h', 'sys/termios.h',]],
++  ['TIOCGWINSZ', ['asm/ioctls.h']],
  ]
  
  foreach symbol: check_symbols_required

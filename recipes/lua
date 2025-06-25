@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=lua
-version=5.4.7
+version=5.4.8
 revision=1
 tarball_url="https://github.com/lua/lua/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="9e4f589e78ded6d0665bf38c94080dc642762fc5b91fa47d6bd440a241e86000b6a82f9c4175b5ec509d01f753cc4a257c70c6219f41c1527742615425b9f876"
+tarball_blake2b="9fa35cbd372246a121cbd6e030a11f516ceb4f623b11b20f0cfef6502dc49cf3bf98508d1a1cb9a97318bcb17a32e871e3596874f72aa7b93a46a2cc94b72bd7"
 imagedeps="nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs readline"

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=poppler
-version=25.05.0
-revision=2
-tarball_url="https://poppler.freedesktop.org/poppler-${version}.tar.xz"
-tarball_blake2b="a639e246aa1d7f8687e8aa94ceb5c636f0df75c7868c25d9a37e0b72d13154d577c458afacb2e4f6215ccdf2a897bc5114a767972e60dd74915eb8cb00a6d476"
+version=25.06.0
+revision=1
+git_url="https://gitlab.freedesktop.org/poppler/poppler.git"
+commit=04bd91684ed41d67ae0f10cde0660e4ed74ac203
 hostdeps="gcc pkg-config"
 deps="core-libs fontconfig glib2 cairo curl libjpeg-turbo libpng libtiff"
 

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xbps
-version=0.59.2
+version=0.60.3
 revision=1
 tarball_url="https://github.com/void-linux/xbps/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="cabe5676eb1611271f255c75f4439f3ef4ea6096d6fc26f0982da471556e1fd1733cb76a6d5857d3546513b157e8a3493624d09d989134f3f6d7763c55e98a83"
+tarball_blake2b="b9eebb0c41bc0ea318f492960a4de97a17b96098b1590f929c2baa3782ac663e4d3a8871373d09fee8fcef46ceb198cc281238da8f3801ec1e0b84a3fc8d9de1"
 hostdeps="gcc pkg-config"
 deps="core-libs libarchive openssl zlib"
 

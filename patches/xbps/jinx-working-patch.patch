@@ -1,15 +1,14 @@
 diff -urN --no-dereference xbps-clean/bin/xbps-install/util.c xbps-workdir/bin/xbps-install/util.c
 --- xbps-clean/bin/xbps-install/util.c
 +++ xbps-workdir/bin/xbps-install/util.c
-@@ -32,7 +32,7 @@
+@@ -34,6 +34,7 @@
+ #include <string.h>
  #include <strings.h>
- #include <sys/ioctl.h>
- #include <assert.h>
--
+ #include <unistd.h>
 +#include <termios.h>
+ 
  #include <xbps.h>
  #include "defs.h"
- 
 diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
 --- xbps-clean/configure
 +++ xbps-workdir/configure
@@ -17,8 +16,8 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  #!/bin/sh
  # Try and be like autotools configure, but without autotools
  
--VERSION=0.59.1
-+VERSION=0.59.2
+-VERSION=0.60
++VERSION=0.60.3
  
  # Ensure that we do not inherit these from env
  OS=
@@ -31,7 +30,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  
  echo "CC =	$CC" >>$CONFIG_MK
  echo "CFLAGS =	-O2" >>$CONFIG_MK
-@@ -677,7 +677,7 @@
+@@ -678,7 +678,7 @@
  # pkg-config is required to know dependencies for static linking.
  #
  printf "Checking for pkg-config ... "
@@ -40,7 +39,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  if [ -z "$PKGCONFIG_BIN" ]; then
  	echo "not found, exiting."
  	exit 1
-@@ -691,14 +691,14 @@
+@@ -692,14 +692,14 @@
  LIBARCHIVE_REQVER=3.3.3
  
  printf "Checking for libarchive >= ${LIBARCHIVE_REQVER}  via pkg-config ... "
@@ -60,7 +59,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  		>>$CONFIG_MK
  fi
  
-@@ -706,17 +706,17 @@
+@@ -707,17 +707,17 @@
  # libssl with pkg-config support is required.
  #
  printf "Checking for libssl via pkg-config ... "
@@ -85,7 +84,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  	>>$CONFIG_MK
  
  #
-@@ -734,13 +734,13 @@
+@@ -735,13 +735,13 @@
  #
  if [ "$BUILD_TESTS" = "yes" ]; then
  	printf "Checking for ATF via pkg-config ... "
@@ -140,7 +139,7 @@ diff -urN --no-dereference xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4
 diff -urN --no-dereference xbps-clean/data/Makefile xbps-workdir/data/Makefile
 --- xbps-clean/data/Makefile
 +++ xbps-workdir/data/Makefile
-@@ -16,7 +16,7 @@
+@@ -18,7 +18,7 @@
  	install -d $(DESTDIR)$(PKGCONFIGDIR)
  	install -m644 $(PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
  	install -d $(DESTDIR)/$(DBDIR)/keys
@@ -153,12 +152,12 @@ diff -urN --no-dereference xbps-clean/data/repod-main.conf xbps-workdir/data/rep
 --- xbps-clean/data/repod-main.conf
 +++ xbps-workdir/data/repod-main.conf
 @@ -1 +1 @@
--repository=https://a-hel-fi.m.voidlinux.org/current
+-repository=https://repo-default.voidlinux.org/current
 +repository=https://gloire-repo.ironclad-os.org
 diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
 --- xbps-clean/lib/Makefile
 +++ xbps-workdir/lib/Makefile
-@@ -93,8 +93,8 @@
+@@ -97,8 +97,8 @@
  	install -d $(DESTDIR)$(LIBDIR)
  	install -m 644 libxbps.a $(DESTDIR)$(LIBDIR)
  	install -m 755 $(LIBXBPS_SHLIB) $(DESTDIR)$(LIBDIR)
@@ -172,7 +171,7 @@ diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
 diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp.c
 --- xbps-clean/lib/fetch/ftp.c
 +++ xbps-workdir/lib/fetch/ftp.c
-@@ -79,7 +79,7 @@
+@@ -74,7 +74,7 @@
  #include <string.h>
  #include <time.h>
  #include <unistd.h>
@@ -181,7 +180,7 @@ diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp
  #include "fetch.h"
  #include "common.h"
  #include "ftperr.h"
-@@ -147,7 +147,7 @@
+@@ -142,7 +142,7 @@
  	sin4->sin_port = port;
  	sin4->sin_family = AF_INET;
  	*len = sizeof(struct sockaddr_in);
@@ -193,7 +192,7 @@ diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp
 diff -urN --no-dereference xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/http.c
 --- xbps-clean/lib/fetch/http.c
 +++ xbps-workdir/lib/fetch/http.c
-@@ -78,7 +78,7 @@
+@@ -74,7 +74,7 @@
  #include <string.h>
  #include <time.h>
  #include <unistd.h>
@@ -205,7 +204,7 @@ diff -urN --no-dereference xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/ht
 diff -urN --no-dereference xbps-clean/lib/portableproplib/prop_object.c xbps-workdir/lib/portableproplib/prop_object.c
 --- xbps-clean/lib/portableproplib/prop_object.c
 +++ xbps-workdir/lib/portableproplib/prop_object.c
-@@ -956,14 +956,14 @@
+@@ -955,14 +955,14 @@
  	if ((sb.st_size & pgmask) == 0)
  		need_guard = true;
  

@@ -2,10 +2,10 @@
 
 name=pkg-config
 repology_id=pkgconf
-version=2.4.3
-revision=2
+version=2.5.0
+revision=1
 tarball_url="https://distfiles.ariadne.space/pkgconf/pkgconf-${version}.tar.xz"
-tarball_blake2b="5ca90b1b97e5516369e7042952418d5046faee02ff67144b0805c3c007507c42400825cfe73ac2c4df3f11dab4d5abba24b52abe930a3b25abbcbbddb3a06a31"
+tarball_blake2b="f26e1b0f4d5bc22bfabc1a922859f83148c6995487b228973818260e1e2285b473eb572cd52e20e76ed7003e75d9c924f2cec28f6a379ce1db3312adbb91d087"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

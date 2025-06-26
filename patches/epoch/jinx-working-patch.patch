@@ -140,7 +140,7 @@ diff -urN --no-dereference epoch-clean/src/modes.c epoch-workdir/src/modes.c
  ReturnCode EmulKillall5(unsigned InSignal)
  { /*Used as the killall5 utility.*/
  	DIR *ProcDir;
-@@ -144,42 +156,28 @@
+@@ -144,43 +156,17 @@
  	pid_t CurPID;
  	const pid_t OurPID = getpid(), OurSID = getsid(0);
  
@@ -178,21 +178,13 @@ diff -urN --no-dereference epoch-clean/src/modes.c epoch-workdir/src/modes.c
 -			
 -			/*We made it this far, must be safe to nuke this process.*/
 -			kill(CurPID, InSignal); /*Actually send the kill, stop, whatever signal.*/
-+    int ret;
-+    struct procinfo *buffer = malloc(50 * sizeof(struct procinfo));
-+    SYSCALL2(SYSCALL_LISTPROCS, buffer, 50);
-+    if (ret == -1) {
-+        return FAILURE;
-+    } else if (ret > 50) {
-+        return FAILURE;
-+    }
-+
-+    for (int i = 0; i < ret; i++) {
-+        if (buffer[i].pid != 1 && buffer[i].pid != OurPID && getsid(CurPID) != OurSID) {
-+            kill(buffer[i].pid, InSignal);
- 		}
- 	}
+-		}
+-	}
 -	closedir(ProcDir);
- 	
+-	
++    /*Send signal to all processes we can but us and init.*/
++    kill(-1, InSignal);
++    
  	/*Start it up again.*/
  	kill(-1, SIGCONT);
+ 	

@@ -1920,7 +1920,28 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -406,7 +430,24 @@
+@@ -381,10 +405,16 @@
+ }
+ 
+ int sys_getpgid(pid_t pid, pid_t *pgid) {
+-	(void)pid;
+-	// FIXME: Stub needed by mlibc.
+-	*pgid = 0;
+-	return 0;
++	int ret, errno;
++	SYSCALL1(SYSCALL_GETPGID, pid);
++	*pgid = ret;
++	return errno;
++}
++
++int sys_setpgid(pid_t pid, pid_t pgid) {
++	int ret, errno;
++	SYSCALL2(SYSCALL_SETPGID, pid, pgid);
++	return errno;
+ }
+ 
+ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
+@@ -406,7 +436,24 @@
  	pid_t ret;
  	int errno;
  
@@ -1946,6 +1967,19 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
+@@ -458,12 +505,6 @@
+ 	return errno;
+ }
+ 
+-int sys_setpgid(pid_t pid, pid_t pgid) {
+-	(void)pid;
+-	(void)pgid;
+-	return 0;
+-}
+-
+ int sys_ttyname(int fd, char *buff, size_t size) {
+ 	int ret, errno;
+ 	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
 @@ -674,7 +715,7 @@
  int sys_getentropy(void *buffer, size_t length) {
  	ssize_t ret;
@@ -2344,16 +2378,18 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_MPROTECT             33
  #define SYSCALL_SYNC                 34
  #define SYSCALL_SET_MAC_CAPABILITIES 35
-@@ -73,8 +72,6 @@
+@@ -73,8 +72,8 @@
  #define SYSCALL_UMASK                61
  #define SYSCALL_REBOOT               62
  #define SYSCALL_FCHOWN               63
 -#define SYSCALL_PREAD                64
 -#define SYSCALL_PWRITE               65
++#define SYSCALL_GETPGID              64
++#define SYSCALL_SETPGID              65
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -124,6 +121,29 @@
+@@ -124,6 +123,29 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113
  #define SYSCALL_GETCPUINFO          114

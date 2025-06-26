@@ -2,13 +2,18 @@
 
 name=glib2
 repology_id=glib
-version=2.84.2
+version=2.84.3
 revision=1
-tarball_url="https://download.gnome.org/sources/glib/2.84/glib-${version}.tar.xz"
-tarball_blake2b="31592cbeca58f03c138a02b0cd953b6bd2cdcbfa39283241affd1bff439d6376f0420b4b715856963c64903f3646cf89890f709f514a85d93fb3bbe26b99d516"
+git_url="https://gitlab.gnome.org/GNOME/glib.git"
+commit=78cd78d2988616d9af0e8f43e703717d092cd3ff
 imagedeps="python3-docutils"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 libffi zlib"
+source_allow_network=yes
+
+prepare() {
+    git submodule update --init --recursive
+}
 
 configure() {
     meson_configure \

@@ -1920,7 +1920,21 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -381,10 +405,16 @@
+@@ -302,9 +326,10 @@
+ }
+ 
+ int sys_getsid(pid_t pid, pid_t *sid) {
+-	//  STUB.
+-	(void)pid; (void)sid;
+-	return 0;
++	int ret, errno;
++	SYSCALL1(SYSCALL_GETSID, pid);
++	*sid = ret;
++	return errno;
+ }
+ 
+ pid_t sys_getpid() {
+@@ -381,10 +406,16 @@
  }
  
  int sys_getpgid(pid_t pid, pid_t *pgid) {
@@ -1941,7 +1955,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  int sys_execve(const char *path, char *const argv[], char *const envp[]) {
-@@ -406,7 +436,24 @@
+@@ -406,7 +437,24 @@
  	pid_t ret;
  	int errno;
  
@@ -1967,7 +1981,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -458,12 +505,6 @@
+@@ -458,12 +506,6 @@
  	return errno;
  }
  
@@ -1980,7 +1994,21 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_ttyname(int fd, char *buff, size_t size) {
  	int ret, errno;
  	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
-@@ -674,7 +715,7 @@
+@@ -515,13 +557,6 @@
+ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
+ 	int ret, errno;
+ 
+-	if (request == TIOCGPGRP) {
+-		*result = 0;
+-		return 0;
+-	} else if (request == TIOCSPGRP) {
+-		return 0;
+-	}
+-
+ 	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
+ 
+ 	if (ret == -1) {
+@@ -674,7 +709,7 @@
  int sys_getentropy(void *buffer, size_t length) {
  	ssize_t ret;
  	int errno;
@@ -1989,7 +2017,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -692,15 +733,14 @@
+@@ -692,15 +727,14 @@
  int sys_rmdir(const char* path){
  	int ret, errno;
  	size_t path_len = strlen (path);
@@ -2007,7 +2035,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	return errno;
  }
  
-@@ -713,8 +753,9 @@
+@@ -713,8 +747,9 @@
  }
  
  int sys_socket(int domain, int type, int protocol, int *fd) {
@@ -2018,7 +2046,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	if (ret != -1) {
  		*fd = ret;
  		return 0;
-@@ -723,6 +764,13 @@
+@@ -723,6 +758,13 @@
  	}
  }
  
@@ -2032,7 +2060,20 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  uid_t sys_getuid() {
  	uint64_t ret, errno;
  	SYSCALL0(SYSCALL_GETUID);
-@@ -1157,6 +1205,12 @@
+@@ -808,8 +850,10 @@
+ }
+ 
+ int sys_setsid(pid_t *sid) {
+-	(void)sid;
+-	return 0;
++	int ret, errno;
++	SYSCALL0(SYSCALL_SETSID);
++	*sid = ret;
++	return errno;
+ }
+ 
+ #ifndef MLIBC_BUILDING_RTLD
+@@ -1157,6 +1201,12 @@
  	int ret, errno;
  
  	switch (num) {
@@ -2045,7 +2086,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		case _SC_NPROCESSORS_CONF:
  			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
  			if (ret == 0) {
-@@ -1200,6 +1254,9 @@
+@@ -1200,6 +1250,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -2055,7 +2096,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
-@@ -1446,5 +1503,143 @@
+@@ -1446,5 +1499,143 @@
  	return 0;
  }
  
@@ -2364,11 +2405,12 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/linux/kvm.h mlib
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -36,12 +36,11 @@
+@@ -36,12 +36,12 @@
  #define SYSCALL_GETUID               24
  #define SYSCALL_RENAME               25
  #define SYSCALL_LISTPROCS            26
 -#define SYSCALL_SPAWN                27
++#define SYSCALL_GETSID               27
  #define SYSCALL_GETTID               28
  #define SYSCALL_MANAGE_TCLUSTER      29
  #define SYSCALL_FCNTL                30
@@ -2378,7 +2420,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_MPROTECT             33
  #define SYSCALL_SYNC                 34
  #define SYSCALL_SET_MAC_CAPABILITIES 35
-@@ -73,8 +72,8 @@
+@@ -73,8 +73,8 @@
  #define SYSCALL_UMASK                61
  #define SYSCALL_REBOOT               62
  #define SYSCALL_FCHOWN               63
@@ -2389,7 +2431,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -124,6 +123,29 @@
+@@ -124,6 +124,30 @@
  #define SYSCALL_MEMINFO             112
  #define SYSCALL_LISTPCI             113
  #define SYSCALL_GETCPUINFO          114
@@ -2416,6 +2458,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
 +#define SYSCALL_NVMM_ASSIST_MEM     135
 +#define SYSCALL_NVMM_VCPU_DUMP      136
 +#define SYSCALL_NVMM_VCPU_STOP      137
++#define SYSCALL_SETSID              138
  
  #if defined(__x86_64__)
  #define SYSCALL0(NUM) ({ \

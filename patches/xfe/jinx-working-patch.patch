@@ -1,7 +1,7 @@
 diff -urN --no-dereference xfe-clean/configure xfe-workdir/configure
 --- xfe-clean/configure
 +++ xfe-workdir/configure
-@@ -12529,66 +12529,13 @@
+@@ -12547,66 +12547,13 @@
  
  
  
@@ -372,15 +372,15 @@ diff -urN --no-dereference xfe-clean/src/main.cpp xfe-workdir/src/main.cpp
  #include "config.h"
  #include "i18n.h"
  
-@@ -389,6 +390,7 @@
-     textdomain(PACKAGE);
+@@ -393,6 +394,7 @@
+     pkg_format = OTHER_PKG;
  #endif
  
 +    FXuint pkg_format;
  #if defined(linux)
      // For package query on Linux systems, try to guess if the default package format is deb or rpm:
      //   - if dpkg exists then the system uses deb packages
-@@ -398,7 +400,6 @@
+@@ -402,7 +404,6 @@
      cmd = "dpkg --version";
      FXString str = xf_getcommandoutput(cmd);
  
@@ -388,7 +388,7 @@ diff -urN --no-dereference xfe-clean/src/main.cpp xfe-workdir/src/main.cpp
      if (str.find("Debian") != -1)
      {
          pkg_format = DEB_PKG; // deb based system
-@@ -417,6 +418,8 @@
+@@ -421,6 +422,8 @@
              pkg_format = OTHER_PKG; // other (unsupported) package system
          }
      }
@@ -408,7 +408,7 @@ diff -urN --no-dereference xfe-clean/src/startupnotification.cpp xfe-workdir/src
 diff -urN --no-dereference xfe-clean/src/xfedefs.h xfe-workdir/src/xfedefs.h
 --- xfe-clean/src/xfedefs.h
 +++ xfe-workdir/src/xfedefs.h
-@@ -366,9 +366,9 @@
+@@ -411,9 +411,9 @@
  #define MTAB_PATH    "/proc/mounts"
  #endif
  
@@ -435,7 +435,7 @@ diff -urN --no-dereference xfe-clean/src/xfeutils.cpp xfe-workdir/src/xfeutils.c
 diff -urN --no-dereference xfe-clean/st/st.c xfe-workdir/st/st.c
 --- xfe-clean/st/st.c
 +++ xfe-workdir/st/st.c
-@@ -22,17 +22,22 @@
+@@ -21,17 +21,22 @@
  #include <termios.h>
  #include <unistd.h>
  #include <wchar.h>
@@ -447,12 +447,12 @@ diff -urN --no-dereference xfe-clean/st/st.c xfe-workdir/st/st.c
 +/*
  #if   defined(__linux)
 +*/
-  #include <pty.h>
+ #include <pty.h>
 +/*
  #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-  #include <util.h>
+ #include <util.h>
  #elif defined(__FreeBSD__) || defined(__DragonFly__)
-  #include <libutil.h>
+ #include <libutil.h>
  #endif
 +*/
  

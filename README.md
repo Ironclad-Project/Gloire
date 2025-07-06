@@ -44,6 +44,12 @@ qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -drive form
 
 Where `gloire.img` is your image of choice.
 
+> [!IMPORTANT]
+> Ironclad supports SATA and NVMe drives, not ATA, which emulators like QEMU
+> will use by default unless told otherwise! If you are using QEMU, please use
+> the `-M q35` flag to change the default disk controller to SATA, among other
+> changes, or do similar fixes.
+
 To do the same with a riscv64 image, you can do:
 
 ```bash

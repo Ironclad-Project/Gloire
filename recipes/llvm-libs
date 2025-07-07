@@ -2,10 +2,10 @@
 
 name=llvm-libs
 repology_id="llvm"
-version=20.1.6
+version=20.1.7
 revision=1
 tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"
-tarball_blake2b="ccd86730fdea3dd40ebf054661b854b9332204389db2205e1e7b2a7f140fc187cacb34de68aa9a63c15c1e17b1d0976c080cfdee7e2cb6b0dd5570001d84be12"
+tarball_blake2b="f7c57d1eba4e97e875b624dec3fb1b261a0203de7200366de5b3edcfbca2a170c41df46e91cd9cb78ae2af66120aef95334f5eb9628a1489e921c6bdf4cccfe8"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses zlib zstd libffi"

@@ -3,9 +3,9 @@
 name=frigg
 skip_pkg_check=yes
 version=0.0git
-revision=1
+revision=2
 git_url="https://github.com/managarm/frigg.git"
-commit=41b8f556db2646c4417d227b5174a66f03d86a43
+commit=d4d587ccc92cf00abf8b0af5c7469b099a26a0a8
 hostdeps="pkg-config"
 
 configure() {

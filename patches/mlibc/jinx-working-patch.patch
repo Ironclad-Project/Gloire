@@ -9,17 +9,6 @@ diff -urN --no-dereference mlibc-clean/abis/ironclad/errno.h mlibc-workdir/abis/
  
  #define EIEIO 1524152434
  
-diff -urN --no-dereference mlibc-clean/abis/ironclad/vm-flags.h mlibc-workdir/abis/ironclad/vm-flags.h
---- mlibc-clean/abis/ironclad/vm-flags.h
-+++ mlibc-workdir/abis/ironclad/vm-flags.h
-@@ -14,7 +14,6 @@
- #define MAP_ANON      0x08
- #define MAP_ANONYMOUS 0x08
- #define MAP_NORESERVE 0x10
--#define MAP_WC        (1 << 4)
- 
- #define MS_ASYNC 0x01
- #define MS_SYNC 0x02
 diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
@@ -1879,48 +1868,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_written = ret;
  	return errno;
  }
-@@ -200,6 +197,16 @@
- 	return errno;
- }
- 
-+int sys_fallocate(int fd, off_t offset, size_t size) {
-+	if (offset < 0 || size == 0) {
-+		return EINVAL;
-+	}
-+
-+	int ret, errno;
-+	SYSCALL2(SYSCALL_TRUNCATE, fd, offset + size);
-+	return errno;
-+}
-+
- int sys_flock(int fd, int options) {
- 	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
- 	struct flock lock;
-@@ -265,6 +272,23 @@
- 	int errno;
- 	SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
- 	*window = ret;
-+
-+	if ((errno == ENOMEM) && ((flags & MAP_ANON) == 0)) {
-+		int ret = sys_anon_allocate(size, window);
-+		if (ret) {
-+			return ret;
-+		}
-+		ssize_t len;
-+		ret = sys_pread(fd, *window, size, offset, &len);
-+		return 0;
-+	}
-+
-+	return errno;
-+}
-+
-+int sys_posix_madvise(void *addr, size_t length, int advice) {
-+	int ret, errno;
-+	SYSCALL3(SYSCALL_MADVISE, addr, length, advice);
- 	return errno;
- }
- 
-@@ -302,9 +326,10 @@
+@@ -329,9 +326,10 @@
  }
  
  int sys_getsid(pid_t pid, pid_t *sid) {
@@ -1934,7 +1882,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  pid_t sys_getpid() {
-@@ -381,10 +406,16 @@
+@@ -408,10 +406,16 @@
  }
  
  int sys_getpgid(pid_t pid, pid_t *pgid) {
@@ -1955,7 +1903,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  int sys_execve(const char *path, char *const argv[], char *const envp[]) {
-@@ -406,7 +437,24 @@
+@@ -433,7 +437,24 @@
  	pid_t ret;
  	int errno;
  
@@ -1981,7 +1929,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -458,12 +506,6 @@
+@@ -485,12 +506,6 @@
  	return errno;
  }
  
@@ -1994,7 +1942,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_ttyname(int fd, char *buff, size_t size) {
  	int ret, errno;
  	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
-@@ -515,13 +557,6 @@
+@@ -542,13 +557,6 @@
  int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	int ret, errno;
  
@@ -2008,59 +1956,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
  
  	if (ret == -1) {
-@@ -674,7 +709,7 @@
- int sys_getentropy(void *buffer, size_t length) {
- 	ssize_t ret;
- 	int errno;
--	SYSCALL2(SYSCALL_GETRANDOM, buffer, length);
-+	SYSCALL2(SYSCALL_GETENTROPY, buffer, length);
- 	return errno;
- }
- 
-@@ -692,15 +727,14 @@
- int sys_rmdir(const char* path){
- 	int ret, errno;
- 	size_t path_len = strlen (path);
--	SYSCALL3(SYSCALL_UNLINK, AT_FDCWD, path, path_len);
-+	SYSCALL4(SYSCALL_UNLINK, AT_FDCWD, path, path_len, AT_REMOVEDIR);
- 	return errno;
- }
- 
- int sys_unlinkat(int fd, const char *path, int flags) {
--	(void)flags;
- 	int ret, errno;
- 	size_t path_len = strlen (path);
--	SYSCALL3(SYSCALL_UNLINK, fd, path, path_len);
-+	SYSCALL4(SYSCALL_UNLINK, fd, path, path_len, flags);
- 	return errno;
- }
- 
-@@ -713,8 +747,9 @@
- }
- 
- int sys_socket(int domain, int type, int protocol, int *fd) {
-+	(void)protocol;
- 	int ret, errno;
--	SYSCALL3(SYSCALL_SOCKET, domain, type, protocol);
-+	SYSCALL2(SYSCALL_SOCKET, domain, type);
- 	if (ret != -1) {
- 		*fd = ret;
- 		return 0;
-@@ -723,6 +758,13 @@
- 	}
- }
- 
-+int sys_socketpair(int domain, int type, int protocol, int *fds) {
-+	(void)protocol;
-+	int ret, errno;
-+	SYSCALL3(SYSCALL_SOCKETPAIR, domain, type, fds);
-+	return errno;
-+}
-+
- uid_t sys_getuid() {
- 	uint64_t ret, errno;
- 	SYSCALL0(SYSCALL_GETUID);
-@@ -808,8 +850,10 @@
+@@ -842,8 +850,10 @@
  }
  
  int sys_setsid(pid_t *sid) {
@@ -2073,20 +1969,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -1157,6 +1201,12 @@
- 	int ret, errno;
- 
- 	switch (num) {
-+		case _SC_LINE_MAX:
-+			return 2048;
-+		case _SC_NGROUPS_MAX:
-+			return 0x10000;
-+		case _SC_CHILD_MAX:
-+			return 30;
- 		case _SC_NPROCESSORS_CONF:
- 			SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
- 			if (ret == 0) {
-@@ -1200,6 +1250,9 @@
+@@ -1240,6 +1250,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -2096,7 +1979,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
-@@ -1446,5 +1499,143 @@
+@@ -1486,5 +1499,143 @@
  	return 0;
  }
  
@@ -2405,22 +2288,15 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/linux/kvm.h mlib
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -36,12 +36,12 @@
+@@ -36,6 +36,7 @@
  #define SYSCALL_GETUID               24
  #define SYSCALL_RENAME               25
  #define SYSCALL_LISTPROCS            26
--#define SYSCALL_SPAWN                27
 +#define SYSCALL_GETSID               27
  #define SYSCALL_GETTID               28
  #define SYSCALL_MANAGE_TCLUSTER      29
  #define SYSCALL_FCNTL                30
- #define SYSCALL_EXIT_THREAD          31
--#define SYSCALL_GETRANDOM            32
-+#define SYSCALL_GETENTROPY           32
- #define SYSCALL_MPROTECT             33
- #define SYSCALL_SYNC                 34
- #define SYSCALL_SET_MAC_CAPABILITIES 35
-@@ -73,8 +73,8 @@
+@@ -72,8 +73,8 @@
  #define SYSCALL_UMASK                61
  #define SYSCALL_REBOOT               62
  #define SYSCALL_FCHOWN               63
@@ -2431,12 +2307,10 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -124,6 +124,30 @@
- #define SYSCALL_MEMINFO             112
- #define SYSCALL_LISTPCI             113
+@@ -125,6 +126,28 @@
  #define SYSCALL_GETCPUINFO          114
-+#define SYSCALL_SOCKETPAIR          115
-+#define SYSCALL_MADVISE             116
+ #define SYSCALL_SOCKETPAIR          115
+ #define SYSCALL_MADVISE             116
 +#define SYSCALL_NVMM_CAPABILITY     117
 +#define SYSCALL_NVMM_MACHINE_CREATE 118
 +#define SYSCALL_NVMM_MACHINE_DEL    119

@@ -63,9 +63,8 @@ cmd_help() {
     printf "\n   host-rebuild       Same as rebuild, but for host package(s)"
     printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
     printf "\n   install            Installs package(s)"
-    printf "\n   check-updates      Checks on repology whether package(s) are up to date"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
-    printf "\n\nexample: \"./jinx check-updates '*'\"\n"
+    printf "\n\nexample: \"$0 build-if-needed '*'\"\n"
 }
 
 case "$1" in
@@ -1222,74 +1221,6 @@ cmd_rebuild() {
     done
 }
 
-
-cmd_check_updates() {
-    for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            unset repology_id
-            unset repology_srcname
-            unset repology_status
-            unset skip_pkg_check
-
-            . "${base_dir}/recipes/${pkg}"
-
-            printf "checking $pkg ..."
-
-            if [ "$skip_pkg_check" = "yes" ]; then
-                printf ' \033[0;37;100mskipped\033[0m\n'
-                continue
-            fi
-
-            if [ -z "$repology_id" ]; then
-                name_to_check="$name"
-            else
-                name_to_check="$repology_id"
-            fi
-
-            if [ -z "$repology_srcname" ]; then
-                srcname_to_check=""
-            else
-                srcname_to_check=".srcname==\"$repology_srcname\" and"
-            fi
-
-            if [ -z "$repology_status" ]; then
-                status_to_check=""
-            else
-                status_to_check=".status == \"$repology_status\" and"
-            fi
-            sleep 1
-            repology_response="$(curl -s -A '' https://repology.org/api/v1/project/$name_to_check)"
-            checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera")).version' | sort -Vr | head -n 1)
-            if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)
-            fi
-            if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="debian_unstable").version' | sort -Vr | head -n 1)
-            fi
-            if [ -z "$checked_vers" ]; then
-                checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="aur").version' | sort -Vr | head -n 1)
-            fi
-            if [ -z "$checked_vers" ]; then
-                printf " \033[0;97;101mis not checkable\033[0m\n"
-                continue
-            fi
-
-            checked_vers="$(echo "$checked_vers" | sed 's/\"//g')"
-
-            if ! [ "$version" = "$checked_vers" ]; then
-                if ! [ "$(printf "$checked_vers\n$version\n" | sort -Vr | head -n 1)" = "$version" ]; then
-                    printf " \033[0;97;42mneeds update $version -> $checked_vers\033[0m\n"
-                else
-                    printf " \033[0;97;44mmore up-to-date than detected ($version vs $checked_vers)\033[0m\n"
-                fi
-                continue
-            fi
-
-            printf "\33[2K\r"
-        done
-    done
-}
-
 cmd_install() {
     force_install=""
     if [ "$1" = "-f" ]; then
@@ -2286,10 +2217,6 @@ case "$1" in
     rebuild)
         shift 1
         cmd_rebuild "$@"
-        ;;
-    check-updates)
-        shift 1
-        cmd_check_updates "$@"
         ;;
     install)
         shift 1

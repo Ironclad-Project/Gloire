@@ -3,27 +3,25 @@
 name=gcon
 skip_pkg_check=yes
 version=0.0git
-revision=6
-git_url="https://codeberg.org/Ironclad/gcon"
-commit=51e13e6ac3369edca71e14bbd7e9b8d3c9764e9f
-source_imagedeps="git"
-source_hostdeps="automake autoconf pkg-config"
+revision=7
+git_url="https://codeberg.org/Ironclad/gcon.git"
+commit=89af0979495ee53497ff570512de5cee610b1300
 source_allow_network="yes"
-hostdeps="gcc autoconf automake pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs"
 
 prepare() {
-    ./bootstrap
+    meson subprojects download
 }
 
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 }

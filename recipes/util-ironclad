@@ -3,26 +3,20 @@
 name=util-ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=5
-git_url="https://codeberg.org/Ironclad/util-ironclad"
-commit=3449ab891d7912608bfd6de92f221f5e38a43a3f
-source_hostdeps="automake autoconf pkg-config"
-source_imagedeps="git"
-hostdeps="gcc autoconf automake pkg-config"
-deps="core-libs libxcrypt"
-
-prepare() {
-    ./bootstrap
-}
+revision=6
+git_url="https://codeberg.org/Ironclad/util-ironclad.git"
+commit=53774e34d47f509539a2d46f12b4346e12134b6b
+hostdeps="gcc pkg-config"
+deps="core-libs"
 
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 }

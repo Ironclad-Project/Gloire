@@ -22,7 +22,7 @@ until ./jinx build-if-needed base $PKGS_TO_INSTALL; do
     sleep 30
 done
 
-$SUDO ./jinx install "sysroot" base $PKGS_TO_INSTALL
+$SUDO --preserve-env ./jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
@@ -79,10 +79,10 @@ $SUDO cp sysroot/usr/share/ironclad/ironclad mount_dir/boot/
 
 # Install the boot binaries required by the target.
 if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    mkdir -p mount_dir/boot/limine
-    mkdir -p mount_dir/boot/EFI/BOOT
-    cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/limine/
-    cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    mount_dir/EFI/BOOT/
+    $SUDO mkdir -p mount_dir/boot/limine
+    $SUDO mkdir -p mount_dir/boot/EFI/BOOT
+    $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/limine/
+    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    mount_dir/boot/EFI/BOOT/
 else
     $SUDO mkdir -p mount_dir/boot/EFI/BOOT
     $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
@@ -175,6 +175,11 @@ $SUDO umount mount_dir
 $SUDO rm -rf mount_dir
 $SUDO losetup -d ${LOOPBACK_DEV}
 
-host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+# Arch-specific image triggers.
+if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
+    :
+else
+    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+fi
 
 sync

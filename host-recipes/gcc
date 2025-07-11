@@ -53,7 +53,7 @@ package() {
     cd build
     DESTDIR="${dest_dir}" make install-gcc
 
-    ln -s x86_64-ironclad-mlibc-gnatbind "${dest_dir}${prefix}"/bin/x86_64-ironclad-mlibc-gnatbind-15
+    ln -s ${OS_TRIPLET}-gnatbind "${dest_dir}${prefix}"/bin/${OS_TRIPLET}-gnatbind-15
 
         strip_command=strip \
     post_package_strip

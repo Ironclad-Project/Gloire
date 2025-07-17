@@ -53,9 +53,11 @@ Where `gloire.img` is your image of choice.
 To do the same with a riscv64 image, you can do:
 
 ```bash
-qemu-system-riscv64 -M virt,acpi=off -cpu rv64 -device ramfb -device qemu-xhci -m 4G         \
-   -device usb-kbd -device usb-mouse -drive if=pflash,unit=0,format=raw,file=<firmware path> \
-   -hda gloire.img -serial stdio
+qemu-system-riscv64 -M virt,acpi=on -cpu rv64 -device ramfb -device qemu-xhci \
+  -m 4G -device usb-kbd -device usb-mouse -serial stdio \
+  -drive if=pflash,unit=0,format=raw,file=<firmware image> \
+  -drive id=disk,file=gloire.img,if=none -device ahci,id=ahci \
+  -device ide-hd,drive=disk,bus=ahci.0
 ```
 
 For riscv64, firmware can be obtained [from the EDK2 project](https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-riscv64.fd),

@@ -24,6 +24,10 @@ case "$ARCHITECTURE" in
         TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
         TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-z,pack-relative-relocs"
         ;;
+    riscv64)
+        TARGET_CFLAGS="$TARGET_CFLAGS -march=rv64gc -mabi=lp64d"
+        TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=rv64gc -mabi=lp64d"
+        ;;
 esac
 
 post_package_strip() {

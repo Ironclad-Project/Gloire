@@ -27,9 +27,15 @@ prepare() {
 }
 
 configure() {
+    config_data_packaging=library
+    if [ "$JINX_ARCH" = riscv64 ]; then
+        config_data_packaging=archive
+    fi
+
         configure_script_path=${source_dir}/source/configure \
     autotools_configure \
-        --with-cross-build=${source_dir}/cross-build
+        --with-cross-build=${source_dir}/cross-build \
+        --with-data-packaging=${config_data_packaging}
 }
 
 build() {

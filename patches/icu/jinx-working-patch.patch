@@ -1,0 +1,11 @@
+diff -urN --no-dereference icu-clean/source/data/Makefile.in icu-workdir/source/data/Makefile.in
+--- icu-clean/source/data/Makefile.in
++++ icu-workdir/source/data/Makefile.in
+@@ -240,6 +240,7 @@
+ 	@-$(RMV) $@
+ 	$(INVOKE) $(TOOLBINDIR)/icupkg -d $(BUILDDIR) --list -x \* $(ICUDATA_SOURCE_ARCHIVE) -o $@
+ else
++	@mkdir -p "$$(dirname $@)"
+ 	@echo "$@" > $@
+ endif
+ endif

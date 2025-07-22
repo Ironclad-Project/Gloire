@@ -1910,7 +1910,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	int errno;
  
 -	SYSCALL0(SYSCALL_FORK);
-+	SYSCALL2(SYSCALL_FORK, 0, 1);
++	SYSCALL1(SYSCALL_FORK, 0);
 +
 +	if (ret == -1) {
 +		return errno;
@@ -1927,7 +1927,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
 +	pid_t ret;
 +	int errno;
 +
-+	SYSCALL2(SYSCALL_FORK, 1, 1);
++	SYSCALL1(SYSCALL_FORK, 1);
  
  	if (ret == -1) {
  		return errno;
@@ -1971,6 +1971,15 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  #ifndef MLIBC_BUILDING_RTLD
+@@ -865,7 +878,7 @@
+ 
+ int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
+ 	 int ret, errno;
+-	 SYSCALL5(SYSCALL_CREATE_THREAD, (uintptr_t)__mlibc_thread_entry, 0, stack, tcb, 1);
++	 SYSCALL4(SYSCALL_CREATE_THREAD, (uintptr_t)__mlibc_thread_entry, 0, stack, tcb);
+ 
+ 	 if (ret == -1) {
+ 		  return errno;
 @@ -1240,6 +1253,9 @@
  			} else {
  				return EFAULT;
@@ -2292,14 +2301,23 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/linux/kvm.h mlib
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-@@ -36,6 +36,7 @@
+@@ -31,13 +31,14 @@
+ #define SYSCALL_CHDIR                19
+ #define SYSCALL_IOCTL                20
+ #define SYSCALL_SCHED_YIELD          21
+-#define SYSCALL_DELETE_TCLUSTER      22
++#define SYSCALL_GET_MIN_PRIO         22
+ #define SYSCALL_PIPE                 23
  #define SYSCALL_GETUID               24
  #define SYSCALL_RENAME               25
  #define SYSCALL_LISTPROCS            26
 +#define SYSCALL_GETSID               27
  #define SYSCALL_GETTID               28
- #define SYSCALL_MANAGE_TCLUSTER      29
+-#define SYSCALL_MANAGE_TCLUSTER      29
++#define SYSCALL_GET_MAX_PRIO         29
  #define SYSCALL_FCNTL                30
+ #define SYSCALL_EXIT_THREAD          31
+ #define SYSCALL_GETENTROPY           32
 @@ -72,8 +73,8 @@
  #define SYSCALL_UMASK                61
  #define SYSCALL_REBOOT               62
@@ -2311,7 +2329,26 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -125,6 +126,28 @@
+@@ -85,8 +86,8 @@
+ #define SYSCALL_SENDTO               74
+ #define SYSCALL_CONFIG_NETINTER      75
+ #define SYSCALL_UTIMES               76
+-#define SYSCALL_CREATE_TCLUSTER      77
+-#define SYSCALL_SWITCH_TCLUSTER      78
++#define SYSCALL_GET_SCHEDULER        77
++#define SYSCALL_SET_SCHEDULER        78
+ #define SYSCALL_SIGPROCMASK          79
+ #define SYSCALL_SIGACTION            80
+ #define SYSCALL_SEND_SIGNAL          81
+@@ -115,7 +116,6 @@
+ #define SYSCALL_LISTMOUNTS          104
+ #define SYSCALL_UNAME               105
+ #define SYSCALL_LISTTHREADS         106
+-#define SYSCALL_LISTCLUSTERS        107
+ #define SYSCALL_LISTNETINTER        108
+ #define SYSCALL_DUMPLOGS            109
+ #define SYSCALL_LISTFLOCKS          110
+@@ -125,6 +125,28 @@
  #define SYSCALL_GETCPUINFO          114
  #define SYSCALL_SOCKETPAIR          115
  #define SYSCALL_MADVISE             116

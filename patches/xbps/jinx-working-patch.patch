@@ -153,7 +153,7 @@ diff -urN --no-dereference xbps-clean/data/repod-main.conf xbps-workdir/data/rep
 +++ xbps-workdir/data/repod-main.conf
 @@ -1 +1 @@
 -repository=https://repo-default.voidlinux.org/current
-+repository=https://gloire-repo.ironclad-os.org
++repository=https://gloire-repo.ironclad-os.org/xbps-pkgs/ARCH_HERE
 diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
 --- xbps-clean/lib/Makefile
 +++ xbps-workdir/lib/Makefile

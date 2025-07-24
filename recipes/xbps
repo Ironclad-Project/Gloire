@@ -2,7 +2,7 @@
 
 name=xbps
 version=0.60.3
-revision=1
+revision=2
 tarball_url="https://github.com/void-linux/xbps/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="b9eebb0c41bc0ea318f492960a4de97a17b96098b1590f929c2baa3782ac663e4d3a8871373d09fee8fcef46ceb198cc281238da8f3801ec1e0b84a3fc8d9de1"
 hostdeps="gcc pkg-config"
@@ -32,6 +32,9 @@ package() {
 
     # Remove static libraries
     rm "${dest_dir}${prefix}"/lib/*.a
+
+    # Change architecture for the main repository as needed.
+    sed -i "s/ARCH_HERE/${ARCHITECTURE}/g" "${dest_dir}${prefix}"/share/xbps.d/00-repository-main.conf
 
     post_package_strip
 }

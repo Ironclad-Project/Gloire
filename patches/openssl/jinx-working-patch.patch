@@ -1,7 +1,7 @@
 diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
 --- openssl-clean/Configurations/10-main.conf
 +++ openssl-workdir/Configurations/10-main.conf
-@@ -925,6 +925,40 @@
+@@ -925,6 +925,49 @@
          ranlib           => "true",
      },
  
@@ -25,9 +25,8 @@ diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-wor
 +        shared_extension => ".so.\$(SHLIB_VERSION_NUMBER)",
 +    },
 +
-+    # This breaks the usual configuration naming convention but it's more
++    # These break the usual configuration naming convention but it's more
 +    # convenient for us, since it matches the target triples
-+
 +    "x86_64-ironclad-mlibc" => {
 +        inherit_from     => [ "ironclad-generic64", asm("x86_64_asm") ],
 +        perlasm_scheme   => "elf",
@@ -36,6 +35,16 @@ diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-wor
 +        # on to the GCC invocation
 +        CC               => "x86_64-ironclad-mlibc-gcc",
 +        CXX              => "x86_64-ironclad-mlibc-g++",
++
++    },
++    "riscv64-ironclad-mlibc" => {
++        inherit_from     => [ "ironclad-generic64", asm("riscv64_asm") ],
++        perlasm_scheme   => "elf",
++
++        # Configure doesn't want to play nice and passes "--cross-compile-suffix"
++        # on to the GCC invocation
++        CC               => "riscv64-ironclad-mlibc-gcc",
++        CXX              => "riscv64-ironclad-mlibc-g++",
 +
 +    },
 +

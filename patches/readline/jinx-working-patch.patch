@@ -1,3 +1,15 @@
+diff -urN --no-dereference readline-clean/display.c readline-workdir/display.c
+--- readline-clean/display.c
++++ readline-workdir/display.c
+@@ -783,7 +783,7 @@
+ 
+ /* Useful shorthand used by rl_redisplay, update_line, rl_move_cursor_relative */
+ #define INVIS_FIRST()	(local_prompt_invis_chars[0])
+-#define WRAP_OFFSET(line, offset)  ((line <= prompt_last_screen_line) ? local_prompt_invis_chars[line] : 0)
++#define WRAP_OFFSET(line, offset)  ((line <= prompt_last_screen_line && local_prompt_invis_chars) ? local_prompt_invis_chars[line] : 0)
+ 
+ #define W_OFFSET(line, offset) ((line) == 0 ? offset : 0)
+ #define VIS_LLEN(l)	((l) > _rl_vis_botlin ? 0 : (vis_lbreaks[l+1] - vis_lbreaks[l]))
 diff -urN --no-dereference readline-clean/support/shlib-install readline-workdir/support/shlib-install
 --- readline-clean/support/shlib-install
 +++ readline-workdir/support/shlib-install
@@ -40,18 +52,18 @@ diff -urN --no-dereference readline-clean/support/shobj-conf readline-workdir/su
 diff -urN --no-dereference readline-clean/terminal.c readline-workdir/terminal.c
 --- readline-clean/terminal.c
 +++ readline-workdir/terminal.c
-@@ -102,12 +102,12 @@
+@@ -104,12 +104,12 @@
  
- static int tcap_initialized;
- 
--#if !defined (__linux__) && !defined (NCURSES_VERSION)
-+//#if !defined (__linux__) && !defined (NCURSES_VERSION)
+ /* Systems for which PC/BC/UP are defined in the curses library and need an
+    extern definition here. */
+-#if !defined (__linux__) && !defined (__gnu_hurd__) && !defined (NCURSES_VERSION)
++//#if !defined (__linux__) && !defined (__gnu_hurd__) && !defined (NCURSES_VERSION)
  #  if defined (__EMX__) || defined (NEED_EXTERN_PC)
- extern 
+ extern
  #  endif /* __EMX__ || NEED_EXTERN_PC */
  char PC, *BC, *UP;
 -#endif /* !__linux__ && !NCURSES_VERSION */
 +//#endif /* !__linux__ && !NCURSES_VERSION */
  
+ 
  /* Some strings to control terminal actions.  These are output by tputs (). */
- char *_rl_term_clreol;

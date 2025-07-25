@@ -1,19 +1,27 @@
 #! /bin/sh
 
 name=readline
-_patch=13
-version=8.2p${_patch}
+_minor_version=8.3
+_patch=001
+version=${_minor_version}.${_patch}
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-8.2.tar.gz"
-tarball_blake2b="7974322b9c092a756a79e537df08e8532f8e0fcb598f77732e28287c33ebec9e9837ed88b43334c310892d56a871b423903f0f564def2fbe700a1004f2ae7b18"
+_base_patch=001
+if [ "${_base_patch}" = 001 ]; then
+    tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}.tar.gz"
+else
+    tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}.${_base_patch}.tar.gz"
+fi
+tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
 source_allow_network="yes"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 
 prepare() {
-    for p in $(seq -w 0${_patch}); do
-        curl -L https://ftpmirror.gnu.org/gnu/readline/readline-8.2-patches/readline82-$p | patch -p0
-    done
+    if ! [ "${_patch}" = 0 ]; then
+        for p in $(seq -w ${_base_patch} ${_patch}); do
+            curl -L https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}-patches/readline$(echo "${_minor_version}" | sed 's/\.//g')-$p | patch -p0
+        done
+    fi
 
     autotools_recursive_regen
 }
@@ -30,6 +38,8 @@ build() {
 
 package() {
     make install DESTDIR="${dest_dir}"
+
+    install -Dm644 "${base_dir}"/build-support/readline/inputrc "${dest_dir}"/etc/inputrc
 
     post_package_strip
 }

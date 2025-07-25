@@ -1,21 +1,26 @@
 #! /bin/sh
 
 name=bash
-_base_patch=37
-_patch=37
-version=5.2.p${_patch}
+_minor_version=5.3
+_patch=003
+version=${_minor_version}.${_patch}
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-5.2.${_base_patch}.tar.gz"
-tarball_blake2b="7b4dbb7497ab8b54fa30e82591a0557daf0a0668f458db36a032918abc66c7ed35339e947bd95ff1ffbf353403ebee789d27ffa9c037b51c817c074d7a28bb3b"
+_base_patch=001
+if [ "${_base_patch}" = 001 ]; then
+    tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-${_minor_version}.tar.gz"
+else
+    tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-${_minor_version}.${_base_patch}.tar.gz"
+fi
+tarball_blake2b="88a4f0146eb11698120890f2afaf28210295135f8f7f61dcbb99eeb0c39c84da5360a3b0572a26dc2a36b207fd440b83bb5a947213af90306c8f6ab608964ff1"
 source_allow_network=yes
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses readline"
 
 prepare() {
-    if ! [ "${_base_patch}" = "${_patch}" ]; then
+    if ! [ "${_patch}" = 0 ]; then
         for p in $(seq -w ${_base_patch} ${_patch}); do
-            curl -L https://ftpmirror.gnu.org/gnu/bash/bash-5.2-patches/bash52-0$p | patch -p0
+            curl -L https://ftpmirror.gnu.org/gnu/bash/bash-${_minor_version}-patches/bash$(echo "${_minor_version}" | sed 's/\.//g')-$p | patch -p0
         done
     fi
 
@@ -25,7 +30,6 @@ prepare() {
 configure() {
     autotools_configure \
         CFLAGS="$TARGET_CFLAGS \
-            -std=gnu17 \
             -DDEFAULT_PATH_VALUE='\"/usr/local/sbin:/usr/local/bin:/usr/bin\"' \
             -DSTANDARD_UTILS_PATH='\"/usr/bin\"' \
             -DSYS_BASHRC='\"/etc/bash.bashrc\"' \

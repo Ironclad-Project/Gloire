@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=curl
-version=8.14.1
+version=8.15.0
 revision=1
 tarball_url="https://curl.se/download/curl-${version}.tar.xz"
-tarball_blake2b="4ce2277d143084823855b714e86047a94d4c52a686b8d16d9ab76c31168f1a74d63dfa7608cff36706a8a0b9bf9cc611a9b99860b176a227bca580cd95e9cff2"
+tarball_blake2b="ae809be87f34d079413129c27e618a6d15c2bf9087fd7e679cefe9b6d8645f0dd092e8c3e1f62b7bd0dffdd0b77e0bc5ac031ffce4e50060ec20b280618c8e68"
 hostdeps="gcc pkg-config"
 deps="core-libs openssl zlib zstd libpsl libidn2"
 

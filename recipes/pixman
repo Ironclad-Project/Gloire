@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=pixman
-version=0.46.2
+version=0.46.4
 revision=1
 git_url="https://gitlab.freedesktop.org/pixman/pixman.git"
-commit=195e9f88899d80ec75fdb0ff469206cd4adb129f
+commit=9cc163c9da0fb4da430641715313d95a6ec466d9
 hostdeps="gcc pkg-config"
 deps="core-libs libpng"
 

@@ -1,11 +1,10 @@
 #! /bin/sh
 
 name=libpng
-version=1.6.49
+version=1.6.50
 revision=1
-git_url="https://git.code.sf.net/p/libpng/code"
-commit=640204280f8109d7165f95d2b177f89baf20b253
-shallow=no
+git_url="https://github.com/pnggroup/libpng.git"
+commit=2b978915d82377df13fcbb1fb56660195ded868a
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libwebp
-version=1.5.0
-revision=2
-tarball_url="https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${version}.tar.gz"
-tarball_blake2b="68e94f5592556ac4b57011a94abc651a187b23ca7cddd6791aec3f62bede7a7c176d4a67f8170a83990a6ff290a6716011bdb117818657b63bd3e21a8d5ed59e"
+version=1.6.0
+revision=1
+git_url="https://github.com/webmproject/libwebp.git"
+commit=4fa21912338357f89e4fd51cf2368325b59e9bd9
 hostdeps="gcc pkg-config"
 deps="core-libs libjpeg-turbo libpng freeglut sdl2-compat libtiff"
 

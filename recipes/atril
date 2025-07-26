@@ -1,48 +1,45 @@
 #! /bin/sh
 
 name=atril
-version=1.28.1
+version=1.28.2
 revision=1
-tarball_url="https://github.com/mate-desktop/atril/releases/download/v${version}/atril-${version}.tar.xz"
-tarball_blake2b="7c90f1bd8c4e30d1208a5514e8c9153b919443ca0fcbbb7de4db3e74c14330f24fad41f57f1781b243707e724bb9ce4952ca9267755d4482bad7e605421e501f"
+git_url="https://github.com/mate-desktop/atril.git"
+commit=6e116cd028790a0123db5b9e6be7ae9bc03c33c3
 imagedeps="libglib2.0-dev-bin itstool libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core poppler glib2 libxml2 mate-desktop zlib gdk-pixbuf gtk3 libice libsm libx11 cairo pango caja libtiff libarchive"
+source_allow_network=yes
 
 prepare() {
-    autotools_recursive_regen
+    meson subprojects download
 }
 
 configure() {
-    autotools_configure \
-        --enable-comics \
-        --enable-pdf \
-        --enable-pixbuf \
-        --enable-previewer \
-        --enable-thumbnailer \
-        --without-keyring \
-        --disable-caja \
-        --enable-dbus \
-        --disable-debug \
-        --disable-djvu \
-        --disable-dvi \
-        --disable-epub \
-        --disable-introspection \
-        --enable-nls \
-        --disable-ps \
-        --disable-synctex \
-        --disable-t1lib \
-        --disable-tests \
-        --enable-tiff \
-        --disable-xps
+    meson_configure \
+        -Dcomics=true \
+        -Ddjvu=false \
+        -Ddvi=false \
+        -Dt1lib=false \
+        -Depub=false \
+        -Dpdf=true \
+        -Dpixbuf=true \
+        -Dps=false \
+        -Dtiff=true \
+        -Dxps=false \
+        -Dkeyring=false \
+        -Dpreviewer=true \
+        -Dthumbnailer=true \
+        -Dintrospection=false \
+        -Denable_dbus=true \
+        -Denable_debug=false
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

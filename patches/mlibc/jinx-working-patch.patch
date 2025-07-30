@@ -221,6 +221,45 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlib
  	return c;
  }
  
+diff -urN --no-dereference mlibc-clean/options/internal/riscv64/setjmp.S mlibc-workdir/options/internal/riscv64/setjmp.S
+--- mlibc-clean/options/internal/riscv64/setjmp.S
++++ mlibc-workdir/options/internal/riscv64/setjmp.S
+@@ -36,7 +36,34 @@
+ .global sigsetjmp
+ .type sigsetjmp, "function"
+ sigsetjmp:
+-	unimp // TODO
++	sd ra, 0(a0)
++	sd s0, 8(a0)
++	sd s1, 16(a0)
++	sd s2, 24(a0)
++	sd s3, 32(a0)
++	sd s4, 40(a0)
++	sd s5, 48(a0)
++	sd s6, 56(a0)
++	sd s7, 64(a0)
++	sd s8, 72(a0)
++	sd s9, 80(a0)
++	sd s10, 88(a0)
++	sd s11, 96(a0)
++	sd sp, 104(a0)
++	fsd fs0, 112(a0)
++	fsd fs1, 120(a0)
++	fsd fs2, 128(a0)
++	fsd fs3, 136(a0)
++	fsd fs4, 144(a0)
++	fsd fs5, 152(a0)
++	fsd fs6, 160(a0)
++	fsd fs7, 168(a0)
++	fsd fs8, 176(a0)
++	fsd fs9, 184(a0)
++	fsd fs10, 192(a0)
++	fsd fs11, 200(a0)
++	li a0, 0
++	ret
+ 
+ .global longjmp
+ .type longjmp, "function"
 diff -urN --no-dereference mlibc-clean/options/nvmm/generic/nvmm.cpp mlibc-workdir/options/nvmm/generic/nvmm.cpp
 --- mlibc-clean/options/nvmm/generic/nvmm.cpp	1970-01-01 01:00:00.000000000 +0100
 +++ mlibc-workdir/options/nvmm/generic/nvmm.cpp
@@ -1834,7 +1873,28 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  void sys_libc_panic() {
-@@ -157,7 +157,7 @@
+@@ -48,8 +48,19 @@
+ }
+ 
+ int sys_tcb_set(void *pointer) {
+-	int ret, errno;
++	int errno;
++
++#if defined(__x86_64__)
++	int ret;
+ 	SYSCALL2(SYSCALL_ARCH_PRCTL, 1, pointer);
++#elif defined(__riscv) && __riscv_xlen == 64
++	uintptr_t tp = reinterpret_cast<uintptr_t>(pointer) + sizeof(Tcb);
++	asm volatile("mv tp, %0" : : "r"(tp) : "memory");
++	errno = 0;
++#else
++	#error Unknown architecture
++#endif
++
+ 	return errno;
+ }
+ 
+@@ -157,7 +168,7 @@
  int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
@@ -1843,7 +1903,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_read = ret;
  	return errno;
  }
-@@ -165,7 +165,7 @@
+@@ -165,7 +176,7 @@
  int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
  	ssize_t ret;
  	int errno;
@@ -1852,7 +1912,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_written = ret;
  	return errno;
  }
-@@ -173,7 +173,7 @@
+@@ -173,7 +184,7 @@
  int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read) {
  	ssize_t ret;
  	int errno;
@@ -1861,7 +1921,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_read = ret;
  	return errno;
  }
-@@ -181,7 +181,7 @@
+@@ -181,7 +192,7 @@
  int sys_pwrite(int fd, const void *buf, size_t n, off_t off, ssize_t *bytes_written) {
  	ssize_t ret;
  	int errno;
@@ -1870,7 +1930,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	*bytes_written = ret;
  	return errno;
  }
-@@ -329,9 +329,10 @@
+@@ -329,9 +340,10 @@
  }
  
  int sys_getsid(pid_t pid, pid_t *sid) {
@@ -1884,7 +1944,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  pid_t sys_getpid() {
-@@ -408,10 +409,16 @@
+@@ -408,10 +420,16 @@
  }
  
  int sys_getpgid(pid_t pid, pid_t *pgid) {
@@ -1905,7 +1965,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  int sys_execve(const char *path, char *const argv[], char *const envp[]) {
-@@ -433,7 +440,24 @@
+@@ -433,7 +451,24 @@
  	pid_t ret;
  	int errno;
  
@@ -1931,7 +1991,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -485,12 +509,6 @@
+@@ -485,12 +520,6 @@
  	return errno;
  }
  
@@ -1944,7 +2004,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_ttyname(int fd, char *buff, size_t size) {
  	int ret, errno;
  	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
-@@ -542,13 +560,6 @@
+@@ -542,13 +571,6 @@
  int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	int ret, errno;
  
@@ -1958,7 +2018,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
  
  	if (ret == -1) {
-@@ -842,8 +853,10 @@
+@@ -842,8 +864,10 @@
  }
  
  int sys_setsid(pid_t *sid) {
@@ -1971,7 +2031,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -865,7 +878,7 @@
+@@ -865,7 +889,7 @@
  
  int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
  	 int ret, errno;
@@ -1980,7 +2040,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	 if (ret == -1) {
  		  return errno;
-@@ -1240,6 +1253,9 @@
+@@ -1240,6 +1264,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -1990,7 +2050,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
-@@ -1486,5 +1502,145 @@
+@@ -1486,5 +1513,145 @@
  	return 0;
  }
  

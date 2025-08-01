@@ -11,7 +11,7 @@ if [ "${_base_patch}" = 001 ]; then
 else
     tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-${_minor_version}.${_base_patch}.tar.gz"
 fi
-tarball_blake2b="88a4f0146eb11698120890f2afaf28210295135f8f7f61dcbb99eeb0c39c84da5360a3b0572a26dc2a36b207fd440b83bb5a947213af90306c8f6ab608964ff1"
+tarball_blake2b="82d1b54322bbd1e8c2a93380f1b2888a42a1d7186e504f41cee705a0fdd41463d8f20baa1755051e1396192f8ebd089524767d933a9e0b5fb76f2588601539bb"
 source_allow_network=yes
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"

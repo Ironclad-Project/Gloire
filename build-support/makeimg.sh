@@ -52,12 +52,12 @@ rm -f gloire.img
 fallocate -l "${IMAGE_SIZE}" gloire.img
 
 # Format and mount the image.
-$SUDO parted -s gloire.img mklabel gpt
-$SUDO parted -s gloire.img mkpart ESP fat32 2048s 5%
-$SUDO parted -s gloire.img mkpart gloire_data ext2 5% 100%
-$SUDO parted -s gloire.img set 1 esp on
-$SUDO sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614174001
-$SUDO sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mklabel gpt
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart ESP fat32 2048s 5%
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart gloire_data ext2 5% 100%
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img set 1 esp on
+PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614174001
+PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 LOOPBACK_DEV=$($SUDO losetup -Pf --show gloire.img)
 $SUDO mkfs.fat ${LOOPBACK_DEV}p1
 $SUDO mkfs.ext2 ${LOOPBACK_DEV}p2

@@ -1,0 +1,25 @@
+name: Gloire spellcheck
+
+on: [push, pull_request]
+
+jobs:
+  ci_build:
+    name: Check for spelling mistakes
+    runs-on: codeberg-tiny
+    container: archlinux:latest
+
+    steps:
+      - name: Create resolv.conf
+        run: |
+          set -ex
+          echo 'nameserver 8.8.8.8' >/etc/resolv.conf
+          echo 'nameserver 8.8.4.4' >>/etc/resolv.conf
+
+      - name: Install dependencies
+        run: pacman -Syu --noconfirm && pacman -S nodejs git typos --noconfirm
+
+      - name: Checkout code
+        uses: https://code.forgejo.org/actions/checkout@v4
+
+      - name: Run checks
+        run: typos *.md

@@ -1,0 +1,15 @@
+diff -urN --no-dereference gdb-clean/bfd/config.bfd gdb-workdir/bfd/config.bfd
+--- gdb-clean/bfd/config.bfd
++++ gdb-workdir/bfd/config.bfd
+@@ -705,6 +705,11 @@
+     targ_selvecs="i386_elf32_vec"
+     want64=true
+     ;;
++  x86_64-*-ironclad*)
++    targ_defvec=x86_64_elf64_vec
++    targ_selvecs="i386_elf32_vec"
++    want64=true
++    ;;
+   x86_64-*-netbsd* | x86_64-*-openbsd*)
+     targ_defvec=x86_64_elf64_vec
+     targ_selvecs="i386_elf32_vec iamcu_elf32_vec i386_coff_vec i386_pei_vec x86_64_pe_vec x86_64_pei_vec"

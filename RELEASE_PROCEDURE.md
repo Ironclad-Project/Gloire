@@ -11,7 +11,7 @@ The releases have the following packages:
 ```
 base ace-of-penguins slim xorg-server st jwm hyfetch xfe mesa-demos
 xorg-xeyes nyancat xorg-xwininfo xorg-xfontsel gloire-install mate-icon-theme
-dbus xorg-xinit xf86-input-keyboard xf86-input-mouse xf86-video-fbdev
+dbus xorg-xinit xf86-input-keyboard xf86-input-mouse xf86-video-fbdev gdb
 ```
 
 ## Release steps

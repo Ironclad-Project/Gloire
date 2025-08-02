@@ -1991,7 +1991,26 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	if (ret == -1) {
  		return errno;
-@@ -485,12 +520,6 @@
+@@ -448,15 +483,13 @@
+ 
+ int sys_getrlimit(int resource, struct rlimit *limit) {
+ 	uint64_t ret, errno;
+-	SYSCALL1(SYSCALL_GETRLIMIT, resource);
+-	limit->rlim_cur = ret;
+-	limit->rlim_max = ret;
++	SYSCALL3(SYSCALL_RLIMIT, resource, NULL, limit);
+ 	return errno;
+ }
+ 
+ int sys_setrlimit(int resource, const struct rlimit *limit) {
+-	int ret, errno;
+-	SYSCALL2(SYSCALL_SETRLIMIT, resource, limit->rlim_cur);
++	uint64_t ret, errno;
++	SYSCALL3(SYSCALL_RLIMIT, resource, limit, NULL);
+ 	return errno;
+ }
+ 
+@@ -485,12 +518,6 @@
  	return errno;
  }
  
@@ -2004,7 +2023,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  int sys_ttyname(int fd, char *buff, size_t size) {
  	int ret, errno;
  	SYSCALL3(SYSCALL_TTYNAME, fd, buff, size);
-@@ -542,13 +571,6 @@
+@@ -542,13 +569,6 @@
  int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
  	int ret, errno;
  
@@ -2018,7 +2037,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
  
  	if (ret == -1) {
-@@ -842,8 +864,10 @@
+@@ -842,8 +862,10 @@
  }
  
  int sys_setsid(pid_t *sid) {
@@ -2031,7 +2050,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -865,7 +889,7 @@
+@@ -865,7 +887,7 @@
  
  int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
  	 int ret, errno;
@@ -2040,7 +2059,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	 if (ret == -1) {
  		  return errno;
-@@ -1240,6 +1264,9 @@
+@@ -1240,6 +1262,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -2050,7 +2069,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
-@@ -1486,5 +1513,145 @@
+@@ -1486,5 +1511,145 @@
  	return 0;
  }
  
@@ -2378,7 +2397,17 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_FCNTL                30
  #define SYSCALL_EXIT_THREAD          31
  #define SYSCALL_GETENTROPY           32
-@@ -72,8 +73,8 @@
+@@ -62,8 +63,7 @@
+ #define SYSCALL_PTRACE               51
+ #define SYSCALL_LISTEN               52
+ #define SYSCALL_ACCEPT               53
+-#define SYSCALL_GETRLIMIT            54
+-#define SYSCALL_SETRLIMIT            55
++#define SYSCALL_RLIMIT               54
+ #define SYSCALL_ACCESS               56
+ #define SYSCALL_PPOLL                57
+ #define SYSCALL_GETEUID              58
+@@ -72,8 +72,8 @@
  #define SYSCALL_UMASK                61
  #define SYSCALL_REBOOT               62
  #define SYSCALL_FCHOWN               63
@@ -2389,7 +2418,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_GETSOCKNAME          66
  #define SYSCALL_GETPEERNAME          67
  #define SYSCALL_SHUTDOWN             68
-@@ -85,8 +86,8 @@
+@@ -85,8 +85,8 @@
  #define SYSCALL_SENDTO               74
  #define SYSCALL_CONFIG_NETINTER      75
  #define SYSCALL_UTIMES               76
@@ -2400,7 +2429,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_SIGPROCMASK          79
  #define SYSCALL_SIGACTION            80
  #define SYSCALL_SEND_SIGNAL          81
-@@ -115,7 +116,6 @@
+@@ -115,7 +115,6 @@
  #define SYSCALL_LISTMOUNTS          104
  #define SYSCALL_UNAME               105
  #define SYSCALL_LISTTHREADS         106
@@ -2408,7 +2437,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/sys/syscall.h ml
  #define SYSCALL_LISTNETINTER        108
  #define SYSCALL_DUMPLOGS            109
  #define SYSCALL_LISTFLOCKS          110
-@@ -125,6 +125,28 @@
+@@ -125,6 +124,28 @@
  #define SYSCALL_GETCPUINFO          114
  #define SYSCALL_SOCKETPAIR          115
  #define SYSCALL_MADVISE             116

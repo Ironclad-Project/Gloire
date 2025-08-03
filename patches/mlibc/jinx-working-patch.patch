@@ -2037,7 +2037,20 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	SYSCALL3(SYSCALL_IOCTL, fd, request, arg);
  
  	if (ret == -1) {
-@@ -842,8 +862,10 @@
+@@ -652,6 +672,12 @@
+ 	return sys_ioctl(fd, TCFLSH, &action, &ret);
+ }
+ 
++int sys_tcdrain(int fd) {
++	int ret;
++	int value = 0;
++	return sys_ioctl(fd, TCSBRKP, &value, &ret);
++}
++
+ int sys_access(const char *path, int mode) {
+ 	int ret, errno;
+ 	size_t len = strlen(path);
+@@ -842,8 +868,10 @@
  }
  
  int sys_setsid(pid_t *sid) {
@@ -2050,7 +2063,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  }
  
  #ifndef MLIBC_BUILDING_RTLD
-@@ -865,7 +887,7 @@
+@@ -865,7 +893,7 @@
  
  int sys_clone(void *tcb, pid_t *tid_out, void *stack) {
  	 int ret, errno;
@@ -2059,7 +2072,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  
  	 if (ret == -1) {
  		  return errno;
-@@ -1240,6 +1262,9 @@
+@@ -1240,6 +1268,9 @@
  			} else {
  				return EFAULT;
  			}
@@ -2069,7 +2082,7 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  		default:
  			return EINVAL;
  	}
-@@ -1486,5 +1511,145 @@
+@@ -1486,5 +1517,145 @@
  	return 0;
  }
  

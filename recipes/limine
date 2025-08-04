@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=limine
-version=9.5.2
+version=9.5.3
 revision=1
 tarball_url="https://github.com/limine-bootloader/limine/releases/download/v${version}/limine-${version}.tar.gz"
-tarball_blake2b="3825c9436df92bff0c5c5d6884ed26a76be259cace165336f09402f3c235ff1c4a93e970e63cff8397c0d5637f9c8d3ea21dda6d99e0f923d9d5df89db8a647a"
+tarball_blake2b="9049ccfd2c7b20e75e1410e20b2b193b0dee2d7655fc679df37866484a4a50c9b9c251e9b23a41809d0f47e8c2f44a56748ddd73795964dceeec1cdd5cd0f3e0"
 imagedeps="mtools nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs"

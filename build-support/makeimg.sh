@@ -2,13 +2,33 @@
 
 set -ex
 
+script_dir="$(dirname "$0")"
+test -z "${script_dir}" && script_dir=.
+
+source_dir="$(cd "${script_dir}"/.. && pwd -P)"
+build_dir="$(pwd -P)"
+
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
+# Set default ARCH to x86_64 unless overridden.
+: "${ARCH:=x86_64}"
+
 # Ensure that the Ironclad kernel has been cloned.
-if ! [ -d ironclad ]; then
-    git clone https://codeberg.org/Ironclad/Ironclad ironclad
-    git -C ironclad checkout $(cat .ironclad-commit)
+if ! [ -d "${source_dir}"/ironclad ]; then
+    git clone https://codeberg.org/Ironclad/Ironclad "${source_dir}"/ironclad
+    git -C "${source_dir}"/ironclad checkout $(cat "${source_dir}"/.ironclad-commit)
+fi
+
+# Create build directory if needed.
+mkdir -p "${build_dir}"
+
+# Enter build directory.
+cd "${build_dir}"
+
+# If already initialized, get ARCH from .jinx-parameters file.
+if [ -f .jinx-parameters ]; then
+    ARCH="$(. ./.jinx-parameters && echo "${JINX_ARCH}")"
 fi
 
 # Build the sysroot with jinx, and make sure the packages the particular
@@ -16,25 +36,27 @@ fi
 set -f
 $SUDO rm -rf sysroot
 
+if ! [ -f .jinx-parameters ]; then
+    "${source_dir}"/jinx init "${source_dir}" ARCH="${ARCH}"
+fi
+
 # Retry the installation in case of transient errors like 503 TooManyRequests.
-until ./jinx build-if-needed base $PKGS_TO_INSTALL; do
+until "${source_dir}"/jinx build-if-needed base $PKGS_TO_INSTALL; do
     echo "Package installation failed (likely due to rate limiting). Retrying in 30 seconds..."
     sleep 30
 done
 
-$SUDO --preserve-env ./jinx install "sysroot" base $PKGS_TO_INSTALL
+$SUDO --preserve-env "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
-if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    if ! [ -d host-pkgs/limine ]; then
-        ./jinx host-build limine
-    fi
-else
-    if ! [ -d host-pkgs/limine ]; then
-        ./jinx host-build limine
-    fi
+
+if ! [ -d host-pkgs/limine ]; then
+    "${source_dir}"/jinx host-build limine
+fi
+
+if [ "$ARCH" = x86_64 ]; then
     if ! [ -d host-pkgs/memtest86+ ]; then
-        ./jinx host-build memtest86+
+        "${source_dir}"/jinx host-build memtest86+
     fi
 fi
 
@@ -74,24 +96,27 @@ $SUDO mount ${LOOPBACK_DEV}p1 mount_dir/boot
 $SUDO dd if=/dev/random of=mount_dir/root/seedfile.bin bs=40M count=1 iflag=fullblock
 
 # Copy the bootloader wallpaper and kernel to the ISO root.
-$SUDO cp artwork/background.png              mount_dir/boot/
+$SUDO cp "${source_dir}"/artwork/background.png mount_dir/boot/
 $SUDO cp sysroot/usr/share/ironclad/ironclad mount_dir/boot/
 
 # Install the boot binaries required by the target.
-if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    $SUDO mkdir -p mount_dir/boot/limine
-    $SUDO mkdir -p mount_dir/boot/EFI/BOOT
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/limine/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    mount_dir/boot/EFI/BOOT/
-else
-    $SUDO mkdir -p mount_dir/boot/EFI/BOOT
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        mount_dir/boot/EFI/BOOT/
-    $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       mount_dir/boot/EFI/BOOT/
-    $SUDO cp host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
-fi
+case "$ARCH" in
+    riscv64)
+        $SUDO mkdir -p mount_dir/boot/limine
+        $SUDO mkdir -p mount_dir/boot/EFI/BOOT
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/limine/
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    mount_dir/boot/EFI/BOOT/
+        ;;
+    x86_64)
+        $SUDO mkdir -p mount_dir/boot/EFI/BOOT
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios.sys    mount_dir/boot/
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin mount_dir/boot/
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin mount_dir/boot/
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        mount_dir/boot/EFI/BOOT/
+        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       mount_dir/boot/EFI/BOOT/
+        $SUDO cp host-pkgs/memtest86+/boot/memtest.bin                      mount_dir/boot/
+        ;;
+esac
 
 # Generate the config file. Take into account that there may not be a graphical
 # option, and that non x86 ports will not have memtest.
@@ -148,7 +173,7 @@ cat << 'EOF' >> "$CONFIG_TEMP"
         cmdline: init=/bin/gcon rootuuid=123e4567-e89b-12d3-a456-426614174000  nolocaslr noprogaslr
 EOF
 
-if [ -z "$JINX_CONFIG_FILE" ]; then # Assume its only defined for riscv64.
+if [ "$ARCH" = x86_64 ]; then # Assume its only defined for riscv64.
    cat << 'EOF' >> "$CONFIG_TEMP"
 
 /Memory test (memtest86+)
@@ -176,9 +201,7 @@ $SUDO rm -rf mount_dir
 $SUDO losetup -d ${LOOPBACK_DEV}
 
 # Arch-specific image triggers.
-if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
-    :
-else
+if [ "$ARCH" = x86_64 ]; then
     host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
 fi
 

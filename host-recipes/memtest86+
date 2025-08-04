@@ -7,7 +7,7 @@ hostdeps="gcc"
 imagedeps="nasm build-essential mtools dosfstools xorriso git"
 
 build() {
-    if [ "$ARCHITECTURE" != "x86_64" ]; then
+    if [ "${JINX_ARCH}" != "x86_64" ]; then
         return
     fi
 
@@ -18,7 +18,7 @@ build() {
 }
 
 package() {
-    if [ "$ARCHITECTURE" != "x86_64" ]; then
+    if [ "${JINX_ARCH}" != "x86_64" ]; then
         return
     fi
 

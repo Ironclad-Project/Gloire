@@ -1,3 +1,0 @@
-ARCHITECTURE=riscv64
-
-. "${base_dir}/jinx-config"

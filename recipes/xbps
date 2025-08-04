@@ -34,7 +34,7 @@ package() {
     rm "${dest_dir}${prefix}"/lib/*.a
 
     # Change architecture for the main repository as needed.
-    sed -i "s/ARCH_HERE/${ARCHITECTURE}/g" "${dest_dir}${prefix}"/share/xbps.d/00-repository-main.conf
+    sed -i "s/ARCH_HERE/${JINX_ARCH}/g" "${dest_dir}${prefix}"/share/xbps.d/00-repository-main.conf
 
     post_package_strip
 }

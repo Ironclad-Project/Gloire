@@ -13,7 +13,7 @@ deps="mlibc-headers"
 configure() {
         CFLAGS="$TARGET_CFLAGS" \
         CXXFLAGS="$TARGET_CXXFLAGS" \
-        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-$ARCHITECTURE.a" \
+        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-${JINX_ARCH}.a" \
     meson_configure_noflags \
         --buildtype=release \
         -Dno_headers=true \

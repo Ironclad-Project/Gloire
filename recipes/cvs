@@ -19,7 +19,7 @@ configure() {
 }
 
 build() {
-    make AR=$ARCHITECTURE-ironclad-mlibc-ar -j${parallelism}
+    make AR=${OS_TRIPLET}-ar -j${parallelism}
 }
 
 package() {

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.5
+JINX_MAJOR_VER=0.6
 
 HOST_CFLAGS="-O2 -pipe -fstack-clash-protection"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
@@ -10,15 +10,9 @@ TARGET_CFLAGS="$HOST_CFLAGS"
 TARGET_CXXFLAGS="$HOST_CXXFLAGS"
 TARGET_LDFLAGS="$HOST_LDFLAGS"
 
-if [ -z "$ARCHITECTURE" ]; then
-    ARCHITECTURE=x86_64
-fi
+OS_TRIPLET=${JINX_ARCH}-ironclad-mlibc
 
-JINX_ARCH=${ARCHITECTURE}
-
-OS_TRIPLET=$ARCHITECTURE-ironclad-mlibc
-
-case "$ARCHITECTURE" in
+case "${JINX_ARCH}" in
     x86_64)
         TARGET_CFLAGS="$TARGET_CFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
         TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
@@ -150,7 +144,7 @@ meson_configure_noflags() {
     fi
 
     meson setup "${meson_source_dir}" \
-        --cross-file "${base_dir}/build-support/cross_file-$ARCHITECTURE.txt" \
+        --cross-file "${base_dir}/build-support/cross_file-${JINX_ARCH}.txt" \
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -176,7 +170,7 @@ cmake_configure_noflags() {
 
     cmake "${cmake_source_dir}" \
         -DCMAKE_MODULE_PATH="${base_dir}/build-support/cmake-host" \
-        -DCMAKE_TOOLCHAIN_FILE="${base_dir}/build-support/CMakeToolchain-$ARCHITECTURE.txt" \
+        -DCMAKE_TOOLCHAIN_FILE="${base_dir}/build-support/CMakeToolchain-${JINX_ARCH}.txt" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_INSTALL_SYSCONFDIR=/etc \
         -DCMAKE_INSTALL_LOCALSTATEDIR=/var \

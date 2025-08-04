@@ -33,8 +33,8 @@ export LC_COLLATE
 
 umask 0022
 
-jinx_major_ver="0.5"
-jinx_minor_ver="11"
+jinx_major_ver="0.6"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -56,6 +56,7 @@ cmd_help() {
     echo "usage: $0 <command> <package>"
     printf "\n   help|--help        Displays this message"
     printf "\n   version|--version  Prints the version"
+    printf "\n   init               Initialises a build directory"
     printf "\n   build              Builds package(s), does incremental builds"
     printf "\n   build-if-needed    Builds package(s) if necessary"
     printf "\n   rebuild            Rebuilds package(s)"
@@ -67,6 +68,37 @@ cmd_help() {
     printf "\n\nexample: \"$0 build-if-needed '*'\"\n"
 }
 
+cmd_init() {
+    if ! [ -f "$1"/Jinxfile ]; then
+        die "$0: Provided source directory contains no Jinxfile"
+    fi
+
+    srcdir="$1"
+
+    if [ -f ".jinx-parameters" ]; then
+        die "$0: Current directory already initialised, run '$0 deinit' first"
+    fi
+
+    if [ -f "Jinxfile" ]; then
+        die "$0: In-tree builds are not supported"
+    fi
+
+    cat <<EOF >.jinx-parameters
+#! /bin/sh
+
+JINX_SOURCE_DIR="${srcdir}"
+JINX_ARCH="$(uname -m)"
+EOF
+
+    shift 1
+
+    for p in "$@"; do
+        echo "JINX_$p" | sed 's/=/="/g;s/$/"/g' >>.jinx-parameters
+    done
+
+    echo "Initialised with '${srcdir}' as source directory"
+}
+
 case "$1" in
     version|--version)
         echo "Jinx version $jinx_version"
@@ -74,6 +106,11 @@ case "$1" in
         ;;
     help|--help)
         cmd_help
+        exit 0
+        ;;
+    init)
+        shift 1
+        cmd_init "$@"
         exit 0
         ;;
 esac
@@ -157,12 +194,8 @@ script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
 in_container=false
-if [ "$script" = "//jinx" ]; then
+if [ "$script" = "/base_dir/jinx" ]; then
     in_container=true
-fi
-
-if [ "$in_container" = "false" ] && [ -f ./jinx-parameters ]; then
-    . ./jinx-parameters
 fi
 
 if [ -z "$JINX_PARALLELISM" ]; then
@@ -173,19 +206,28 @@ else
     parallelism="$JINX_PARALLELISM"
 fi
 
-build_dir="$(pwd -P)"
-
-if [ -z "$JINX_SOURCE_DIR" ]; then
-    base_dir="$build_dir"
+if [ "$in_container" = "false" ]; then
+    build_dir="$(pwd -P)"
 else
-    base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
+    build_dir=/build_dir
 fi
 
-if [ -z "$JINX_CONFIG_FILE" ]; then
-    JINX_CONFIG_FILE="${base_dir}/jinx-config"
+if ! [ -f "${build_dir}"/.jinx-parameters ]; then
+    die "$0: Please run '$0 init <source dir> <parameters>' first"
 fi
+
+. "${build_dir}"/.jinx-parameters
+
+if [ "$in_container" = "false" ]; then
+    base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
+else
+    base_dir=/base_dir
+fi
+
+JINX_CONFIG_FILE="${base_dir}/Jinxfile"
+
 if ! [ -d "$(dirname "$JINX_CONFIG_FILE")" ]; then
-    die "$0: cannot access config file directory"
+    die "$0: cannot access Jinxfile directory"
 fi
 JINX_CONFIG_FILE="$(cd "$(dirname "$JINX_CONFIG_FILE")" && pwd -P)"/"$(basename "$JINX_CONFIG_FILE")"
 
@@ -195,10 +237,11 @@ fi
 if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
     die "$0: cannot access cache directory parent"
 fi
-make_dir "$JINX_CACHE_DIR"
-JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
 if [ "$in_container" = "false" ]; then
+    make_dir "$JINX_CACHE_DIR"
+    JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
+
     make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
 
@@ -425,9 +468,6 @@ run_in_container() {
         run_in_cont_colorterm="--env COLORTERM=\"$COLORTERM\""
     fi
 
-    touch "${imgroot}/jinx"
-    chmod +x "${imgroot}/jinx"
-    touch "${imgroot}/jinx-config"
     make_dir "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
     native_mode_mounts=""
@@ -480,13 +520,11 @@ run_in_container() {
         ${run_in_cont_term} \
         ${run_in_cont_colorterm} \
         --env JINX_PARALLELISM="$parallelism" \
-        --env JINX_CONFIG_FILE=/jinx-config \
+        --env JINX_CONFIG_FILE=/base_dir/Jinxfile \
         --env JINX_SOURCE_DIR=/base_dir \
         ${nochown_so} \
         ${container_pkgs_native_mount:+"${container_pkgs_native_mount}"} \
         ${sysroot_native_mount:+"${sysroot_native_mount}"} \
-        -m"${script}":/jinx:ro \
-        -m"${JINX_CONFIG_FILE}":/jinx-config:ro \
         -m"${base_dir}":/base_dir${container_base_dir_ro} \
         ${shadow_git_dir_base:+"${shadow_git_dir_base}"} \
         -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
@@ -495,9 +533,9 @@ run_in_container() {
         ${unshare_net_flag} \
         --workdir / \
         -- \
-        /bin/bash -c "cd /build_dir && /bin/bash /jinx $run_in_cont_argvar"
+        /bin/bash -c "cd /build_dir && /bin/bash /base_dir/jinx $run_in_cont_argvar"
 
-    rm -rf "${imgroot}/sysroot" "${imgroot}/jinx" "${imgroot}/jinx-config" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    rm -rf "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
 
 destroy_container() {
@@ -520,10 +558,9 @@ do_git_fetch() {
 
     if [ "${shallow}" = "no" ]; then
         git clone "${git_url}" "${base_dir}"/sources/${name}
-        git -C "${base_dir}"/sources/${name} checkout "${commit}"
+        git -C "${base_dir}"/sources/${name} -c advice.detachedHead=false checkout "${commit}"
     else
-        git clone "${git_url}" --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
-        git -C "${base_dir}"/sources/${name} fetch --tags --depth=1
+        git clone "${git_url}" -c advice.detachedHead=false --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
     fi
 }
 
@@ -1065,11 +1102,11 @@ do_host_pkg() {
     fi
 
     container_sources_ro=":ro"
-    if ! [ -d "${base_dir}"/host-builds/$1 ]; then
+    if ! [ -d "${build_dir}"/host-builds/$1 ]; then
         run_in_container internal-configure-host $1
     fi
     run_in_container internal-build-host $1
-    rm -rf "${base_dir}"/host-pkgs/$1
+    rm -rf "${build_dir}"/host-pkgs/$1
     run_in_container internal-package-host $1
     unset container_sources_ro
 
@@ -1121,11 +1158,11 @@ do_pkg() {
     fi
 
     container_sources_ro=":ro"
-    if ! [ -d "${base_dir}"/builds/$1 ]; then
+    if ! [ -d "${build_dir}"/builds/$1 ]; then
         run_in_container internal-configure $1
     fi
     run_in_container internal-build $1
-    rm -rf "${base_dir}"/pkgs/$1
+    rm -rf "${build_dir}"/pkgs/$1
     run_in_container internal-package $1
     unset container_sources_ro
 
@@ -2107,7 +2144,7 @@ redo_first_use() {
 }
 
 if ! [ -f "$JINX_CONFIG_FILE" ]; then
-    die "$0: missing Jinx config file '$JINX_CONFIG_FILE'"
+    die "$0: missing Jinxfile in directory '$base_dir'"
 fi
 
 . "${JINX_CONFIG_FILE}"

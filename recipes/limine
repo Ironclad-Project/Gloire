@@ -14,7 +14,7 @@ prepare() {
 }
 
 configure() {
-    if [ "$ARCHITECTURE" = "x86_64" ]; then
+    if [ "${JINX_ARCH}" = "x86_64" ]; then
         X86_FLAGS="--enable-bios \
                    --enable-bios-cd \
                    --enable-bios-pxe \
@@ -24,7 +24,7 @@ configure() {
 
     autotools_configure \
         $X86_FLAGS \
-        --enable-uefi-$ARCHITECTURE \
+        --enable-uefi-${JINX_ARCH} \
         --enable-uefi-cd \
         TOOLCHAIN_FOR_TARGET=${OS_TRIPLET}
 }

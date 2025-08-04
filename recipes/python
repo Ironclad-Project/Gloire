@@ -19,7 +19,7 @@ configure() {
         ac_cv_func_sched_setscheduler=no \
         ac_cv_buggy_getaddrinfo=no \
     autotools_configure \
-        --build=$ARCHITECTURE \
+        --build=${JINX_ARCH} \
         --with-computed-gotos \
         --disable-optimizations \
         --enable-ipv6 \

@@ -104,6 +104,7 @@ The project uses `jinx` as its build system, which is included in the tree.
 The instructions to build an x86_64 system are:
 
 ```bash
+mkdir build-x86_64 && cd build-x86_64
 PKGS_TO_INSTALL="*" ./build-support/makeimg.sh
 ```
 
@@ -125,10 +126,11 @@ The image size will default to 3G, this may be too big or too small for the
 selection of packages the user may have built the image with. For modifying
 this value, use the environment variable `IMAGE_SIZE`.
 
-To build the very experimental riscv64 port, one can instead use:
+To build the riscv64 port, one can instead use:
 
 ```bash
-PKGS_TO_INSTALL="*" JINX_CONFIG_FILE=jinx-config-riscv64 ./build-support/makeimg.sh
+mkdir build-riscv64 && cd build-riscv64
+ARCH=riscv64 PKGS_TO_INSTALL="*" ./build-support/makeimg.sh
 ```
 
 Regardless of architecture, if, instead of building all packages, building

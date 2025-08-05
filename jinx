@@ -596,7 +596,7 @@ do_tarball_fetch() {
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_blake2b}" ]; then
-        actual_blake2b="$("$JINX_CACHE_DIR/b2sum" "${tarball_path}" | awk '{print $1;}')"
+        actual_blake2b="$(b2sum "${tarball_path}" | awk '{print $1;}')"
         if ! [ ${actual_blake2b} = ${tarball_blake2b} ]; then
             die "* error: Failed to verify BLAKE2B for ${name}.
   Expected '${tarball_blake2b}';

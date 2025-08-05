@@ -21,10 +21,6 @@ One can grab a pre-built Gloire image [here](https://codeberg.org/Ironclad/Gloir
 
 ## Running
 
-Gloire as built from this repository will result in a live non-persistent image
-with the option for installing. So keep in mind that when doing changes to the
-filesystem.
-
 > [!IMPORTANT]
 > For disk images, the minimum amount of memory is 500M for the graphical
 > targets and 200M for the terminal-only ones.
@@ -35,7 +31,7 @@ filesystem.
 ### On virtual machines
 
 One can run either the downloaded disk image (uncompressing it first) or a
-built image with an emulator like QEMU, for using QEMU with an x86_64
+built image with an emulator like QEMU. For using QEMU with an x86_64
 image, one can do:
 
 ```bash
@@ -67,18 +63,18 @@ and must be prepared as per QEMU with a
 dd if=/dev/zero of=<firmware path> bs=1 count=0 seek=33554432
 ```
 
-Depending on your distribution, to use Linux's KVM, you might need to add your
-user to the `kvm` usergroup, as such:
-
-```bash
-usermod -aG kvm <user>
-```
+> [!NOTE]
+> Depending on your distribution, to use Linux's KVM, you might need to add your
+> user to the `kvm` usergroup, as such:
+> ```bash
+> usermod -aG kvm <user>
+> ```
 
 ### On physical hardware
 
 Gloire should run fine on any x86 machine, be it UEFI or BIOS. For running it,
 one can burn your gloire image (uncompressing it first if downloaded) to a
-SATA, IDE, or USB drive.
+SATA or NVMe drive.
 
 ## Contributing and bug reporting
 
@@ -95,7 +91,7 @@ You can visit our list of community channels on Ironclad's
 
 A list of the tools needed for compilation of the OS are:
 
-- `git` for cloning packages.
+- `git` for cloning the Ironclad kernel.
 - POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `find`, `free` (usually from `procps`), `grep`, `gzip`, `tar`, `xargs` (usually from `findutils`), and `xz` for Jinx.
 - `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
 - `qemu` for testing, if wanted.
@@ -108,22 +104,23 @@ mkdir build-x86_64 && cd build-x86_64
 PKGS_TO_INSTALL="*" ../build-support/makeimg.sh
 ```
 
-*Note:* on certain distros, like Ubuntu 24.04, one may get an error like:
-```
-.../.jinx-cache/rbrt: failed to open or write to /proc/self/setgroups at line 186: Permission denied
-```
-In that case, it likely means apparmor is preventing the use of user namespaces,
-which `jinx` needs. One can enable user namespaces by running:
-```sh
-sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
-```
-This is not permanent across reboots. To make it so, one can do:
-```sh
-sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
-```
+> [!NOTE]
+> On certain distros, like Ubuntu 24.04, one may get an error like:
+> ```
+> .../.jinx-cache/rbrt: failed to open or write to /proc/self/setgroups at line 186: Permission denied
+> ```
+> In that case, it likely means apparmor is preventing the use of user namespaces,
+> which `jinx` needs. One can enable user namespaces by running:
+> ```sh
+> sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+> ```
+> This is not permanent across reboots. To make it so, one can do:
+> ```sh
+> sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
+> ```
 
-The image size will default to 3G, this may be too big or too small for the
-selection of packages the user may have built the image with. For modifying
+The image size will default to 4G, this may be too big or too small for the
+selection of packages the user may have built the image with. To change
 this value, use the environment variable `IMAGE_SIZE`.
 
 To build the riscv64 port, one can instead use:

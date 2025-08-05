@@ -53,7 +53,7 @@ if [ -z "$1" ]; then
 fi
 
 cmd_help() {
-    echo "usage: $0 <command> <package>"
+    echo "usage: $0 <command> <package(s)>"
     printf "\n   help|--help        Displays this message"
     printf "\n   version|--version  Prints the version"
     printf "\n   init               Initialises a build directory"
@@ -64,8 +64,9 @@ cmd_help() {
     printf "\n   host-rebuild       Same as rebuild, but for host package(s)"
     printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
     printf "\n   install            Installs package(s)"
+    printf "\n   reinstall          Reinstalls package(s)"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
-    printf "\n\nexample: \"$0 build-if-needed '*'\"\n"
+    printf "\n\nexample: $0 build-if-needed '*'\n"
 }
 
 cmd_init() {

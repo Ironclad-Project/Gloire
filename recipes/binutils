@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=binutils
-version=2.44
+version=2.45
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/binutils/binutils-with-gold-${version}.tar.xz"
-tarball_blake2b="d749d5fbab2d6c2455bf9a988daa5c5ab9ecd9ecd63e4be022bc06483ebc996588c515ee4b931ff2ba7bcf43242068c0747e1cad50740523b2073df5a338614f"
+tarball_url="https://ftpmirror.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
+tarball_blake2b="1ce72346b1f531c89feb86b407e2c649151b506ffbd1a02d413411d36f7ede98fa9a1adf75dd941c01df5fe7e6bf151828b269eeb7c278315ca8004bff22eb7f"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib zstd"
@@ -22,7 +22,6 @@ configure() {
         --enable-colored-disassembly \
         --enable-default-execstack=no \
         --enable-deterministic-archives \
-        --enable-gold \
         --enable-ld=default \
         --enable-new-dtags \
         --enable-plugins \

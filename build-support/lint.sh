@@ -12,6 +12,11 @@ print_error() {
 }
 
 verify_build_system() {
+    if ! [ -f sources/$name ]; then
+        printf ' \033[33m(source not downloaded - cannot check build system)\033[0m'
+        return 0
+    fi
+
     # Determine the build system used by the configure step
     name=$(basename "$1")
     build_system=$(grep '_configure' "$1" | sed -E 's|.* ([a-z]+)_configure.*|\1|')

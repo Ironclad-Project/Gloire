@@ -40,11 +40,7 @@ if ! [ -f .jinx-parameters ]; then
     "${source_dir}"/jinx init "${source_dir}" ARCH="${ARCH}"
 fi
 
-# Retry the installation in case of transient errors like 503 TooManyRequests.
-until "${source_dir}"/jinx build-if-needed base $PKGS_TO_INSTALL; do
-    echo "Package installation failed (likely due to rate limiting). Retrying in 30 seconds..."
-    sleep 30
-done
+"${source_dir}"/jinx build-if-needed base $PKGS_TO_INSTALL
 
 $SUDO --preserve-env "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 

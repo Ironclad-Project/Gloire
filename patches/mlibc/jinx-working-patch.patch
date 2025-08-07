@@ -2228,6 +2228,22 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
 +
  #endif
  } // namespace mlibc
+diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/thread.S mlibc-workdir/sysdeps/ironclad/generic/thread.S
+--- mlibc-clean/sysdeps/ironclad/generic/thread.S
++++ mlibc-workdir/sysdeps/ironclad/generic/thread.S
+@@ -10,6 +10,12 @@
+ .section .text
+ .global __mlibc_thread_entry
+ __mlibc_thread_entry:
++	ld a0, 0x0(sp)
++	ld a1, 0x8(sp)
++	ld a2, 0x10(sp)
++
++	addi sp, sp, 24
++	call __mlibc_thread_trampoline
+ #else
+ #error "Missing architecture specific code."
+ #endif
 diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
 --- mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h
 +++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h

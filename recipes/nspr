@@ -2,7 +2,7 @@
 
 name=nspr
 version=4.37
-revision=1
+revision=2
 tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
 tarball_blake2b="672c07a00db9a9f1fe113aedbee748477b7081c7c6b87efdda1eb8a69b37da661d56eb5a5b2b438cdcd193358e25a277a5ffa43ca274a1894bba718cd05bb2e4"
 imagedeps="build-essential gcc"
@@ -19,6 +19,13 @@ prepare() {
 }
 
 configure() {
+        CC="${OS_TRIPLET}-gcc" \
+        CXX="${OS_TRIPLET}-g++" \
+        HOST_CC="gcc" \
+        HOST_CFLAGS="${HOST_CFLAGS}" \
+        HOST_CXXFLAGS="${HOST_CXXFLAGS}" \
+        HOST_CPPFLAGS="${HOST_CPPFLAGS}" \
+        HOST_LDFLAGS="${HOST_LDFLAGS}" \
         CROSS_COMPILE=1 \
         configure_script_path="${source_dir}/nspr/configure" \
     autotools_configure \
@@ -26,17 +33,12 @@ configure() {
         --with-mozilla \
         --with-pthreads \
         --enable-64bit \
-        --build=x86_64-linux \
-        --host=x86_64-linux
+        --build=$(uname -m)-linux \
+        --host=${JINX_ARCH}-linux
 }
 
 build() {
-    # Build a native nsinstall to use during the build
-    make CC=gcc CXX=g++ -C config/ -j${parallelism}
-    mv -v config/nsinstall config/native-nsinstall
-    sed -s 's#/nsinstall$#/native-nsinstall#' -i config/autoconf.mk
-    rm -v config/nsinstall.o
-    make CC=${OS_TRIPLET}-gcc CXX=${OS_TRIPLET}-g++ -j${parallelism}
+    make -j${parallelism}
 }
 
 package() {

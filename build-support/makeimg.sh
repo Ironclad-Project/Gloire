@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 script_dir="$(dirname "$0")"
 test -z "${script_dir}" && script_dir=.
@@ -11,8 +11,15 @@ build_dir="$(pwd -P)"
 # Let the user pass their own $SUDO (or doas).
 : "${SUDO:=sudo}"
 
-# Set default ARCH to x86_64 unless overridden.
-: "${ARCH:=x86_64}"
+# Set ARCH based on the build directory.
+case "$(basename "${build_dir}")" in
+    build-x86_64) ARCH=x86_64 ;;
+    build-riscv64) ARCH=riscv64 ;;
+    *)
+        echo "error: The build directory must be called 'build-<architecture>'." 1>&2
+        exit 1
+        ;;
+esac
 
 # Ensure that the Ironclad kernel has been cloned.
 if ! [ -d "${source_dir}"/ironclad ]; then
@@ -28,7 +35,10 @@ cd "${build_dir}"
 
 # If already initialized, get ARCH from .jinx-parameters file.
 if [ -f .jinx-parameters ]; then
-    ARCH="$(. ./.jinx-parameters && echo "${JINX_ARCH}")"
+    if ! [ "${ARCH}" = "$(. ./.jinx-parameters && echo "${JINX_ARCH}")" ]; then
+        echo "error: Jinx architecture and build dir derived architecture mismatch. Delete build dir." 1>&2
+        exit 1
+    fi
 fi
 
 # Build the sysroot with jinx, and make sure the packages the particular

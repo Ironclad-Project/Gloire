@@ -2,7 +2,7 @@
 
 name=qemu
 version=10.0.2
-revision=1
+revision=2
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_sha512="7fda582c3845ea663aa5eda21bb38ebcfb6c25bccf8944ea6cdf8b5be6946b5a874b36674a7f5db3e325abb9cca0dd9bc0727837fdceb71a8c947d96169a9b20"
 imagedeps="build-essential python3-venv"
@@ -13,6 +13,13 @@ allow_network="yes"
 configure() {
     cp -rp "${source_dir}"/* ./
 
+    NVMM_FLAG=""
+    case "${JINX_ARCH}" in
+        x86_64)
+            NVMM_FLAG="--enable-nvmm"
+            ;;
+    esac
+
     CFLAGS="${TARGET_CFLAGS}" LDFLAGS="${TARGET_LDFLAGS}" ./configure \
         --cross-prefix=${OS_TRIPLET}-                             \
         --host=${OS_TRIPLET}                                      \
@@ -20,7 +27,7 @@ configure() {
         --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu \
         --with-coroutine=sigaltstack                              \
         --disable-tpm                                             \
-        --enable-nvmm \
+        $NVMM_FLAG \
         -Db_colorout=always
 }
 

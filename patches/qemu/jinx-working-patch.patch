@@ -116,6 +116,18 @@ diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
          return;
      }
  }
+diff -urN --no-dereference qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
+--- qemu-clean/util/cpuinfo-riscv.c
++++ qemu-workdir/util/cpuinfo-riscv.c
+@@ -24,6 +24,8 @@
+ 
+ #ifdef __linux__
+     uc->uc_mcontext.__gregs[REG_PC] += 4;
++#elif defined(__ironclad__)
++    // XXX: Actually implement this
+ #elif defined(__OpenBSD__)
+     uc->sc_sepc += 4;
+ #else
 diff -urN --no-dereference qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
 --- qemu-clean/util/oslib-posix.c
 +++ qemu-workdir/util/oslib-posix.c

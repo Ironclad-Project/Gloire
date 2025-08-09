@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libgcrypt
-version=1.11.1
+version=1.11.2
 revision=1
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${version}.tar.gz"
-tarball_blake2b="3e8447599a504eb78b9ce18684d4905527becef39c63a5261ab6349043f98c639f9ee2d309017ad4f21a8ef10e4aeada7d240c8b2cea3202ab7e3c8a2b3e76ce"
+tarball_blake2b="ac605bba888aeb5e9683c9befad77bb176bd27c5a8df86f2202f92f18e71744dd136594f5cc8343df15da004e507bf4cb6ff1e51d8be477e332f4e78d9bc8ed0"
 imagedeps="build-essential libgpg-error-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs libgpg-error"

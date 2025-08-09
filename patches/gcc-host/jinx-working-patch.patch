@@ -259,3 +259,15 @@ diff -urN --no-dereference gcc-host-clean/libstdc++-v3/configure gcc-host-workdi
  
    # All these tests are for C++; save the language and the compiler flags.
    # The CXXFLAGS thing is suspicious, but based on similar bits previously
+diff -urN --no-dereference gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+--- gcc-host-clean/libstdc++-v3/include/bits/ios_base.h
++++ gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+@@ -225,7 +225,7 @@
+ 
+   enum _Ios_Seekdir
+     {
+-      _S_beg = 0,
++      _S_beg = 1,
+       _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
+       _S_end = _GLIBCXX_STDIO_SEEK_END,
+       _S_ios_seekdir_end = 1L << 16

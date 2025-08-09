@@ -1,0 +1,22 @@
+#! /bin/sh
+
+name=libnvmm
+skip_pkg_check=yes
+version=0.0git
+revision=1
+git_url="https://github.com/Ironclad-Project/libnvmm.git"
+commit=70cc122c5f54ed3e037d7664754df678fe33e7fb
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+}

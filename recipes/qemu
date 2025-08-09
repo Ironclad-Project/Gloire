@@ -7,7 +7,7 @@ tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_sha512="7fda582c3845ea663aa5eda21bb38ebcfb6c25bccf8944ea6cdf8b5be6946b5a874b36674a7f5db3e325abb9cca0dd9bc0727837fdceb71a8c947d96169a9b20"
 imagedeps="build-essential python3-venv"
 hostdeps="gcc pkg-config"
-deps="core-libs sdl2-compat gtk3 glib2 ncurses pixman nettle"
+deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman nettle"
 allow_network="yes"
 
 configure() {

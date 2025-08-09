@@ -78,17 +78,16 @@ diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/in
 diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
-@@ -889,6 +889,9 @@
+@@ -889,7 +889,7 @@
  endif
  
  nvmm = not_found
-+if host_os == 'ironclad'
-+  accelerators += 'CONFIG_NVMM'
-+endif
- if host_os == 'netbsd'
+-if host_os == 'netbsd'
++if host_os == 'netbsd' or host_os == 'ironclad'
    nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
    if nvmm.found()
-@@ -2519,6 +2522,7 @@
+     accelerators += 'CONFIG_NVMM'
+@@ -2523,6 +2523,7 @@
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')

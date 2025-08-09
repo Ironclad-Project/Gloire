@@ -265,7 +265,7 @@ diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/
  #include <linux/magic.h>
  #include <sys/vfs.h>
  #endif
-@@ -2142,7 +2142,7 @@
+@@ -2272,7 +2272,7 @@
      }
  
      if (checkFSType) {

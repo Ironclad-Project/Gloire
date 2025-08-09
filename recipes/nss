@@ -55,12 +55,14 @@ build() {
         export SOURCE_PREFIX=${build_dir}/builds/${name}/nss/dist
         export CC=${OS_TRIPLET}-gcc
         export CXX=${OS_TRIPLET}-g++
+        export XCFLAGS="${TARGET_CFLAGS}"
+        export LDFLAGS="${TARGET_LDFLAGS}"
 
         # Then, build some configuration items courtesy of BLFS (see the patches).
-        make V=1 -C config NSINSTALL=${nsinstall} -j${parallelism}
+        make V=1 -C config OS_TEST=${JINX_ARCH} NSINSTALL=${nsinstall} -j${parallelism}
 
         # Then build the main libraries and binaries.
-        make V=1 NSINSTALL=${nsinstall} -j${parallelism}
+        make V=1 OS_TEST=${JINX_ARCH} NSINSTALL=${nsinstall} -j${parallelism}
     )
 }
 

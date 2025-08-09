@@ -2,7 +2,7 @@
 
 name=nss
 version=3.114
-revision=1
+revision=2
 tarball_url="https://archive.mozilla.org/pub/security/nss/releases/NSS_3_114_RTM/src/nss-${version}.tar.gz"
 tarball_blake2b="3ba37f3df407d2dd077b9ec0270be9becebd3137705e2dd58553dcbd79327f382ed4c9d17349f0792e554e41a8e843eb74a4681495bf00c6a69dae46b26babeb"
 imagedeps="build-essential gcc libnspr4-dev"

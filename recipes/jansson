@@ -2,9 +2,9 @@
 
 name=jansson
 version=2.14.1
-revision=1
-tarball_url="https://github.com/akheron/jansson/releases/download/v${version}/jansson-${version}.tar.bz2"
-tarball_blake2b="b3efb1cbe018bb88664167249edca65c5194922c69fa82a0514d5bbcd24324464ddcc30ae57f8ab0f9c43f28d2364adc973f87146ceff0889ea2b6eafb91b1ea"
+revision=2
+git_url="https://github.com/akheron/jansson.git"
+commit=ed5cae4ed0621ef409510f94270c9f8f263736d0
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

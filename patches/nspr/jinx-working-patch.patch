@@ -100,6 +100,15 @@ diff -urN --no-dereference nspr-clean/nspr/pr/src/md/unix/unix.c nspr-workdir/ns
 diff -urN --no-dereference nspr-clean/nspr/pr/src/md/unix/uxproces.c nspr-workdir/nspr/pr/src/md/unix/uxproces.c
 --- nspr-clean/nspr/pr/src/md/unix/uxproces.c
 +++ nspr-workdir/nspr/pr/src/md/unix/uxproces.c
+@@ -58,7 +58,7 @@
+  * LinuxThreads are actually a kind of processes
+  * that can share the virtual address space and file descriptors.
+  */
+-#if ((defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)) && \
++#if ((defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)) && \
+      defined(_PR_PTHREADS))
+ #  define _PR_SHARE_CLONES
+ #endif
 @@ -74,7 +74,7 @@
  
  #if defined(_PR_GLOBAL_THREADS_ONLY) ||                               \

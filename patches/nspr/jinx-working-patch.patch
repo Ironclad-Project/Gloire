@@ -1,3 +1,15 @@
+diff -urN --no-dereference nspr-clean/nspr/config/nsinstall.c nspr-workdir/nspr/config/nsinstall.c
+--- nspr-clean/nspr/config/nsinstall.c
++++ nspr-workdir/nspr/config/nsinstall.c
+@@ -38,7 +38,7 @@
+ #  define GETCWD_CAN_MALLOC
+ #endif
+ 
+-#if defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)
++#if defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)
+ #  include <getopt.h>
+ #endif
+ 
 diff -urN --no-dereference nspr-clean/nspr/configure nspr-workdir/nspr/configure
 --- nspr-clean/nspr/configure
 +++ nspr-workdir/nspr/configure
@@ -22,6 +34,15 @@ diff -urN --no-dereference nspr-clean/nspr/pr/include/md/_pth.h nspr-workdir/nsp
  #define _PT_PTHREAD_INVALIDATE_THR_HANDLE(t)  (t) = 0
  #define _PT_PTHREAD_THR_HANDLE_IS_INVALID(t)  (t) == 0
  #define _PT_PTHREAD_COPY_THR_HANDLE(st, dt)   (dt) = (st)
+@@ -92,7 +92,7 @@
+ #if (defined(AIX) && !defined(AIX4_3_PLUS)) \
+     || defined(LINUX) || defined(__GNU__)|| defined(__GLIBC__) \
+     || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
+-    || defined(DARWIN)
++    || defined(DARWIN) || defined(__mlibc__)
+ #define PT_NO_SIGTIMEDWAIT
+ #endif
+ 
 @@ -109,7 +109,7 @@
  #define PT_PRIO_MIN            sched_get_priority_min(SCHED_OTHER)
  #define PT_PRIO_MAX            sched_get_priority_max(SCHED_OTHER)
@@ -40,6 +61,18 @@ diff -urN --no-dereference nspr-clean/nspr/pr/include/md/_pth.h nspr-workdir/nsp
  #define _PT_PTHREAD_YIELD()             sched_yield()
  #else
  #error "Need to define _PT_PTHREAD_YIELD for this platform"
+diff -urN --no-dereference nspr-clean/nspr/pr/include/md/_unixos.h nspr-workdir/nspr/pr/include/md/_unixos.h
+--- nspr-clean/nspr/pr/include/md/_unixos.h
++++ nspr-workdir/nspr/pr/include/md/_unixos.h
+@@ -15,7 +15,7 @@
+  * not be redefined.
+  */
+ #if !defined(LINUX) && !defined(__GNU__) && !defined(__GLIBC__) \
+-    && !defined(DARWIN)
++    && !defined(DARWIN) && !defined(__mlibc__)
+ #ifndef FD_SETSIZE
+ #define FD_SETSIZE  4096
+ #endif
 diff -urN --no-dereference nspr-clean/nspr/pr/include/md/prosdep.h nspr-workdir/nspr/pr/include/md/prosdep.h
 --- nspr-clean/nspr/pr/include/md/prosdep.h
 +++ nspr-workdir/nspr/pr/include/md/prosdep.h
@@ -64,6 +97,18 @@ diff -urN --no-dereference nspr-clean/nspr/pr/src/md/unix/unix.c nspr-workdir/ns
  #  define _PRSockLen_t socklen_t
  #elif defined(HPUX) || defined(SOLARIS) || defined(AIX4_1) || \
      defined(LINUX) || defined(DARWIN) || defined(QNX)
+diff -urN --no-dereference nspr-clean/nspr/pr/src/md/unix/uxproces.c nspr-workdir/nspr/pr/src/md/unix/uxproces.c
+--- nspr-clean/nspr/pr/src/md/unix/uxproces.c
++++ nspr-workdir/nspr/pr/src/md/unix/uxproces.c
+@@ -74,7 +74,7 @@
+ 
+ #if defined(_PR_GLOBAL_THREADS_ONLY) ||                               \
+     (defined(_PR_PTHREADS) && !defined(LINUX) && !defined(__GNU__) && \
+-     !defined(__GLIBC__))
++     !defined(__GLIBC__) && !defined(__mlibc__))
+ #  define _PR_NATIVE_THREADS
+ #endif
+ 
 diff -urN --no-dereference nspr-clean/nspr/pr/src/md/unix/uxrng.c nspr-workdir/nspr/pr/src/md/unix/uxrng.c
 --- nspr-clean/nspr/pr/src/md/unix/uxrng.c
 +++ nspr-workdir/nspr/pr/src/md/unix/uxrng.c
@@ -149,3 +194,12 @@ diff -urN --no-dereference nspr-clean/nspr/pr/src/pthreads/ptio.c nspr-workdir/n
  #    define _PR_FCNTL_FLAGS O_NONBLOCK
  #  else
  #    error "Can't determine architecture"
+@@ -4736,7 +4747,7 @@
+ #  include <sys/types.h>
+ #  include <sys/time.h>
+ #  if !defined(HPUX) && !defined(LINUX) && !defined(__GNU__) && \
+-      !defined(__GLIBC__)
++      !defined(__GLIBC__) && !defined(__mlibc__)
+ #    include <sys/select.h>
+ #  endif
+ 

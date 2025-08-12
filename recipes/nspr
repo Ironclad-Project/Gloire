@@ -2,7 +2,7 @@
 
 name=nspr
 version=4.37
-revision=3
+revision=4
 tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
 tarball_blake2b="672c07a00db9a9f1fe113aedbee748477b7081c7c6b87efdda1eb8a69b37da661d56eb5a5b2b438cdcd193358e25a277a5ffa43ca274a1894bba718cd05bb2e4"
 imagedeps="build-essential gcc"

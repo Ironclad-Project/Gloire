@@ -20,7 +20,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 +#define LIB_SPEC "-lc"
 +
 +#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
++#define STARTFILE_SPEC "%{!shared: %{static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s}} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
 +
 +#undef ENDFILE_SPEC
 +#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
@@ -78,7 +78,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-w
 +    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 +
 +#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
++#define STARTFILE_SPEC "%{!shared: %{static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s}} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
 +
 +#undef ENDFILE_SPEC
 +#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"

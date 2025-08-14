@@ -221,36 +221,6 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-w
  	return ret;
  }
  
-diff -urN --no-dereference mlibc-clean/options/posix/generic/unistd.cpp mlibc-workdir/options/posix/generic/unistd.cpp
---- mlibc-clean/options/posix/generic/unistd.cpp
-+++ mlibc-workdir/options/posix/generic/unistd.cpp
-@@ -1208,13 +1208,13 @@
- 	/* deferring to fork as implementing vfork correctly requires assembly
- 	 * to handle not mucking up the stack
- 	 */
--	if(!mlibc::sys_fork) {
-+	if(!mlibc::sys_vfork) {
- 		MLIBC_MISSING_SYSDEP();
- 		errno = ENOSYS;
- 		return -1;
- 	}
- 
--	if(int e = mlibc::sys_fork(&child); e) {
-+	if(int e = mlibc::sys_vfork(&child); e) {
- 		errno = e;
- 		return -1;
- 	}
-diff -urN --no-dereference mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
---- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
-+++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
-@@ -100,6 +100,7 @@
- [[gnu::weak]] void sys_yield();
- [[gnu::weak]] int sys_sleep(time_t *secs, long *nanos);
- [[gnu::weak]] int sys_fork(pid_t *child);
-+[[gnu::weak]] int sys_vfork(pid_t *child);
- [[gnu::weak]] int sys_execve(const char *path, char *const argv[], char *const envp[]);
- [[gnu::weak]] int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set,
- 		fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events);
 diff -urN --no-dereference mlibc-clean/options/posix/include/sys/ioccom.h mlibc-workdir/options/posix/include/sys/ioccom.h
 --- mlibc-clean/options/posix/include/sys/ioccom.h	1970-01-01 01:00:00.000000000 +0100
 +++ mlibc-workdir/options/posix/include/sys/ioccom.h

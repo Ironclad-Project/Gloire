@@ -310,7 +310,7 @@ diff -urN --no-dereference mlibc-clean/options/posix/include/sys/ioccom.h mlibc-
 diff -urN --no-dereference mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
 --- mlibc-clean/options/posix/meson.build
 +++ mlibc-workdir/options/posix/meson.build
-@@ -127,6 +127,7 @@
+@@ -129,6 +129,7 @@
  	install_headers(
  		'include/sys/fcntl.h',
  		'include/sys/file.h',
@@ -321,7 +321,7 @@ diff -urN --no-dereference mlibc-clean/options/posix/meson.build mlibc-workdir/o
 diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -521,6 +521,7 @@
+@@ -591,6 +591,7 @@
  		return LinkerError::outOfMemory;
  	}
  
@@ -329,3 +329,17 @@ diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-wor
  	object->baseAddress = reinterpret_cast<uintptr_t>(mappedAddr);
  #else
  	object->baseAddress = libraryBase;
+diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -697,6 +697,10 @@
+ int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
+ 	int ret, errno;
+ 	struct futex_item item = {.addr = (uint64_t)pointer, .expected = (uint32_t)expected, .flags = 0};
++	if (*pointer != expected) {
++		return EAGAIN;
++	}
++
+ 	if (time == NULL) {
+ 		 struct timespec t = {(time_t)-1, (time_t)-1};
+ 		 SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, &t);

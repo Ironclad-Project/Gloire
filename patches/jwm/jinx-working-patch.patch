@@ -1,28 +1,11 @@
 diff -urN --no-dereference jwm-clean/src/client.c jwm-workdir/src/client.c
 --- jwm-clean/src/client.c
 +++ jwm-workdir/src/client.c
-@@ -879,11 +879,7 @@
- {
-    Assert(np);
+@@ -881,6 +881,7 @@
     ReadWMProtocols(np->window, &np->state);
--   if(np->state.status & STAT_DELETE) {
--      SendClientMessage(np->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
--   } else {
--      KillClient(np);
--   }
-+   KillClient(np);
- }
- 
- /** Callback to kill a client after a confirm dialog. */
-@@ -900,10 +896,7 @@
- void KillClient(ClientNode *np)
- {
-    Assert(np);
--   ShowConfirmDialog(np, KillClientHandler,
--      _("Kill this window?"),
--      _("This may cause data to be lost!"),
--      NULL);
-+   KillClientHandler(np);
- }
- 
- /** Place transients on top of the owner. */
+    if(np->state.status & STAT_DELETE) {
+       SendClientMessage(np->window, ATOM_WM_PROTOCOLS, ATOM_WM_DELETE_WINDOW);
++      KillClientHandler(np);
+    } else {
+       KillClient(np);
+    }

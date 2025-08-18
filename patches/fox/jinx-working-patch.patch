@@ -1,7 +1,8 @@
-diff -urN --no-dereference fox-clean/configure fox-workdir/configure
+diff --git fox-clean/configure fox-workdir/configure
+index 9304716..d666a86 100755
 --- fox-clean/configure
 +++ fox-workdir/configure
-@@ -18821,8 +18821,8 @@
+@@ -18821,8 +18821,8 @@ fi
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xft" >&5
  $as_echo "$with_xft" >&6; }
  if test "x$with_xft" != "xno"; then
@@ -12,10 +13,11 @@ diff -urN --no-dereference fox-clean/configure fox-workdir/configure
  saved_cppflags="${CXXFLAGS}"
  CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
  X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
-diff -urN --no-dereference fox-clean/include/FXStream.h fox-workdir/include/FXStream.h
+diff --git fox-clean/include/FXStream.h fox-workdir/include/FXStream.h
+index 41fe97a..e82638a 100644
 --- fox-clean/include/FXStream.h
 +++ fox-workdir/include/FXStream.h
-@@ -52,9 +52,9 @@
+@@ -52,9 +52,9 @@ enum FXStreamStatus {
  
  /// Stream seeking
  enum FXWhence {
@@ -28,10 +30,11 @@ diff -urN --no-dereference fox-clean/include/FXStream.h fox-workdir/include/FXSt
    };
  
  
-diff -urN --no-dereference fox-clean/src/FXString.cpp fox-workdir/src/FXString.cpp
+diff --git fox-clean/src/FXString.cpp fox-workdir/src/FXString.cpp
+index c79ccf6..b1a28c5 100644
 --- fox-clean/src/FXString.cpp
 +++ fox-workdir/src/FXString.cpp
-@@ -2501,18 +2501,18 @@
+@@ -2501,18 +2501,18 @@ FXString FXStringVal(FXuint num,FXint base){
  
  
  // Formatting for reals

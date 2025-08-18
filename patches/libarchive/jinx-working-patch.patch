@@ -1,5 +1,7 @@
-diff -urN --no-dereference libarchive-clean/build/cmake/Platform/Ironclad.cmake libarchive-workdir/build/cmake/Platform/Ironclad.cmake
---- libarchive-clean/build/cmake/Platform/Ironclad.cmake	1970-01-01 01:00:00.000000000 +0100
+diff --git libarchive-workdir/build/cmake/Platform/Ironclad.cmake libarchive-workdir/build/cmake/Platform/Ironclad.cmake
+new file mode 100644
+index 0000000..54a156b
+--- /dev/null
 +++ libarchive-workdir/build/cmake/Platform/Ironclad.cmake
 @@ -0,0 +1 @@
 +include(Platform/UnixPaths)

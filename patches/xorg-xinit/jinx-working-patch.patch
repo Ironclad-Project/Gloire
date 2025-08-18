@@ -1,7 +1,8 @@
-diff -urN --no-dereference xorg-xinit-clean/configure xorg-xinit-workdir/configure
+diff --git xorg-xinit-clean/configure xorg-xinit-workdir/configure
+index 32b1d43..35bf3cc 100755
 --- xorg-xinit-clean/configure
 +++ xorg-xinit-workdir/configure
-@@ -12465,75 +12465,7 @@
+@@ -12465,75 +12465,7 @@ test -n "$MCOOKIE" || MCOOKIE="$MCOOKIE"
  
  
  # If mcookie not found, try openssl, else per-system fallbacks

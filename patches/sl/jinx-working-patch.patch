@@ -1,7 +1,8 @@
-diff -urN --no-dereference sl-clean/Makefile sl-workdir/Makefile
+diff --git sl-clean/Makefile sl-workdir/Makefile
+index 515b96d..332ebca 100644
 --- sl-clean/Makefile
 +++ sl-workdir/Makefile
-@@ -12,7 +12,7 @@
+@@ -12,7 +12,7 @@ CFLAGS=-O3 -Wall
  all: sl
  
  sl: sl.c sl.h

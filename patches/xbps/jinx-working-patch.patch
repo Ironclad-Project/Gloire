@@ -1,4 +1,5 @@
-diff -urN --no-dereference xbps-clean/bin/xbps-install/util.c xbps-workdir/bin/xbps-install/util.c
+diff --git xbps-clean/bin/xbps-install/util.c xbps-workdir/bin/xbps-install/util.c
+index d0eadf2..8651ea5 100644
 --- xbps-clean/bin/xbps-install/util.c
 +++ xbps-workdir/bin/xbps-install/util.c
 @@ -34,6 +34,7 @@
@@ -9,7 +10,8 @@ diff -urN --no-dereference xbps-clean/bin/xbps-install/util.c xbps-workdir/bin/x
  
  #include <xbps.h>
  #include "defs.h"
-diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
+diff --git xbps-clean/configure xbps-workdir/configure
+index 2b54b90..e7f4e40 100755
 --- xbps-clean/configure
 +++ xbps-workdir/configure
 @@ -1,7 +1,7 @@
@@ -21,7 +23,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  
  # Ensure that we do not inherit these from env
  OS=
-@@ -189,7 +189,7 @@
+@@ -189,7 +189,7 @@ else
  	echo "Using compiler $CC"
  fi
  
@@ -30,7 +32,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  
  echo "CC =	$CC" >>$CONFIG_MK
  echo "CFLAGS =	-O2" >>$CONFIG_MK
-@@ -678,7 +678,7 @@
+@@ -678,7 +678,7 @@ fi
  # pkg-config is required to know dependencies for static linking.
  #
  printf "Checking for pkg-config ... "
@@ -39,7 +41,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  if [ -z "$PKGCONFIG_BIN" ]; then
  	echo "not found, exiting."
  	exit 1
-@@ -692,14 +692,14 @@
+@@ -692,14 +692,14 @@ fi
  LIBARCHIVE_REQVER=3.3.3
  
  printf "Checking for libarchive >= ${LIBARCHIVE_REQVER}  via pkg-config ... "
@@ -59,7 +61,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  		>>$CONFIG_MK
  fi
  
-@@ -707,17 +707,17 @@
+@@ -707,17 +707,17 @@ fi
  # libssl with pkg-config support is required.
  #
  printf "Checking for libssl via pkg-config ... "
@@ -84,7 +86,7 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  	>>$CONFIG_MK
  
  #
-@@ -735,13 +735,13 @@
+@@ -735,13 +735,13 @@ fi
  #
  if [ "$BUILD_TESTS" = "yes" ]; then
  	printf "Checking for ATF via pkg-config ... "
@@ -102,9 +104,11 @@ diff -urN --no-dereference xbps-clean/configure xbps-workdir/configure
  	echo "BUILD_TESTS = yes" >>$CONFIG_MK
  	BUILD_TESTS_VALUE=yes
  else
-diff -urN --no-dereference xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist xbps-workdir/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist
+diff --git xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist
+deleted file mode 100644
+index c1e82a7..0000000
 --- xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist
-+++ xbps-workdir/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:89:af:a3:2d.plist	1970-01-01 01:00:00.000000000 +0100
++++ /dev/null
 @@ -1,12 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8"?>
 -<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -118,8 +122,10 @@ diff -urN --no-dereference xbps-clean/data/60:ae:0c:d6:f0:95:17:80:bc:93:46:7a:8
 -	<string>Void Linux</string>
 -</dict>
 -</plist>
-diff -urN --no-dereference xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist
---- xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist	1970-01-01 01:00:00.000000000 +0100
+diff --git xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist
+new file mode 100644
+index 0000000..8e0781d
+--- /dev/null
 +++ xbps-workdir/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4e:e8:9e:90.plist
 @@ -0,0 +1,14 @@
 +<?xml version="1.0" encoding="UTF-8"?>
@@ -136,10 +142,11 @@ diff -urN --no-dereference xbps-clean/data/9b:9f:85:27:cb:84:1c:58:f9:a1:7f:54:4
 +	<string>rsa</string>
 +</dict>
 +</plist>
-diff -urN --no-dereference xbps-clean/data/Makefile xbps-workdir/data/Makefile
+diff --git xbps-clean/data/Makefile xbps-workdir/data/Makefile
+index 25a439e..57ca738 100644
 --- xbps-clean/data/Makefile
 +++ xbps-workdir/data/Makefile
-@@ -18,7 +18,7 @@
+@@ -18,7 +18,7 @@ install:
  	install -d $(DESTDIR)$(PKGCONFIGDIR)
  	install -m644 $(PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
  	install -d $(DESTDIR)/$(DBDIR)/keys
@@ -148,16 +155,18 @@ diff -urN --no-dereference xbps-clean/data/Makefile xbps-workdir/data/Makefile
  	install -d $(DESTDIR)/$(SHAREDIR)/xbps.d
  	install -m644 repod-main.conf $(DESTDIR)/$(SHAREDIR)/xbps.d/00-repository-main.conf
  	install -m644 xbps.conf $(DESTDIR)/$(SHAREDIR)/xbps.d/xbps.conf
-diff -urN --no-dereference xbps-clean/data/repod-main.conf xbps-workdir/data/repod-main.conf
+diff --git xbps-clean/data/repod-main.conf xbps-workdir/data/repod-main.conf
+index e1c99f1..a636ec4 100644
 --- xbps-clean/data/repod-main.conf
 +++ xbps-workdir/data/repod-main.conf
 @@ -1 +1 @@
 -repository=https://repo-default.voidlinux.org/current
 +repository=https://gloire-repo.ironclad-os.org/xbps-pkgs/ARCH_HERE
-diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
+diff --git xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
+index 2b4efe4..a299e45 100644
 --- xbps-clean/lib/Makefile
 +++ xbps-workdir/lib/Makefile
-@@ -97,8 +97,8 @@
+@@ -97,8 +97,8 @@ install: all
  	install -d $(DESTDIR)$(LIBDIR)
  	install -m 644 libxbps.a $(DESTDIR)$(LIBDIR)
  	install -m 755 $(LIBXBPS_SHLIB) $(DESTDIR)$(LIBDIR)
@@ -168,7 +177,8 @@ diff -urN --no-dereference xbps-clean/lib/Makefile xbps-workdir/lib/Makefile
  
  .PHONY: uninstall
  uninstall:
-diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp.c
+diff --git xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp.c
+index 9986a57..4da7fe0 100644
 --- xbps-clean/lib/fetch/ftp.c
 +++ xbps-workdir/lib/fetch/ftp.c
 @@ -74,7 +74,7 @@
@@ -180,7 +190,7 @@ diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp
  #include "fetch.h"
  #include "common.h"
  #include "ftperr.h"
-@@ -142,7 +142,7 @@
+@@ -142,7 +142,7 @@ unmappedaddr(struct sockaddr_in6 *sin6, socklen_t *len)
  	sin4->sin_port = port;
  	sin4->sin_family = AF_INET;
  	*len = sizeof(struct sockaddr_in);
@@ -189,7 +199,8 @@ diff -urN --no-dereference xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp
  	sin4->sin_len = sizeof(struct sockaddr_in);
  #endif
  }
-diff -urN --no-dereference xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/http.c
+diff --git xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/http.c
+index b23e919..9a04fcc 100644
 --- xbps-clean/lib/fetch/http.c
 +++ xbps-workdir/lib/fetch/http.c
 @@ -74,7 +74,7 @@
@@ -201,10 +212,11 @@ diff -urN --no-dereference xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/ht
  #include <netinet/in.h>
  #include <netinet/tcp.h>
  
-diff -urN --no-dereference xbps-clean/lib/portableproplib/prop_object.c xbps-workdir/lib/portableproplib/prop_object.c
+diff --git xbps-clean/lib/portableproplib/prop_object.c xbps-workdir/lib/portableproplib/prop_object.c
+index 6befb25..6e258cd 100644
 --- xbps-clean/lib/portableproplib/prop_object.c
 +++ xbps-workdir/lib/portableproplib/prop_object.c
-@@ -955,14 +955,14 @@
+@@ -955,14 +955,14 @@ _prop_object_internalize_map_file(const char *fname)
  	if ((sb.st_size & pgmask) == 0)
  		need_guard = true;
  

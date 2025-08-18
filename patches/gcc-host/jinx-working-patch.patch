@@ -1,7 +1,8 @@
-diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workdir/fixincludes/mkfixinc.sh
+diff --git gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workdir/fixincludes/mkfixinc.sh
+index 7112f4d..7aadf83 100755
 --- gcc-host-clean/fixincludes/mkfixinc.sh
 +++ gcc-host-workdir/fixincludes/mkfixinc.sh
-@@ -12,6 +12,7 @@
+@@ -12,6 +12,7 @@ target=fixinc.sh
  # Check for special fix rules for particular targets
  case $machine in
      i?86-*-cygwin* | \
@@ -9,8 +10,10 @@ diff -urN --no-dereference gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workd
      *-mingw32* | \
      powerpc-*-eabisim* | \
      powerpc-*-eabi*    | \
-diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
---- gcc-host-clean/gcc/config/i386/ironclad.h	1970-01-01 01:00:00.000000000 +0100
+diff --git gcc-host-workdir/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
+new file mode 100644
+index 0000000..e3017a9
+--- /dev/null
 +++ gcc-host-workdir/gcc/config/i386/ironclad.h
 @@ -0,0 +1,30 @@
 +#undef TARGET_IRONCLAD
@@ -43,8 +46,10 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/i386/ironclad.h gcc-host-wo
 +    builtin_assert ("system=unix");      \
 +    builtin_assert ("system=posix");     \
 +  } while (0);
-diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
---- gcc-host-clean/gcc/config/riscv/ironclad.h	1970-01-01 01:00:00.000000000 +0100
+diff --git gcc-host-workdir/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
+new file mode 100644
+index 0000000..5fd4f00
+--- /dev/null
 +++ gcc-host-workdir/gcc/config/riscv/ironclad.h
 @@ -0,0 +1,46 @@
 +#undef TARGET_IRONCLAD
@@ -93,7 +98,8 @@ diff -urN --no-dereference gcc-host-clean/gcc/config/riscv/ironclad.h gcc-host-w
 +    builtin_assert ("system=unix");      \
 +    builtin_assert ("system=posix");     \
 +  } while (0);
-diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
+diff --git gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
+index 7c80a0b..8fac7e4 100644
 --- gcc-host-clean/gcc/config.build
 +++ gcc-host-workdir/gcc/config.build
 @@ -45,7 +45,7 @@
@@ -105,10 +111,11 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/
  build_file_translate=
  
  # System-specific settings.
-diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
+diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
+index 087aaa7..0bee278 100644
 --- gcc-host-clean/gcc/config.gcc
 +++ gcc-host-workdir/gcc/config.gcc
-@@ -879,6 +879,15 @@
+@@ -879,6 +879,15 @@ case ${target} in
    rust_target_objs="${rust_target_objs} freebsd-rust.o"
    target_has_targetrustm=yes
    ;;
@@ -124,7 +131,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/co
  *-*-fuchsia*)
    native_system_header_dir=/include
    tmake_file="t-fuchsia"
-@@ -2320,6 +2329,9 @@
+@@ -2320,6 +2329,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
  			;;
  	esac
  	;;
@@ -134,7 +141,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/co
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
-@@ -2519,6 +2531,13 @@
+@@ -2519,6 +2531,13 @@ microblaze*-*-elf)
  	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
  	tmake_file="${tmake_file} microblaze/t-microblaze"
          ;;
@@ -148,10 +155,11 @@ diff -urN --no-dereference gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/co
  riscv*-*-linux*)
  	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
  	case "x${enable_multilib}" in
-diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
+diff --git gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
+index 1deadcc..9b72332 100644
 --- gcc-host-clean/gcc/cp/module.cc
 +++ gcc-host-workdir/gcc/cp/module.cc
-@@ -1697,8 +1697,10 @@
+@@ -1697,8 +1697,10 @@ elf_in::defrost (const char *name)
  	      set_error (errno);
  	  else
  	    {
@@ -162,7 +170,7 @@ diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/
  
  	      /* These buffers are never NULL in this case.  */
  	      strtab.buffer = mapping + strtab.pos;
-@@ -1808,8 +1810,10 @@
+@@ -1808,8 +1810,10 @@ elf_in::begin (location_t loc)
      }
    /* We'll be hopping over this randomly.  Some systems declare the
       first parm as char *, and other declare it as void *.  */
@@ -173,10 +181,11 @@ diff -urN --no-dereference gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/
  
    hdr.buffer = (char *)mapping;
  #else
-diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workdir/libatomic/configure.tgt
+diff --git gcc-host-clean/libatomic/configure.tgt gcc-host-workdir/libatomic/configure.tgt
+index 6db039d..e4fc391 100644
 --- gcc-host-clean/libatomic/configure.tgt
 +++ gcc-host-workdir/libatomic/configure.tgt
-@@ -151,7 +151,7 @@
+@@ -151,7 +151,7 @@ case "${target}" in
    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
    | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
    | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
@@ -185,10 +194,11 @@ diff -urN --no-dereference gcc-host-clean/libatomic/configure.tgt gcc-host-workd
  	# POSIX system.  The OS is supported.
  	config_path="${config_path} posix"
  	;;
-diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
+diff --git gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
+index bb07e46..821fe80 100644
 --- gcc-host-clean/libcpp/Makefile.in
 +++ gcc-host-workdir/libcpp/Makefile.in
-@@ -32,10 +32,10 @@
+@@ -32,10 +32,10 @@ AUTOCONF = @AUTOCONF@
  AUTOHEADER = @AUTOHEADER@
  CATALOGS = $(patsubst %,po/%,@CATALOGS@)
  CC = @CC@
@@ -201,7 +211,7 @@ diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/li
  WARN_CXXFLAGS = @warn@ @WARN_PEDANTIC@ @WERROR@
  CPP = @CPP@
  CPPFLAGS = @CPPFLAGS@
-@@ -45,7 +45,7 @@
+@@ -45,7 +45,7 @@ INCINTL = @INCINTL@
  INSTALL_DATA = @INSTALL_DATA@
  INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -210,10 +220,11 @@ diff -urN --no-dereference gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/li
  LIBICONV = @LIBICONV@
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
-diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
+diff --git gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
+index 6a88ee5..86bd7f3 100644
 --- gcc-host-clean/libgcc/config.host
 +++ gcc-host-workdir/libgcc/config.host
-@@ -310,6 +310,11 @@
+@@ -310,6 +310,11 @@ case ${host} in
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
@@ -225,7 +236,7 @@ diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/li
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -767,6 +772,10 @@
+@@ -767,6 +772,10 @@ x86_64-*-elf* | x86_64-*-rtems*)
  x86_64-*-fuchsia*)
  	tmake_file="$tmake_file t-libgcc-pic"
  	;;
@@ -236,7 +247,7 @@ diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/li
  i[34567]86-*-dragonfly*)
  	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
  	md_unwind_header=i386/dragonfly-unwind.h
-@@ -1349,6 +1358,10 @@
+@@ -1349,6 +1358,10 @@ pru-*-*)
  	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
  	tm_file="$tm_file pru/pru-abi.h"
  	;;
@@ -247,10 +258,11 @@ diff -urN --no-dereference gcc-host-clean/libgcc/config.host gcc-host-workdir/li
  riscv*-*-linux*)
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff -urN --no-dereference gcc-host-clean/libstdc++-v3/configure gcc-host-workdir/libstdc++-v3/configure
+diff --git gcc-host-clean/libstdc++-v3/configure gcc-host-workdir/libstdc++-v3/configure
+index 819a1d8..52df448 100755
 --- gcc-host-clean/libstdc++-v3/configure
 +++ gcc-host-workdir/libstdc++-v3/configure
-@@ -38856,7 +38856,7 @@
+@@ -38856,7 +38856,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
  
    fi
      ;;
@@ -259,10 +271,11 @@ diff -urN --no-dereference gcc-host-clean/libstdc++-v3/configure gcc-host-workdi
  
    # All these tests are for C++; save the language and the compiler flags.
    # The CXXFLAGS thing is suspicious, but based on similar bits previously
-diff -urN --no-dereference gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+diff --git gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+index b94b2cd..1a5eaa5 100644
 --- gcc-host-clean/libstdc++-v3/include/bits/ios_base.h
 +++ gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
-@@ -225,7 +225,7 @@
+@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  
    enum _Ios_Seekdir
      {

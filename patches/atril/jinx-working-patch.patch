@@ -1,7 +1,8 @@
-diff -urN --no-dereference atril-clean/backend/comics/meson.build atril-workdir/backend/comics/meson.build
+diff --git atril-clean/backend/comics/meson.build atril-workdir/backend/comics/meson.build
+index abc2fdc..d67a51b 100644
 --- atril-clean/backend/comics/meson.build
 +++ atril-workdir/backend/comics/meson.build
-@@ -2,8 +2,8 @@
+@@ -2,8 +2,8 @@ backend_desktop_conf = configuration_data()
  backend_desktop_conf.set('COMICS_MIME_TYPES', comic_mimetypes)
  
  backend_desktop = configure_file(
@@ -12,7 +13,7 @@ diff -urN --no-dereference atril-clean/backend/comics/meson.build atril-workdir/
      configuration: backend_desktop_conf,
      install: true,
      install_dir: backendsdir,
-@@ -34,16 +34,3 @@
+@@ -34,16 +34,3 @@ shared_module(
  
  
  
@@ -29,10 +30,11 @@ diff -urN --no-dereference atril-clean/backend/comics/meson.build atril-workdir/
 -  include_directories: include_dirs,
 -  dependencies: comics_deps,
 -)
-diff -urN --no-dereference atril-clean/backend/pixbuf/meson.build atril-workdir/backend/pixbuf/meson.build
+diff --git atril-clean/backend/pixbuf/meson.build atril-workdir/backend/pixbuf/meson.build
+index 68afb36..aba94fd 100644
 --- atril-clean/backend/pixbuf/meson.build
 +++ atril-workdir/backend/pixbuf/meson.build
-@@ -21,8 +21,8 @@
+@@ -21,8 +21,8 @@ shared_module(
  )
  
  i18n.merge_file(
@@ -43,7 +45,8 @@ diff -urN --no-dereference atril-clean/backend/pixbuf/meson.build atril-workdir/
    type: 'desktop',
    po_dir: po_dir,
    install: true,
-diff -urN --no-dereference atril-clean/libdocument/ev-document.c atril-workdir/libdocument/ev-document.c
+diff --git atril-clean/libdocument/ev-document.c atril-workdir/libdocument/ev-document.c
+index 96b8094..2c274b5 100644
 --- atril-clean/libdocument/ev-document.c
 +++ atril-workdir/libdocument/ev-document.c
 @@ -23,6 +23,7 @@

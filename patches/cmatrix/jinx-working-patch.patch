@@ -1,4 +1,5 @@
-diff -urN --no-dereference cmatrix-clean/cmatrix.c cmatrix-workdir/cmatrix.c
+diff --git cmatrix-clean/cmatrix.c cmatrix-workdir/cmatrix.c
+index 90284cb..b6a7a10 100644
 --- cmatrix-clean/cmatrix.c
 +++ cmatrix-workdir/cmatrix.c
 @@ -32,6 +32,8 @@

@@ -1,7 +1,8 @@
-diff -urN --no-dereference hyfetch-clean/neofetch hyfetch-workdir/neofetch
+diff --git hyfetch-clean/neofetch hyfetch-workdir/neofetch
+index 5548fdb..ed7e216 100755
 --- hyfetch-clean/neofetch
 +++ hyfetch-workdir/neofetch
-@@ -2152,7 +2152,7 @@
+@@ -2152,7 +2152,7 @@ get_packages() {
  
      # OS-specific package managers.
      case $os in

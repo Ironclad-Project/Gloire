@@ -1,7 +1,8 @@
-diff -urN --no-dereference readline-clean/display.c readline-workdir/display.c
+diff --git readline-clean/display.c readline-workdir/display.c
+index 9aa8c7b..edb525d 100644
 --- readline-clean/display.c
 +++ readline-workdir/display.c
-@@ -783,7 +783,7 @@
+@@ -783,7 +783,7 @@ _rl_optimize_redisplay (void)
  
  /* Useful shorthand used by rl_redisplay, update_line, rl_move_cursor_relative */
  #define INVIS_FIRST()	(local_prompt_invis_chars[0])
@@ -10,10 +11,11 @@ diff -urN --no-dereference readline-clean/display.c readline-workdir/display.c
  
  #define W_OFFSET(line, offset) ((line) == 0 ? offset : 0)
  #define VIS_LLEN(l)	((l) > _rl_vis_botlin ? 0 : (vis_lbreaks[l+1] - vis_lbreaks[l]))
-diff -urN --no-dereference readline-clean/support/shlib-install readline-workdir/support/shlib-install
+diff --git readline-clean/support/shlib-install readline-workdir/support/shlib-install
+index 661355d..65c3880 100755
 --- readline-clean/support/shlib-install
 +++ readline-workdir/support/shlib-install
-@@ -71,7 +71,7 @@
+@@ -71,7 +71,7 @@ fi
  # Cygwin installs both a dll (which must go in $BINDIR) and an implicit
  # link library (in $libdir)
  case "$host_os" in
@@ -22,7 +24,7 @@ diff -urN --no-dereference readline-clean/support/shlib-install readline-workdir
  	if [ -z "$uninstall" ]; then
  		chmod 755 ${INSTALLDIR}/${LIBNAME}
  	fi ;;
-@@ -118,7 +118,7 @@
+@@ -118,7 +118,7 @@ INSTALL_LINK2='${echo} cd $INSTALLDIR && ${echo} ${LN} $LIBNAME $LINK2'
  # Create symlinks to the installed library.  This section is incomplete.
  #
  case "$host_os-$host_vendor" in
@@ -31,10 +33,11 @@ diff -urN --no-dereference readline-clean/support/shlib-install readline-workdir
  	# libname.so.M -> libname.so.M.N
  	${echo} ${RM} ${INSTALLDIR}/$LINK2
  	if [ -z "$uninstall" ]; then
-diff -urN --no-dereference readline-clean/support/shobj-conf readline-workdir/support/shobj-conf
+diff --git readline-clean/support/shobj-conf readline-workdir/support/shobj-conf
+index c3df351..d328222 100644
 --- readline-clean/support/shobj-conf
 +++ readline-workdir/support/shobj-conf
-@@ -123,12 +123,12 @@
+@@ -123,12 +123,12 @@ sunos5*|solaris2*)
  	;;
  
  # All versions of Linux (including Gentoo/FreeBSD) or the semi-mythical GNU Hurd.
@@ -49,10 +52,11 @@ diff -urN --no-dereference readline-clean/support/shobj-conf readline-workdir/su
  	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)'
  	;;
  
-diff -urN --no-dereference readline-clean/terminal.c readline-workdir/terminal.c
+diff --git readline-clean/terminal.c readline-workdir/terminal.c
+index 50fb904..29b3916 100644
 --- readline-clean/terminal.c
 +++ readline-workdir/terminal.c
-@@ -104,12 +104,12 @@
+@@ -104,12 +104,12 @@ static int tcap_initialized;
  
  /* Systems for which PC/BC/UP are defined in the curses library and need an
     extern definition here. */

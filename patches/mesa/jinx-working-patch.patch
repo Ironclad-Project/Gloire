@@ -1,7 +1,8 @@
-diff -urN --no-dereference mesa-clean/include/drm-uapi/drm.h mesa-workdir/include/drm-uapi/drm.h
+diff --git mesa-clean/include/drm-uapi/drm.h mesa-workdir/include/drm-uapi/drm.h
+index 4e4f7c2..d41c0b5 100644
 --- mesa-clean/include/drm-uapi/drm.h
 +++ mesa-workdir/include/drm-uapi/drm.h
-@@ -44,7 +44,7 @@
+@@ -44,7 +44,7 @@ typedef unsigned int drm_handle_t;
  #else /* One of the BSDs */
  
  #include <stdint.h>
@@ -10,7 +11,8 @@ diff -urN --no-dereference mesa-clean/include/drm-uapi/drm.h mesa-workdir/includ
  #include <sys/types.h>
  typedef int8_t   __s8;
  typedef uint8_t  __u8;
-diff -urN --no-dereference mesa-clean/include/renderdoc_app.h mesa-workdir/include/renderdoc_app.h
+diff --git mesa-clean/include/renderdoc_app.h mesa-workdir/include/renderdoc_app.h
+index d4a446c..9e8d4b4 100644
 --- mesa-clean/include/renderdoc_app.h
 +++ mesa-workdir/include/renderdoc_app.h
 @@ -35,7 +35,7 @@
@@ -22,10 +24,11 @@ diff -urN --no-dereference mesa-clean/include/renderdoc_app.h mesa-workdir/inclu
  #define RENDERDOC_CC
  #elif defined(__APPLE__)
  #define RENDERDOC_CC
-diff -urN --no-dereference mesa-clean/meson.build mesa-workdir/meson.build
+diff --git mesa-clean/meson.build mesa-workdir/meson.build
+index 2a31f89..057cdf3 100644
 --- mesa-clean/meson.build
 +++ mesa-workdir/meson.build
-@@ -1040,7 +1040,7 @@
+@@ -1040,7 +1040,7 @@ if cc.has_function('fmemopen')
  endif
  
  # TODO: this is very incomplete
@@ -34,7 +37,8 @@ diff -urN --no-dereference mesa-clean/meson.build mesa-workdir/meson.build
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
-diff -urN --no-dereference mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-workdir/src/compiler/spirv/spirv_to_nir.c
+diff --git mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-workdir/src/compiler/spirv/spirv_to_nir.c
+index 31e7433..99dfbb3 100644
 --- mesa-clean/src/compiler/spirv/spirv_to_nir.c
 +++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c
 @@ -42,6 +42,7 @@
@@ -45,7 +49,8 @@ diff -urN --no-dereference mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-wor
  
  /* Table of all implemented capabilities.  These are the capabilities that are
   * implemented in the spirv_to_nir, not what the device supports.
-diff -urN --no-dereference mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl/main/egllog.c
+diff --git mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl/main/egllog.c
+index 0de00b2..59d8fdf 100644
 --- mesa-clean/src/egl/main/egllog.c
 +++ mesa-workdir/src/egl/main/egllog.c
 @@ -37,6 +37,7 @@
@@ -56,10 +61,11 @@ diff -urN --no-dereference mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl
  #include "c11/threads.h"
  #include "util/macros.h"
  #include "util/os_misc.h"
-diff -urN --no-dereference mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
+diff --git mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
+index f207738..89d7848 100644
 --- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
 +++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-@@ -1741,7 +1741,7 @@
+@@ -1741,7 +1741,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
     default:
        break;
     }
@@ -68,7 +74,8 @@ diff -urN --no-dereference mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c 
     *value = 0;
     return false;
  }
-diff -urN --no-dereference mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
+diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
+index 86286df..802814f 100644
 --- mesa-clean/src/util/detect_os.h
 +++ mesa-workdir/src/util/detect_os.h
 @@ -28,6 +28,12 @@
@@ -93,7 +100,8 @@ diff -urN --no-dereference mesa-clean/src/util/detect_os.h mesa-workdir/src/util
 +#endif
 +
  #endif /* DETECT_OS_H */
-diff -urN --no-dereference mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
+diff --git mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
+index 4b79166..09c16b0 100644
 --- mesa-clean/src/util/os_misc.c
 +++ mesa-workdir/src/util/os_misc.c
 @@ -57,7 +57,7 @@
@@ -105,7 +113,7 @@ diff -urN --no-dereference mesa-clean/src/util/os_misc.c mesa-workdir/src/util/o
  #  include <unistd.h>
  #elif DETECT_OS_OPENBSD || DETECT_OS_FREEBSD
  #  include <sys/resource.h>
-@@ -284,7 +284,7 @@
+@@ -284,7 +284,7 @@ exit_mutex:
  bool
  os_get_total_physical_memory(uint64_t *size)
  {
@@ -114,10 +122,11 @@ diff -urN --no-dereference mesa-clean/src/util/os_misc.c mesa-workdir/src/util/o
     const long phys_pages = sysconf(_SC_PHYS_PAGES);
     const long page_size = sysconf(_SC_PAGE_SIZE);
  
-diff -urN --no-dereference mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
+diff --git mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
+index da8ad7a..aa9aca4 100644
 --- mesa-clean/src/util/os_time.c
 +++ mesa-workdir/src/util/os_time.c
-@@ -65,7 +65,7 @@
+@@ -65,7 +65,7 @@ os_time_get_nano(void)
  void
  os_time_sleep(int64_t usecs)
  {
@@ -126,7 +135,8 @@ diff -urN --no-dereference mesa-clean/src/util/os_time.c mesa-workdir/src/util/o
     struct timespec time;
     time.tv_sec = usecs / 1000000;
     time.tv_nsec = (usecs % 1000000) * 1000;
-diff -urN --no-dereference mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u_debug.c
+diff --git mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u_debug.c
+index 96f7cca..40fe2dc 100644
 --- mesa-clean/src/util/u_debug.c
 +++ mesa-workdir/src/util/u_debug.c
 @@ -33,6 +33,7 @@
@@ -137,10 +147,11 @@ diff -urN --no-dereference mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u
  #include <stdio.h>
  #include <limits.h> /* CHAR_BIT */
  #include <ctype.h> /* isalnum */
-diff -urN --no-dereference mesa-clean/src/util/u_thread.c mesa-workdir/src/util/u_thread.c
+diff --git mesa-clean/src/util/u_thread.c mesa-workdir/src/util/u_thread.c
+index 255c5f6..7c20f8d 100644
 --- mesa-clean/src/util/u_thread.c
 +++ mesa-workdir/src/util/u_thread.c
-@@ -75,7 +75,7 @@
+@@ -75,7 +75,7 @@ int u_thread_create(thrd_t *thrd, int (*routine)(void *), void *param)
  void u_thread_setname( const char *name )
  {
  #if defined(HAVE_PTHREAD)
@@ -149,7 +160,7 @@ diff -urN --no-dereference mesa-clean/src/util/u_thread.c mesa-workdir/src/util/
     int ret = pthread_setname_np(pthread_self(), name);
     if (ret == ERANGE) {
        char buf[16];
-@@ -154,7 +154,7 @@
+@@ -154,7 +154,7 @@ util_set_thread_affinity(thrd_t thread,
  int64_t
  util_thread_get_time_nano(thrd_t thread)
  {

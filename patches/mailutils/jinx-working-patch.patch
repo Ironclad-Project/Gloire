@@ -1,4 +1,5 @@
-diff -urN --no-dereference mailutils-clean/libmailutils/base/hostname.c mailutils-workdir/libmailutils/base/hostname.c
+diff --git mailutils-clean/libmailutils/base/hostname.c mailutils-workdir/libmailutils/base/hostname.c
+index 859184a..467c4fc 100644
 --- mailutils-clean/libmailutils/base/hostname.c
 +++ mailutils-workdir/libmailutils/base/hostname.c
 @@ -28,6 +28,8 @@
@@ -10,7 +11,8 @@ diff -urN --no-dereference mailutils-clean/libmailutils/base/hostname.c mailutil
  #ifndef MAXHOSTNAMELEN
  # define MAXHOSTNAMELEN 64
  #endif
-diff -urN --no-dereference mailutils-clean/libmailutils/string/cstrcasestr.c mailutils-workdir/libmailutils/string/cstrcasestr.c
+diff --git mailutils-clean/libmailutils/string/cstrcasestr.c mailutils-workdir/libmailutils/string/cstrcasestr.c
+index f3f1a54..dac7be2 100644
 --- mailutils-clean/libmailutils/string/cstrcasestr.c
 +++ mailutils-workdir/libmailutils/string/cstrcasestr.c
 @@ -19,6 +19,8 @@
@@ -22,7 +24,8 @@ diff -urN --no-dereference mailutils-clean/libmailutils/string/cstrcasestr.c mai
  #include <unistd.h>
  #include <mailutils/cctype.h>
  
-diff -urN --no-dereference mailutils-clean/mh/mh_init.c mailutils-workdir/mh/mh_init.c
+diff --git mailutils-clean/mh/mh_init.c mailutils-workdir/mh/mh_init.c
+index 1db971a..1ffc94a 100644
 --- mailutils-clean/mh/mh_init.c
 +++ mailutils-workdir/mh/mh_init.c
 @@ -30,6 +30,8 @@

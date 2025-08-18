@@ -1,7 +1,8 @@
-diff -urN --no-dereference xf86-input-mouse-clean/configure xf86-input-mouse-workdir/configure
+diff --git xf86-input-mouse-clean/configure xf86-input-mouse-workdir/configure
+index 70f3013..458bec4 100755
 --- xf86-input-mouse-clean/configure
 +++ xf86-input-mouse-workdir/configure
-@@ -19591,7 +19591,7 @@
+@@ -19591,7 +19591,7 @@ inputdir=${moduledir}/input
  
  # X Server SDK location is required to install xf86-mouse-properties.h
  # This location is also relayed in the xorg-mouse.pc file
@@ -10,7 +11,7 @@ diff -urN --no-dereference xf86-input-mouse-clean/configure xf86-input-mouse-wor
  
  # Workaround overriding sdkdir to be able to create a tarball when user has no
  # write permission in sdkdir. See DISTCHECK_CONFIGURE_FLAGS in Makefile.am
-@@ -19619,6 +19619,9 @@
+@@ -19619,6 +19619,9 @@ case $host_os in
    gnu*)
      OS_MOUSE_NAME=hurd
      ;;
@@ -20,8 +21,10 @@ diff -urN --no-dereference xf86-input-mouse-clean/configure xf86-input-mouse-wor
  esac
  
  
-diff -urN --no-dereference xf86-input-mouse-clean/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
---- xf86-input-mouse-clean/src/ironclad_mouse.c	1970-01-01 01:00:00.000000000 +0100
+diff --git xf86-input-mouse-workdir/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
+new file mode 100644
+index 0000000..b83cad1
+--- /dev/null
 +++ xf86-input-mouse-workdir/src/ironclad_mouse.c
 @@ -0,0 +1,115 @@
 +#ifdef HAVE_XORG_CONFIG_H

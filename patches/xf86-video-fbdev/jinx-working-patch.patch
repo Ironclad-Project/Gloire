@@ -1,7 +1,8 @@
-diff -urN --no-dereference xf86-video-fbdev-clean/src/Makefile.in xf86-video-fbdev-workdir/src/Makefile.in
+diff --git xf86-video-fbdev-clean/src/Makefile.in xf86-video-fbdev-workdir/src/Makefile.in
+index 016d61d..84213a5 100644
 --- xf86-video-fbdev-clean/src/Makefile.in
 +++ xf86-video-fbdev-workdir/src/Makefile.in
-@@ -373,7 +373,7 @@
+@@ -373,7 +373,7 @@ top_srcdir = @top_srcdir@
  # TODO: -nostdlib/-Bstatic/-lgcc platform magic, not installing the .a, etc.
  AM_CFLAGS = $(BASE_CFLAGS) $(XORG_CFLAGS)
  fbdev_drv_la_LTLIBRARIES = fbdev_drv.la
@@ -10,10 +11,11 @@ diff -urN --no-dereference xf86-video-fbdev-clean/src/Makefile.in xf86-video-fbd
  fbdev_drv_ladir = @moduledir@/drivers
  fbdev_drv_la_SOURCES = \
           fbdev.c
-diff -urN --no-dereference xf86-video-fbdev-clean/src/fbdev.c xf86-video-fbdev-workdir/src/fbdev.c
+diff --git xf86-video-fbdev-clean/src/fbdev.c xf86-video-fbdev-workdir/src/fbdev.c
+index 939c5b8..4ec1ccb 100644
 --- xf86-video-fbdev-clean/src/fbdev.c
 +++ xf86-video-fbdev-workdir/src/fbdev.c
-@@ -331,7 +331,7 @@
+@@ -331,7 +331,7 @@ FBDevProbe(DriverPtr drv, int flags)
  
  	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
  	    if (devSections[i]->busID) {
@@ -22,7 +24,7 @@ diff -urN --no-dereference xf86-video-fbdev-clean/src/fbdev.c xf86-video-fbdev-w
  	        if (xf86ParsePciBusString(devSections[i]->busID,&bus,&device,
  					  &func)) {
  		    if (!xf86CheckPciSlot(bus,device,func))
-@@ -343,7 +343,7 @@
+@@ -343,7 +343,7 @@ FBDevProbe(DriverPtr drv, int flags)
  	    if (fbdevHWProbe(NULL,dev,NULL)) {
  		pScrn = NULL;
  		if (isPci) {
@@ -31,7 +33,7 @@ diff -urN --no-dereference xf86-video-fbdev-clean/src/fbdev.c xf86-video-fbdev-w
  		    /* XXX what about when there's no busID set? */
  		    int entity;
  		    
-@@ -419,6 +419,7 @@
+@@ -419,6 +419,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
  	fPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
  
  #ifndef XSERVER_LIBPCIACCESS
@@ -39,7 +41,7 @@ diff -urN --no-dereference xf86-video-fbdev-clean/src/fbdev.c xf86-video-fbdev-w
  	pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
  	/* XXX Is this right?  Can probably remove RAC_FB */
  	pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-@@ -429,6 +430,7 @@
+@@ -429,6 +430,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
  		   "xf86RegisterResources() found resource conflicts\n");
  		return FALSE;
  	}

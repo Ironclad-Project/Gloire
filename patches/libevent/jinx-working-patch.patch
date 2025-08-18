@@ -1,4 +1,5 @@
-diff -urN --no-dereference libevent-clean/sample/https-client.c libevent-workdir/sample/https-client.c
+diff --git libevent-clean/sample/https-client.c libevent-workdir/sample/https-client.c
+index 5136ace..fc6a6ee 100644
 --- libevent-clean/sample/https-client.c
 +++ libevent-workdir/sample/https-client.c
 @@ -19,6 +19,7 @@

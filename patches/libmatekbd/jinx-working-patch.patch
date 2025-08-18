@@ -1,7 +1,8 @@
-diff -urN --no-dereference libmatekbd-clean/libmatekbd/Makefile.in libmatekbd-workdir/libmatekbd/Makefile.in
+diff --git libmatekbd-clean/libmatekbd/Makefile.in libmatekbd-workdir/libmatekbd/Makefile.in
+index e554f96..6be60a8 100644
 --- libmatekbd-clean/libmatekbd/Makefile.in
 +++ libmatekbd-workdir/libmatekbd/Makefile.in
-@@ -534,7 +534,7 @@
+@@ -534,7 +534,7 @@ EXTRA_DIST = \
  	$(NULL)
  
  DISTCLEANFILES = $(gsettings_SCHEMAS)

@@ -1,4 +1,5 @@
-diff -urN --no-dereference openssh-clean/openbsd-compat/arc4random.c openssh-workdir/openbsd-compat/arc4random.c
+diff --git openssh-clean/openbsd-compat/arc4random.c openssh-workdir/openbsd-compat/arc4random.c
+index ffd3373..7b35a76 100644
 --- openssh-clean/openbsd-compat/arc4random.c
 +++ openssh-workdir/openbsd-compat/arc4random.c
 @@ -43,17 +43,6 @@

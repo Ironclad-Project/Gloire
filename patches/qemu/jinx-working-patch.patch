@@ -1,7 +1,8 @@
-diff -urN --no-dereference qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
+diff --git qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/backends/tpm/tpm_ioctl.h
+index ee2dd15..24e88da 100644
 --- qemu-clean/backends/tpm/tpm_ioctl.h
 +++ qemu-workdir/backends/tpm/tpm_ioctl.h
-@@ -285,30 +285,6 @@
+@@ -285,30 +285,6 @@ typedef struct ptm_lockstorage ptm_lockstorage;
  #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
  #define PTM_CAP_LOCK_STORAGE       (1 << 16)
  
@@ -32,7 +33,8 @@ diff -urN --no-dereference qemu-clean/backends/tpm/tpm_ioctl.h qemu-workdir/back
  /*
   * Commands used by the non-CUSE TPMs
   *
-diff -urN --no-dereference qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
+diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
+index 56d1972..c56a514 100644
 --- qemu-clean/block/file-posix.c
 +++ qemu-workdir/block/file-posix.c
 @@ -119,6 +119,8 @@
@@ -44,10 +46,11 @@ diff -urN --no-dereference qemu-clean/block/file-posix.c qemu-workdir/block/file
  /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
-diff -urN --no-dereference qemu-clean/configure qemu-workdir/configure
+diff --git qemu-clean/configure qemu-workdir/configure
+index 02f1dd2..bbae5a5 100755
 --- qemu-clean/configure
 +++ qemu-workdir/configure
-@@ -340,7 +340,9 @@
+@@ -340,7 +340,9 @@ int main(void) { return 0; }
  EOF
  }
  
@@ -58,7 +61,8 @@ diff -urN --no-dereference qemu-clean/configure qemu-workdir/configure
    host_os=linux
  elif check_define _WIN32 ; then
    host_os=windows
-diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
+diff --git qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
+index d63228e..62c57e1 100644
 --- qemu-clean/include/gdbstub/syscalls.h
 +++ qemu-workdir/include/gdbstub/syscalls.h
 @@ -41,9 +41,10 @@
@@ -75,10 +79,11 @@ diff -urN --no-dereference qemu-clean/include/gdbstub/syscalls.h qemu-workdir/in
  
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
-diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
+diff --git qemu-clean/meson.build qemu-workdir/meson.build
+index 8ec796d..92e69a3 100644
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
-@@ -889,7 +889,7 @@
+@@ -889,7 +889,7 @@ if get_option('hvf').allowed()
  endif
  
  nvmm = not_found
@@ -87,7 +92,7 @@ diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
    nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
    if nvmm.found()
      accelerators += 'CONFIG_NVMM'
-@@ -2523,6 +2523,7 @@
+@@ -2523,6 +2523,7 @@ config_host_data.set('CONFIG_PIXMAN', pixman.found())
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')
@@ -95,10 +100,11 @@ diff -urN --no-dereference qemu-clean/meson.build qemu-workdir/meson.build
  if get_option('tcg').allowed()
    config_host_data.set('CONFIG_TCG', 1)
    config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
-diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
+diff --git qemu-clean/os-posix.c qemu-workdir/os-posix.c
+index 52925c2..1fb66d7 100644
 --- qemu-clean/os-posix.c
 +++ qemu-workdir/os-posix.c
-@@ -262,7 +262,7 @@
+@@ -262,7 +262,7 @@ void os_setup_limits(void)
      struct rlimit nofile;
  
      if (getrlimit(RLIMIT_NOFILE, &nofile) < 0) {
@@ -107,7 +113,7 @@ diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
          return;
      }
  
-@@ -277,7 +277,7 @@
+@@ -277,7 +277,7 @@ void os_setup_limits(void)
  #endif
  
      if (setrlimit(RLIMIT_NOFILE, &nofile) < 0) {
@@ -116,10 +122,11 @@ diff -urN --no-dereference qemu-clean/os-posix.c qemu-workdir/os-posix.c
          return;
      }
  }
-diff -urN --no-dereference qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
+diff --git qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
+index 0291b72..df89863 100644
 --- qemu-clean/util/cpuinfo-riscv.c
 +++ qemu-workdir/util/cpuinfo-riscv.c
-@@ -24,6 +24,8 @@
+@@ -24,6 +24,8 @@ static void sigill_handler(int signo, siginfo_t *si, void *data)
  
  #ifdef __linux__
      uc->uc_mcontext.__gregs[REG_PC] += 4;
@@ -128,10 +135,11 @@ diff -urN --no-dereference qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpu
  #elif defined(__OpenBSD__)
      uc->sc_sepc += 4;
  #else
-diff -urN --no-dereference qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
+diff --git qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
+index a697c60..d69bbf0 100644
 --- qemu-clean/util/oslib-posix.c
 +++ qemu-workdir/util/oslib-posix.c
-@@ -708,10 +708,10 @@
+@@ -708,10 +708,10 @@ void *qemu_alloc_stack(size_t *sz)
      }
  
      /* Stack grows down -- guard page at the bottom. */

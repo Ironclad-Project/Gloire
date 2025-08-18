@@ -1,7 +1,8 @@
-diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
+diff --git python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
+index 49626d3..8fb0403 100644
 --- python-clean/Modules/timemodule.c
 +++ python-workdir/Modules/timemodule.c
-@@ -185,7 +185,7 @@
+@@ -185,7 +185,7 @@ py_clock(time_module_state *state, PyTime_t *tp, _Py_clock_info_t *info)
  static int
  time_clockid_converter(PyObject *obj, clockid_t *p)
  {
@@ -10,10 +11,11 @@ diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modu
      long long clk_id = PyLong_AsLongLong(obj);
  #elif defined(__DragonFly__)
      long clk_id = PyLong_AsLong(obj);
-diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
+diff --git python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
+index 4d3fb65..55c7139 100644
 --- python-clean/Objects/mimalloc/prim/unix/prim.c
 +++ python-workdir/Objects/mimalloc/prim/unix/prim.c
-@@ -29,6 +29,10 @@
+@@ -29,6 +29,10 @@ terms of the MIT license. A copy of the license can be found in the file
  #include <unistd.h>    // sysconf
  #include <fcntl.h>     // open, close, read, access
  
@@ -24,7 +26,7 @@ diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python
  #if defined(__linux__)
    #include <features.h>
    #include <fcntl.h>
-@@ -156,6 +160,9 @@
+@@ -156,6 +160,9 @@ int _mi_prim_free(void* addr, size_t size ) {
  static int unix_madvise(void* addr, size_t size, int advice) {
    #if defined(__sun)
    return madvise((caddr_t)addr, size, advice);  // Solaris needs cast (issue #520)
@@ -34,10 +36,11 @@ diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python
    #else
    return madvise(addr, size, advice);
    #endif
-diff -urN --no-dereference python-clean/configure python-workdir/configure
+diff --git python-clean/configure python-workdir/configure
+index 519caa8..17737ed 100755
 --- python-clean/configure
 +++ python-workdir/configure
-@@ -4067,6 +4067,9 @@
+@@ -4067,6 +4067,9 @@ then
  	*-*-wasi*)
  	    ac_sys_system=WASI
  	    ;;
@@ -47,7 +50,7 @@ diff -urN --no-dereference python-clean/configure python-workdir/configure
  	*)
  		# for now, limit cross builds to known configurations
  		MACHDEP="unknown"
-@@ -4491,7 +4494,7 @@
+@@ -4491,7 +4494,7 @@ fi
  
  if test "$cross_compiling" = yes; then
  	case "$host" in
@@ -56,7 +59,7 @@ diff -urN --no-dereference python-clean/configure python-workdir/configure
  		case "$host_cpu" in
  		arm*)
  			_host_ident=arm
-@@ -7587,7 +7590,7 @@
+@@ -7587,7 +7590,7 @@ printf "%s\n" "#define Py_ENABLE_SHARED 1" >>confdefs.h
          PY3LIBRARY=libpython3.so
        fi
        ;;
@@ -65,7 +68,7 @@ diff -urN --no-dereference python-clean/configure python-workdir/configure
        LDLIBRARY='libpython$(LDVERSION).so'
        BLDLIBRARY='-L. -lpython$(LDVERSION)'
        RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-@@ -12983,7 +12986,7 @@
+@@ -12983,7 +12986,7 @@ then
  	Emscripten*|WASI*)
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
@@ -74,7 +77,7 @@ diff -urN --no-dereference python-clean/configure python-workdir/configure
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
  	FreeBSD*)
-@@ -13068,7 +13071,7 @@
+@@ -13068,7 +13071,7 @@ then
  		 then CCSHARED="-fPIC";
  		 else CCSHARED="+z";
  		 fi;;
@@ -83,7 +86,7 @@ diff -urN --no-dereference python-clean/configure python-workdir/configure
  	Emscripten*|WASI*)
  		if test "x$enable_wasm_dynamic_linking" = xyes
  then :
-@@ -13106,7 +13109,7 @@
+@@ -13106,7 +13109,7 @@ then
  	    LINKFORSHARED="-Wl,-E -Wl,+s";;
  #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
  	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;

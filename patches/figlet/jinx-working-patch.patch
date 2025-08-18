@@ -1,4 +1,5 @@
-diff -urN --no-dereference figlet-clean/figlet.c figlet-workdir/figlet.c
+diff --git figlet-clean/figlet.c figlet-workdir/figlet.c
+index 3de795a..afcbc5d 100644
 --- figlet-clean/figlet.c
 +++ figlet-workdir/figlet.c
 @@ -65,7 +65,7 @@
@@ -10,7 +11,8 @@ diff -urN --no-dereference figlet-clean/figlet.c figlet-workdir/figlet.c
  #ifdef unix
  #include <unistd.h>
  #include <sys/ioctl.h> /* Needed for get_columns */
-diff -urN --no-dereference figlet-clean/utf8.h figlet-workdir/utf8.h
+diff --git figlet-clean/utf8.h figlet-workdir/utf8.h
+index 0631b8a..bcab052 100644
 --- figlet-clean/utf8.h
 +++ figlet-workdir/utf8.h
 @@ -27,13 +27,9 @@

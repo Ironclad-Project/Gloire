@@ -1,7 +1,8 @@
-diff -urN --no-dereference marco-clean/meson.build marco-workdir/meson.build
+diff --git marco-clean/meson.build marco-workdir/meson.build
+index 7c7467b..8e803cb 100644
 --- marco-clean/meson.build
 +++ marco-workdir/meson.build
-@@ -294,7 +294,7 @@
+@@ -294,7 +294,7 @@ if get_option('sm') and sm_dep.found() and ice_dep.found()
  endif
  
  gdk_pixbuf_csource = find_program('gdk-pixbuf-csource')

@@ -1,7 +1,8 @@
-diff -urN --no-dereference gdb-clean/bfd/config.bfd gdb-workdir/bfd/config.bfd
+diff --git gdb-clean/bfd/config.bfd gdb-workdir/bfd/config.bfd
+index f8482d7..27ea620 100644
 --- gdb-clean/bfd/config.bfd
 +++ gdb-workdir/bfd/config.bfd
-@@ -705,6 +705,11 @@
+@@ -705,6 +705,11 @@ case "${targ}" in
      targ_selvecs="i386_elf32_vec"
      want64=true
      ;;

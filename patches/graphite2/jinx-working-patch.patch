@@ -1,5 +1,7 @@
-diff -urN --no-dereference graphite2-clean/Platform/Ironclad.cmake graphite2-workdir/Platform/Ironclad.cmake
---- graphite2-clean/Platform/Ironclad.cmake	1970-01-01 01:00:00.000000000 +0100
+diff --git graphite2-workdir/Platform/Ironclad.cmake graphite2-workdir/Platform/Ironclad.cmake
+new file mode 100644
+index 0000000..54a156b
+--- /dev/null
 +++ graphite2-workdir/Platform/Ironclad.cmake
 @@ -0,0 +1 @@
 +include(Platform/UnixPaths)

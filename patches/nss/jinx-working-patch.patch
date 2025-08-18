@@ -1,4 +1,5 @@
-diff -urN --no-dereference nss-clean/nss/Makefile nss-workdir/nss/Makefile
+diff --git nss-clean/nss/Makefile nss-workdir/nss/Makefile
+index 145fef0..83b7018 100644
 --- nss-clean/nss/Makefile
 +++ nss-workdir/nss/Makefile
 @@ -4,6 +4,8 @@
@@ -10,7 +11,7 @@ diff -urN --no-dereference nss-clean/nss/Makefile nss-workdir/nss/Makefile
  #######################################################################
  # (1) Include initial platform-independent assignments (MANDATORY).   #
  #######################################################################
-@@ -48,12 +50,10 @@
+@@ -48,12 +50,10 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  #######################################################################
  
  nss_build_all:
@@ -23,8 +24,10 @@ diff -urN --no-dereference nss-clean/nss/Makefile nss-workdir/nss/Makefile
  	$(MAKE) clobber
  
  NSPR_CONFIG_STATUS = $(CORE_DEPTH)/../nspr/$(OBJDIR_NAME)/config.status
-diff -urN --no-dereference nss-clean/nss/config/Makefile nss-workdir/nss/config/Makefile
---- nss-clean/nss/config/Makefile	1970-01-01 01:00:00.000000000 +0100
+diff --git nss-workdir/nss/config/Makefile nss-workdir/nss/config/Makefile
+new file mode 100644
+index 0000000..3a452b0
+--- /dev/null
 +++ nss-workdir/nss/config/Makefile
 @@ -0,0 +1,42 @@
 +CORE_DEPTH = ..
@@ -69,8 +72,10 @@ diff -urN --no-dereference nss-clean/nss/config/Makefile nss-workdir/nss/config/
 +
 +dummy: all export libs
 +
-diff -urN --no-dereference nss-clean/nss/config/nss-config.in nss-workdir/nss/config/nss-config.in
---- nss-clean/nss/config/nss-config.in	1970-01-01 01:00:00.000000000 +0100
+diff --git nss-workdir/nss/config/nss-config.in nss-workdir/nss/config/nss-config.in
+new file mode 100644
+index 0000000..aebba3a
+--- /dev/null
 +++ nss-workdir/nss/config/nss-config.in
 @@ -0,0 +1,153 @@
 +#!/bin/sh
@@ -226,8 +231,10 @@ diff -urN --no-dereference nss-clean/nss/config/nss-config.in nss-workdir/nss/co
 +      echo $libdirs
 +fi      
 +
-diff -urN --no-dereference nss-clean/nss/config/nss.pc.in nss-workdir/nss/config/nss.pc.in
---- nss-clean/nss/config/nss.pc.in	1970-01-01 01:00:00.000000000 +0100
+diff --git nss-workdir/nss/config/nss.pc.in nss-workdir/nss/config/nss.pc.in
+new file mode 100644
+index 0000000..483926b
+--- /dev/null
 +++ nss-workdir/nss/config/nss.pc.in
 @@ -0,0 +1,12 @@
 +prefix=@prefix@
@@ -242,10 +249,11 @@ diff -urN --no-dereference nss-clean/nss/config/nss.pc.in nss-workdir/nss/config
 +Libs: -L@libdir@ -lnss@NSS_MAJOR_VERSION@ -lnssutil@NSS_MAJOR_VERSION@ -lsmime@NSS_MAJOR_VERSION@ -lssl@NSS_MAJOR_VERSION@ -lsoftokn@NSS_MAJOR_VERSION@
 +Cflags: -I${includedir}
 +
-diff -urN --no-dereference nss-clean/nss/lib/dbm/src/h_page.c nss-workdir/nss/lib/dbm/src/h_page.c
+diff --git nss-clean/nss/lib/dbm/src/h_page.c nss-workdir/nss/lib/dbm/src/h_page.c
+index 3cc9c99..47c0f7c 100644
 --- nss-clean/nss/lib/dbm/src/h_page.c
 +++ nss-workdir/nss/lib/dbm/src/h_page.c
-@@ -75,6 +75,7 @@
+@@ -75,6 +75,7 @@ static char sccsid[] = "@(#)hash_page.c 8.7 (Berkeley) 8/16/94";
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
@@ -253,7 +261,8 @@ diff -urN --no-dereference nss-clean/nss/lib/dbm/src/h_page.c nss-workdir/nss/li
  
  #if !defined(_WIN32) && !defined(_WINDOWS) && !defined(macintosh)
  #include <unistd.h>
-diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/softoken/sdb.c
+diff --git nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/softoken/sdb.c
+index 8b5ce70..7a2e56e 100644
 --- nss-clean/nss/lib/softoken/sdb.c
 +++ nss-workdir/nss/lib/softoken/sdb.c
 @@ -37,7 +37,7 @@
@@ -265,7 +274,7 @@ diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/
  #include <linux/magic.h>
  #include <sys/vfs.h>
  #endif
-@@ -2272,7 +2272,7 @@
+@@ -2272,7 +2272,7 @@ sdb_init(char *dbname, char *table, sdbDataType type, int *inUpdate,
      }
  
      if (checkFSType) {
@@ -274,10 +283,11 @@ diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/
          struct statfs statfs_s;
          if (statfs(dbname, &statfs_s) == 0) {
              switch (statfs_s.f_type) {
-diff -urN --no-dereference nss-clean/nss/manifest.mn nss-workdir/nss/manifest.mn
+diff --git nss-clean/nss/manifest.mn nss-workdir/nss/manifest.mn
+index fbc420a..b983d88 100644
 --- nss-clean/nss/manifest.mn
 +++ nss-workdir/nss/manifest.mn
-@@ -10,7 +10,7 @@
+@@ -10,7 +10,7 @@ IMPORTS =	nspr20/v4.8 \
  
  RELEASE = nss
  

@@ -1,4 +1,5 @@
-diff -urN --no-dereference libgtop-clean/include/glibtop/machine.h libgtop-workdir/include/glibtop/machine.h
+diff --git libgtop-clean/include/glibtop/machine.h libgtop-workdir/include/glibtop/machine.h
+index 1321702..26a7725 100644
 --- libgtop-clean/include/glibtop/machine.h
 +++ libgtop-workdir/include/glibtop/machine.h
 @@ -2,7 +2,17 @@
@@ -19,7 +20,8 @@ diff -urN --no-dereference libgtop-clean/include/glibtop/machine.h libgtop-workd
  
  /* private */
  static inline void
-diff -urN --no-dereference libgtop-clean/lib/sysdeps.c libgtop-workdir/lib/sysdeps.c
+diff --git libgtop-clean/lib/sysdeps.c libgtop-workdir/lib/sysdeps.c
+index beb950e..9d10007 100644
 --- libgtop-clean/lib/sysdeps.c
 +++ libgtop-workdir/lib/sysdeps.c
 @@ -25,6 +25,10 @@
@@ -33,7 +35,8 @@ diff -urN --no-dereference libgtop-clean/lib/sysdeps.c libgtop-workdir/lib/sysde
  const unsigned long glibtop_server_features =
  GLIBTOP_SUID_CPU +
  GLIBTOP_SUID_DISK +
-diff -urN --no-dereference libgtop-clean/sysdeps/stub/procstate.c libgtop-workdir/sysdeps/stub/procstate.c
+diff --git libgtop-clean/sysdeps/stub/procstate.c libgtop-workdir/sysdeps/stub/procstate.c
+index 48a5f95..ddeac31 100644
 --- libgtop-clean/sysdeps/stub/procstate.c
 +++ libgtop-workdir/sysdeps/stub/procstate.c
 @@ -22,8 +22,12 @@
@@ -49,7 +52,7 @@ diff -urN --no-dereference libgtop-clean/sysdeps/stub/procstate.c libgtop-workdi
  
  /* Init function. */
  
-@@ -41,3 +45,19 @@
+@@ -41,3 +45,19 @@ glibtop_get_proc_state_s (glibtop *server, glibtop_proc_state *buf,
  {
  	memset (buf, 0, sizeof (glibtop_proc_state));
  }

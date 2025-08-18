@@ -1,7 +1,8 @@
-diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
+diff --git openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
+index f815a09..820fa24 100644
 --- openssl-clean/Configurations/10-main.conf
 +++ openssl-workdir/Configurations/10-main.conf
-@@ -925,6 +925,49 @@
+@@ -925,6 +925,49 @@ my %targets = (
          ranlib           => "true",
      },
  
@@ -51,10 +52,11 @@ diff -urN --no-dereference openssl-clean/Configurations/10-main.conf openssl-wor
  #### *BSD
      "BSD-generic32" => {
          # As for thread cflag. Idea is to maintain "collective" set of
-diff -urN --no-dereference openssl-clean/Configure openssl-workdir/Configure
+diff --git openssl-clean/Configure openssl-workdir/Configure
+index 78cc15d..2d3fb3e 100755
 --- openssl-clean/Configure
 +++ openssl-workdir/Configure
-@@ -1549,20 +1549,7 @@
+@@ -1549,20 +1549,7 @@ unless ($disabled{"crypto-mdebug-backtrace"})
  unless ($disabled{afalgeng}) {
      $config{afalgeng}="";
      if (grep { $_ eq 'afalgeng' } @{$target{enable}}) {
@@ -76,7 +78,8 @@ diff -urN --no-dereference openssl-clean/Configure openssl-workdir/Configure
      } else {
          disable('not-linux', 'afalgeng');
      }
-diff -urN --no-dereference openssl-clean/apps/speed.c openssl-workdir/apps/speed.c
+diff --git openssl-clean/apps/speed.c openssl-workdir/apps/speed.c
+index 89bf184..7432224 100644
 --- openssl-clean/apps/speed.c
 +++ openssl-workdir/apps/speed.c
 @@ -113,6 +113,8 @@
@@ -88,7 +91,8 @@ diff -urN --no-dereference openssl-clean/apps/speed.c openssl-workdir/apps/speed
  #define MAX_MISALIGNMENT 63
  #define MAX_ECDH_SIZE   256
  #define MISALIGN        64
-diff -urN --no-dereference openssl-clean/crypto/conf/conf_def.c openssl-workdir/crypto/conf/conf_def.c
+diff --git openssl-clean/crypto/conf/conf_def.c openssl-workdir/crypto/conf/conf_def.c
+index 31c02cc..4e4ca4e 100644
 --- openssl-clean/crypto/conf/conf_def.c
 +++ openssl-workdir/crypto/conf/conf_def.c
 @@ -11,6 +11,7 @@
@@ -99,7 +103,8 @@ diff -urN --no-dereference openssl-clean/crypto/conf/conf_def.c openssl-workdir/
  #include "internal/cryptlib.h"
  #include "internal/o_dir.h"
  #include <openssl/lhash.h>
-diff -urN --no-dereference openssl-clean/test/bntest.c openssl-workdir/test/bntest.c
+diff --git openssl-clean/test/bntest.c openssl-workdir/test/bntest.c
+index 9273e86..c4a1683 100644
 --- openssl-clean/test/bntest.c
 +++ openssl-workdir/test/bntest.c
 @@ -10,6 +10,7 @@
@@ -110,7 +115,8 @@ diff -urN --no-dereference openssl-clean/test/bntest.c openssl-workdir/test/bnte
  #include <ctype.h>
  
  #include <openssl/bn.h>
-diff -urN --no-dereference openssl-clean/test/rsa_complex.c openssl-workdir/test/rsa_complex.c
+diff --git openssl-clean/test/rsa_complex.c openssl-workdir/test/rsa_complex.c
+index fac5812..5e82ef3 100644
 --- openssl-clean/test/rsa_complex.c
 +++ openssl-workdir/test/rsa_complex.c
 @@ -14,7 +14,9 @@
@@ -124,7 +130,8 @@ diff -urN --no-dereference openssl-clean/test/rsa_complex.c openssl-workdir/test
  # endif
  #endif
  #include <openssl/rsa.h>
-diff -urN --no-dereference openssl-clean/test/ssl_test_ctx.c openssl-workdir/test/ssl_test_ctx.c
+diff --git openssl-clean/test/ssl_test_ctx.c openssl-workdir/test/ssl_test_ctx.c
+index 6cdced5..d98baec 100644
 --- openssl-clean/test/ssl_test_ctx.c
 +++ openssl-workdir/test/ssl_test_ctx.c
 @@ -8,6 +8,7 @@
@@ -135,7 +142,8 @@ diff -urN --no-dereference openssl-clean/test/ssl_test_ctx.c openssl-workdir/tes
  
  #include <openssl/e_os2.h>
  #include <openssl/crypto.h>
-diff -urN --no-dereference openssl-clean/test/v3nametest.c openssl-workdir/test/v3nametest.c
+diff --git openssl-clean/test/v3nametest.c openssl-workdir/test/v3nametest.c
+index 566472a..b9ddeec 100644
 --- openssl-clean/test/v3nametest.c
 +++ openssl-workdir/test/v3nametest.c
 @@ -8,6 +8,7 @@

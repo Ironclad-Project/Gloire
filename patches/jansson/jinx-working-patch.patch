@@ -1,5 +1,7 @@
-diff -urN --no-dereference jansson-clean/cmake/Platform/Ironclad.cmake jansson-workdir/cmake/Platform/Ironclad.cmake
---- jansson-clean/cmake/Platform/Ironclad.cmake	1970-01-01 01:00:00.000000000 +0100
+diff --git jansson-workdir/cmake/Platform/Ironclad.cmake jansson-workdir/cmake/Platform/Ironclad.cmake
+new file mode 100644
+index 0000000..54a156b
+--- /dev/null
 +++ jansson-workdir/cmake/Platform/Ironclad.cmake
 @@ -0,0 +1 @@
 +include(Platform/UnixPaths)

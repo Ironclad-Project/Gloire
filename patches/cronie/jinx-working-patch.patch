@@ -1,7 +1,8 @@
-diff -urN --no-dereference cronie-clean/src/do_command.c cronie-workdir/src/do_command.c
+diff --git cronie-clean/src/do_command.c cronie-workdir/src/do_command.c
+index ee815b6..ca04469 100644
 --- cronie-clean/src/do_command.c
 +++ cronie-workdir/src/do_command.c
-@@ -264,7 +264,7 @@
+@@ -264,7 +264,7 @@ static int child_process(entry * e, char **jobenv) {
  		 */
  		{
  			char *shell = env_get("SHELL", jobenv);
@@ -10,10 +11,11 @@ diff -urN --no-dereference cronie-clean/src/do_command.c cronie-workdir/src/do_c
  			DIR *dir;
  			struct dirent *dent;
  
-diff -urN --no-dereference cronie-clean/src/env.c cronie-workdir/src/env.c
+diff --git cronie-clean/src/env.c cronie-workdir/src/env.c
+index b5645b5..8feb690 100644
 --- cronie-clean/src/env.c
 +++ cronie-workdir/src/env.c
-@@ -261,7 +261,7 @@
+@@ -261,7 +261,7 @@ int load_env(char *envstr, FILE * f) {
  	}
  	if (state != FINI && state != EQ2 && !(state == VALUE && !quotechar)) {
  		Debug(DPARS, ("load_env, not an env var, state = %d\n", state));
@@ -22,10 +24,11 @@ diff -urN --no-dereference cronie-clean/src/env.c cronie-workdir/src/env.c
  			return ERR;
  		}
  		Set_LineNum(fileline);
-diff -urN --no-dereference cronie-clean/src/popen.c cronie-workdir/src/popen.c
+diff --git cronie-clean/src/popen.c cronie-workdir/src/popen.c
+index dadff0d..570c5a6 100644
 --- cronie-clean/src/popen.c
 +++ cronie-workdir/src/popen.c
-@@ -79,7 +79,7 @@
+@@ -79,7 +79,7 @@ FILE *cron_popen(char *program, const char *type, struct passwd *pw, char **jobe
  		return (NULL);
  
  	if (!pids) {

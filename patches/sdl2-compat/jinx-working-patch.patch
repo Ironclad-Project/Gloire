@@ -1,7 +1,8 @@
-diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/CMakeLists.txt
+diff --git sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/CMakeLists.txt
+index 666ec9f..34be379 100644
 --- sdl2-compat-clean/CMakeLists.txt
 +++ sdl2-compat-workdir/CMakeLists.txt
-@@ -79,7 +79,8 @@
+@@ -79,7 +79,8 @@ set(SDL_DYLIB_CURRENT_VERSION_MICRO "0")
  set(SDL_DYLIB_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION_MAJOR}.${SDL_DYLIB_CURRENT_VERSION_MINOR}.${SDL_DYLIB_CURRENT_VERSION_MICRO}")
  set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMPAT_VERSION_MINOR}.${SDL_DYLIB_COMPAT_VERSION_MICRO}")
  
@@ -11,7 +12,7 @@ diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/
  option(SDL2COMPAT_INSTALL "Enable installing SDL2-compat" ${SDL2COMPAT_MAINPROJECT})
  cmake_dependent_option(SDL2COMPAT_INSTALL_CPACK "Create binary SDL2_compat archive using CPack" ${SDL2COMPAT_MAINPROJECT} "SDL2COMPAT_INSTALL" OFF)
  cmake_dependent_option(SDL2COMPAT_INSTALL_TESTS "Install test-cases" OFF "SDL2COMPAT_INSTALL;SDL2COMPAT_TESTS" OFF)
-@@ -423,6 +424,7 @@
+@@ -423,6 +424,7 @@ if(MINGW OR CYGWIN)
  endif()
  
  # SDLtest library...
@@ -19,7 +20,7 @@ diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/
  add_library(SDL2_test STATIC
    src/test/SDL_test_assert.c
    src/test/SDL_test_common.c
-@@ -451,6 +453,7 @@
+@@ -451,6 +453,7 @@ target_include_directories(SDL2_test
      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>"
  )
@@ -27,7 +28,7 @@ diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/
  
  if(SDL2COMPAT_TESTS)
    enable_testing()
-@@ -499,7 +502,10 @@
+@@ -499,7 +502,10 @@ if(SDL2COMPAT_INSTALL)
    endif()
    set(SDL2COMPAT_INSTALL_CMAKEDIR "${SDL2COMPAT_INSTALL_CMAKEDIR_DEFAULT}" CACHE STRING "Location where to install SDL2Config.cmake")
  
@@ -39,7 +40,7 @@ diff -urN --no-dereference sdl2-compat-clean/CMakeLists.txt sdl2-compat-workdir/
    foreach(target ${installed_targets})
      install(TARGETS ${target} EXPORT ${target}Targets
        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-@@ -527,7 +533,9 @@
+@@ -527,7 +533,9 @@ if(SDL2COMPAT_INSTALL)
    if(MSVC)
      SDL_install_pdb(SDL2 "${CMAKE_INSTALL_BINDIR}")
      SDL_install_pdb(SDL2main "${CMAKE_INSTALL_LIBDIR}")

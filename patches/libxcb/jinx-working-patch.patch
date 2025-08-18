@@ -1,7 +1,8 @@
-diff -urN --no-dereference libxcb-clean/configure libxcb-workdir/configure
+diff --git libxcb-clean/configure libxcb-workdir/configure
+index 33f5d89..3fd3b66 100755
 --- libxcb-clean/configure
 +++ libxcb-workdir/configure
-@@ -21028,7 +21028,7 @@
+@@ -21028,7 +21028,7 @@ fi
  NEEDED="xau >= 0.99.2"
  case $host_os in
  linux*|darwin*|solaris*|dragonfly*|freebsd*|netbsd*) ;;
@@ -10,10 +11,11 @@ diff -urN --no-dereference libxcb-clean/configure libxcb-workdir/configure
  esac
  
  pkg_failed=no
-diff -urN --no-dereference libxcb-clean/doc/Makefile.in libxcb-workdir/doc/Makefile.in
+diff --git libxcb-clean/doc/Makefile.in libxcb-workdir/doc/Makefile.in
+index 8448668..2fee3ef 100644
 --- libxcb-clean/doc/Makefile.in
 +++ libxcb-workdir/doc/Makefile.in
-@@ -518,8 +518,8 @@
+@@ -518,8 +518,8 @@ install-data-local:
  	  $(mkinstalldirs) '$(DESTDIR)$(htmldir)'; \
  	fi
  	@for d in $(docdirs); do \

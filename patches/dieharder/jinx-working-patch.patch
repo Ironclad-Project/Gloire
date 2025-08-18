@@ -1,7 +1,8 @@
-diff -urN --no-dereference dieharder-clean/dieharder/Makefile.in dieharder-workdir/dieharder/Makefile.in
+diff --git dieharder-clean/dieharder/Makefile.in dieharder-workdir/dieharder/Makefile.in
+index a224393..e987a27 100644
 --- dieharder-clean/dieharder/Makefile.in
 +++ dieharder-workdir/dieharder/Makefile.in
-@@ -421,7 +421,7 @@
+@@ -421,7 +421,7 @@ DEFINES = -DVERSION=$(VERSION)
  # CC = gcc
  
  # Compile flags (use fairly standard -O3 as default)
@@ -10,10 +11,11 @@ diff -urN --no-dereference dieharder-clean/dieharder/Makefile.in dieharder-workd
  AM_CFLAGS = -O3
  
  # Load flags (optional)
-diff -urN --no-dereference dieharder-clean/libdieharder/Makefile.in dieharder-workdir/libdieharder/Makefile.in
+diff --git dieharder-clean/libdieharder/Makefile.in dieharder-workdir/libdieharder/Makefile.in
+index b437ae3..0ca5463 100644
 --- dieharder-clean/libdieharder/Makefile.in
 +++ dieharder-workdir/libdieharder/Makefile.in
-@@ -575,7 +575,7 @@
+@@ -575,7 +575,7 @@ DEFINES = -DVERSION=$(VERSION) -DLITTLE_ENDIAN=$(LITTLE_ENDIAN)
  # CC = gcc
  
  # Compile flags (use fairly standard -O3 as default)

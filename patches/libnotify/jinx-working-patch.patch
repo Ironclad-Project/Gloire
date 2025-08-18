@@ -1,5 +1,5 @@
 diff --git libnotify-clean/tools/notify-send.c libnotify-workdir/tools/notify-send.c
-index 367dfb0..2c78608 100644
+index de92cbb..2825b56 100644
 --- libnotify-clean/tools/notify-send.c
 +++ libnotify-workdir/tools/notify-send.c
 @@ -25,6 +25,7 @@

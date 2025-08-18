@@ -1,5 +1,5 @@
 diff --git vte-clean/meson.build vte-workdir/meson.build
-index 8c4462b..baf78bb 100644
+index 3979c7d..545ebbd 100644
 --- vte-clean/meson.build
 +++ vte-workdir/meson.build
 @@ -262,7 +262,7 @@ endforeach

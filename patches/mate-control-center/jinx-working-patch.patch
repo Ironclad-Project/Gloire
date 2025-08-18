@@ -1,7 +1,8 @@
-diff -urN --no-dereference mate-control-center-clean/capplets/meson.build mate-control-center-workdir/capplets/meson.build
+diff --git mate-control-center-clean/capplets/meson.build mate-control-center-workdir/capplets/meson.build
+index 015de1c..775e8f6 100644
 --- mate-control-center-clean/capplets/meson.build
 +++ mate-control-center-workdir/capplets/meson.build
-@@ -3,11 +3,11 @@
+@@ -3,11 +3,11 @@ subdir('about-me')
  subdir('accessibility/at-properties')
  subdir('appearance')
  subdir('default-applications')
@@ -16,10 +17,11 @@ diff -urN --no-dereference mate-control-center-clean/capplets/meson.build mate-c
 +# subdir('system-info')
 +# subdir('time-admin')
  subdir('windows')
-diff -urN --no-dereference mate-control-center-clean/meson.build mate-control-center-workdir/meson.build
+diff --git mate-control-center-clean/meson.build mate-control-center-workdir/meson.build
+index 60a00ab..01b4f3b 100644
 --- mate-control-center-clean/meson.build
 +++ mate-control-center-workdir/meson.build
-@@ -75,9 +75,9 @@
+@@ -75,9 +75,9 @@ pango_dep = dependency('pango')
  xcursor_dep = dependency('xcursor')
  dconf_dep = dependency('dconf', version: '>= 0.13.4')
  fontconfig_dep = dependency('fontconfig')
@@ -32,7 +34,7 @@ diff -urN --no-dereference mate-control-center-clean/meson.build mate-control-ce
  matekbd_dep = dependency('libmatekbd', version: '>=1.17.0')
  matekbdui_dep = dependency('libmatekbdui', version: '>=1.17.0')
  xklavier_dep = dependency('libxklavier', version: '>= 5.2')
-@@ -104,27 +104,27 @@
+@@ -104,27 +104,27 @@ common_deps = [
    gtk_dep,
  ]
  
@@ -81,7 +83,7 @@ diff -urN --no-dereference mate-control-center-clean/meson.build mate-control-ce
  gnome = import('gnome')
  i18n = import('i18n')
  pkg = import('pkgconfig')
-@@ -153,9 +153,9 @@
+@@ -153,9 +153,9 @@ configure_file(
  subdir('po')
  subdir('man')
  subdir('help')
@@ -93,7 +95,7 @@ diff -urN --no-dereference mate-control-center-clean/meson.build mate-control-ce
  subdir('shell')
  
  gnome.post_install(
-@@ -179,8 +179,8 @@
+@@ -179,8 +179,8 @@ summary = [
    '                 project: @0@ @1@'.format(meson.project_name(), meson.project_version()),
    '                  prefix: @0@'.format(mcc_prefix),
    'accountsservice supports: @0@'.format(accounts_dep.found()),

@@ -1,7 +1,8 @@
-diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
+diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
+index 82c7138..daf018a 100644
 --- mlibc-clean/meson.build
 +++ mlibc-workdir/meson.build
-@@ -239,6 +239,7 @@
+@@ -239,6 +239,7 @@ elif host_machine.system() == 'managarm'
  elif host_machine.system() == 'ironclad'
  	rtld_include_dirs += include_directories('sysdeps/ironclad/include')
  	libc_include_dirs += include_directories('sysdeps/ironclad/include')
@@ -9,10 +10,11 @@ diff -urN --no-dereference mlibc-clean/meson.build mlibc-workdir/meson.build
  	subdir('sysdeps/ironclad')
  elif host_machine.system() == 'keyronex'
  	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
-diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
+diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
+index c42b4f4..232c229 100644
 --- mlibc-clean/options/internal/generic/charset.cpp
 +++ mlibc-workdir/options/internal/generic/charset.cpp
-@@ -13,36 +13,28 @@
+@@ -13,36 +13,28 @@ bool charset::is_ascii_superset() {
  bool charset::is_alpha(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -53,7 +55,7 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlib
  	return false;
  }
  
-@@ -55,63 +47,49 @@
+@@ -55,63 +47,49 @@ bool charset::is_punct(codepoint c) {
  				|| c == '@'
  				|| c == '[' || c == '\\' || c == ']' || c == '^' || c == '_' || c == '`'
  				|| c == '{' || c == '|' || c == '}' || c == '~';
@@ -124,7 +126,7 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlib
  	return false;
  }
  
-@@ -119,9 +97,7 @@
+@@ -119,9 +97,7 @@ codepoint charset::to_lower(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'A' && c <= 'Z')
  			return c - 'A' + 'a';
@@ -135,7 +137,7 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/charset.cpp mlib
  	return c;
  }
  
-@@ -129,9 +105,7 @@
+@@ -129,9 +105,7 @@ codepoint charset::to_upper(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'a' && c <= 'z')
  			return c - 'a' + 'A';
@@ -160,10 +162,11 @@ diff -urN --no-dereference mlibc-clean/options/internal/generic/threads.cpp mlib
  	return 0;
  }
  
-diff -urN --no-dereference mlibc-clean/options/internal/riscv64/setjmp.S mlibc-workdir/options/internal/riscv64/setjmp.S
+diff --git mlibc-clean/options/internal/riscv64/setjmp.S mlibc-workdir/options/internal/riscv64/setjmp.S
+index 7ce9cfb..222954f 100644
 --- mlibc-clean/options/internal/riscv64/setjmp.S
 +++ mlibc-workdir/options/internal/riscv64/setjmp.S
-@@ -36,7 +36,34 @@
+@@ -36,7 +36,34 @@ _setjmp:
  .global sigsetjmp
  .type sigsetjmp, "function"
  sigsetjmp:
@@ -199,10 +202,11 @@ diff -urN --no-dereference mlibc-clean/options/internal/riscv64/setjmp.S mlibc-w
  
  .global longjmp
  .type longjmp, "function"
-diff -urN --no-dereference mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
+diff --git mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
+index bd8710a..feb59ee 100644
 --- mlibc-clean/options/posix/generic/posix_locale.cpp
 +++ mlibc-workdir/options/posix/generic/posix_locale.cpp
-@@ -25,7 +25,7 @@
+@@ -25,7 +25,7 @@ void freelocale(locale_t) {
  
  locale_t uselocale(locale_t) {
  	if(!uselocale_seen) {
@@ -211,7 +215,8 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/posix_locale.cpp ml
  		uselocale_seen = true;
  	}
  	return nullptr;
-diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
+diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
+index 8782ae6..bfacac2 100644
 --- mlibc-clean/options/posix/generic/sys-shm.cpp
 +++ mlibc-workdir/options/posix/generic/sys-shm.cpp
 @@ -4,6 +4,7 @@
@@ -222,7 +227,7 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-w
  
  void *shmat(int shmid, const void *shmaddr, int shmflg) {
  	void *ret;
-@@ -17,11 +18,7 @@
+@@ -17,11 +18,7 @@ void *shmat(int shmid, const void *shmaddr, int shmflg) {
  
  int shmctl(int shmid, int cmd, struct shmid_ds *buf) {
  	int ret;
@@ -235,8 +240,10 @@ diff -urN --no-dereference mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-w
  	return ret;
  }
  
-diff -urN --no-dereference mlibc-clean/options/posix/include/sys/ioccom.h mlibc-workdir/options/posix/include/sys/ioccom.h
---- mlibc-clean/options/posix/include/sys/ioccom.h	1970-01-01 01:00:00.000000000 +0100
+diff --git mlibc-workdir/options/posix/include/sys/ioccom.h mlibc-workdir/options/posix/include/sys/ioccom.h
+new file mode 100644
+index 0000000..370eb34
+--- /dev/null
 +++ mlibc-workdir/options/posix/include/sys/ioccom.h
 @@ -0,0 +1,82 @@
 +/*	$NetBSD: ioccom.h,v 1.13 2019/05/26 10:21:33 hannken Exp $	*/
@@ -321,10 +328,11 @@ diff -urN --no-dereference mlibc-clean/options/posix/include/sys/ioccom.h mlibc-
 +		
 +
 +#endif /* !_SYS_IOCCOM_H_ */
-diff -urN --no-dereference mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
+diff --git mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
+index 681c99b..f596893 100644
 --- mlibc-clean/options/posix/meson.build
 +++ mlibc-workdir/options/posix/meson.build
-@@ -129,6 +129,7 @@
+@@ -129,6 +129,7 @@ if not no_headers
  	install_headers(
  		'include/sys/fcntl.h',
  		'include/sys/file.h',
@@ -332,10 +340,11 @@ diff -urN --no-dereference mlibc-clean/options/posix/meson.build mlibc-workdir/o
  		'include/sys/ipc.h',
  		'include/sys/mman.h',
  		'include/sys/msg.h',
-diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
+diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
+index 63aadd3..e1be8a5 100644
 --- mlibc-clean/options/rtld/generic/linker.cpp
 +++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -591,6 +591,7 @@
+@@ -591,6 +591,7 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
  		return LinkerError::outOfMemory;
  	}
  
@@ -343,10 +352,11 @@ diff -urN --no-dereference mlibc-clean/options/rtld/generic/linker.cpp mlibc-wor
  	object->baseAddress = reinterpret_cast<uintptr_t>(mappedAddr);
  #else
  	object->baseAddress = libraryBase;
-diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index 29af755..a8a4a26 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -697,6 +697,10 @@
+@@ -697,6 +697,10 @@ struct futex_item {
  int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
  	int ret, errno;
  	struct futex_item item = {.addr = (uint64_t)pointer, .expected = (uint32_t)expected, .flags = 0};
@@ -357,3 +367,84 @@ diff -urN --no-dereference mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlib
  	if (time == NULL) {
  		 struct timespec t = {(time_t)-1, (time_t)-1};
  		 SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, &t);
+diff --git mlibc-clean/sysdeps/ironclad/generic/pty.cpp mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+index 2e09c3b..841c552 100644
+--- mlibc-clean/sysdeps/ironclad/generic/pty.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/pty.cpp
+@@ -8,6 +8,8 @@
+ #include <stdlib.h>
+ #include <sys/syscall.h>
+ #include <sys/ioctl.h>
++#include <mlibc/debug.hpp>
++#include <mlibc/all-sysdeps.hpp>
+ 
+ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win) {
+ 	int ret;
+@@ -64,3 +66,55 @@ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const str
+ 
+ 	return ret;
+ }
++
++static int login_tty(int fd) {
++	if(setsid() == -1)
++		return -1;
++	if(ioctl(fd, TIOCSCTTY, 0))
++		return -1;
++
++	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_dup2, -1);
++	if(int e = mlibc::sys_dup2(fd, 0, STDIN_FILENO); e) {
++		errno = e;
++		return -1;
++	}
++	if(int e = mlibc::sys_dup2(fd, 0, STDOUT_FILENO); e) {
++		errno = e;
++		return -1;
++	}
++	if(int e = mlibc::sys_dup2(fd, 0, STDERR_FILENO); e) {
++		errno = e;
++		return -1;
++	}
++
++	if(int e = mlibc::sys_close(fd); e) {
++		errno = e;
++		return -1;
++	}
++	return 0;
++}
++
++int forkpty(int *mfd, char *name, const struct termios *ios, const struct winsize *win) {
++	int sfd;
++	if(openpty(mfd, &sfd, name, ios, win))
++		return -1;
++
++	pid_t child;
++	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_fork, -1);
++	if(int e = mlibc::sys_fork(&child); e) {
++		errno = e;
++		return -1;
++	}
++
++	if(!child) {
++		if(login_tty(sfd))
++			mlibc::panicLogger() << "mlibc: TTY login fail in forkpty() child" << frg::endlog;
++	}else{
++		if(int e = mlibc::sys_close(sfd); e) {
++			errno = e;
++			return -1;
++		}
++	}
++
++	return child;
++}
+diff --git mlibc-clean/sysdeps/ironclad/include/pty.h mlibc-workdir/sysdeps/ironclad/include/pty.h
+index a4d0ffc..f54106c 100644
+--- mlibc-clean/sysdeps/ironclad/include/pty.h
++++ mlibc-workdir/sysdeps/ironclad/include/pty.h
+@@ -8,6 +8,7 @@ extern "C" {
+ #endif
+ 
+ int openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const struct winsize *win);
++int forkpty(int *__mfd, char *__name, const struct termios *__ios, const struct winsize *__win);
+ 
+ #ifdef __cplusplus
+ }

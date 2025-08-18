@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="1"
+jinx_minor_ver="2"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -694,6 +694,7 @@ cont_patch() {
 
     cd "${source_dir}"
 
+    needs_match_timestamps=no
     rm -rf "${base_dir}"/sources/${name}-clean
     if [ -d "${base_dir}"/patches/${name} ]; then
         for patch in "${base_dir}"/patches/${name}/*; do
@@ -702,16 +703,30 @@ cont_patch() {
 
             if ! [ -d "${base_dir}"/sources/${name}-clean ]; then
                 cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
+                needs_match_timestamps=yes
             fi
 
             patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
         done
+
+        if [ "${needs_match_timestamps}" = yes ]; then
+            # make sure timestamps match
+            for f in $(diff -rq --no-dereference "${base_dir}"/sources/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
+                touch --reference="$f" "$(echo "$f" | sed "s|sources/${name}-clean|sources/${name}|g")"
+            done
+            rm -rf "${base_dir}"/sources/${name}-clean
+        fi
     fi
 
     cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
 
     if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
         patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+
+        # make sure timestamps match
+        for f in $(diff -rq --no-dereference "${base_dir}"/sources/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
+            touch --reference="$f" "$(echo "$f" | sed "s|sources/${name}-clean|sources/${name}|g")"
+        done
     fi
 
     cp -rp "${source_dir}" "${base_dir}"/sources/${name}-workdir

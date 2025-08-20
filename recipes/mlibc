@@ -3,12 +3,20 @@
 name=mlibc
 skip_pkg_check=yes
 version=0.0git
-revision=20
+revision=21
 git_url="https://github.com/managarm/mlibc.git"
-commit=5be40073b9679457677d933cbc20709645f127c7
+commit=b24a5c00f5fa780a980c6fe4d83a8031a353c141
 hostdeps="gcc pkg-config libgcc-binaries"
-builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
 deps="mlibc-headers"
+
+early_prepare() {
+    # Fix the subproject commits
+    sed -i 's/revision = .*/revision = 5304639c1c9fd3713fd759453b0415b968dcaa06/g' subprojects/frigg.wrap
+    sed -i 's/revision = .*/revision = 4039f438fb1dc1064d8e98f70e1cf122f91b763b/g' subprojects/freestnd-c-hdrs.wrap
+    sed -i 's/revision = .*/revision = 85096df5361a4d7ef2ce46947e555ec248c2858e/g' subprojects/freestnd-cxx-hdrs.wrap
+
+    meson subprojects download
+}
 
 configure() {
         CFLAGS="$TARGET_CFLAGS" \

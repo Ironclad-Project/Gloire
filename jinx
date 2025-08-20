@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -649,6 +649,10 @@ cont_fetch() {
 }
 
 default_recipe_steps() {
+    early_prepare() {
+        true
+    }
+
     prepare() {
         true
     }
@@ -688,6 +692,8 @@ cont_patch() {
     source_source_recipe $1
 
     get_real_source_dir
+
+    "${script}" internal-early-prepare $1
 
     make_temp
     patch_trash="${tmp}"
@@ -734,6 +740,22 @@ cont_patch() {
     cd "${base_dir}"
 
     touch "${base_dir}"/sources/${name}.patched
+}
+
+do_early_prepare() {
+    default_recipe_steps
+
+    source_source_recipe $1
+
+    get_real_source_dir
+
+    sysroot_dir="/sysroot"
+
+    cd "${source_dir}"
+    [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
+    early_prepare
+    container_base_dir_ro=""
+    cd "${base_dir}"
 }
 
 do_prepare() {
@@ -992,6 +1014,7 @@ precont_patch() {
     [ -f "${base_dir}"/sources/$1.patched ] && return
 
     cross_compile=yes
+    allow_network="yes"
     prepare_container
     run_in_container internal-cont-patch $1
     destroy_container
@@ -2168,6 +2191,9 @@ if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" 
 fi
 
 case "$1" in
+    internal-early-prepare)
+        do_early_prepare "$2"
+        ;;
     internal-prepare)
         do_prepare "$2"
         ;;

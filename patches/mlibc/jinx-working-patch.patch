@@ -24,7 +24,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_digit(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= '0' && c <= '9';
@@ -34,7 +34,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_xdigit(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
@@ -44,7 +44,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_alnum(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -54,7 +54,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
 @@ -55,63 +47,49 @@ bool charset::is_punct(codepoint c) {
  				|| c == '@'
  				|| c == '[' || c == '\\' || c == ']' || c == '^' || c == '_' || c == '`'
@@ -65,7 +65,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_graph(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= 0x21 && c <= 0x7E;
@@ -75,7 +75,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_blank(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c == ' ' || c == '\t';
@@ -85,7 +85,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_space(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r';
@@ -95,7 +95,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_print(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= 0x20 && c <= 0x7E;
@@ -105,7 +105,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_lower(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= 'a' && c <= 'z');
@@ -115,7 +115,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
  bool charset::is_upper(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= 'A' && c <= 'Z');
@@ -125,7 +125,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
- 
+
 @@ -119,9 +97,7 @@ codepoint charset::to_lower(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'A' && c <= 'Z')
@@ -136,7 +136,7 @@ index c42b4f4..232c229 100644
 +
  	return c;
  }
- 
+
 @@ -129,9 +105,7 @@ codepoint charset::to_upper(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'a' && c <= 'z')
@@ -147,22 +147,7 @@ index c42b4f4..232c229 100644
 +
  	return c;
  }
- 
-diff --git mlibc-clean/options/internal/generic/threads.cpp mlibc-workdir/options/internal/generic/threads.cpp
-index 2b535fc..10b43fc 100644
---- mlibc-clean/options/internal/generic/threads.cpp
-+++ mlibc-workdir/options/internal/generic/threads.cpp
-@@ -127,7 +127,9 @@ int thread_mutex_init(struct __mlibc_mutex *__restrict mutex,
- }
- 
- int thread_mutex_destroy(struct __mlibc_mutex *mutex) {
--	__ensure(!mutex->__mlibc_state);
-+	//  This __ensure fails when doing glxgears on several cores.
-+	(void)mutex;
-+	//__ensure(!mutex->__mlibc_state);
- 	return 0;
- }
- 
+
 diff --git mlibc-clean/options/internal/riscv64/setjmp.S mlibc-workdir/options/internal/riscv64/setjmp.S
 index 7ce9cfb..222954f 100644
 --- mlibc-clean/options/internal/riscv64/setjmp.S
@@ -200,7 +185,7 @@ index 7ce9cfb..222954f 100644
 +	fsd fs11, 200(a0)
 +	li a0, 0
 +	ret
- 
+
  .global longjmp
  .type longjmp, "function"
 diff --git mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
@@ -208,7 +193,7 @@ index bd8710a..feb59ee 100644
 --- mlibc-clean/options/posix/generic/posix_locale.cpp
 +++ mlibc-workdir/options/posix/generic/posix_locale.cpp
 @@ -25,7 +25,7 @@ void freelocale(locale_t) {
- 
+
  locale_t uselocale(locale_t) {
  	if(!uselocale_seen) {
 -		mlibc::infoLogger() << "mlibc: uselocale() is a no-op" << frg::endlog;
@@ -216,31 +201,6 @@ index bd8710a..feb59ee 100644
  		uselocale_seen = true;
  	}
  	return nullptr;
-diff --git mlibc-clean/options/posix/generic/sys-shm.cpp mlibc-workdir/options/posix/generic/sys-shm.cpp
-index 8782ae6..bfacac2 100644
---- mlibc-clean/options/posix/generic/sys-shm.cpp
-+++ mlibc-workdir/options/posix/generic/sys-shm.cpp
-@@ -4,6 +4,7 @@
- #include <bits/ensure.h>
- #include <mlibc/debug.hpp>
- #include <mlibc/posix-sysdeps.hpp>
-+#include <sys/syscall.h>
- 
- void *shmat(int shmid, const void *shmaddr, int shmflg) {
- 	void *ret;
-@@ -17,11 +18,7 @@ void *shmat(int shmid, const void *shmaddr, int shmflg) {
- 
- int shmctl(int shmid, int cmd, struct shmid_ds *buf) {
- 	int ret;
--	auto sysdep = MLIBC_CHECK_OR_ENOSYS(mlibc::sys_shmctl, -1);
--	if(int e = sysdep(&ret, shmid, cmd, buf); e) {
--		errno = e;
--		return -1;
--	}
-+	SYSCALL3(SYSCALL_SHMCTL, shmid, cmd, buf);
- 	return ret;
- }
- 
 diff --git mlibc-workdir/options/posix/include/sys/ioccom.h mlibc-workdir/options/posix/include/sys/ioccom.h
 new file mode 100644
 index 0000000..370eb34
@@ -326,7 +286,7 @@ index 0000000..370eb34
 +	(((cmd) >> 30) & 1) ? "R" : "", \
 +	(((cmd) >> 30) & 2) ? "W" : "", \
 +	(char)IOCGROUP(cmd), (unsigned char)(cmd))
-+		
++
 +
 +#endif /* !_SYS_IOCCOM_H_ */
 diff --git mlibc-clean/options/posix/meson.build mlibc-workdir/options/posix/meson.build
@@ -341,18 +301,6 @@ index 681c99b..f596893 100644
  		'include/sys/ipc.h',
  		'include/sys/mman.h',
  		'include/sys/msg.h',
-diff --git mlibc-clean/options/rtld/generic/linker.cpp mlibc-workdir/options/rtld/generic/linker.cpp
-index 63aadd3..e1be8a5 100644
---- mlibc-clean/options/rtld/generic/linker.cpp
-+++ mlibc-workdir/options/rtld/generic/linker.cpp
-@@ -591,6 +591,7 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
- 		return LinkerError::outOfMemory;
- 	}
- 
-+	mlibc::sys_vm_unmap(mappedAddr, highest_address - object->baseAddress);
- 	object->baseAddress = reinterpret_cast<uintptr_t>(mappedAddr);
- #else
- 	object->baseAddress = libraryBase;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 index 29af755..a8a4a26 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp

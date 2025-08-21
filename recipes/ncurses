@@ -1,11 +1,11 @@
 #! /bin/sh
 
 name=ncurses
-_snapshot=20250426
+_snapshot=20250816
 version=6.5.${_snapshot}
 revision=1
 tarball_url="https://github.com/ThomasDickey/ncurses-snapshots/archive/refs/tags/v6_5_${_snapshot}.tar.gz"
-tarball_blake2b="a6161e5de4d84f275ddab1fba500b1d383c9f8ab60628ceb7f5875e76b53c36d2689754fbc51ca46d3a61fa675d5592d959a11abcda0d6daf34ea30d65b7bbf2"
+tarball_blake2b="ae9dc2ee12ab4f3835f59d0ad2ccc9d75a60112e448adf86709c030194dba4ccc7e627cde00706d1f422ade4f0fbb3e4ebe82adcec355a79ee53e46a584363ae"
 imagedeps="build-essential ncurses-bin patchelf"
 hostdeps="gcc pkg-config"
 deps="core-libs"

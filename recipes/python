@@ -2,10 +2,10 @@
 
 name=python
 repology_srcname=python
-version=3.13.5
+version=3.13.7
 revision=1
 tarball_url="https://www.python.org/ftp/python/${version}/Python-${version}.tar.xz"
-tarball_blake2b="9caacad8745dcd238b208022cb140a6655ae57ae0b7f5ac88efc84a96635c310102a5de20cbaa43ef3c329f454b142a0a019141279d49a4d657be5682a1d6521"
+tarball_blake2b="8654588ed12e8cd1d691a1869ed1db0d4b9dbb8e265bb0189cfb3cd1f21a298c1d8e9678e27c23b31e6c7f86478f33f3fc6bb66488a550bed60d64b7a801e65a"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 xz zlib openssl ncurses readline gdbm libexpat libffi"
 

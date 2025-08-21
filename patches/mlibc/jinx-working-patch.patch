@@ -1,15 +1,3 @@
-diff --git mlibc-clean/meson.build mlibc-workdir/meson.build
-index 82c7138..daf018a 100644
---- mlibc-clean/meson.build
-+++ mlibc-workdir/meson.build
-@@ -239,6 +239,7 @@ elif host_machine.system() == 'managarm'
- elif host_machine.system() == 'ironclad'
- 	rtld_include_dirs += include_directories('sysdeps/ironclad/include')
- 	libc_include_dirs += include_directories('sysdeps/ironclad/include')
-+	internal_conf.set10('MLIBC_MMAP_ALLOCATE_DSO', true)
- 	subdir('sysdeps/ironclad')
- elif host_machine.system() == 'keyronex'
- 	rtld_include_dirs += include_directories('sysdeps/keyronex/include')
 diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
 index c42b4f4..232c229 100644
 --- mlibc-clean/options/internal/generic/charset.cpp
@@ -301,18 +289,3 @@ index 681c99b..f596893 100644
  		'include/sys/ipc.h',
  		'include/sys/mman.h',
  		'include/sys/msg.h',
-diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 29af755..a8a4a26 100644
---- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
-+++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -697,6 +697,10 @@ struct futex_item {
- int sys_futex_wait(int *pointer, int expected, const struct timespec *time) {
- 	int ret, errno;
- 	struct futex_item item = {.addr = (uint64_t)pointer, .expected = (uint32_t)expected, .flags = 0};
-+	if (*pointer != expected) {
-+		return EAGAIN;
-+	}
-+
- 	if (time == NULL) {
- 		 struct timespec t = {(time_t)-1, (time_t)-1};
- 		 SYSCALL4(SYSCALL_FUTEX, 0b01, &item, 1, &t);

@@ -2083,7 +2083,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
     run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
     # XXX: xbps upstream forgot to bump version string
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.3/g' /xbps-${XBPS_VERSION}/configure
+    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.5/g' /xbps-${XBPS_VERSION}/configure
     run_in_container1 "${XBPS_BUILDENV}" sed -i 's/&& DEBUG=yes/&& DEBUG=no/g' /xbps-${XBPS_VERSION}/configure
     run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --verbose --enable-static --enable-rpath --prefix=/ --sysconfdir=/etc"
     run_in_container1 "${XBPS_BUILDENV}" sed -i 's/-lxml2/-lxml2 -llzma -lm/g' /xbps-${XBPS_VERSION}/config.mk

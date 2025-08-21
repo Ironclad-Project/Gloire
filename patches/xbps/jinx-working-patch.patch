@@ -19,7 +19,7 @@ index 2b54b90..e7f4e40 100755
  # Try and be like autotools configure, but without autotools
  
 -VERSION=0.60
-+VERSION=0.60.3
++VERSION=0.60.5
  
  # Ensure that we do not inherit these from env
  OS=

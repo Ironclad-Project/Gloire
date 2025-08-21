@@ -34,7 +34,7 @@ index ee2dd15..24e88da 100644
   * Commands used by the non-CUSE TPMs
   *
 diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
-index 56d1972..c56a514 100644
+index 796553b..aa2254a 100644
 --- qemu-clean/block/file-posix.c
 +++ qemu-workdir/block/file-posix.c
 @@ -119,6 +119,8 @@
@@ -122,6 +122,41 @@ index 52925c2..1fb66d7 100644
          return;
      }
  }
+diff --git qemu-clean/subprojects/dtc/libfdt/meson.build qemu-workdir/subprojects/dtc/libfdt/meson.build
+index 0307ffb..1cde105 100644
+--- qemu-clean/subprojects/dtc/libfdt/meson.build
++++ qemu-workdir/subprojects/dtc/libfdt/meson.build
+@@ -21,7 +21,7 @@ libfdt = library(
+   version: '1.6.0',
+   link_args: ['-Wl,--no-undefined', version_script],
+   link_depends: 'version.lds',
+-  install: true,
++  install: false,
+ )
+ 
+ libfdt_inc = include_directories('.')
+@@ -30,21 +30,3 @@ libfdt_dep = declare_dependency(
+   include_directories: libfdt_inc,
+   link_with: libfdt,
+ )
+-
+-install_headers(
+-  files(
+-    'fdt.h',
+-    'libfdt.h',
+-    'libfdt_env.h',
+-  )
+-)
+-
+-pkgconfig = import('pkgconfig')
+-
+-pkgconfig.generate(
+-  libraries: libfdt,
+-  version: meson.project_version(),
+-  filebase: 'libfdt',
+-  name: 'libfdt',
+-  description: 'Flat Device Tree manipulation',
+-)
 diff --git qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
 index 0291b72..df89863 100644
 --- qemu-clean/util/cpuinfo-riscv.c

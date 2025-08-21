@@ -2,12 +2,12 @@
 
 name=qemu
 version=10.0.3
-revision=1
+revision=2
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_sha512="7f37c2df5ac7048fb32f1d89a7c2da0929be9d2f5767bc209ca1e99167f196fb5867fc8b69f915c8c349c58089ce3d7e08c9a3f35a73223abff258b9a5bf3466"
 imagedeps="build-essential python3-venv"
 hostdeps="gcc pkg-config"
-deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman nettle"
+deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman libjpeg-turbo bzip2 zstd vte gnutls libtasn1"
 
 early_prepare() {
     meson subprojects download
@@ -23,14 +23,16 @@ configure() {
             ;;
     esac
 
-    CFLAGS="${TARGET_CFLAGS}" LDFLAGS="${TARGET_LDFLAGS}" ./configure \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+    ./configure \
+        -Db_colorout=always \
         --cross-prefix=${OS_TRIPLET}- \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --with-coroutine=sigaltstack \
         --disable-tpm \
-        $NVMM_FLAG \
-        -Db_colorout=always
+        $NVMM_FLAG
 }
 
 build() {
@@ -44,5 +46,5 @@ package() {
 
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
-    post_package_strip || true
+    post_package_strip
 }

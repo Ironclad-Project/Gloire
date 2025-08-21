@@ -2,16 +2,16 @@
 
 name=glib2
 repology_id=glib
-version=2.84.3
+version=2.84.4
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/glib.git"
-commit=78cd78d2988616d9af0e8f43e703717d092cd3ff
+commit=41eca60845d3fc309af361f5e7f801ba339099aa
 imagedeps="python3-docutils"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 libffi zlib"
 source_allow_network=yes
 
-prepare() {
+early_prepare() {
     git submodule update --init --recursive
 }
 

@@ -2,7 +2,7 @@
 
 name=harfbuzz
 version=11.4.2
-revision=1
+revision=2
 git_url="https://github.com/harfbuzz/harfbuzz.git"
 commit=6b754c33443daa2b89c250cecb810517a89b3b9b
 hostdeps="gcc pkg-config"
@@ -10,7 +10,6 @@ deps="core-libs graphite2 glib2 zlib freetype2 cairo icu"
 
 configure() {
     meson_configure \
-        -Dcpp_std=c++17 \
         -Dgraphite2=enabled \
         -Dglib=enabled \
         -Dgobject=disabled \

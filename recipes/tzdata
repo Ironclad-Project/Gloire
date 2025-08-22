@@ -2,7 +2,7 @@
 
 name=tzdata
 version=2025b
-revision=1
+revision=2
 tarball_url="https://data.iana.org/time-zones/releases/tzdata${version}.tar.gz"
 tarball_blake2b="07421e756cd33f003f1173c320a2e454f767a2ba299b76b54e34dc5cf1c126b00ab3186bc61d4989201a83cb8b3e4c005c0bc080fb39a1e48ff9555d50c84f1d"
 source_allow_network="yes"
@@ -10,7 +10,7 @@ imagedeps="tzdata"
 hostdeps="gcc binutils"
 deps="mlibc libgcc libstdc++ libatomic libintl libiconv"
 
-prepare() {
+early_prepare() {
     curl -Lo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
     tar -xf tzcode.tar.gz
     sed -i 's/sbin/bin/g' Makefile
@@ -22,7 +22,7 @@ build() {
     make \
         CC="$OS_TRIPLET-gcc" \
         AR="$OS_TRIPLET-ar" \
-        CFLAGS="$TARGET_CFLAGS -std=c99 $TARGET_CPPFLAGS" \
+        CFLAGS="$TARGET_CFLAGS $TARGET_CPPFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
         LDLIBS="-lintl"
 }

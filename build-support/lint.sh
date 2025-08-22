@@ -2,6 +2,12 @@
 
 set -e
 
+script_dir="$(dirname "$0")"
+test -z "${script_dir}" && script_dir=.
+
+source_dir="$(cd "${script_dir}"/.. && pwd -P)"
+build_dir="$(pwd -P)"
+
 has_errors="no"
 errors="$(mktemp)"
 
@@ -12,13 +18,22 @@ print_error() {
 }
 
 verify_build_system() {
-    if ! [ -f sources/$name ]; then
+    name=$(set +e && . "$1" 2>/dev/null && echo "${from_source}")
+    if ! [ -z "$name" ]; then
+        name=sources/${name}
+    else
+        name=$(unset source_dir && set +e && . "$1" 2>/dev/null && echo "${source_dir}")
+    fi
+    if [ -z "$name" ]; then
+        name=sources/$(basename "$1")
+    fi
+
+    if ! [ -d ${source_dir}/${name} ]; then
         printf ' \033[33m(source not downloaded - cannot check build system)\033[0m'
         return 0
     fi
 
     # Determine the build system used by the configure step
-    name=$(basename "$1")
     build_system=$(grep '_configure' "$1" | sed -E 's|.* ([a-z]+)_configure.*|\1|')
 
     # If no build system is found, return
@@ -29,17 +44,17 @@ verify_build_system() {
     case "$build_system" in
         autotools)
             # Check for meson.build or CMakeLists.txt
-            if [ -f sources/$name/meson.build ]; then
+            if [ -f ${source_dir}/${name}/meson.build ]; then
                 print_error "* $1 has meson.build, but uses autotools" >> "$errors"
                 return 1
-            elif [ -f sources/$name/CMakeLists.txt ]; then
+            elif [ -f ${source_dir}/${name}/CMakeLists.txt ]; then
                 print_error "* $1 has CMakeLists.txt, but uses autotools" >> "$errors"
                 return 1
             fi
             ;;
         cmake)
             # Check for meson.build
-            if [ -f sources/$name/meson.build ]; then
+            if [ -f ${source_dir}/${name}/meson.build ]; then
                 print_error "* $1 has meson.build, but uses cmake" >> "$errors"
                 return 1
             fi
@@ -93,7 +108,7 @@ lint_recipe() {
     fi
 
     # Check if recipe has a configure step
-    if grep -q 'configure() {' "$1" && ! verify_build_system "$1"; then
+    if ! verify_build_system "$1"; then
         recipe_has_errors="yes"
     fi
 

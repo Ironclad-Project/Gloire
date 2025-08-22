@@ -27,5 +27,5 @@ build() {
 }
 
 package() {
-	make copy DESTDIR="${dest_dir}"
+    make copy DESTDIR="${dest_dir}"
 }

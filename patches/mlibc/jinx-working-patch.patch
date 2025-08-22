@@ -12,7 +12,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_digit(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= '0' && c <= '9';
@@ -22,7 +22,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_xdigit(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
@@ -32,7 +32,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_alnum(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -42,7 +42,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
 @@ -55,63 +47,49 @@ bool charset::is_punct(codepoint c) {
  				|| c == '@'
  				|| c == '[' || c == '\\' || c == ']' || c == '^' || c == '_' || c == '`'
@@ -53,7 +53,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_graph(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= 0x21 && c <= 0x7E;
@@ -63,7 +63,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_blank(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c == ' ' || c == '\t';
@@ -73,7 +73,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_space(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r';
@@ -83,7 +83,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_print(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return c >= 0x20 && c <= 0x7E;
@@ -93,7 +93,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_lower(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= 'a' && c <= 'z');
@@ -103,7 +103,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
  bool charset::is_upper(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		return (c >= 'A' && c <= 'Z');
@@ -113,7 +113,7 @@ index c42b4f4..232c229 100644
 +
  	return false;
  }
-
+ 
 @@ -119,9 +97,7 @@ codepoint charset::to_lower(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'A' && c <= 'Z')
@@ -124,7 +124,7 @@ index c42b4f4..232c229 100644
 +
  	return c;
  }
-
+ 
 @@ -129,9 +105,7 @@ codepoint charset::to_upper(codepoint c) {
  	if(c <= 0x7F && is_ascii_superset())
  		if(c >= 'a' && c <= 'z')
@@ -135,7 +135,7 @@ index c42b4f4..232c229 100644
 +
  	return c;
  }
-
+ 
 diff --git mlibc-clean/options/internal/riscv64/setjmp.S mlibc-workdir/options/internal/riscv64/setjmp.S
 index 7ce9cfb..222954f 100644
 --- mlibc-clean/options/internal/riscv64/setjmp.S
@@ -173,7 +173,7 @@ index 7ce9cfb..222954f 100644
 +	fsd fs11, 200(a0)
 +	li a0, 0
 +	ret
-
+ 
  .global longjmp
  .type longjmp, "function"
 diff --git mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
@@ -181,7 +181,7 @@ index bd8710a..feb59ee 100644
 --- mlibc-clean/options/posix/generic/posix_locale.cpp
 +++ mlibc-workdir/options/posix/generic/posix_locale.cpp
 @@ -25,7 +25,7 @@ void freelocale(locale_t) {
-
+ 
  locale_t uselocale(locale_t) {
  	if(!uselocale_seen) {
 -		mlibc::infoLogger() << "mlibc: uselocale() is a no-op" << frg::endlog;
@@ -191,7 +191,7 @@ index bd8710a..feb59ee 100644
  	return nullptr;
 diff --git mlibc-workdir/options/posix/include/sys/ioccom.h mlibc-workdir/options/posix/include/sys/ioccom.h
 new file mode 100644
-index 0000000..370eb34
+index 0000000..8896624
 --- /dev/null
 +++ mlibc-workdir/options/posix/include/sys/ioccom.h
 @@ -0,0 +1,82 @@
@@ -289,3 +289,35 @@ index 681c99b..f596893 100644
  		'include/sys/ipc.h',
  		'include/sys/mman.h',
  		'include/sys/msg.h',
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index 072c0d1..efaecaa 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -219,7 +219,6 @@ int sys_fallocate(int fd, off_t offset, size_t size) {
+ }
+ 
+ int sys_flock(int fd, int options) {
+-	//  XXX: Shouldnt this use F_SETLKW and F_SETLK only when LOCK_NB ?
+ 	struct flock lock;
+ 	lock.l_whence = SEEK_SET;
+ 	lock.l_start = 0;
+@@ -240,8 +239,9 @@ int sys_flock(int fd, int options) {
+ 			return -1;
+ 	}
+ 
++	int command = options & LOCK_NB ? F_SETLK : F_SETLKW;
+ 	int ret, errno;
+-	SYSCALL3(SYSCALL_FCNTL, fd, F_SETLK, &lock);
++	SYSCALL3(SYSCALL_FCNTL, fd, command, &lock);
+ 	return errno;
+ }
+ 
+@@ -1532,7 +1532,7 @@ int sys_openpty(int *mfd, int *sfd, char *name, const struct termios *ios, const
+ 	}
+ 
+ 	if (ios == NULL) {
+-		struct termios termios;
++		struct termios termios = {};
+ 		termios.c_iflag = BRKINT | IGNPAR | ICRNL | IXON | IMAXBEL;
+ 		termios.c_oflag = OPOST | ONLCR;
+ 		termios.c_cflag = CS8 | CREAD;

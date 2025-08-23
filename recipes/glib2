@@ -3,7 +3,7 @@
 name=glib2
 repology_id=glib
 version=2.84.4
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/glib.git"
 commit=41eca60845d3fc309af361f5e7f801ba339099aa
 imagedeps="python3-docutils"

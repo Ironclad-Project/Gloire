@@ -3,18 +3,13 @@
 name=mlibc
 skip_pkg_check=yes
 version=0.0git
-revision=26
+revision=27
 git_url="https://github.com/managarm/mlibc.git"
 commit=2553149ef5a77da81f2e9c519ddd1e20150327a3
 hostdeps="gcc pkg-config"
 deps="mlibc-headers"
 
 early_prepare() {
-    # Fix the subproject commits
-    sed -i 's/revision = .*/revision = f2d874a7d9e4621b11982f6af8c6a85be6f01d1c/g' subprojects/frigg.wrap
-    sed -i 's/revision = .*/revision = 4039f438fb1dc1064d8e98f70e1cf122f91b763b/g' subprojects/freestnd-c-hdrs.wrap
-    sed -i 's/revision = .*/revision = 85096df5361a4d7ef2ce46947e555ec248c2858e/g' subprojects/freestnd-cxx-hdrs.wrap
-
     meson subprojects download
 
     curl -Lo libgcc.a https://github.com/osdev0/libgcc-binaries/releases/download/2025-08-21/libgcc-${JINX_ARCH}.a

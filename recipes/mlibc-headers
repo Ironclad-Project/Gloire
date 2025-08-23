@@ -2,7 +2,7 @@
 
 name=mlibc-headers
 skip_pkg_check=yes
-revision=12
+revision=13
 from_source=mlibc
 hostdeps="pkg-config"
 

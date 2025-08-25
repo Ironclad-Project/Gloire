@@ -189,22 +189,3 @@ index bd8710a..feb59ee 100644
  		uselocale_seen = true;
  	}
  	return nullptr;
-diff --git mlibc-clean/options/posix/generic/utmpx.cpp mlibc-workdir/options/posix/generic/utmpx.cpp
-index 9d9f874..03d8c43 100644
---- mlibc-clean/options/posix/generic/utmpx.cpp
-+++ mlibc-workdir/options/posix/generic/utmpx.cpp
-@@ -52,7 +52,14 @@ void setutxent(void) {
- 
- 	if(!utmpxFd) {
- 		int fd;
-+
-+		// If we are opening the utmp file as a read-only user, we need to
-+		// open as a reader instead of a writer.
- 		int err = mlibc::sys_open(utmpxPath, O_RDWR | O_CREAT | O_CLOEXEC, 0644, &fd);
-+		if(err) {
-+			err = mlibc::sys_open(utmpxPath, O_RDONLY | O_CLOEXEC, 0644, &fd);
-+		}
-+
- 		if(err) {
- 			mlibc::infoLogger() << "\e[31mmlibc: setutxent() failed to open " << utmpxPath << ": "
- 			                    << strerror(err) << "\e[39m" << frg::endlog;

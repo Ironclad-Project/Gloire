@@ -1,0 +1,13 @@
+diff --git ponysay-clean/src/backend.py ponysay-workdir/src/backend.py
+index 2cc539a..82ff149 100755
+--- ponysay-clean/src/backend.py
++++ ponysay-workdir/src/backend.py
+@@ -291,7 +291,7 @@ class Backend():
+                         props = dollar[7:]
+                         if len(props) > 0:
+                             if ',' in props:
+-                                if props[0] is not ',':
++                                if props[0] != ',':
+                                     w = props[:props.index(',')]
+                                 h = int(props[props.index(',') + 1:])
+                             else:

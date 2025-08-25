@@ -1,0 +1,31 @@
+#! /bin/sh
+
+name=ponysay
+version=3.0.3
+revision=1
+git_url="https://github.com/erkin/ponysay.git"
+commit=5bcde318f714873a63189d2a750adb28a3f82839
+hostdeps="gcc pkg-config"
+deps="core-libs bash python"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    python3 setup.py build \
+        --freedom=partial \
+        --everything
+}
+
+package() {
+    python3 setup.py install \
+        --prefix="${prefix}" \
+        --dest-dir="${dest_dir}" \
+        --freedom=partial \
+        --everything \
+        --with-pdf="${prefix}"/share/doc/ponysay \
+        --without-pdf-compression \
+        --without-info-compression \
+        --without-man-compression
+
+    post_package_strip
+}

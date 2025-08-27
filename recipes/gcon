@@ -3,14 +3,13 @@
 name=gcon
 skip_pkg_check=yes
 version=0.0git
-revision=10
+revision=11
 git_url="https://codeberg.org/Ironclad/gcon.git"
-commit=904bceae8aaede8cdaddf82ff5fe6a295d3718fa
-source_allow_network="yes"
+commit=0184b348206b633b2d88673dd87d6b5f55f9a132
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
-prepare() {
+early_prepare() {
     meson subprojects download
 }
 

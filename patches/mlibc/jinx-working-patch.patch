@@ -190,7 +190,7 @@ index bd8710a..feb59ee 100644
  	}
  	return nullptr;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index efaecaa..6a06f4a 100644
+index efaecaa..54ebd6d 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -83,30 +83,38 @@ int sys_open(const char *path, int flags, mode_t mode, int *fd) {
@@ -263,3 +263,68 @@ index efaecaa..6a06f4a 100644
  	return errno;
  }
  
+@@ -396,12 +393,6 @@ int sys_sigaltstack(const stack_t *ss, stack_t *oss) {
+ 	return errno;
+ }
+ 
+-int sys_sigsuspend(const sigset_t *set) {
+-	int ret, errno;
+-	SYSCALL1(SYSCALL_SIGSUSPEND, set);
+-	return errno;
+-}
+-
+ int sys_tgkill(int pid, int tid, int sig) {
+ 	(void)tid;
+ 	return sys_kill(pid, sig);
+@@ -1053,12 +1044,7 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+ 
+ int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
+ 	int ret, errno;
+-	if (timeout == NULL) {
+-		struct timespec t = {.tv_sec = (time_t)-1, .tv_nsec = (time_t)-1};
+-		SYSCALL4(SYSCALL_PPOLL, fds, nfds, &t, sigmask);
+-	} else {
+-		SYSCALL4(SYSCALL_PPOLL, fds, nfds, timeout, sigmask);
+-	}
++	SYSCALL4(SYSCALL_PPOLL, fds, nfds, timeout, sigmask);
+ 	if (ret == -1) {
+ 		return errno;
+ 	}
+@@ -1074,6 +1060,14 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
+ 	return sys_ppoll(fds, count, timeout == -1 ? NULL : &ts, NULL, num_events);
+ }
+ 
++int sys_pause(void) {
++	return sys_ppoll(NULL, 0, NULL, NULL, NULL);
++}
++
++int sys_sigsuspend(const sigset_t *set) {
++	return sys_ppoll(NULL, 0, NULL, set, NULL);
++}
++
+ int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
+ 		fd_set *except_set, const struct timespec *timeout,
+ 		const sigset_t *sigmask, int *num_events) {
+@@ -1214,6 +1208,7 @@ int sys_sysconf(int num, long *rret) {
+ 	struct meminfo mem;
+ 	struct cpuinfo cpu;
+ 	int ret, errno;
++	long secs, nanos;
+ 
+ 	switch (num) {
+ 		case _SC_LINE_MAX:
+@@ -1268,6 +1263,14 @@ int sys_sysconf(int num, long *rret) {
+ 		case _SC_THREAD_STACK_MIN:
+ 			*rret = 0x1000;
+ 			return 0;
++		case _SC_CLK_TCK:
++			ret = sys_clock_getres(CLOCK_MONOTONIC, &secs, &nanos);
++			if (ret == 0) {
++				*rret = 1000000000 / nanos;
++				return 0;
++			} else {
++				return ret;
++			}
+ 		default:
+ 			return EINVAL;
+ 	}

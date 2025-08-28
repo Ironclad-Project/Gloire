@@ -4,13 +4,14 @@ name=gcc-host
 version=15.2.0
 tarball_url="https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="e270320978ca690e6e8f5ef06414dc13caf561f16403a3783c76fbf3dcee57e755a2d5bba922bf7fcae0bb6120443755d819b003791ae823d54589dd799804de"
-allow_network="yes"
 
-prepare() {
+early_prepare() {
     ./contrib/download_prerequisites
 
     # Gettext causes issues and we don't want it anyways.
     rm -rf gettext*
+}
 
+prepare() {
     autotools_recursive_regen
 }

@@ -5,8 +5,7 @@ version=1.1.43
 revision=1
 tarball_url="https://download.gnome.org/sources/libxslt/1.1/libxslt-${version}.tar.xz"
 tarball_blake2b="84d1cff32c78c4eeff4db614214ee1808bcf958d55711b08e7e2191a4343fb61d38d6b3d9b43f6f12be2dc909fced0a5b5905fa2c5ec7761c83125007e1ce265"
-source_hostdeps="automake autoconf libtool pkg-config"
-hostdeps="gcc autoconf automake libtool pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs libxml2"
 
 prepare() {

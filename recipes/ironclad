@@ -6,9 +6,9 @@ version=0.0git
 revision=27
 source_dir="ironclad"
 source_imagedeps="git"
-source_hostdeps="automake autoconf pkg-config"
+source_hostdeps="autoconf automake pkg-config"
 imagedeps="texinfo gprbuild"
-hostdeps="gcc autoconf automake pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs"
 
 early_prepare() {

@@ -2,14 +2,13 @@
 
 name=nghttp2
 version=1.66.0
-revision=1
+revision=2
 git_url="https://github.com/nghttp2/nghttp2.git"
 commit=ac22e0efe3f82f43c1366961c89a50ee821cfba3
 hostdeps="gcc pkg-config"
 deps="core-libs brotli jansson libevent libxml2 openssl"
-source_allow_network=yes
 
-prepare() {
+early_prepare() {
     git submodule update --init --recursive
 }
 

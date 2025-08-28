@@ -1,28 +1,31 @@
 #! /bin/sh
 
 name=readline
-_minor_version=8.3
-_patch=001
-version=${_minor_version}.${_patch}
-revision=1
-_base_patch=001
-if [ "${_base_patch}" = 001 ]; then
-    tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}.tar.gz"
-else
-    tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}.${_base_patch}.tar.gz"
-fi
+_version=8.3
+_patch=1
+version=${_version}.${_patch}
+revision=2
+tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_version}.tar.gz"
 tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
-source_allow_network="yes"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 
-prepare() {
-    if ! [ "${_patch}" = 0 ]; then
-        for p in $(seq -w ${_base_patch} ${_patch}); do
-            curl -L https://ftpmirror.gnu.org/gnu/readline/readline-${_minor_version}-patches/readline$(echo "${_minor_version}" | sed 's/\.//g')-$p | patch -p0
-        done
+_get_patch() {
+    TMP_PATCH=$(mktemp)
+    curl -Lo "${TMP_PATCH}" https://ftpmirror.gnu.org/gnu/readline/readline-${_version}-patches/readline$(echo "${_version}" | sed 's/\.//g')-$1
+    if ! b2sum "${TMP_PATCH}" | grep -q $2; then
+        die "b2sum checksum fail for readline patch $1
+        expected $2
+        got      $(b2sum "${TMP_PATCH}")"
     fi
+    patch -p0 <"${TMP_PATCH}"
+}
 
+early_prepare() {
+    _get_patch 001 b0953458a18b8b06b0086567abd3c9ca3efceb5e4c38271e62137e126c106b938945d956394de0e955ecea5d48f8b261a4f2f3db2ee1d2cbc3b4cfdcf213ca46
+}
+
+prepare() {
     autotools_recursive_regen
 }
 

@@ -2,15 +2,14 @@
 
 name=atril
 version=1.28.2
-revision=1
+revision=2
 git_url="https://github.com/mate-desktop/atril.git"
 commit=6e116cd028790a0123db5b9e6be7ae9bc03c33c3
 imagedeps="libglib2.0-dev-bin itstool libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core poppler glib2 libxml2 mate-desktop zlib gdk-pixbuf gtk3 libice libsm libx11 cairo pango caja libtiff libarchive"
-source_allow_network=yes
 
-prepare() {
+early_prepare() {
     meson subprojects download
 }
 

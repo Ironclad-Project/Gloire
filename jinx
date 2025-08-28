@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1011,6 +1011,10 @@ precont_fetch() {
 }
 
 precont_patch() {
+    source_source_recipe $1
+
+    get_real_source_dir
+
     [ -f "${base_dir}"/sources/$1.patched ] && return
 
     cross_compile=yes

@@ -190,7 +190,7 @@ index bd8710a..feb59ee 100644
  	}
  	return nullptr;
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index efaecaa..54ebd6d 100644
+index efaecaa..8fe9de3 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -83,30 +83,38 @@ int sys_open(const char *path, int flags, mode_t mode, int *fd) {
@@ -245,25 +245,15 @@ index efaecaa..54ebd6d 100644
  		}
  	}
  
-@@ -283,17 +291,6 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
- 	int errno;
- 	SYSCALL6(SYSCALL_MMAP, hint, size, prot, flags, fd, offset);
+@@ -285,6 +293,7 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  	*window = ret;
--
--	if ((errno == ENOMEM) && ((flags & MAP_ANON) == 0)) {
--		int ret = sys_anon_allocate(size, window);
--		if (ret) {
--			return ret;
--		}
--		ssize_t len;
--		ret = sys_pread(fd, *window, size, offset, &len);
--		return 0;
--	}
--
- 	return errno;
- }
  
-@@ -396,12 +393,6 @@ int sys_sigaltstack(const stack_t *ss, stack_t *oss) {
+ 	if ((errno == ENOMEM) && ((flags & MAP_ANON) == 0)) {
++		mlibc::infoLogger() << "mlibc: emulating file mmap" << frg::endlog;
+ 		int ret = sys_anon_allocate(size, window);
+ 		if (ret) {
+ 			return ret;
+@@ -396,12 +405,6 @@ int sys_sigaltstack(const stack_t *ss, stack_t *oss) {
  	return errno;
  }
  
@@ -276,7 +266,7 @@ index efaecaa..54ebd6d 100644
  int sys_tgkill(int pid, int tid, int sig) {
  	(void)tid;
  	return sys_kill(pid, sig);
-@@ -1053,12 +1044,7 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -1053,12 +1056,7 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
  
  int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
  	int ret, errno;
@@ -290,7 +280,7 @@ index efaecaa..54ebd6d 100644
  	if (ret == -1) {
  		return errno;
  	}
-@@ -1074,6 +1060,14 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
+@@ -1074,6 +1072,14 @@ int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events) {
  	return sys_ppoll(fds, count, timeout == -1 ? NULL : &ts, NULL, num_events);
  }
  
@@ -305,7 +295,7 @@ index efaecaa..54ebd6d 100644
  int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
  		fd_set *except_set, const struct timespec *timeout,
  		const sigset_t *sigmask, int *num_events) {
-@@ -1214,6 +1208,7 @@ int sys_sysconf(int num, long *rret) {
+@@ -1214,6 +1220,7 @@ int sys_sysconf(int num, long *rret) {
  	struct meminfo mem;
  	struct cpuinfo cpu;
  	int ret, errno;
@@ -313,7 +303,7 @@ index efaecaa..54ebd6d 100644
  
  	switch (num) {
  		case _SC_LINE_MAX:
-@@ -1268,6 +1263,14 @@ int sys_sysconf(int num, long *rret) {
+@@ -1268,6 +1275,14 @@ int sys_sysconf(int num, long *rret) {
  		case _SC_THREAD_STACK_MIN:
  			*rret = 0x1000;
  			return 0;

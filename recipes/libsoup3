@@ -12,7 +12,6 @@ deps="core-libs brotli glib-networking libpsl libxml2 nghttp2 sqlite glib2"
 
 configure() {
     meson_configure \
-        --wrap-mode=nofallback \
         -Dvapi=disabled \
         -Dintrospection=disabled \
         -Dgssapi=disabled \

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=taisei
-version=1.4.2
+version=1.4.4
 revision=1
 tarball_url="https://github.com/taisei-project/taisei/releases/download/v${version}/taisei-${version}.tar.xz"
-tarball_blake2b="382e6e02013573f4218a073ad9d19cd128f0b4366d3f3f586e8ab4de9a5948ffedd13a22cefc9a8af04cccd2cf0205c9d6c738b125fd332b363606acd5938e4a"
+tarball_blake2b="8dcd65265062f510e407494ab977a1f2d98937fef3657fb61cc582f8ec855dc8402c79fa059a9ceff52e45a0ff50fde810d72c3a1b270ed64824d6dcb42ab983"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl"

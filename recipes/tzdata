@@ -2,17 +2,21 @@
 
 name=tzdata
 version=2025b
-revision=2
+revision=3
 tarball_url="https://data.iana.org/time-zones/releases/tzdata${version}.tar.gz"
 tarball_blake2b="07421e756cd33f003f1173c320a2e454f767a2ba299b76b54e34dc5cf1c126b00ab3186bc61d4989201a83cb8b3e4c005c0bc080fb39a1e48ff9555d50c84f1d"
-source_allow_network="yes"
 imagedeps="tzdata"
 hostdeps="gcc binutils"
 deps="mlibc libgcc libstdc++ libatomic libintl libiconv"
 
 early_prepare() {
     curl -Lo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
+    b2sum tzcode.tar.gz | grep -q 1c9fa834ccdf0a73dd4ca5956e913506b01dc10cd0e278dc2ee0099b08fa726af56cc2d7276e41ab1d3d57faacab97a0b0eab7e1623ef2de46dd576aaded0001
     tar -xf tzcode.tar.gz
+    rm tzcode.tar.gz
+}
+
+prepare() {
     sed -i 's/sbin/bin/g' Makefile
 }
 

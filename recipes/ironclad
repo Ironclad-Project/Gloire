@@ -3,17 +3,20 @@
 name=ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=26
+revision=27
 source_dir="ironclad"
 source_imagedeps="git"
 source_hostdeps="automake autoconf pkg-config"
 imagedeps="texinfo gprbuild"
 hostdeps="gcc autoconf automake pkg-config"
 deps="core-libs"
-source_allow_network="yes"
+
+early_prepare() {
+    ./bootstrap
+}
 
 prepare() {
-    ./bootstrap
+    autotools_recursive_regen
 }
 
 configure() {

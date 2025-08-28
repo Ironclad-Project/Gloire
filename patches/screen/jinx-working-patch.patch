@@ -1,3 +1,16 @@
+diff --git screen-clean/doc/screen.texinfo screen-workdir/doc/screen.texinfo
+index b3568b9..76d0588 100644
+--- screen-clean/doc/screen.texinfo
++++ screen-workdir/doc/screen.texinfo
+@@ -5940,7 +5940,7 @@ of @code{Screen} which you are using.  Also include in your message the
+ hardware and operating system, the compiler used to compile, a
+ description of the bug behavior, and the conditions that triggered the
+ bug. In case of security issue please send an mail to
+-@w{@samp{alexander_naumov@opensuse.org}}.
++@w{@samp{alexander_naumov@@opensuse.org}}.
+ 
+ @node Availability,  , Reporting Bugs, Bugs
+ @section Availability
 diff --git screen-clean/misc.c screen-workdir/misc.c
 index 2690923..e0479d9 100644
 --- screen-clean/misc.c

@@ -25,10 +25,10 @@ index d4a446c..9e8d4b4 100644
  #elif defined(__APPLE__)
  #define RENDERDOC_CC
 diff --git mesa-clean/meson.build mesa-workdir/meson.build
-index 2a31f89..057cdf3 100644
+index 427cfde..1bdff0c 100644
 --- mesa-clean/meson.build
 +++ mesa-workdir/meson.build
-@@ -1040,7 +1040,7 @@ if cc.has_function('fmemopen')
+@@ -1013,7 +1013,7 @@ if cc.has_function('fmemopen')
  endif
  
  # TODO: this is very incomplete
@@ -38,11 +38,11 @@ index 2a31f89..057cdf3 100644
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
 diff --git mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-workdir/src/compiler/spirv/spirv_to_nir.c
-index 31e7433..99dfbb3 100644
+index 6c956ea..ec61ed0 100644
 --- mesa-clean/src/compiler/spirv/spirv_to_nir.c
 +++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c
-@@ -42,6 +42,7 @@
- #include "util/mesa-blake3.h"
+@@ -44,6 +44,7 @@
+ #include "util/float8.h"
  
  #include <stdio.h>
 +#include <strings.h>
@@ -61,11 +61,37 @@ index 0de00b2..59d8fdf 100644
  #include "c11/threads.h"
  #include "util/macros.h"
  #include "util/os_misc.h"
+diff --git mesa-clean/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp mesa-workdir/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp
+index 3d2b8cf..0be69b0 100644
+--- mesa-clean/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp
++++ mesa-workdir/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp
+@@ -340,7 +340,12 @@ LPJit::LPJit() :jit_dylib_count(0) {
+          .setJITTargetMachineBuilder(std::move(JTMB))
+ #ifdef USE_JITLINK
+          .setObjectLinkingLayerCreator(
++#if LLVM_VERSION_MAJOR >= 21
++            /* LLVM 21 removed the Triple argument */
++            [&](ExecutionSession &ES) {
++#else
+             [&](ExecutionSession &ES, const llvm::Triple &TT) {
++#endif
+                return std::make_unique<ObjectLinkingLayer>(
+                   ES, ExitOnErr(llvm::jitlink::InProcessMemoryManager::Create()));
+             })
+@@ -552,7 +557,7 @@ init_gallivm_state(struct gallivm_state *gallivm, const char *name,
+    gallivm->cache = cache;
+ 
+    gallivm->_ts_context = context->ref;
+-   gallivm->context = LLVMOrcThreadSafeContextGetContext(context->ref);
++   gallivm->context = LLVMContextCreate();
+ 
+    gallivm->module_name = LPJit::get_unique_name(name);
+    gallivm->module = LLVMModuleCreateWithNameInContext(gallivm->module_name,
 diff --git mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-index f207738..89d7848 100644
+index f1f1baa..f064c50 100644
 --- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
 +++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-@@ -1741,7 +1741,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
+@@ -1754,7 +1754,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
     default:
        break;
     }

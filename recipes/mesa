@@ -2,7 +2,7 @@
 
 name=mesa
 version=25.2.1
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/mesa/mesa.git"
 commit=d6e3b017b2e38131a4918624c9c3c2792f477a96
 imagedeps="python3-mako python3-yaml glslang-tools"

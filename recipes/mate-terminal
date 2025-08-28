@@ -2,29 +2,30 @@
 
 name=mate-terminal
 version=1.28.1
-revision=1
-tarball_url="https://github.com/mate-desktop/mate-terminal/releases/download/v${version}/mate-terminal-${version}.tar.xz"
-tarball_blake2b="9bf50305426758204782ffa8921accd506c5859a10dedef7ee4d74ea35560c5f6cebfbce64ee6c42c195d140af930bb133d38e354f67ff3a17121eff3fb9b7f7"
-allow_network=yes
+revision=2
+git_url="https://github.com/mate-desktop/mate-terminal.git"
+commit=8634b87ff36933acf072393486a422670330f7e7
 imagedeps="meson ninja-build libglib2.0-dev git itstool"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core glib2 dconf gdk-pixbuf libice libsm libx11 pango gtk3 vte mate-desktop"
 
+early_prepare() {
+    # Fix revision of mate-submodules
+    sed -i 's/^revision=.*/revision = 4074560e3642a53ace07b31baaf3f04c060dcd0b/g' subprojects/mate-submodules.wrap
+
+    meson subprojects download
+}
+
 configure() {
-    cp -rp "${source_dir}"/. ./
-
-    mkdir build && cd build
-
-        meson_source_dir=.. \
     meson_configure
 }
 
 build() {
-    ( cd build && meson compile -j${parallelism} )
+    meson compile -j${parallelism}
 }
 
 package() {
-    ( cd build && DESTDIR="${dest_dir}" meson install --no-rebuild )
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

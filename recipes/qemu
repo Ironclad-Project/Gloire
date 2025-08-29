@@ -2,7 +2,7 @@
 
 name=qemu
 version=10.0.3
-revision=2
+revision=3
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_sha512="7f37c2df5ac7048fb32f1d89a7c2da0929be9d2f5767bc209ca1e99167f196fb5867fc8b69f915c8c349c58089ce3d7e08c9a3f35a73223abff258b9a5bf3466"
 imagedeps="build-essential python3-venv"

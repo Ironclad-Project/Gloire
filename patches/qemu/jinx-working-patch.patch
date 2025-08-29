@@ -5,7 +5,7 @@ index ee2dd15..24e88da 100644
 @@ -285,30 +285,6 @@ typedef struct ptm_lockstorage ptm_lockstorage;
  #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
  #define PTM_CAP_LOCK_STORAGE       (1 << 16)
- 
+
 -#ifndef _WIN32
 -enum {
 -    PTM_GET_CAPABILITY     = _IOR('P', 0, ptm_cap),
@@ -40,7 +40,7 @@ index 796553b..aa2254a 100644
 @@ -119,6 +119,8 @@
  #endif
  #endif
- 
+
 +#include <sys/ioctl.h>
 +
  /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
@@ -53,7 +53,7 @@ index 02f1dd2..bbae5a5 100755
 @@ -340,7 +340,9 @@ int main(void) { return 0; }
  EOF
  }
- 
+
 -if check_define __linux__ ; then
 +if check_define __ironclad__ ; then
 +  host_os=ironclad
@@ -67,7 +67,7 @@ index d63228e..62c57e1 100644
 +++ qemu-workdir/include/gdbstub/syscalls.h
 @@ -41,9 +41,10 @@
  #define GDB_EUNKNOWN       9999
- 
+
  /* For gdb file i/o remote protocol lseek whence. */
 -#define GDB_SEEK_SET  0
 -#define GDB_SEEK_CUR  1
@@ -76,7 +76,7 @@ index d63228e..62c57e1 100644
 +#define GDB_SEEK_SET  SEEK_SET
 +#define GDB_SEEK_CUR  SEEK_CUR
 +#define GDB_SEEK_END  SEEK_END
- 
+
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
 diff --git qemu-clean/meson.build qemu-workdir/meson.build
@@ -85,7 +85,7 @@ index 8ec796d..92e69a3 100644
 +++ qemu-workdir/meson.build
 @@ -889,7 +889,7 @@ if get_option('hvf').allowed()
  endif
- 
+
  nvmm = not_found
 -if host_os == 'netbsd'
 +if host_os == 'netbsd' or host_os == 'ironclad'
@@ -100,28 +100,6 @@ index 8ec796d..92e69a3 100644
  if get_option('tcg').allowed()
    config_host_data.set('CONFIG_TCG', 1)
    config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
-diff --git qemu-clean/os-posix.c qemu-workdir/os-posix.c
-index 52925c2..1fb66d7 100644
---- qemu-clean/os-posix.c
-+++ qemu-workdir/os-posix.c
-@@ -262,7 +262,7 @@ void os_setup_limits(void)
-     struct rlimit nofile;
- 
-     if (getrlimit(RLIMIT_NOFILE, &nofile) < 0) {
--        warn_report("unable to query NOFILE limit: %s", strerror(errno));
-+    //    warn_report("unable to query NOFILE limit: %s", strerror(errno));
-         return;
-     }
- 
-@@ -277,7 +277,7 @@ void os_setup_limits(void)
- #endif
- 
-     if (setrlimit(RLIMIT_NOFILE, &nofile) < 0) {
--        warn_report("unable to set NOFILE limit: %s", strerror(errno));
-+     //   warn_report("unable to set NOFILE limit: %s", strerror(errno));
-         return;
-     }
- }
 diff --git qemu-clean/subprojects/dtc/libfdt/meson.build qemu-workdir/subprojects/dtc/libfdt/meson.build
 index 0307ffb..1cde105 100644
 --- qemu-clean/subprojects/dtc/libfdt/meson.build
@@ -133,7 +111,7 @@ index 0307ffb..1cde105 100644
 -  install: true,
 +  install: false,
  )
- 
+
  libfdt_inc = include_directories('.')
 @@ -30,21 +30,3 @@ libfdt_dep = declare_dependency(
    include_directories: libfdt_inc,
@@ -162,7 +140,7 @@ index 0291b72..df89863 100644
 --- qemu-clean/util/cpuinfo-riscv.c
 +++ qemu-workdir/util/cpuinfo-riscv.c
 @@ -24,6 +24,8 @@ static void sigill_handler(int signo, siginfo_t *si, void *data)
- 
+
  #ifdef __linux__
      uc->uc_mcontext.__gregs[REG_PC] += 4;
 +#elif defined(__ironclad__)
@@ -170,22 +148,3 @@ index 0291b72..df89863 100644
  #elif defined(__OpenBSD__)
      uc->sc_sepc += 4;
  #else
-diff --git qemu-clean/util/oslib-posix.c qemu-workdir/util/oslib-posix.c
-index a697c60..d69bbf0 100644
---- qemu-clean/util/oslib-posix.c
-+++ qemu-workdir/util/oslib-posix.c
-@@ -708,10 +708,10 @@ void *qemu_alloc_stack(size_t *sz)
-     }
- 
-     /* Stack grows down -- guard page at the bottom. */
--    if (mprotect(ptr, pagesz, PROT_NONE) != 0) {
--        perror("failed to set up stack guard page");
--        abort();
--    }
-+    //if (mprotect(ptr, pagesz, PROT_NONE) != 0) {
-+    //    perror("failed to set up stack guard page");
-+    //    abort();
-+    //}
- 
- #ifdef CONFIG_DEBUG_STACK_USAGE
-     for (ptr2 = ptr + pagesz; ptr2 < ptr + *sz; ptr2 += sizeof(uint32_t)) {

@@ -4,7 +4,7 @@ name=bash
 _version=5.3
 _patch=3
 version=${_version}.${_patch}
-revision=2
+revision=3
 tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-${_version}.tar.gz"
 tarball_blake2b="82d1b54322bbd1e8c2a93380f1b2888a42a1d7186e504f41cee705a0fdd41463d8f20baa1755051e1396192f8ebd089524767d933a9e0b5fb76f2588601539bb"
 imagedeps="build-essential"
@@ -33,6 +33,7 @@ prepare() {
 }
 
 configure() {
+        bash_cv_func_sigsetjmp=missing \
     autotools_configure \
         CFLAGS="$TARGET_CFLAGS \
             -DDEFAULT_PATH_VALUE='\"/usr/local/sbin:/usr/local/bin:/usr/bin\"' \

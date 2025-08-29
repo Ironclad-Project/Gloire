@@ -7,7 +7,7 @@ index d0eadf2..8651ea5 100644
  #include <strings.h>
  #include <unistd.h>
 +#include <termios.h>
- 
+
  #include <xbps.h>
  #include "defs.h"
 diff --git xbps-clean/configure xbps-workdir/configure
@@ -17,19 +17,19 @@ index 2b54b90..e7f4e40 100755
 @@ -1,7 +1,7 @@
  #!/bin/sh
  # Try and be like autotools configure, but without autotools
- 
+
 -VERSION=0.60
 +VERSION=0.60.5
- 
+
  # Ensure that we do not inherit these from env
  OS=
 @@ -189,7 +189,7 @@ else
  	echo "Using compiler $CC"
  fi
- 
+
 -[ -z "$DEBUG" ] && DEBUG=yes
 +[ -z "$DEBUG" ] && DEBUG=no
- 
+
  echo "CC =	$CC" >>$CONFIG_MK
  echo "CFLAGS =	-O2" >>$CONFIG_MK
 @@ -678,7 +678,7 @@ fi
@@ -43,7 +43,7 @@ index 2b54b90..e7f4e40 100755
  	exit 1
 @@ -692,14 +692,14 @@ fi
  LIBARCHIVE_REQVER=3.3.3
- 
+
  printf "Checking for libarchive >= ${LIBARCHIVE_REQVER}  via pkg-config ... "
 -if ! pkg-config --atleast-version=${LIBARCHIVE_REQVER} libarchive; then
 +if ! $PKGCONFIG_BIN --atleast-version=${LIBARCHIVE_REQVER} libarchive; then
@@ -60,7 +60,7 @@ index 2b54b90..e7f4e40 100755
 +	echo "STATIC_LIBS +=    $($PKGCONFIG_BIN --libs --static libarchive)" \
  		>>$CONFIG_MK
  fi
- 
+
 @@ -707,17 +707,17 @@ fi
  # libssl with pkg-config support is required.
  #
@@ -84,7 +84,7 @@ index 2b54b90..e7f4e40 100755
 +echo "LDFLAGS +=        $($PKGCONFIG_BIN --libs libssl)" >>$CONFIG_MK
 +echo "STATIC_LIBS +=    $($PKGCONFIG_BIN --libs --static libssl)" \
  	>>$CONFIG_MK
- 
+
  #
 @@ -735,13 +735,13 @@ fi
  #
@@ -174,7 +174,7 @@ index 2b4efe4..a299e45 100644
 -	cp -a libxbps.so.$(LIBXBPS_MAJOR) $(DESTDIR)$(LIBDIR)
 +	cp -dR libxbps.so $(DESTDIR)$(LIBDIR)
 +	cp -dR libxbps.so.$(LIBXBPS_MAJOR) $(DESTDIR)$(LIBDIR)
- 
+
  .PHONY: uninstall
  uninstall:
 diff --git xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp.c
@@ -211,28 +211,4 @@ index b23e919..9a04fcc 100644
 +#include <strings.h>
  #include <netinet/in.h>
  #include <netinet/tcp.h>
- 
-diff --git xbps-clean/lib/portableproplib/prop_object.c xbps-workdir/lib/portableproplib/prop_object.c
-index 6befb25..6e258cd 100644
---- xbps-clean/lib/portableproplib/prop_object.c
-+++ xbps-workdir/lib/portableproplib/prop_object.c
-@@ -955,14 +955,14 @@ _prop_object_internalize_map_file(const char *fname)
- 	if ((sb.st_size & pgmask) == 0)
- 		need_guard = true;
- 
--	mf->poimf_xml = mmap(NULL, need_guard ? mf->poimf_mapsize + pgsize
--			    		      : mf->poimf_mapsize,
--			    PROT_READ, MAP_SHARED, fd, (off_t)0);
--	(void) close(fd);
--	if (mf->poimf_xml == MAP_FAILED) {
-+	mf->poimf_xml = malloc(need_guard ? mf->poimf_mapsize + pgsize : mf->poimf_mapsize);
-+	if (mf->poimf_xml == NULL) {
- 		_PROP_FREE(mf, M_TEMP);
- 		return (NULL);
- 	}
-+	ssize_t rsz = read(fd, mf->poimf_xml, need_guard ? mf->poimf_mapsize + pgsize : mf->poimf_mapsize);
-+	(void) close(fd);
-+
- 	(void)posix_madvise(mf->poimf_xml, mf->poimf_mapsize, POSIX_MADV_SEQUENTIAL);
- 
- 	if (need_guard) {
+

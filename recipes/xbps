@@ -2,7 +2,7 @@
 
 name=xbps
 version=0.60.5
-revision=2
+revision=3
 tarball_url="https://github.com/void-linux/xbps/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="91aad926f25e78c17b2646f2e478e9a4141d9d80ebb93bc821c91333c8f5b5cf72a08edb7f25aef486e0761f15da8322207474c3b6f546d6403dd424cc442525"
 hostdeps="gcc pkg-config"

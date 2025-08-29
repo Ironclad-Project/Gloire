@@ -435,18 +435,6 @@ index 657f423..6d826bc 100644
    bool isShaderStageEnvironment() const {
      EnvironmentType Env = getEnvironment();
      return Env == Triple::Pixel || Env == Triple::Vertex ||
-diff --git llvm-libs-clean/llvm/lib/Support/Process.cpp llvm-libs-workdir/llvm/lib/Support/Process.cpp
-index 57bcc2d..ef2e450 100644
---- llvm-libs-clean/llvm/lib/Support/Process.cpp
-+++ llvm-libs-workdir/llvm/lib/Support/Process.cpp
-@@ -21,6 +21,7 @@
- 
- #include <optional>
- #include <stdlib.h> // for _Exit
-+#include <elf.h>
- 
- using namespace llvm;
- using namespace sys;
 diff --git llvm-libs-clean/llvm/lib/Support/Unix/Path.inc llvm-libs-workdir/llvm/lib/Support/Unix/Path.inc
 index 277247e..26a0c06 100644
 --- llvm-libs-clean/llvm/lib/Support/Unix/Path.inc

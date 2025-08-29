@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=adwaita-icon-theme
+version=48.1
+revision=1
+git_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git"
+commit=cd08cb3dfd63e6ad6bff9c1d88490280b0f9a7af
+imagedeps="gtk-update-icon-cache"
+hostdeps="gcc pkg-config"
+deps="core-libs gtk3"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

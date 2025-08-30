@@ -1,0 +1,52 @@
+diff --git xxhash-clean/Makefile xxhash-workdir/Makefile
+index 5b7b8ff..85b8aa2 100644
+--- xxhash-clean/Makefile
++++ xxhash-workdir/Makefile
+@@ -43,7 +43,7 @@ DEBUGFLAGS+=-Wall -Wextra -Wconversion -Wcast-qual -Wcast-align -Wshadow \
+             -Wstrict-prototypes -Wundef -Wpointer-arith -Wformat-security \
+             -Wvla -Wformat=2 -Winit-self -Wfloat-equal -Wwrite-strings \
+             -Wredundant-decls -Wstrict-overflow=2
+-CFLAGS += $(DEBUGFLAGS) $(MOREFLAGS)
++override CFLAGS += $(DEBUGFLAGS) $(MOREFLAGS)
+ FLAGS   = $(CFLAGS) $(CPPFLAGS)
+ XXHSUM_VERSION = $(LIBVER)
+ UNAME := $(shell uname)
+@@ -114,16 +114,16 @@ xxhsum: CPPFLAGS += -DXXHSUM_DISPATCH=1
+ xxhsum: xxh_x86dispatch.o
+ endif
+ xxhsum: xxhash.o $(XXHSUM_SPLIT_OBJS)
+-	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
++	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
+ 
+ xxhsum32: CFLAGS += -m32  ## generate CLI in 32-bits mode
+ xxhsum32: xxhash.c $(XXHSUM_SPLIT_SRCS) ## do not generate object (avoid mixing different ABI)
+-	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
++	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
+ 
+ ## dispatch only works for x86/x64 systems
+ dispatch: CPPFLAGS += -DXXHSUM_DISPATCH=1
+ dispatch: xxhash.o xxh_x86dispatch.o $(XXHSUM_SPLIT_SRCS)
+-	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
++	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
+ 
+ xxhash.o: xxhash.c xxhash.h
+ xxhsum.o: $(XXHSUM_SRC_DIR)/xxhsum.c $(XXHSUM_HEADERS) \
+@@ -147,15 +147,15 @@ libxxhash.a: ARFLAGS = rcs
+ libxxhash.a: xxhash.o
+ 	$(AR) $(ARFLAGS) $@ $^
+ 
+-$(LIBXXH): LDFLAGS += -shared
++$(LIBXXH): override LDFLAGS += -shared
+ ifeq (,$(filter Windows%,$(OS)))
+-$(LIBXXH): CFLAGS += -fPIC
++$(LIBXXH): override CFLAGS += -fPIC
+ endif
+ ifeq ($(LIBXXH_DISPATCH),1)
+ $(LIBXXH): xxh_x86dispatch.c
+ endif
+ $(LIBXXH): xxhash.c
+-	$(CC) $(FLAGS) $^ $(LDFLAGS) $(SONAME_FLAGS) -o $@
++	$(CC) $(FLAGS) $(LDFLAGS) $^ $(SONAME_FLAGS) -o $@
+ 	ln -sf $@ libxxhash.$(SHARED_EXT_MAJOR)
+ 	ln -sf $@ libxxhash.$(SHARED_EXT)
+ 

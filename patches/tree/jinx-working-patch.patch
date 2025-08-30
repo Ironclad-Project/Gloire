@@ -1,0 +1,13 @@
+diff --git tree-clean/Makefile tree-workdir/Makefile
+index 5d5c3ef..a20a746 100644
+--- tree-clean/Makefile
++++ tree-workdir/Makefile
+@@ -111,7 +111,7 @@ CPPFLAGS+=-DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+ all:	tree
+ 
+ tree:	$(OBJS)
+-	$(CC) $(LDFLAGS) -o $(TREE_DEST) $(OBJS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TREE_DEST) $(OBJS)
+ 
+ $(OBJS): %.o:	%.c tree.h
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<

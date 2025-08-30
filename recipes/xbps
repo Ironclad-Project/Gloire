@@ -12,7 +12,6 @@ configure() {
     cp -rp "${source_dir}"/. ./
 
         CFLAGS="$TARGET_CFLAGS -Wno-error" \
-        CPPFLAGS="$TARGET_CPPFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
     ./configure \
         --verbose \

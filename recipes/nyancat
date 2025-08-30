@@ -14,7 +14,6 @@ build() {
     make \
         CC=${OS_TRIPLET}-gcc \
         CFLAGS="$TARGET_CFLAGS -std=c99" \
-        CPPFLAGS="$TARGET_CPPFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
         -j${parallelism}
 }

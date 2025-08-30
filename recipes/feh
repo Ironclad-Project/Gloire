@@ -12,7 +12,6 @@ build() {
     cp -rp "${source_dir}"/. ./
         CC=${OS_TRIPLET}-gcc \
         CFLAGS="${TARGET_CFLAGS}" \
-        CPPFLAGS="${TARGET_CPPFLAGS}" \
         LDFLAGS="${TARGET_LDFLAGS}" \
     make \
         PREFIX="${prefix}" \

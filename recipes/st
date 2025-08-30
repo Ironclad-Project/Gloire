@@ -3,7 +3,7 @@
 name=st
 repology_id=st-term
 version=0.9.3
-revision=1
+revision=2
 tarball_url="https://dl.suckless.org/st/st-${version}.tar.gz"
 tarball_blake2b="95d672b8bd25f2bcda9ef7d0238fec522045e5082d5bdfda0b34ad1c67b93c1571e62f96b41f6a024ca00311d405d081a922f61604014d99708a0bdf20eb0e38"
 hostdeps="gcc pkg-config"

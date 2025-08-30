@@ -26,7 +26,7 @@ build() {
     make \
         CC="$OS_TRIPLET-gcc" \
         AR="$OS_TRIPLET-ar" \
-        CFLAGS="$TARGET_CFLAGS $TARGET_CPPFLAGS" \
+        CFLAGS="$TARGET_CFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
         LDLIBS="-lintl"
 }

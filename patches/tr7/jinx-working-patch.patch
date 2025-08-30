@@ -1,5 +1,5 @@
 diff --git tr7-clean/Makefile tr7-workdir/Makefile
-index d0308a7..79b3549 100644
+index d0308a7..cda8bd9 100644
 --- tr7-clean/Makefile
 +++ tr7-workdir/Makefile
 @@ -53,10 +53,10 @@ BINDIR = $(PREFIX)/bin
@@ -15,12 +15,25 @@ index d0308a7..79b3549 100644
  
  # uncomment below to compile shared library
  #ALL += $(LIBSO)
-@@ -81,7 +81,7 @@ libtr7.so: $(LIBSO)
+@@ -81,10 +81,10 @@ libtr7.so: $(LIBSO)
  	$(LN) -sf $(LIBSO) libtr7.so
  
  $(LIBSO): tr7.dyn.o
 -	$(CC) -shared -o $(LIBSO) tr7.dyn.o $(SYSLIBS) -Wl,-soname,$(LIBSO)
-+	$(CC) -shared -o $(LIBSO) tr7.dyn.o $(SYSLIBS) -Wl,-soname,$(LIBSO) $(LDFLAGS)
++	$(CC) $(CFLAGS) -shared $(LDFLAGS) -o $(LIBSO) tr7.dyn.o $(SYSLIBS) -Wl,-soname,$(LIBSO)
  
  $(TR7I): examples/tr7i.c tr7.c tr7.h
- 	$(CC) $(CFLAGS) -I. -o $(TR7I) examples/tr7i.c tr7.c $(LDFLAGS) $(SYSLIBS) -DDEFLIBPATH='"$(TR7LIBPATH)"'
+-	$(CC) $(CFLAGS) -I. -o $(TR7I) examples/tr7i.c tr7.c $(LDFLAGS) $(SYSLIBS) -DDEFLIBPATH='"$(TR7LIBPATH)"'
++	$(CC) $(CFLAGS) $(LDFLAGS) -I. -o $(TR7I) examples/tr7i.c tr7.c $(SYSLIBS) -DDEFLIBPATH='"$(TR7LIBPATH)"'
+ 
+ tr7.sta.o: tr7.c tr7.h
+ 	$(CC) $(CFLAGS) -c -o tr7.sta.o  tr7.c -ffunction-sections
+@@ -119,7 +119,7 @@ updtref:
+ # C demo examples
+ 
+ demo-c: examples/demo-c.c $(LIBSTA)
+-	$(CC) $(CFLAGS) -I. -o demo-c examples/demo-c.c $(LIBSTA) $(LDFLAGS) $(SYSLIBS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -I. -o demo-c examples/demo-c.c $(LIBSTA) $(SYSLIBS)
+ 
+ #---------------------
+ # install

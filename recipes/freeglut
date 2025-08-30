@@ -10,7 +10,6 @@ deps="core-libs libxi mesa glu"
 
 configure() {
         CFLAGS="$TARGET_CFLAGS -std=gnu17" \
-        CXXFLAGS="$TARGET_CXXFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
     cmake_configure_noflags \
         -DFREEGLUT_BUILD_DEMOS=OFF \

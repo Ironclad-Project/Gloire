@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -127,44 +127,6 @@ case "$1" in
         if [ "$(id -u)" = "0" ]; then
             die "$0: Jinx does not support running as root."
         fi
-        ;;
-esac
-
-case "$(uname -m)" in
-    x86_64)
-        debian_architecture=amd64
-        debian_rootfs_b2sum=d4a485b1c5577b442f5d2d7c13fbe6fff3cd4fa811353bafef0835e78b12b3fb1d954a1a3bdedffc325a9b871a087f83fadac9ce70fbba2a70179b85996a73a6
-        ;;
-    aarch64)
-        debian_architecture=arm64
-        debian_rootfs_b2sum=bfd6a4827125a4b7841f320e96d539c9bbe81c3463fed53eae1f9079b18939bca8e2b371f06ff109a68887627f7c40fabe384d18ac1ebb69f69cf05c085845c9
-        ;;
-    arm*)
-        debian_architecture=armhf
-        debian_rootfs_b2sum=5add0809bd3e27a9f7d3e7809c057433a24bd4c831d4a55f7dc2ce536a9811f1e58a104cc2335d5511bae02062efdfc7410666504b9648ae8f87dc68828620c2
-        ;;
-    i?86)
-        debian_architecture=i386
-        debian_rootfs_b2sum=6979e88402aec598387a520108680f0b670be12101582dfebdd4dd6d0fa3e0187780d61c7dc1079818b4c844cc27d660c4ca1c8fb23510931d87ba2501e63d39
-        ;;
-    mips64el)
-        debian_architecture=mips64el
-        debian_rootfs_b2sum=7ea8dea44faa22b34ca4ddfa529234e85e4e7176ac00907f98058eb05da828b47c8af1f2d3a18019ce2bca2b153d495347212d2ba790b62c1bc1fe8d71c2a7cf
-        ;;
-    ppc64le)
-        debian_architecture=ppc64el
-        debian_rootfs_b2sum=fe6343f447bc8d24031cce9f1ba0d2cd469e0f52769cbdca84ca005524ee2322c4af2672ee44b1867d75245f891456ccf1eaf3818604cf8cf2ca60f72232195b
-        ;;
-    riscv64)
-        debian_architecture=riscv64
-        debian_rootfs_b2sum=8972fb0ea5a55d10bef1a3d2cef47a796cac16d3f7ad1070a6e1484ff90590a8870cf145db78a536a8ffc8303b6344559c03f56fb605b47eccfd221531827d64
-        ;;
-    s390x)
-        debian_architecture=s390x
-        debian_rootfs_b2sum=7714135320e5f021ed400c28b718b5e2f8be8b173f74d504f3c95d97dd8ed1c4698b171fb04525cb9756fc8fc63d0cf90ed604abb071a43ae8b24300c512020d
-        ;;
-    *)
-        die "$0: Unsupported architecture: $(uname -m)"
         ;;
 esac
 
@@ -2044,60 +2006,16 @@ EOF
 reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
     chmod -R 777 "$JINX_CACHE_DIR/apt-cache" 2>/dev/null || true
-    rm -rf "$JINX_CACHE_DIR/debian-rootfs.tar.xz" "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
+    rm -rf "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
 
     make_dir "${apt_cache}"
 
-    curl -Lo "$JINX_CACHE_DIR/debian-rootfs.tar.xz" https://github.com/mintsuki/debian-rootfs/releases/download/${debian_snapshot}/debian-rootfs-${debian_architecture}.tar.xz
-    if ! "$JINX_CACHE_DIR/b2sum" "$JINX_CACHE_DIR/debian-rootfs.tar.xz" | grep "${debian_rootfs_b2sum}" >/dev/null 2>&1; then
-        die "Jinx: Failed to verify Debian rootfs tarball"
-    fi
-    ( cd "$JINX_CACHE_DIR" && xzcat debian-rootfs.tar.xz | tar -xf - )
-    rm "$JINX_CACHE_DIR/debian-rootfs.tar.xz"
-    make_dir "$JINX_CACHE_DIR/sets"
-    mv "$JINX_CACHE_DIR/debian-rootfs-${debian_architecture}" "$JINX_CACHE_DIR/sets/.image"
+    make_dir "$JINX_CACHE_DIR/sets/.image"
 
-    echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
-    echo 'APT::Install-Suggests "0";
-APT::Install-Recommends "0";
-APT::Sandbox::User "root";
-Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
+    fakechroot fakeroot debootstrap --variant=fakechroot \
+        --foreign sid "$JINX_CACHE_DIR/sets/.image" https://snapshot.debian.org/archive/debian/${debian_snapshot}/
 
-    sources_list_tmp="$(sed 's/sid/experimental/g' "$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list")"
-    echo "${sources_list_tmp}" >>"$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list"
-
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get update
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y locales
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
-
-    # Fix permissions of files
-    for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
-        chmod 755 "$f"
-    done
-
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
-
-    # Build xbps
-    XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
-    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XBPS_BUILDENV}/"
-    curl -Lo "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
-    if ! "$JINX_CACHE_DIR/b2sum" "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_B2SUM}" >/dev/null 2>&1; then
-        die "Jinx: Failed to verify XBPS tarball"
-    fi
-    ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
-    run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
-    # XXX: xbps upstream forgot to bump version string
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.5/g' /xbps-${XBPS_VERSION}/configure
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/&& DEBUG=yes/&& DEBUG=no/g' /xbps-${XBPS_VERSION}/configure
-    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --verbose --enable-static --enable-rpath --prefix=/ --sysconfdir=/etc"
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/-lxml2/-lxml2 -llzma -lm/g' /xbps-${XBPS_VERSION}/config.mk
-    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && make -j${parallelism} && make DESTDIR=/xbps-bin install"
-    for f in "${XBPS_BUILDENV}"/xbps-bin/bin/*.static; do
-        mv "$f" "${f%.static*}"
-    done
-    mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
-
-    cat >"${XBPS_BUILDENV}/nochown.c" <<EOF
+    cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -2139,6 +2057,68 @@ int fchownat(int dirfd, const char *pathname,
     return 0;
 }
 EOF
+    cc -O2 -pipe -Wall -Wextra -fPIC -shared "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
+
+    rm "$JINX_CACHE_DIR/sets/.image"/debootstrap/variant
+
+    unshare --user --map-root-user --mount --pid --fork sh -c "
+        rm -rf '$JINX_CACHE_DIR/sets/.image/dev'
+        rm -rf '$JINX_CACHE_DIR/sets/.image/proc'
+        rm -rf '$JINX_CACHE_DIR/sets/.image/sys'
+        mkdir -p '$JINX_CACHE_DIR/sets/.image/dev'
+        mkdir -p '$JINX_CACHE_DIR/sets/.image/proc'
+        mkdir -p '$JINX_CACHE_DIR/sets/.image/sys'
+
+        mount --rbind /dev '$JINX_CACHE_DIR/sets/.image/dev'
+        mount -t proc /proc '$JINX_CACHE_DIR/sets/.image/proc'
+        mount --rbind /sys '$JINX_CACHE_DIR/sets/.image/sys'
+
+        chroot '$JINX_CACHE_DIR/sets/.image' sh -c 'LD_PRELOAD=/nochown.so /debootstrap/debootstrap --second-stage'
+    "
+
+    rm "$JINX_CACHE_DIR/sets/.image/nochown.so"
+
+    echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
+    echo 'APT::Install-Suggests "0";
+APT::Install-Recommends "0";
+APT::Sandbox::User "root";
+Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
+
+    sources_list_tmp="$(sed 's/sid/experimental/g' "$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list")"
+    echo "${sources_list_tmp}" >>"$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list"
+
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get update
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y locales
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
+
+    # Fix permissions of files
+    for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
+        chmod 755 "$f"
+    done
+
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
+
+    # Build xbps
+    XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
+    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XBPS_BUILDENV}/"
+    curl -Lo "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
+    if ! "$JINX_CACHE_DIR/b2sum" "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_B2SUM}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify XBPS tarball"
+    fi
+    ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
+    run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
+    # XXX: xbps upstream forgot to bump version string
+    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.5/g' /xbps-${XBPS_VERSION}/configure
+    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/&& DEBUG=yes/&& DEBUG=no/g' /xbps-${XBPS_VERSION}/configure
+    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --verbose --enable-static --enable-rpath --prefix=/ --sysconfdir=/etc"
+    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/-lxml2/-lxml2 -llzma -lm/g' /xbps-${XBPS_VERSION}/config.mk
+    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && make -j${parallelism} && make DESTDIR=/xbps-bin install"
+    for f in "${XBPS_BUILDENV}"/xbps-bin/bin/*.static; do
+        mv "$f" "${f%.static*}"
+    done
+    mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
+
+    mv "$JINX_CACHE_DIR/nochown.c" "${XBPS_BUILDENV}/"
     run_in_container1 "${XBPS_BUILDENV}" gcc -O2 -pipe -Wall -Wextra -fPIC -shared /nochown.c -o /nochown.so
     mv "${XBPS_BUILDENV}/nochown."* "$JINX_CACHE_DIR/"
 

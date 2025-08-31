@@ -91,8 +91,7 @@ You can visit our list of community channels on Ironclad's
 
 A list of the tools needed for compilation of the OS are:
 
-- `git` for cloning the Ironclad kernel.
-- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `find`, `free` (usually from `procps`), `grep`, `gzip`, `tar`, `xargs` (usually from `findutils`), and `xz` for Jinx.
+- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `debootstrap`, `fakechroot`, `fakeroot`, `find`, `free` (usually from `procps`), `git`, `grep`, `gzip`, `tar`, `unshare` (from `util-linux`), `xargs` (usually from `findutils`), and `xz` for Jinx.
 - `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
 - `qemu` for testing, if wanted.
 

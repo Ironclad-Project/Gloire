@@ -85,13 +85,13 @@ using the pull request system baked into Codeberg. Check our
 ## Joining the community
 
 You can visit our list of community channels on Ironclad's
-[community tab] (https://ironclad-os.org/community.html).
+[community tab](https://ironclad-os.org/community.html).
 
 ## Building
 
 A list of the tools needed for compilation of the OS are:
 
-- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `debootstrap`, `fakechroot`, `fakeroot`, `find`, `free` (usually from `procps`), `git`, `grep`, `gzip`, `tar`, `unshare` (from `util-linux`), `xargs` (usually from `findutils`), and `xz` for Jinx.
+- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `debootstrap`, `find`, `free` (usually from `procps`), `git`, `grep`, `gzip`, `tar`, `unshare` (from `util-linux`), `xargs` (usually from `findutils`), `libarchive(-dev)`, `libssl(-dev)/openssl(-dev)`, and `zlib(-dev)` (AKA `zlib1g-dev` on Debian-based distros) for Jinx.
 - `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
 - `qemu` for testing, if wanted.
 
@@ -126,7 +126,7 @@ To build the riscv64 port, one can instead use:
 
 ```bash
 mkdir build-riscv64 && cd build-riscv64
-ARCH=riscv64 PKGS_TO_INSTALL="*" ../build-support/makeimg.sh
+PKGS_TO_INSTALL="*" ../build-support/makeimg.sh
 ```
 
 Regardless of architecture, if, instead of building all packages, building
@@ -148,8 +148,8 @@ A non-exhaustive list of the licenses used by the software ported to Gloire is:
 
 ## Thanks to
 
-- [Mintsuki](https://github.com/mintsuki) for the
-[Limine Bootloader](https://github.com/limine-bootloader/limine) and
-[Jinx](https://github.com/mintsuki/jinx).
+- [Mintsuki](https://codeberg.org/Mintsuki) for the
+[Limine Bootloader](https://codeberg.org/Limine/Limine) and
+[Jinx](https://codeberg.org/Mintsuki/jinx).
 - [The Managarm Project](https://github.com/managarm) for help with some
 of the recipes and [mlibc](https://github.com/managarm/mlibc).

@@ -34,14 +34,14 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 debian_snapshot="20250627T143139Z"
 
 XBPS_VERSION=0.60.5
-XBPS_B2SUM=91aad926f25e78c17b2646f2e478e9a4141d9d80ebb93bc821c91333c8f5b5cf72a08edb7f25aef486e0761f15da8322207474c3b6f546d6403dd424cc442525
+XBPS_SHA256SUM=fba39edfdcfeb6f7e3f348a091453fefb087089999cf5bea20ea65ac6cf009dc
 
 die() {
     echo "$1"
@@ -120,16 +120,6 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-case "$1" in
-    install)
-        ;;
-    *)
-        if [ "$(id -u)" = "0" ]; then
-            die "$0: Jinx does not support running as root."
-        fi
-        ;;
-esac
-
 make_dir() {
     for d in "$@"; do
         mkdir -p "$d"
@@ -160,6 +150,16 @@ in_container=false
 if [ "$script" = "/base_dir/jinx" ]; then
     in_container=true
 fi
+
+case "$1" in
+    install)
+        ;;
+    *)
+        if [ "${in_container}" = "false" ] && [ "$(id -u)" = "0" ]; then
+            die "$0: Jinx does not support running as root."
+        fi
+        ;;
+esac
 
 if [ -z "$JINX_PARALLELISM" ]; then
     max_threads_by_mem="$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))"
@@ -204,6 +204,9 @@ fi
 if [ "$in_container" = "false" ]; then
     make_dir "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
+
+    export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}"
+    export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${PATH}"
 
     make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
@@ -308,30 +311,27 @@ run_in_container1() {
     run_in_cont1_root="$1"
     shift 1
 
-    make_dir "$run_in_cont1_root"/jinx-cache
+    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+        set -e
 
-    nochown_so=""
-    if [ -f "$JINX_CACHE_DIR/nochown.so" ]; then
-        nochown_so="--env LD_PRELOAD=/jinx-cache/nochown.so"
-    fi
+        mount --rbind /dev '${run_in_cont1_root}/dev'
+        mount -t proc /proc '${run_in_cont1_root}/proc'
+        mount --rbind /sys '${run_in_cont1_root}/sys'
 
-    "$JINX_CACHE_DIR/rbrt" \
-        --root "$run_in_cont1_root" rw \
-        --uid 0 \
-        --gid 0 \
-        --env HOME=/root \
-        --env LANG=en_US.UTF-8 \
-        --env LC_COLLATE=C \
-        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
-        --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-        --env DEBIAN_FRONTEND=noninteractive \
-        ${nochown_so} \
-        -m"${apt_cache}":/var/cache/apt/archives \
-        -m"$JINX_CACHE_DIR":/jinx-cache:ro \
-        -- \
-        "$@"
+        mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
-    rm -rf "$run_in_cont1_root"/jinx-cache
+        env -i chroot '${run_in_cont1_root}' /bin/sh -c '
+            LD_PRELOAD=/nochown.so \
+            HOME=/root \
+            LANG=en_US.UTF-8 \
+            LC_COLLATE=C \
+            PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
+            LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            DEBIAN_FRONTEND=noninteractive \
+            $(for arg in "$@"; do echo '"'"$(echo "${arg}" | sed 's/"/\\"/g')"'" \'; done)
+            # keep this whitespace
+        '
+    "
 }
 
 check_duplicates() {
@@ -364,7 +364,7 @@ prepare_container() {
     for dep in $(cat "${deps_file}"); do
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null 2>&1
+            xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null 2>&1
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
@@ -420,15 +420,15 @@ run_in_container() {
     if [ "${allow_network}" = "yes" ]; then
         unshare_net_flag=""
     else
-        unshare_net_flag="-n"
+        unshare_net_flag="--net"
     fi
 
     if [ ! -z "$TERM" ]; then
-        run_in_cont_term="--env TERM=\"$TERM\""
+        run_in_cont_term="TERM=\"$TERM\""
     fi
 
     if ! [ -z "$COLORTERM" ]; then
-        run_in_cont_colorterm="--env COLORTERM=\"$COLORTERM\""
+        run_in_cont_colorterm="COLORTERM=\"$COLORTERM\""
     fi
 
     make_dir "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
@@ -437,8 +437,8 @@ run_in_container() {
     if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
         make_dir "${imgroot}/sysroot"
 
-        container_pkgs_native_mount="-m${container_pkgs}:/usr/local:ro"
-        sysroot_native_mount="-m${sysroot_dir}:/sysroot:ro"
+        container_pkgs_native_mount="mount -o ro --bind '${container_pkgs}' '${imgroot}/usr/local'"
+        sysroot_native_mount="mount -o ro --bind '${sysroot_dir}' '${imgroot}/sysroot'"
 
         run_in_cont_lang=en_US.UTF-8
     else
@@ -449,54 +449,52 @@ run_in_container() {
         fi
     fi
 
-    run_in_cont_argvar=""
-    for arg in "$@"; do
-        run_in_cont_argvar="$run_in_cont_argvar \"$arg\""
-    done
-
     shadow_git_dir_build=""
     if [ -d "${build_dir}"/.git ]; then
         make_temp -d
-        shadow_git_dir_build="-m${tmp}:/build_dir/.git"
+        shadow_git_dir_build="mount --bind '${tmp}' '${imgroot}/build_dir/.git'"
     fi
 
     shadow_git_dir_base=""
     if [ -d "${base_dir}"/.git ]; then
         make_temp -d
-        shadow_git_dir_base="-m${tmp}:/base_dir/.git"
+        shadow_git_dir_base="mount --bind '${tmp}' '${imgroot}/base_dir/.git'"
     fi
 
-    nochown_so=""
-    if [ -f "$JINX_CACHE_DIR/nochown.so" ]; then
-        nochown_so="--env LD_PRELOAD=/base_dir/.jinx-cache/nochown.so"
-    fi
+    unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
+        set -e
 
-    "$JINX_CACHE_DIR/rbrt" \
-        --root "${imgroot}" \
-        --uid $(id -u) \
-        --gid $(id -g) \
-        --env HOME=/root \
-        --env LANG=${run_in_cont_lang} \
-        --env LC_COLLATE=C \
-        --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
-        --env LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
-        ${run_in_cont_term} \
-        ${run_in_cont_colorterm} \
-        --env JINX_PARALLELISM="$parallelism" \
-        --env JINX_CONFIG_FILE=/base_dir/Jinxfile \
-        --env JINX_SOURCE_DIR=/base_dir \
-        ${nochown_so} \
-        ${container_pkgs_native_mount:+"${container_pkgs_native_mount}"} \
-        ${sysroot_native_mount:+"${sysroot_native_mount}"} \
-        -m"${base_dir}":/base_dir${container_base_dir_ro} \
-        ${shadow_git_dir_base:+"${shadow_git_dir_base}"} \
-        -m"${base_dir}"/sources:/base_dir/sources${container_sources_ro} \
-        -m"${build_dir}":/build_dir \
-        ${shadow_git_dir_build:+"${shadow_git_dir_build}"} \
-        ${unshare_net_flag} \
-        --workdir / \
-        -- \
-        /bin/bash -c "cd /build_dir && /bin/bash /base_dir/jinx $run_in_cont_argvar"
+        mount --rbind /dev '${imgroot}/dev'
+        mount -t proc /proc '${imgroot}/proc'
+        mount --rbind /sys '${imgroot}/sys'
+
+        mount ${container_base_dir_ro} --bind '${base_dir}' '${imgroot}/base_dir'
+        mount --bind '${build_dir}' '${imgroot}/build_dir'
+        mount ${container_sources_ro} --bind '${base_dir}/sources' '${imgroot}/sources'
+        ${container_pkgs_native_mount}
+        ${sysroot_native_mount}
+        ${shadow_git_dir_base}
+        ${shadow_git_dir_build}
+
+        env -i chroot '${imgroot}' /bin/sh -c '
+            cd /build_dir
+
+            LD_PRELOAD=/nochown.so \
+            HOME=/root \
+            LANG=${run_in_cont_lang} \
+            LC_COLLATE=C \
+            PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
+            LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
+            ${run_in_cont_term} \
+            ${run_in_cont_colorterm} \
+            JINX_PARALLELISM=${parallelism} \
+            JINX_CONFIG_FILE=/base_dir/Jinxfile \
+            JINX_SOURCE_DIR=/base_dir \
+            /bin/bash /base_dir/jinx \
+            $(for arg in "$@"; do echo '"'"$(echo "${arg}" | sed 's/"/\\"/g')"'" \'; done)
+            # keep this whitespace
+        '
+    "
 
     rm -rf "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 }
@@ -714,7 +712,7 @@ do_early_prepare() {
     sysroot_dir="/sysroot"
 
     cd "${source_dir}"
-    [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
+    [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
     early_prepare
     container_base_dir_ro=""
     cd "${base_dir}"
@@ -732,7 +730,7 @@ do_prepare() {
     sysroot_dir="/sysroot"
 
     cd "${source_dir}"
-    [ "${is_local_package}" = true ] || container_base_dir_ro=":ro"
+    [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
     prepare
     container_base_dir_ro=""
     cd "${base_dir}"
@@ -933,28 +931,6 @@ do_package() {
         rm -rvf $i
     done
 
-    xbps_deps=""
-    for dep in ${deps}; do
-        bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${dep} && echo "${bootstrap_pkg}")
-        if [ "${bootstrap_pkg}" = "yes" ]; then
-            continue
-        fi
-
-        xbps_deps="${xbps_deps} ${dep}>=0.0"
-    done
-
-    cd "${build_dir}"/pkgs
-        XBPS_ARCH=invalid \
-        XBPS_TARGET_ARCH="${JINX_ARCH}" \
-    "$JINX_CACHE_DIR"/xbps-bin/xbps-create \
-        -A $JINX_ARCH \
-        -s ${name} \
-        -n ${name}-${version}_${revision} \
-        -D "${xbps_deps}" \
-        "${dest_dir}"
-
-    rm -rf "${dest_dir}"
-
     cd "${base_dir}"
 }
 
@@ -1088,7 +1064,7 @@ do_host_pkg() {
             "${script}" internal-source "${from_source}"
     fi
 
-    container_sources_ro=":ro"
+    container_sources_ro="-o ro"
     if ! [ -d "${build_dir}"/host-builds/$1 ]; then
         run_in_container internal-configure-host $1
     fi
@@ -1144,7 +1120,7 @@ do_pkg() {
         "${script}" internal-source "${name}"
     fi
 
-    container_sources_ro=":ro"
+    container_sources_ro="-o ro"
     if ! [ -d "${build_dir}"/builds/$1 ]; then
         run_in_container internal-configure $1
     fi
@@ -1155,9 +1131,33 @@ do_pkg() {
 
     destroy_container
 
+    xbps_deps=""
+    for dep in ${deps}; do
+        bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${dep} && echo "${bootstrap_pkg}")
+        if [ "${bootstrap_pkg}" = "yes" ]; then
+            continue
+        fi
+
+        xbps_deps="${xbps_deps} ${dep}>=0.0"
+    done
+
+    dest_dir="${build_dir}"/pkgs/${name}
+
+    cd "${build_dir}"/pkgs
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-    "$JINX_CACHE_DIR"/xbps-bin/xbps-rindex \
+    xbps-create \
+        -A $JINX_ARCH \
+        -s ${name} \
+        -n ${name}-${version}_${revision} \
+        -D "${xbps_deps}" \
+        "${dest_dir}"
+
+    rm -rf "${dest_dir}"
+
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
+    xbps-rindex \
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
 
@@ -1297,12 +1297,12 @@ cmd_install() {
         if ! [ -z "${force_install}" ]; then
             XBPS_ARCH=invalid \
             XBPS_TARGET_ARCH="${JINX_ARCH}" \
-                "$JINX_CACHE_DIR"/xbps-bin/xbps-remove -Ffy -r "${sysroot}" ${pkg} >/dev/null 2>&1 || true
+                xbps-remove -Ffy -r "${sysroot}" ${pkg} >/dev/null 2>&1 || true
         fi
 
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            "$JINX_CACHE_DIR"/xbps-bin/xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null 2>&1
+            xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null 2>&1
 
         tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
     done
@@ -1346,663 +1346,6 @@ cmd_install() {
     fi
 }
 
-rebuild_b2sum() {
-    cat <<'EOF' >"$JINX_CACHE_DIR/b2sum.c"
-// This blake2b implementation comes from the GNU coreutils project.
-// https://github.com/coreutils/coreutils/blob/master/src/blake2/blake2b-ref.c
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define BLAKE2B_OUT_BYTES 64
-#define BLAKE2B_BLOCK_BYTES 128
-#define BLAKE2B_KEY_BYTES 64
-#define BLAKE2B_SALT_BYTES 16
-#define BLAKE2B_PERSONAL_BYTES 16
-
-static const uint64_t blake2b_iv[8] = {
-    0x6a09e667f3bcc908,
-    0xbb67ae8584caa73b,
-    0x3c6ef372fe94f82b,
-    0xa54ff53a5f1d36f1,
-    0x510e527fade682d1,
-    0x9b05688c2b3e6c1f,
-    0x1f83d9abfb41bd6b,
-    0x5be0cd19137e2179,
-};
-
-static const uint8_t blake2b_sigma[12][16] = {
-    {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
-    { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
-    { 11,  8, 12,  0,  5,  2, 15, 13, 10, 14,  3,  6,  7,  1,  9,  4 },
-    {  7,  9,  3,  1, 13, 12, 11, 14,  2,  6,  5, 10,  4,  0, 15,  8 },
-    {  9,  0,  5,  7,  2,  4, 10, 15, 14,  1, 11, 12,  6,  8,  3, 13 },
-    {  2, 12,  6, 10,  0, 11,  8,  3,  4, 13,  7,  5, 15, 14,  1,  9 },
-    { 12,  5,  1, 15, 14, 13,  4, 10,  0,  7,  6,  3,  9,  2,  8, 11 },
-    { 13, 11,  7, 14, 12,  1,  3,  9,  5,  0, 15,  4,  8,  6,  2, 10 },
-    {  6, 15, 14,  9, 11,  3,  0,  8, 12,  2, 13,  7,  1,  4, 10,  5 },
-    { 10,  2,  8,  4,  7,  6,  1,  5, 15, 11,  9, 14,  3, 12, 13,  0 },
-    {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
-    { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
-};
-
-struct blake2b_state {
-    uint64_t h[8];
-    uint64_t t[2];
-    uint64_t f[2];
-    uint8_t buf[BLAKE2B_BLOCK_BYTES];
-    size_t buf_len;
-    uint8_t last_node;
-};
-
-struct blake2b_param {
-    uint8_t digest_length;
-    uint8_t key_length;
-    uint8_t fan_out;
-    uint8_t depth;
-    uint32_t leaf_length;
-    uint32_t node_offset;
-    uint32_t xof_length;
-    uint8_t node_depth;
-    uint8_t inner_length;
-    uint8_t reserved[14];
-    uint8_t salt[BLAKE2B_SALT_BYTES];
-    uint8_t personal[BLAKE2B_PERSONAL_BYTES];
-} __attribute__((packed));
-
-static void blake2b_increment_counter(struct blake2b_state *state, uint64_t inc) {
-    state->t[0] += inc;
-    state->t[1] += state->t[0] < inc;
-}
-
-static inline uint64_t rotr64(uint64_t w, unsigned c) {
-    return (w >> c) | (w << (64 - c));
-}
-
-#define G(r, i, a, b, c, d) do { \
-        a = a + b + m[blake2b_sigma[r][2 * i + 0]]; \
-        d = rotr64(d ^ a, 32); \
-        c = c + d; \
-        b = rotr64(b ^ c, 24); \
-        a = a + b + m[blake2b_sigma[r][2 * i + 1]]; \
-        d = rotr64(d ^ a, 16); \
-        c = c + d; \
-        b = rotr64(b ^ c, 63); \
-    } while (0)
-
-#define ROUND(r) do { \
-        G(r, 0, v[0], v[4], v[8], v[12]); \
-        G(r, 1, v[1], v[5], v[9], v[13]); \
-        G(r, 2, v[2], v[6], v[10], v[14]); \
-        G(r, 3, v[3], v[7], v[11], v[15]); \
-        G(r, 4, v[0], v[5], v[10], v[15]); \
-        G(r, 5, v[1], v[6], v[11], v[12]); \
-        G(r, 6, v[2], v[7], v[8], v[13]); \
-        G(r, 7, v[3], v[4], v[9], v[14]); \
-    } while (0)
-
-static void blake2b_compress(struct blake2b_state *state, const uint8_t block[static BLAKE2B_BLOCK_BYTES]) {
-    uint64_t m[16];
-    uint64_t v[16];
-
-    for (int i = 0; i < 16; i++) {
-        m[i] = *(uint64_t *)(block + i * sizeof(m[i]));
-    }
-
-    for (int i = 0; i < 8; i++) {
-        v[i] = state->h[i];
-    }
-
-    v[8] = blake2b_iv[0];
-    v[9] = blake2b_iv[1];
-    v[10] = blake2b_iv[2];
-    v[11] = blake2b_iv[3];
-    v[12] = blake2b_iv[4] ^ state->t[0];
-    v[13] = blake2b_iv[5] ^ state->t[1];
-    v[14] = blake2b_iv[6] ^ state->f[0];
-    v[15] = blake2b_iv[7] ^ state->f[1];
-
-    ROUND(0);
-    ROUND(1);
-    ROUND(2);
-    ROUND(3);
-    ROUND(4);
-    ROUND(5);
-    ROUND(6);
-    ROUND(7);
-    ROUND(8);
-    ROUND(9);
-    ROUND(10);
-    ROUND(11);
-
-    for (int i = 0; i < 8; i++) {
-        state->h[i] = state->h[i] ^ v[i] ^ v[i + 8];
-    }
-}
-
-#undef G
-#undef ROUND
-
-static void blake2b_init(struct blake2b_state *state) {
-    struct blake2b_param param;
-    memset(&param, 0, sizeof(struct blake2b_param));
-
-    param.digest_length = BLAKE2B_OUT_BYTES;
-    param.fan_out = 1;
-    param.depth = 1;
-
-    memset(state, 0, sizeof(struct blake2b_state));
-
-    for (int i = 0; i < 8; i++) {
-        state->h[i] = blake2b_iv[i];
-    }
-
-    for (int i = 0; i < 8; i++) {
-        state->h[i] ^= *(uint64_t *)((void *)&param + sizeof(state->h[i]) * i);
-    }
-}
-
-static void blake2b_update(struct blake2b_state *state, const void *in, size_t in_len) {
-    if (in_len == 0) {
-        return;
-    }
-
-    size_t left = state->buf_len;
-    size_t fill = BLAKE2B_BLOCK_BYTES - left;
-
-    if (in_len > fill) {
-        state->buf_len = 0;
-
-        memcpy(state->buf + left, in, fill);
-        blake2b_increment_counter(state, BLAKE2B_BLOCK_BYTES);
-        blake2b_compress(state, state->buf);
-
-        in += fill;
-        in_len -= fill;
-
-        while (in_len > BLAKE2B_BLOCK_BYTES) {
-            blake2b_increment_counter(state, BLAKE2B_BLOCK_BYTES);
-            blake2b_compress(state, in);
-
-            in += fill;
-            in_len -= fill;
-        }
-    }
-
-    memcpy(state->buf + state->buf_len, in, in_len);
-    state->buf_len += in_len;
-}
-
-static void blake2b_final(struct blake2b_state *state, void *out) {
-    uint8_t buffer[BLAKE2B_OUT_BYTES] = {0};
-
-    blake2b_increment_counter(state, state->buf_len);
-    state->f[0] = (uint64_t)-1;
-    memset(state->buf + state->buf_len, 0, BLAKE2B_BLOCK_BYTES - state->buf_len);
-    blake2b_compress(state, state->buf);
-
-    for (int i = 0; i < 8; i++) {
-        *(uint64_t *)(buffer + sizeof(state->h[i]) * i) = state->h[i];
-    }
-
-    memcpy(out, buffer, BLAKE2B_OUT_BYTES);
-    memset(buffer, 0, sizeof(buffer));
-}
-
-static void blake2b(void *out, const void *in, size_t in_len) {
-    struct blake2b_state state = {0};
-
-    blake2b_init(&state);
-    blake2b_update(&state, in, in_len);
-    blake2b_final(&state, out);
-}
-
-int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        return EXIT_FAILURE;
-    }
-
-    FILE *f = fopen(argv[1], "r");
-    if (f == NULL) {
-        return EXIT_FAILURE;
-    }
-
-    fseek(f, 0, SEEK_END);
-    size_t f_size = ftell(f);
-    rewind(f);
-
-    void *mem = malloc(f_size);
-    if (mem == NULL) {
-        return EXIT_FAILURE;
-    }
-
-    if (fread(mem, f_size, 1, f) != 1) {
-        return EXIT_FAILURE;
-    }
-
-    uint8_t out_buf[BLAKE2B_OUT_BYTES];
-    blake2b(out_buf, mem, f_size);
-
-    for (size_t i = 0; i < BLAKE2B_OUT_BYTES; i++) {
-        printf("%02x", out_buf[i]);
-    }
-
-    printf("  %s\n", argv[1]);
-}
-EOF
-    cc -O2 -pipe -fno-strict-aliasing -Wall -Wextra "$JINX_CACHE_DIR/b2sum.c" -o "$JINX_CACHE_DIR/b2sum"
-}
-
-rebuild_rbrt() {
-    cat <<'EOF' >"$JINX_CACHE_DIR/rbrt.c"
-// Written by 48cf (iretq@riseup.net)
-// Inspired heavily by https://github.com/managarm/cbuildrt/
-
-#define _GNU_SOURCE
-
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sched.h>
-#include <sys/mount.h>
-#include <sys/wait.h>
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
-int main(int argc, char *argv[]) {
-    int ok = 1;
-    const char *err_msg = "";
-
-    char *rootfs = NULL;
-    char **mounts = NULL;
-    char **envs = NULL;
-    char **process_args = NULL;
-
-    int mount_count = 0;
-    int mounts_size = 0;
-
-    int env_count = 0;
-    int envs_size = 0;
-
-    bool rw_root = false;
-    bool unshare_net = false;
-
-    int uid = -1, gid = -1;
-    int euid = geteuid();
-    int egid = getegid();
-
-    int setgroups_fd = -1;
-    int uid_map_fd = -1;
-    int gid_map_fd = -1;
-
-    char *workdir = "/";
-
-    for (int i = 1; i < argc; ) {
-        if (strcmp(argv[i], "--workdir") == 0) {
-            workdir = argv[i + 1];
-            i += 2;
-        } else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--root") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
-                goto cleanup;
-            }
-
-            rootfs = argv[i + 1];
-            i += 2;
-
-            if (i < argc - 1 && strcmp(argv[i], "rw") == 0) {
-                rw_root = true;
-                i++;
-            }
-        } else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--uid") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
-                goto cleanup;
-            }
-
-            if (sscanf(argv[i + 1], "%d", &uid) != 1) {
-                fprintf(stderr, "%s: '%s' is not a valid user ID\n", argv[0], argv[i + 1]);
-                goto cleanup;
-            }
-
-            i += 2;
-        } else if (strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gid") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
-                goto cleanup;
-            }
-
-            if (sscanf(argv[i + 1], "%d", &gid) != 1) {
-                fprintf(stderr, "%s: '%s' is not a valid group ID\n", argv[0], argv[i + 1]);
-                goto cleanup;
-            }
-
-            i += 2;
-        } else if (strncmp(argv[i], "-m", 2) == 0) {
-            if (mount_count == mounts_size) {
-                mounts_size = mounts_size == 0 ? 16 : mounts_size * 2;
-                char **tmp_mounts = realloc(mounts, sizeof(char *) * mounts_size);
-                if (tmp_mounts == NULL) {
-                    fprintf(stderr, "%s: failed to allocate mounts array\n", argv[0]);
-                    goto cleanup;
-                }
-                mounts = tmp_mounts;
-            }
-
-            char *target = argv[i] + 2;
-            while (*target && *target != ':') {
-                target++;
-            }
-
-            if (!*target) {
-                fprintf(stderr, "%s: mount points need to be provided in the 'source:target' format\n", argv[0]);
-                goto cleanup;
-            }
-
-            mounts[mount_count++] = argv[i] + 2;
-            i += 1;
-        } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--env") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: '%s' requires a value\n", argv[0], argv[i]);
-                goto cleanup;
-            }
-
-            if (env_count == envs_size) {
-                envs_size = envs_size == 0 ? 16 : envs_size * 2;
-                char **tmp_envs = realloc(envs, sizeof(char *) * envs_size);
-                if (tmp_envs == NULL) {
-                    fprintf(stderr, "%s: failed to allocate environment variables array\n", argv[0]);
-                    goto cleanup;
-                }
-                envs = tmp_envs;
-            }
-
-            char *value = argv[i + 1];
-            while (*value && *value != '=') {
-                value++;
-            }
-
-            if (!*value) {
-                fprintf(stderr, "%s: environment variables need to be provided in the 'key=value' format\n", argv[0]);
-                goto cleanup;
-            }
-
-            envs[env_count++] = argv[i + 1];
-            i += 2;
-        } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--net") == 0) {
-            unshare_net = true;
-            i += 1;
-        } else if (strcmp(argv[i], "--") == 0) {
-            if (i == argc - 1) {
-                fprintf(stderr, "%s: at least one trailing argument is required\n", argv[0]);
-                goto cleanup;
-            }
-
-            process_args = &argv[i + 1];
-            break;
-        } else {
-            fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], argv[i]);
-            goto cleanup;
-        }
-    }
-
-    if (rootfs == NULL) {
-        fprintf(stderr, "%s: root file system path is required\n", argv[0]);
-        goto cleanup;
-    }
-
-    if (process_args == NULL) {
-        fprintf(stderr, "%s: process arguments are requires\n", argv[0]);
-        goto cleanup;
-    }
-
-    if (uid == -1 || gid == -1) {
-        fprintf(stderr, "%s: user and group IDs are both required\n", argv[0]);
-        goto cleanup;
-    }
-
-    if (unshare(CLONE_NEWUSER | CLONE_NEWPID) < 0) {
-        err_msg = "unshare() failure at line " TOSTRING(__LINE__);
-        goto errno_error;
-    }
-
-    char uid_map[64], gid_map[64];
-
-    int uid_map_len = snprintf(uid_map, 64, "%d %d 1", uid, euid);
-    int gid_map_len = snprintf(gid_map, 64, "%d %d 1", gid, egid);
-
-    setgroups_fd = open("/proc/self/setgroups", O_RDWR);
-    if (setgroups_fd < 0 || write(setgroups_fd, "deny", 4) < 0) {
-        err_msg = "failed to open or write to /proc/self/setgroups at line " TOSTRING(__LINE__);
-        goto errno_error;
-    }
-    close(setgroups_fd);
-    setgroups_fd = -1;
-
-    uid_map_fd = open("/proc/self/uid_map", O_RDWR);
-    if (uid_map_fd < 0 || write(uid_map_fd, uid_map, uid_map_len) < 0) {
-        err_msg = "failed to open or write to /proc/self/uid_map at line " TOSTRING(__LINE__);
-        goto errno_error;
-    }
-    close(uid_map_fd);
-    uid_map_fd = -1;
-
-    gid_map_fd = open("/proc/self/gid_map", O_RDWR);
-    if (gid_map_fd < 0 || write(gid_map_fd, gid_map, gid_map_len) < 0) {
-        err_msg = "failed to open or write to /proc/self/gid_map at line " TOSTRING(__LINE__);
-        goto errno_error;
-    }
-    close(gid_map_fd);
-    gid_map_fd = -1;
-
-    if (setuid(uid) < 0 || setgid(gid) < 0) {
-        err_msg = "setuid()/setgid() failure at line " TOSTRING(__LINE__);
-        goto errno_error;
-    }
-
-    int child_pid = fork();
-    if (child_pid == 0) {
-        if (unshare(CLONE_NEWNS) < 0) {
-            err_msg = "unshare() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        if (mount(rootfs, rootfs, NULL, MS_BIND, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        int root_flags = MS_REMOUNT | MS_BIND | MS_NOSUID | MS_NODEV;
-
-        if (!rw_root) {
-            root_flags |= MS_RDONLY;
-        }
-
-        if (mount(rootfs, rootfs, NULL, root_flags, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        char target_path[PATH_MAX];
-
-        snprintf(target_path, PATH_MAX, "%s/etc/resolv.conf", rootfs);
-        if (mount("/etc/resolv.conf", target_path, NULL, MS_BIND, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/dev", rootfs);
-        if (mount("/dev", target_path, NULL, MS_REC | MS_BIND | MS_SLAVE, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/sys", rootfs);
-        if (mount("/sys", target_path, NULL, MS_REC | MS_BIND | MS_SLAVE, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/run", rootfs);
-        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/tmp", rootfs);
-        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/var/tmp", rootfs);
-        if (mount(NULL, target_path, "tmpfs", 0, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        snprintf(target_path, PATH_MAX, "%s/proc", rootfs);
-        if (mount(NULL, target_path, "proc", 0, NULL) < 0) {
-            err_msg = "mount() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        for (int i = 0; i < mount_count; i++) {
-            char *source = mounts[i];
-            char *target = source;
-
-            while (*target && *target != ':') {
-                target++;
-            }
-
-            *target++ = 0;
-
-            char *read_only = target;
-
-            while (*read_only && *read_only != ':') {
-                read_only++;
-            }
-
-            bool ro = false;
-            if (*read_only == ':') {
-                *read_only++ = 0;
-                ro = strcmp(read_only, "ro") == 0;
-            }
-
-            snprintf(target_path, PATH_MAX, "%s%s", rootfs, target);
-            if (mount(source, target_path, NULL, MS_BIND | (ro ? MS_RDONLY : 0), NULL) < 0) {
-                err_msg = "mount() failure at line " TOSTRING(__LINE__);
-                goto errno_error;
-            }
-            if (ro) {
-                if (mount(source, target_path, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL) < 0) {
-                    err_msg = "mount() failure at line " TOSTRING(__LINE__);
-                    goto errno_error;
-                }
-            }
-        }
-
-        if (unshare_net && unshare(CLONE_NEWNET) < 0) {
-            err_msg = "unshare() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        if (chroot(rootfs) < 0) {
-            err_msg = "chroot() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        if (chdir(workdir) < 0) {
-            err_msg = "chdir() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        int child = fork();
-        if (child == 0) {
-            clearenv();
-
-            setenv("HOME", "/root", 1);
-            setenv("LANG", "C", 1);
-            setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
-
-            for (int i = 0; i < env_count; i++) {
-                char *key = envs[i];
-                char *value = key;
-
-                while (*value && *value != '=') {
-                    value++;
-                }
-
-                *value++ = 0;
-                setenv(key, value, 1);
-            }
-
-            if (execvp(process_args[0], process_args) < 0) {
-                err_msg = "execvp() failure at line " TOSTRING(__LINE__);
-                goto errno_error;
-            }
-
-            __builtin_unreachable();
-        } else {
-            int exit_code = -1;
-            if (waitpid(child, &exit_code, 0) < 0) {
-                err_msg = "waitpid() failure at line " TOSTRING(__LINE__);
-                goto errno_error;
-            }
-
-            ok = WEXITSTATUS(exit_code);
-            goto cleanup;
-        }
-
-        __builtin_unreachable();
-    } else {
-        int exit_code = -1;
-        if (waitpid(child_pid, &exit_code, 0) < 0) {
-            err_msg = "waitpid() failure at line " TOSTRING(__LINE__);
-            goto errno_error;
-        }
-
-        ok = WEXITSTATUS(exit_code);
-        goto cleanup;
-    }
-
-errno_error:
-    fprintf(stderr, "%s: %s: %s\n", argv[0], err_msg, strerror(errno));
-
-cleanup:
-    if (mounts != NULL) {
-        free(mounts);
-    }
-    if (envs != NULL) {
-        free(envs);
-    }
-    if (setgroups_fd >= 0) {
-        close(setgroups_fd);
-    }
-    if (uid_map_fd >= 0) {
-        close(uid_map_fd);
-    }
-    if (gid_map_fd >= 0) {
-        close(gid_map_fd);
-    }
-
-    return ok;
-}
-EOF
-    cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/rbrt.c" -o "$JINX_CACHE_DIR/rbrt"
-}
-
 reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
     chmod -R 777 "$JINX_CACHE_DIR/apt-cache" 2>/dev/null || true
@@ -2012,71 +1355,53 @@ reinit_container() {
 
     make_dir "$JINX_CACHE_DIR/sets/.image"
 
-    fakechroot fakeroot debootstrap --variant=fakechroot \
-        --foreign sid "$JINX_CACHE_DIR/sets/.image" https://snapshot.debian.org/archive/debian/${debian_snapshot}/
-
     cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 
 int chown(const char *pathname, uid_t owner, gid_t group) {
-    if ((owner == 0 && group == 0)
-     || (owner == $(id -u) && group == $(id -g))) {
-        return 0;
-    }
-    printf("\e[93mchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
+    (void)pathname; (void)owner; (void)group;
     return 0;
 }
 
 int fchown(int fd, uid_t owner, gid_t group) {
-    if ((owner == 0 && group == 0)
-     || (owner == $(id -u) && group == $(id -g))) {
-        return 0;
-    }
-    printf("\e[93mfchown(%d, %d, %d); suppressed\e[0m\n", fd, owner, group);
+    (void)fd; (void)owner; (void)group;
     return 0;
 }
 
 int lchown(const char *pathname, uid_t owner, gid_t group) {
-    if ((owner == 0 && group == 0)
-     || (owner == $(id -u) && group == $(id -g))) {
-        return 0;
-    }
-    printf("\e[93mlchown(%s, %d, %d); suppressed\e[0m\n", pathname, owner, group);
+    (void)pathname; (void)owner; (void)group;
     return 0;
 }
 
 int fchownat(int dirfd, const char *pathname,
              uid_t owner, gid_t group, int flags) {
-    if ((owner == 0 && group == 0)
-     || (owner == $(id -u) && group == $(id -g))) {
-        return 0;
-    }
-    printf("\e[93mfchownat(%d, %s, %d, %d, %d); suppressed\e[0m\n", dirfd, pathname, owner, group, flags);
+    (void)dirfd; (void)pathname; (void)owner; (void)group; (void)flags;
     return 0;
 }
 EOF
     cc -O2 -pipe -Wall -Wextra -fPIC -shared "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
 
-    rm "$JINX_CACHE_DIR/sets/.image"/debootstrap/variant
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/dev"
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/proc"
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
-    unshare --user --map-root-user --mount --pid --fork sh -c "
-        rm -rf '$JINX_CACHE_DIR/sets/.image/dev'
-        rm -rf '$JINX_CACHE_DIR/sets/.image/proc'
-        rm -rf '$JINX_CACHE_DIR/sets/.image/sys'
-        mkdir -p '$JINX_CACHE_DIR/sets/.image/dev'
-        mkdir -p '$JINX_CACHE_DIR/sets/.image/proc'
-        mkdir -p '$JINX_CACHE_DIR/sets/.image/sys'
+    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+        set -e
 
         mount --rbind /dev '$JINX_CACHE_DIR/sets/.image/dev'
         mount -t proc /proc '$JINX_CACHE_DIR/sets/.image/proc'
         mount --rbind /sys '$JINX_CACHE_DIR/sets/.image/sys'
 
-        chroot '$JINX_CACHE_DIR/sets/.image' sh -c 'LD_PRELOAD=/nochown.so /debootstrap/debootstrap --second-stage'
+        mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
+
+        LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
+            --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${debian_snapshot}/
     "
 
-    rm "$JINX_CACHE_DIR/sets/.image/nochown.so"
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" /debootstrap/debootstrap --second-stage
 
     echo 'en_US.UTF-8 UTF-8' > "$JINX_CACHE_DIR/sets/.image/etc/locale.gen"
     echo 'APT::Install-Suggests "0";
@@ -2099,40 +1424,52 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
     # Build xbps
-    XBPS_BUILDENV="$JINX_CACHE_DIR/xbps_buildenv"
-    cp -Pprf "$JINX_CACHE_DIR/sets/.image/." "${XBPS_BUILDENV}/"
-    curl -Lo "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
-    if ! "$JINX_CACHE_DIR/b2sum" "${XBPS_BUILDENV}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_B2SUM}" >/dev/null 2>&1; then
+    SHA256_COMMAND="sha256sum"
+    if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
+        SHA256_COMMAND="sha256"
+        if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
+            die "error: Cannot find sha256(sum) command"
+        fi
+    fi
+
+    curl -Lo "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
+    if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify XBPS tarball"
     fi
-    ( cd "${XBPS_BUILDENV}" && gunzip < xbps-${XBPS_VERSION}.tar.gz | tar -xf - )
-    run_in_container1 "${XBPS_BUILDENV}" apt-get install -y build-essential pkg-config zlib1g-dev libssl-dev libarchive-dev
+    (
+
+    cd "$JINX_CACHE_DIR"
+    tar -zxf xbps-${XBPS_VERSION}.tar.gz
+    cd xbps-${XBPS_VERSION}
+
     # XXX: xbps upstream forgot to bump version string
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/0\.60/0.60.5/g' /xbps-${XBPS_VERSION}/configure
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/&& DEBUG=yes/&& DEBUG=no/g' /xbps-${XBPS_VERSION}/configure
-    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && CFLAGS='-O2 -pipe -Wno-error' ./configure --verbose --enable-static --enable-rpath --prefix=/ --sysconfdir=/etc"
-    run_in_container1 "${XBPS_BUILDENV}" sed -i 's/-lxml2/-lxml2 -llzma -lm/g' /xbps-${XBPS_VERSION}/config.mk
-    run_in_container1 "${XBPS_BUILDENV}" sh -c "cd /xbps-${XBPS_VERSION} && make -j${parallelism} && make DESTDIR=/xbps-bin install"
-    for f in "${XBPS_BUILDENV}"/xbps-bin/bin/*.static; do
-        mv "$f" "${f%.static*}"
-    done
-    mv "${XBPS_BUILDENV}/xbps-bin/bin" "$JINX_CACHE_DIR/xbps-bin"
+    sed 's/0\.60/'"${XBPS_VERSION}"'/g' configure >configure.sed
+    mv configure.sed configure
+    sed 's/&& DEBUG=yes/&& DEBUG=no/g' configure >configure.sed
+    mv configure.sed configure
+    chmod +x configure
 
-    mv "$JINX_CACHE_DIR/nochown.c" "${XBPS_BUILDENV}/"
-    run_in_container1 "${XBPS_BUILDENV}" gcc -O2 -pipe -Wall -Wextra -fPIC -shared /nochown.c -o /nochown.so
-    mv "${XBPS_BUILDENV}/nochown."* "$JINX_CACHE_DIR/"
+    CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
 
-    chmod -R 777 "${XBPS_BUILDENV}"
-    rm -rf "${XBPS_BUILDENV}"
+    sed '/DBDIR/d' data/Makefile >data/Makefile.sed
+    mv data/Makefile.sed data/Makefile
+
+    sed 's/-lxml2/-lxml2 -llzma -lm/g' config.mk >config.mk.sed
+    mv config.mk.sed config.mk
+
+    make -j${parallelism}
+    make install
+
+    cd ..
+    rm -rf xbps-${XBPS_VERSION}*
+
+    )
 }
 
 first_use() {
     echo "* preparing Jinx cache..."
 
     make_dir "$JINX_CACHE_DIR"
-
-    rebuild_b2sum
-    rebuild_rbrt
 
     reinit_container
 
@@ -2270,9 +1607,6 @@ case "$1" in
     reinstall)
         shift 1
         cmd_install -f "$@"
-        ;;
-    rbrt)
-        rebuild_rbrt
         ;;
     rebuild-cache)
         redo_first_use

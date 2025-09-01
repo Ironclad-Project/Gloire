@@ -322,7 +322,7 @@ run_in_container1() {
     run_in_cont1_root="$1"
     shift 1
 
-    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
         mount --rbind /dev '${run_in_cont1_root}/dev'
@@ -472,7 +472,7 @@ run_in_container() {
         shadow_git_dir_base="mount --bind '${tmp}' '${imgroot}/base_dir/.git'"
     fi
 
-    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT ${unshare_net_flag} -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
         set -e
 
         mount --rbind /dev '${imgroot}/dev'
@@ -1399,7 +1399,7 @@ EOF
     mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
-    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
         mount --rbind /dev '$JINX_CACHE_DIR/sets/.image/dev'

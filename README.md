@@ -91,7 +91,7 @@ You can visit our list of community channels on Ironclad's
 
 A list of the tools needed for compilation of the OS are:
 
-- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `debootstrap`, `find`, `free` (usually from `procps`), `git`, `grep`, `gzip`, `pkg-config` (or `pkgconf`), `tar`, `unshare` (from `util-linux`), `xargs` (usually from `findutils`), `libarchive(-dev)`, `libssl(-dev)/openssl(-dev)`, and `zlib(-dev)` (AKA `zlib1g-dev` on Debian-based distros) for Jinx.
+- POSIX-compatible `sh`, `awk`, a working `cc`, `curl`, `debootstrap`, `find`, `free` (usually from `procps`), `git`, `GNU make`, `grep`, `gzip`, `pkg-config` (or `pkgconf`), `tar`, `unshare` (from `util-linux`), `xargs` (usually from `findutils`), `libarchive(-dev)`, `libssl(-dev)/openssl(-dev)`, and `zlib(-dev)` (AKA `zlib1g-dev` on Debian-based distros) for Jinx.
 - `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
 - `qemu` for testing, if wanted.
 

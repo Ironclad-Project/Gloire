@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="6"
+jinx_minor_ver="7"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -205,7 +205,7 @@ if [ "$in_container" = "false" ]; then
     make_dir "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
-    export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}"
+    export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}:/usr/sbin:/sbin"
     export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${PATH}"
 
     make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
@@ -214,7 +214,18 @@ fi
 apt_cache="$JINX_CACHE_DIR/apt-cache"
 
 temp_collect=""
-trap 'eval rm -rf "$temp_collect"' EXIT
+
+cleanup_done=no
+cleanup() {
+    if [ "${cleanup_done}" = "yes" ]; then
+        return
+    fi
+    cleanup_done=yes
+    eval "rm -rf ${temp_collect}"
+}
+
+trap 'cleanup; exit 1' INT TERM HUP QUIT
+trap 'cleanup' EXIT
 
 make_temp() {
     tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
@@ -311,7 +322,7 @@ run_in_container1() {
     run_in_cont1_root="$1"
     shift 1
 
-    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT -- sh -c "
         set -e
 
         mount --rbind /dev '${run_in_cont1_root}/dev'
@@ -320,7 +331,7 @@ run_in_container1() {
 
         mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
-        env -i chroot '${run_in_cont1_root}' /bin/sh -c '
+        env -i PATH="${PATH}" chroot '${run_in_cont1_root}' /bin/sh -c '
             LD_PRELOAD=/nochown.so \
             HOME=/root \
             LANG=en_US.UTF-8 \
@@ -461,7 +472,7 @@ run_in_container() {
         shadow_git_dir_base="mount --bind '${tmp}' '${imgroot}/base_dir/.git'"
     fi
 
-    unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT ${unshare_net_flag} -- sh -c "
         set -e
 
         mount --rbind /dev '${imgroot}/dev'
@@ -476,7 +487,7 @@ run_in_container() {
         ${shadow_git_dir_base}
         ${shadow_git_dir_build}
 
-        env -i chroot '${imgroot}' /bin/sh -c '
+        env -i PATH="${PATH}" chroot '${imgroot}' /bin/sh -c '
             cd /build_dir
 
             LD_PRELOAD=/nochown.so \
@@ -1388,7 +1399,7 @@ EOF
     mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
-    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork --kill-child=SIGINT -- sh -c "
         set -e
 
         mount --rbind /dev '$JINX_CACHE_DIR/sets/.image/dev'

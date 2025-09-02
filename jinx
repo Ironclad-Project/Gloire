@@ -1399,6 +1399,26 @@ EOF
     mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
+    case "$(uname -m)" in
+        i?86) DEBOOTSTRAP_ARCH=i386 ;;
+        x86_64) DEBOOTSTRAP_ARCH=amd64 ;;
+        arm*) DEBOOTSTRAP_ARCH=armhf ;;
+        aarch64) DEBOOTSTRAP_ARCH=arm64 ;;
+        ppc64le) DEBOOTSTRAP_ARCH=ppc64el ;;
+        *) DEBOOTSTRAP_ARCH="$(uname -m)" ;;
+    esac
+
+    if ! command -v debootstrap >/dev/null 2>&1; then
+        die "error: missing debootstrap command"
+    fi
+
+    DEBOOTSTRAP_PATH="$(command -v debootstrap)"
+    make_temp -d
+    TMP_PATH="${tmp}"
+    cp "${DEBOOTSTRAP_PATH}" "${TMP_PATH}"/
+    sed "s/HOST_ARCH=.*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g" "${DEBOOTSTRAP_PATH}" >"${TMP_PATH}/debootstrap"
+    chmod +x "${TMP_PATH}/debootstrap"
+
     unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
@@ -1408,8 +1428,10 @@ EOF
 
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
-        LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
+        (
+        LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' exec -a '${DEBOOTSTRAP_PATH}' '${TMP_PATH}/debootstrap' \
             --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${debian_snapshot}/
+        )
     "
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" /debootstrap/debootstrap --second-stage

@@ -1417,7 +1417,7 @@ EOF
     make_temp -d
     TMP_PATH="${tmp}"
     cp "${DEBOOTSTRAP_PATH}" "${TMP_PATH}"/
-    sed "s/HOST_ARCH=.*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g" "${DEBOOTSTRAP_PATH}" >"${TMP_PATH}/debootstrap"
+    sed "s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g" "${DEBOOTSTRAP_PATH}" >"${TMP_PATH}/debootstrap"
     chmod +x "${TMP_PATH}/debootstrap"
 
     unshare --user --map-root-user --mount --pid --fork -- sh -c "

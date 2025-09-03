@@ -5,7 +5,7 @@ index ee2dd15..24e88da 100644
 @@ -285,30 +285,6 @@ typedef struct ptm_lockstorage ptm_lockstorage;
  #define PTM_CAP_SEND_COMMAND_HEADER (1 << 15)
  #define PTM_CAP_LOCK_STORAGE       (1 << 16)
-
+ 
 -#ifndef _WIN32
 -enum {
 -    PTM_GET_CAPABILITY     = _IOR('P', 0, ptm_cap),
@@ -34,26 +34,26 @@ index ee2dd15..24e88da 100644
   * Commands used by the non-CUSE TPMs
   *
 diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
-index 796553b..aa2254a 100644
+index 8c73867..f48f8ed 100644
 --- qemu-clean/block/file-posix.c
 +++ qemu-workdir/block/file-posix.c
-@@ -119,6 +119,8 @@
+@@ -125,6 +125,8 @@
  #endif
  #endif
-
+ 
 +#include <sys/ioctl.h>
 +
  /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
 diff --git qemu-clean/configure qemu-workdir/configure
-index 02f1dd2..bbae5a5 100755
+index 274a778..db8b00f 100755
 --- qemu-clean/configure
 +++ qemu-workdir/configure
-@@ -340,7 +340,9 @@ int main(void) { return 0; }
+@@ -343,7 +343,9 @@ int main(void) { return 0; }
  EOF
  }
-
+ 
 -if check_define __linux__ ; then
 +if check_define __ironclad__ ; then
 +  host_os=ironclad
@@ -67,7 +67,7 @@ index d63228e..62c57e1 100644
 +++ qemu-workdir/include/gdbstub/syscalls.h
 @@ -41,9 +41,10 @@
  #define GDB_EUNKNOWN       9999
-
+ 
  /* For gdb file i/o remote protocol lseek whence. */
 -#define GDB_SEEK_SET  0
 -#define GDB_SEEK_CUR  1
@@ -76,28 +76,28 @@ index d63228e..62c57e1 100644
 +#define GDB_SEEK_SET  SEEK_SET
 +#define GDB_SEEK_CUR  SEEK_CUR
 +#define GDB_SEEK_END  SEEK_END
-
+ 
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
 diff --git qemu-clean/meson.build qemu-workdir/meson.build
-index 8ec796d..92e69a3 100644
+index 50c774a..ccfc242 100644
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
-@@ -889,7 +889,7 @@ if get_option('hvf').allowed()
+@@ -903,7 +903,7 @@ if get_option('hvf').allowed()
  endif
-
+ 
  nvmm = not_found
 -if host_os == 'netbsd'
 +if host_os == 'netbsd' or host_os == 'ironclad'
    nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
    if nvmm.found()
      accelerators += 'CONFIG_NVMM'
-@@ -2523,6 +2523,7 @@ config_host_data.set('CONFIG_PIXMAN', pixman.found())
+@@ -2561,6 +2561,7 @@ config_host_data.set('CONFIG_PASST', enable_passt)
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')
 +config_host_data.set('CONFIG_IRONCLAD', host_os == 'ironclad')
- if get_option('tcg').allowed()
+ if have_tcg
    config_host_data.set('CONFIG_TCG', 1)
    config_host_data.set('CONFIG_TCG_INTERPRETER', tcg_arch == 'tci')
 diff --git qemu-clean/subprojects/dtc/libfdt/meson.build qemu-workdir/subprojects/dtc/libfdt/meson.build
@@ -111,7 +111,7 @@ index 0307ffb..1cde105 100644
 -  install: true,
 +  install: false,
  )
-
+ 
  libfdt_inc = include_directories('.')
 @@ -30,21 +30,3 @@ libfdt_dep = declare_dependency(
    include_directories: libfdt_inc,
@@ -135,12 +135,25 @@ index 0307ffb..1cde105 100644
 -  name: 'libfdt',
 -  description: 'Flat Device Tree manipulation',
 -)
+diff --git qemu-clean/target/i386/nvmm/nvmm-all.c qemu-workdir/target/i386/nvmm/nvmm-all.c
+index 92e3b8b..f6bf95e 100644
+--- qemu-clean/target/i386/nvmm/nvmm-all.c
++++ qemu-workdir/target/i386/nvmm/nvmm-all.c
+@@ -984,7 +984,7 @@ nvmm_init_vcpu(CPUState *cpu)
+         }
+     }
+ 
+-    qcpu->vcpu_dirty = true;
++    cpu->vcpu_dirty = true;
+     cpu->accel = qcpu;
+ 
+     return 0;
 diff --git qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
 index 0291b72..df89863 100644
 --- qemu-clean/util/cpuinfo-riscv.c
 +++ qemu-workdir/util/cpuinfo-riscv.c
 @@ -24,6 +24,8 @@ static void sigill_handler(int signo, siginfo_t *si, void *data)
-
+ 
  #ifdef __linux__
      uc->uc_mcontext.__gregs[REG_PC] += 4;
 +#elif defined(__ironclad__)

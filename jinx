@@ -1491,8 +1491,14 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     sed 's/-lxml2/-lxml2 -llzma -lm/g' config.mk >config.mk.sed
     mv config.mk.sed config.mk
 
-    make -j${parallelism}
-    make install
+    if command -v gmake >/dev/null 2>&1; then
+        MAKE=gmake
+    else
+        MAKE=make
+    fi
+
+    ${MAKE} -j${parallelism}
+    ${MAKE} install
 
     cd ..
     rm -rf xbps-${XBPS_VERSION}*

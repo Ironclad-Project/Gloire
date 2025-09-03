@@ -1,27 +1,23 @@
 #! /bin/sh
 
 name=libxfixes
-version=6.0.1
+version=6.0.2
 revision=1
-tarball_url="https://www.x.org/archive/individual/lib/libXfixes-${version}.tar.gz"
-tarball_blake2b="22be454b2db230057204932ae75aacb2b56523b25b14e501d7e7a2a664e57ae6bcbfa56b6fac4d42d3f8ef770c41debe0eec25451dd70baa9cfc83b1a10e4649"
+git_url="https://gitlab.freedesktop.org/xorg/lib/libxfixes.git"
+commit=70d5b0e37f8a759f3dbc218f22954347ceed094a
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11"
 
-prepare() {
-    autotools_recursive_regen
-}
-
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

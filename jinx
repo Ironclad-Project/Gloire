@@ -1399,13 +1399,14 @@ EOF
     mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
-    case "$(uname -m)" in
+    DEBOOTSTRAP_ARCH="$(uname -m)"
+    case "${DEBOOTSTRAP_ARCH}" in
         i?86) DEBOOTSTRAP_ARCH=i386 ;;
         x86_64) DEBOOTSTRAP_ARCH=amd64 ;;
         arm*) DEBOOTSTRAP_ARCH=armhf ;;
         aarch64) DEBOOTSTRAP_ARCH=arm64 ;;
+        loongarch64) DEBOOTSTRAP_ARCH=loong64 ;;
         ppc64le) DEBOOTSTRAP_ARCH=ppc64el ;;
-        *) DEBOOTSTRAP_ARCH="$(uname -m)" ;;
     esac
 
     if ! command -v debootstrap >/dev/null 2>&1; then

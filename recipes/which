@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=which
+version=2.23
+revision=1
+tarball_url="https://ftpmirror.gnu.org/gnu/which/which-${version}.tar.gz"
+tarball_blake2b="64a3ae1f23a4c389f945f6c0985e6f6062b46785125a0d0659ff160560a4a473633d38af71b1505beeabba8336f5a9906f1ba58ab3494635e970bd5529b3936f"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

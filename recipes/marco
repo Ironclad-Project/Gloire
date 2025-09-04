@@ -2,12 +2,12 @@
 
 name=marco
 version=1.28.1
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/marco/releases/download/v${version}/marco-${version}.tar.xz"
 tarball_blake2b="6594095cb7b038c3107513229f81cfb8e71f437b1f716a108169ddb8c792c4ab06979f57cd2c3a11c3de65e07550f8fcd246911a7ccff2f1e89fe20de3836b59"
 imagedeps="libglib2.0-dev libgdk-pixbuf2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 gtk3 mate-desktop libcanberra libxres libxcomposite libxpresent libsm libice"
+deps="core-libs glib2 gtk3 mate-desktop libcanberra libxres libxcomposite libxpresent libsm libice mate-settings-daemon"
 
 configure() {
     meson_configure \

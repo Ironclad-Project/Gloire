@@ -1,3 +1,22 @@
+diff --git mlibc-clean/options/ansi/generic/environment.cpp mlibc-workdir/options/ansi/generic/environment.cpp
+index 5625592..4ac4999 100644
+--- mlibc-clean/options/ansi/generic/environment.cpp
++++ mlibc-workdir/options/ansi/generic/environment.cpp
+@@ -111,8 +111,12 @@ namespace mlibc {
+ int putenv(char *string) {
+ 	frg::string_view view{string};
+ 	size_t s = view.find_first('=');
+-	if(s == size_t(-1))
+-		__ensure(!"Environment strings need to contain an equals sign");
++	if(s == size_t(-1)) {
++		// GLIBC EXTENSION
++		update_vector();
++		unassign_variable(string);
++		return 0;
++	}
+ 
+ 	update_vector();
+ 	assign_variable(view.sub_string(0, s), string, true);
 diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
 index c42b4f4..232c229 100644
 --- mlibc-clean/options/internal/generic/charset.cpp

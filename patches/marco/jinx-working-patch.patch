@@ -11,3 +11,16 @@ index 7c7467b..8e803cb 100644
  
  libxext = cc.find_library('Xext', required: false)
  if build_xsync
+diff --git marco-clean/src/core/util.c marco-workdir/src/core/util.c
+index baf485a..e9fad4f 100644
+--- marco-clean/src/core/util.c
++++ marco-workdir/src/core/util.c
+@@ -39,7 +39,7 @@
+ #include <X11/Xlib.h>   /* must explicitly be included for Solaris; #326746 */
+ #include <X11/Xutil.h>  /* Just for the definition of the various gravities */
+ 
+-#ifdef HAVE_BACKTRACE
++#if defined(HAVE_BACKTRACE) && !defined(__mlibc__)
+ #include <execinfo.h>
+ void
+ meta_print_backtrace (void)

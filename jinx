@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="8"
+jinx_minor_ver="9"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -325,13 +325,19 @@ run_in_container1() {
     unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
-        mount --rbind /dev '${run_in_cont1_root}/dev'
-        mount -t proc /proc '${run_in_cont1_root}/proc'
-        mount --rbind /sys '${run_in_cont1_root}/sys'
+        mount --rbind --make-rslave /dev '${run_in_cont1_root}/dev'
+        mount -t proc proc '${run_in_cont1_root}/proc'
+        mount --rbind --make-rslave /sys '${run_in_cont1_root}/sys'
+        mount -t tmpfs run '${run_in_cont1_root}/run'
+        mount -t tmpfs tmpfs '${run_in_cont1_root}/tmp'
+        mount -t tmpfs tmpfs '${run_in_cont1_root}/var/tmp'
 
+        mount --bind /etc/resolv.conf '${run_in_cont1_root}/etc/resolv.conf'
         mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
         env -i PATH="${PATH}" chroot '${run_in_cont1_root}' /bin/sh -c '
+            set -e
+
             LD_PRELOAD=/nochown.so \
             HOME=/root \
             LANG=en_US.UTF-8 \
@@ -475,9 +481,14 @@ run_in_container() {
     unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
         set -e
 
-        mount --rbind /dev '${imgroot}/dev'
-        mount -t proc /proc '${imgroot}/proc'
-        mount --rbind /sys '${imgroot}/sys'
+        mount --rbind --make-rslave /dev '${imgroot}/dev'
+        mount -t proc proc '${imgroot}/proc'
+        mount --rbind --make-rslave /sys '${imgroot}/sys'
+        mount -t tmpfs run '${imgroot}/run'
+        mount -t tmpfs tmpfs '${imgroot}/tmp'
+        mount -t tmpfs tmpfs '${imgroot}/var/tmp'
+
+        mount --bind /etc/resolv.conf '${imgroot}/etc/resolv.conf'
 
         mount ${container_base_dir_ro} --bind '${base_dir}' '${imgroot}/base_dir'
         mount --bind '${build_dir}' '${imgroot}/build_dir'
@@ -488,6 +499,8 @@ run_in_container() {
         ${shadow_git_dir_build}
 
         env -i PATH="${PATH}" chroot '${imgroot}' /bin/sh -c '
+            set -e
+
             cd /build_dir
 
             LD_PRELOAD=/nochown.so \
@@ -1395,11 +1408,6 @@ EOF
     cc -O2 -pipe -Wall -Wextra -fPIC -shared "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
     rm "$JINX_CACHE_DIR/nochown.c"
 
-    mkdir -p "$JINX_CACHE_DIR/sets/.image/dev"
-    mkdir -p "$JINX_CACHE_DIR/sets/.image/proc"
-    mkdir -p "$JINX_CACHE_DIR/sets/.image/sys"
-    mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
-
     DEBOOTSTRAP_ARCH="$(uname -m)"
     case "${DEBOOTSTRAP_ARCH}" in
         i?86) DEBOOTSTRAP_ARCH=i386 ;;
@@ -1434,12 +1442,10 @@ EOF
     cc -O2 -pipe -Wall -Wextra "$JINX_CACHE_DIR/debootstrap_wrap.c" -o "$JINX_CACHE_DIR/debootstrap_wrap"
     rm "$JINX_CACHE_DIR/debootstrap_wrap.c"
 
+    mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
+
     unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
-
-        mount --rbind /dev '$JINX_CACHE_DIR/sets/.image/dev'
-        mount -t proc /proc '$JINX_CACHE_DIR/sets/.image/proc'
-        mount --rbind /sys '$JINX_CACHE_DIR/sets/.image/sys'
 
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
@@ -1447,6 +1453,14 @@ EOF
             --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${debian_snapshot}/
     "
     rm "$JINX_CACHE_DIR/debootstrap_wrap"
+
+    for dir in dev proc sys run tmp var/tmp; do
+        rm -rf "${JINX_CACHE_DIR}/sets/.image/${dir}"
+        mkdir -p "${JINX_CACHE_DIR}/sets/.image/${dir}"
+    done
+
+    echo >"${JINX_CACHE_DIR}/sets/.image/etc/resolv.conf"
+    echo localhost >"${JINX_CACHE_DIR}/sets/.image/etc/hostname"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" /debootstrap/debootstrap --second-stage
 

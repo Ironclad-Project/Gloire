@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="9"
+jinx_minor_ver="10"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -332,7 +332,7 @@ run_in_container1() {
         mount -t tmpfs tmpfs '${run_in_cont1_root}/tmp'
         mount -t tmpfs tmpfs '${run_in_cont1_root}/var/tmp'
 
-        mount --bind /etc/resolv.conf '${run_in_cont1_root}/etc/resolv.conf'
+        mount -o ro --bind /etc/resolv.conf '${run_in_cont1_root}/etc/resolv.conf'
         mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
         env -i PATH="${PATH}" chroot '${run_in_cont1_root}' /bin/sh -c '
@@ -450,7 +450,8 @@ run_in_container() {
 
     make_dir "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
-    native_mode_mounts=""
+    container_pkgs_native_mount=""
+    sysroot_native_mount=""
     if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
         make_dir "${imgroot}/sysroot"
 
@@ -481,6 +482,8 @@ run_in_container() {
     unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
         set -e
 
+        mount -o ro --bind '${imgroot}' '${imgroot}'
+
         mount --rbind --make-rslave /dev '${imgroot}/dev'
         mount -t proc proc '${imgroot}/proc'
         mount --rbind --make-rslave /sys '${imgroot}/sys'
@@ -488,7 +491,7 @@ run_in_container() {
         mount -t tmpfs tmpfs '${imgroot}/tmp'
         mount -t tmpfs tmpfs '${imgroot}/var/tmp'
 
-        mount --bind /etc/resolv.conf '${imgroot}/etc/resolv.conf'
+        mount -o ro --bind /etc/resolv.conf '${imgroot}/etc/resolv.conf'
 
         mount ${container_base_dir_ro} --bind '${base_dir}' '${imgroot}/base_dir'
         mount --bind '${build_dir}' '${imgroot}/build_dir'

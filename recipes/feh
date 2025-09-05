@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=feh
-version=3.11
+version=3.11.1
 revision=1
 tarball_url="https://feh.finalrewind.org/feh-${version}.tar.bz2"
-tarball_blake2b="736f912a6a96c484f49d9bc8ea2ee7bb0ffb1d2588b09565316e90ea686ae7c20bdd6117426ef3ba467fa62c5f31e04224c21af380a18cf53218b4367e5d5529"
+tarball_blake2b="ced910ad6297e1ad227e6122c95ac03d45ee93d390cf761e3ae885ba34acde087b4df2bff05fee53f5a56f05f526dd00bba9b025d1baa5c04a750af27c01877a"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxt libpng imlib2"
 

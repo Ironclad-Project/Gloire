@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="13"
+jinx_minor_ver="14"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1153,6 +1153,10 @@ do_pkg() {
         *git)
             if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
                 rm -rf "${build_dir}"/builds/"$1"
+                (
+                if ! [ -z "${from_source}" ]; then
+                    name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
+                fi
                 rm -rf \
                     "${base_dir}"/sources/"${name}" \
                     "${base_dir}"/sources/"${name}"-clean \
@@ -1160,6 +1164,7 @@ do_pkg() {
                     "${base_dir}"/sources/"${name}".version \
                     "${base_dir}"/sources/"${name}".patched \
                     "${base_dir}"/sources/"${name}".prepared
+                )
             fi
             ;;
     esac
@@ -1349,7 +1354,10 @@ cmd_install() {
         fi
 
         if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-            die "* package '${name}' not built"
+            if [ "$(id -u)" = "0" ]; then
+                die "$0: a package needs to be built, but Jinx was invoked as root"
+            fi
+            "${script}" internal-do-pkg "${pkg}"
         fi
 
         # xbps seems to only install the package every second time when reinstalling.

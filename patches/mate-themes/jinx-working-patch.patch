@@ -1,0 +1,191 @@
+diff --git mate-themes-clean/configure mate-themes-workdir/configure
+index 05c35ee..a3985d0 100755
+--- mate-themes-clean/configure
++++ mate-themes-workdir/configure
+@@ -7176,96 +7176,96 @@ ACLOCAL_AMFLAGS="\${ACLOCAL_FLAGS}"
+ 
+ # Check GTK+ theme engines
+ 
+-pkg_failed=no
+-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " >&5
+-printf %s "checking for gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ... " >&6; }
+-
+-if test -n "$THEME_ENGINE_CFLAGS"; then
+-    pkg_cv_THEME_ENGINE_CFLAGS="$THEME_ENGINE_CFLAGS"
+- elif test -n "$PKG_CONFIG"; then
+-    if test -n "$PKG_CONFIG" && \
+-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 \""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ") 2>&5
+-  ac_status=$?
+-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+-  test $ac_status = 0; }; then
+-  pkg_cv_THEME_ENGINE_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>/dev/null`
+-		      test "x$?" != "x0" && pkg_failed=yes
+-else
+-  pkg_failed=yes
+-fi
+- else
+-    pkg_failed=untried
+-fi
+-if test -n "$THEME_ENGINE_LIBS"; then
+-    pkg_cv_THEME_ENGINE_LIBS="$THEME_ENGINE_LIBS"
+- elif test -n "$PKG_CONFIG"; then
+-    if test -n "$PKG_CONFIG" && \
+-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 \""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ") 2>&5
+-  ac_status=$?
+-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+-  test $ac_status = 0; }; then
+-  pkg_cv_THEME_ENGINE_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>/dev/null`
+-		      test "x$?" != "x0" && pkg_failed=yes
+-else
+-  pkg_failed=yes
+-fi
+- else
+-    pkg_failed=untried
+-fi
+-
+-
+-
+-if test $pkg_failed = yes; then
+-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-printf "%s\n" "no" >&6; }
+-
+-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+-        _pkg_short_errors_supported=yes
+-else
+-        _pkg_short_errors_supported=no
+-fi
+-        if test $_pkg_short_errors_supported = yes; then
+-                THEME_ENGINE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>&1`
+-        else
+-                THEME_ENGINE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>&1`
+-        fi
+-        # Put the nasty error message in config.log where it belongs
+-        echo "$THEME_ENGINE_PKG_ERRORS" >&5
+-
+-        as_fn_error $? "Package requirements (gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ) were not met:
+-
+-$THEME_ENGINE_PKG_ERRORS
+-
+-Consider adjusting the PKG_CONFIG_PATH environment variable if you
+-installed software in a non-standard prefix.
+-
+-Alternatively, you may set the environment variables THEME_ENGINE_CFLAGS
+-and THEME_ENGINE_LIBS to avoid the need to call pkg-config.
+-See the pkg-config man page for more details." "$LINENO" 5
+-elif test $pkg_failed = untried; then
+-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-printf "%s\n" "no" >&6; }
+-        { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+-is in your PATH or set the PKG_CONFIG environment variable to the full
+-path to pkg-config.
+-
+-Alternatively, you may set the environment variables THEME_ENGINE_CFLAGS
+-and THEME_ENGINE_LIBS to avoid the need to call pkg-config.
+-See the pkg-config man page for more details.
+-
+-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+-See \`config.log' for more details" "$LINENO" 5; }
+-else
+-        THEME_ENGINE_CFLAGS=$pkg_cv_THEME_ENGINE_CFLAGS
+-        THEME_ENGINE_LIBS=$pkg_cv_THEME_ENGINE_LIBS
+-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+-printf "%s\n" "yes" >&6; }
+-
+-fi
++# pkg_failed=no
++# { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " >&5
++# printf %s "checking for gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ... " >&6; }
++
++# if test -n "$THEME_ENGINE_CFLAGS"; then
++#     pkg_cv_THEME_ENGINE_CFLAGS="$THEME_ENGINE_CFLAGS"
++#  elif test -n "$PKG_CONFIG"; then
++#     if test -n "$PKG_CONFIG" && \
++#     { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 \""; } >&5
++#   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ") 2>&5
++#   ac_status=$?
++#   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
++#   test $ac_status = 0; }; then
++#   pkg_cv_THEME_ENGINE_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>/dev/null`
++# 		      test "x$?" != "x0" && pkg_failed=yes
++# else
++#   pkg_failed=yes
++# fi
++#  else
++#     pkg_failed=untried
++# fi
++# if test -n "$THEME_ENGINE_LIBS"; then
++#     pkg_cv_THEME_ENGINE_LIBS="$THEME_ENGINE_LIBS"
++#  elif test -n "$PKG_CONFIG"; then
++#     if test -n "$PKG_CONFIG" && \
++#     { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 \""; } >&5
++#   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ") 2>&5
++#   ac_status=$?
++#   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
++#   test $ac_status = 0; }; then
++#   pkg_cv_THEME_ENGINE_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>/dev/null`
++# 		      test "x$?" != "x0" && pkg_failed=yes
++# else
++#   pkg_failed=yes
++# fi
++#  else
++#     pkg_failed=untried
++# fi
++
++
++
++# if test $pkg_failed = yes; then
++#         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
++# printf "%s\n" "no" >&6; }
++
++# if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
++#         _pkg_short_errors_supported=yes
++# else
++#         _pkg_short_errors_supported=no
++# fi
++#         if test $_pkg_short_errors_supported = yes; then
++#                 THEME_ENGINE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>&1`
++#         else
++#                 THEME_ENGINE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 " 2>&1`
++#         fi
++#         # Put the nasty error message in config.log where it belongs
++#         echo "$THEME_ENGINE_PKG_ERRORS" >&5
++
++#         as_fn_error $? "Package requirements (gtk+-2.0 >= 2.0.0   gdk-pixbuf-2.0 >= 2.0.0 ) were not met:
++
++# $THEME_ENGINE_PKG_ERRORS
++
++# Consider adjusting the PKG_CONFIG_PATH environment variable if you
++# installed software in a non-standard prefix.
++
++# Alternatively, you may set the environment variables THEME_ENGINE_CFLAGS
++# and THEME_ENGINE_LIBS to avoid the need to call pkg-config.
++# See the pkg-config man page for more details." "$LINENO" 5
++# elif test $pkg_failed = untried; then
++#         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
++# printf "%s\n" "no" >&6; }
++#         { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
++# printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
++# as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
++# is in your PATH or set the PKG_CONFIG environment variable to the full
++# path to pkg-config.
++
++# Alternatively, you may set the environment variables THEME_ENGINE_CFLAGS
++# and THEME_ENGINE_LIBS to avoid the need to call pkg-config.
++# See the pkg-config man page for more details.
++
++# To get pkg-config, see <http://pkg-config.freedesktop.org/>.
++# See \`config.log' for more details" "$LINENO" 5; }
++# else
++#         THEME_ENGINE_CFLAGS=$pkg_cv_THEME_ENGINE_CFLAGS
++#         THEME_ENGINE_LIBS=$pkg_cv_THEME_ENGINE_LIBS
++#         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
++# printf "%s\n" "yes" >&6; }
++
++# fi
+ 
+ ac_config_files="$ac_config_files Makefile cursor-themes/Makefile cursor-themes/mate-white/Makefile cursor-themes/mate-white/cursors/Makefile cursor-themes/mate-black/Makefile cursor-themes/mate-black/cursors/Makefile desktop-themes/Makefile desktop-themes/BlackMATE/Makefile desktop-themes/BlackMATE/apps/Makefile desktop-themes/BlackMATE/gtk-2.0/Makefile desktop-themes/BlackMATE/gtk-2.0/assets/Makefile desktop-themes/BlackMATE/gtk-2.0/Styles/Makefile desktop-themes/BlackMATE/gtk-3.0/Makefile desktop-themes/BlackMATE/gtk-3.0/assets/Makefile desktop-themes/BlackMATE/gtk-3.0/window-controls/Makefile desktop-themes/BlackMATE/metacity-1/Makefile desktop-themes/BlackMATE/cinnamon/Makefile desktop-themes/BlackMATE/unity/Makefile desktop-themes/BlackMATE-border/Makefile desktop-themes/BlackMATE-border/metacity-1/Makefile desktop-themes/BlueMenta/Makefile desktop-themes/BlueMenta/cinnamon/Makefile desktop-themes/BlueMenta/emerald/Makefile desktop-themes/BlueMenta/gtk-2.0/Makefile desktop-themes/BlueMenta/gtk-2.0/apps/Makefile desktop-themes/BlueMenta/gtk-2.0/apps/Caja/Makefile desktop-themes/BlueMenta/gtk-2.0/apps/Handles/Makefile desktop-themes/BlueMenta/gtk-2.0/apps/Null/Makefile desktop-themes/BlueMenta/gtk-2.0/apps/Others/Makefile desktop-themes/BlueMenta/gtk-2.0/widgets/Makefile desktop-themes/BlueMenta/gtk-2.0/widgets/Null/Makefile desktop-themes/BlueMenta/gtk-2.0/widgets/Others/Makefile desktop-themes/BlueMenta/gtk-2.0/widgets/Panel/Makefile desktop-themes/BlueMenta/gtk-2.0/widgets/Scale/Makefile desktop-themes/BlueMenta/gtk-3.0/Makefile desktop-themes/BlueMenta/gtk-3.0/assets/Makefile desktop-themes/BlueMenta/gtk-3.0/borders/Makefile desktop-themes/BlueMenta/gtk-3.0/window-controls/Makefile desktop-themes/BlueMenta/metacity-1/Makefile desktop-themes/BlueMenta/unity/Makefile desktop-themes/BlueMenta/xfwm4/Makefile desktop-themes/BlueMenta-border/Makefile desktop-themes/BlueMenta-border/metacity-1/Makefile desktop-themes/Blue-Submarine/Makefile desktop-themes/Blue-Submarine/cinnamon/Makefile desktop-themes/Blue-Submarine/emerald/Makefile desktop-themes/Blue-Submarine/gtk-2.0/Makefile desktop-themes/Blue-Submarine/gtk-2.0/apps/Makefile desktop-themes/Blue-Submarine/gtk-2.0/apps/Handles/Makefile desktop-themes/Blue-Submarine/gtk-2.0/apps/Panel/Makefile desktop-themes/Blue-Submarine/gtk-2.0/assets/Makefile desktop-themes/Blue-Submarine/gtk-3.0/Makefile desktop-themes/Blue-Submarine/gtk-3.0/assets/Makefile desktop-themes/Blue-Submarine/metacity-1/Makefile desktop-themes/Blue-Submarine-border/Makefile desktop-themes/Blue-Submarine-border/metacity-1/Makefile desktop-themes/ContrastHigh/Makefile desktop-themes/GreenLaguna/Makefile desktop-themes/GreenLaguna/gtk-2.0/Makefile desktop-themes/GreenLaguna/gtk-2.0/Styles/Makefile desktop-themes/GreenLaguna/gtk-3.0/Makefile desktop-themes/GreenLaguna/gtk-3.0/assets/Makefile desktop-themes/GreenLaguna/gtk-3.0/window-controls/Makefile desktop-themes/GreenLaguna/metacity-1/Makefile desktop-themes/GreenLaguna/unity/Makefile desktop-themes/GreenLaguna-border/Makefile desktop-themes/GreenLaguna-border/metacity-1/Makefile desktop-themes/Green-Submarine/Makefile desktop-themes/Green-Submarine/cinnamon/Makefile desktop-themes/Green-Submarine/emerald/Makefile desktop-themes/Green-Submarine/gtk-2.0/Makefile desktop-themes/Green-Submarine/gtk-2.0/apps/Makefile desktop-themes/Green-Submarine/gtk-2.0/apps/Handles/Makefile desktop-themes/Green-Submarine/gtk-2.0/apps/Panel/Makefile desktop-themes/Green-Submarine/gtk-2.0/assets/Makefile desktop-themes/Green-Submarine/gtk-3.0/Makefile desktop-themes/Green-Submarine/gtk-3.0/assets/Makefile desktop-themes/Green-Submarine/metacity-1/Makefile desktop-themes/Green-Submarine-border/Makefile desktop-themes/Green-Submarine-border/metacity-1/Makefile desktop-themes/HighContrastInverse/Makefile desktop-themes/HighContrastInverse/gtk-2.0/Makefile desktop-themes/HighContrastInverse/gtk-2.0/gtkrc desktop-themes/HighContrastInverse/metacity-1/Makefile desktop-themes/HighContrastInverse/pixmaps/Makefile desktop-themes/Menta/Makefile desktop-themes/Menta/cinnamon/Makefile desktop-themes/Menta/emerald/Makefile desktop-themes/Menta/gtk-2.0/Makefile desktop-themes/Menta/gtk-2.0/apps/Makefile desktop-themes/Menta/gtk-2.0/apps/Caja/Makefile desktop-themes/Menta/gtk-2.0/apps/Handles/Makefile desktop-themes/Menta/gtk-2.0/apps/Null/Makefile desktop-themes/Menta/gtk-2.0/apps/Others/Makefile desktop-themes/Menta/gtk-2.0/widgets/Makefile desktop-themes/Menta/gtk-2.0/widgets/Null/Makefile desktop-themes/Menta/gtk-2.0/widgets/Others/Makefile desktop-themes/Menta/gtk-2.0/widgets/Panel/Makefile desktop-themes/Menta/gtk-2.0/widgets/Scale/Makefile desktop-themes/Menta/gtk-3.0/Makefile desktop-themes/Menta/gtk-3.0/assets/Makefile desktop-themes/Menta/gtk-3.0/borders/Makefile desktop-themes/Menta/gtk-3.0/window-controls/Makefile desktop-themes/Menta/metacity-1/Makefile desktop-themes/Menta/unity/Makefile desktop-themes/Menta/xfwm4/Makefile desktop-themes/Menta-border/Makefile desktop-themes/Menta-border/metacity-1/Makefile desktop-themes/TraditionalGreen/Makefile desktop-themes/TraditionalGreen/gtk-2.0/Makefile desktop-themes/TraditionalGreen/gtk-3.0/Makefile desktop-themes/TraditionalGreen/gtk-3.0/img/Makefile desktop-themes/TraditionalGreen/metacity-1/Makefile desktop-themes/TraditionalOk/Makefile desktop-themes/TraditionalOk/gtk-2.0/Makefile desktop-themes/TraditionalOk/gtk-3.0/Makefile desktop-themes/TraditionalOk/gtk-3.0/img/Makefile desktop-themes/TraditionalOk/metacity-1/Makefile desktop-themes/TraditionalOk/openbox-3/Makefile desktop-themes/TraditionalOk/xfwm4/Makefile desktop-themes/TraditionalOk/xfwm4/png/Makefile desktop-themes/YaruOk/Makefile desktop-themes/YaruOk/gtk-2.0/Makefile desktop-themes/YaruOk/gtk-3.0/Makefile desktop-themes/YaruOk/gtk-3.0/assets/Makefile desktop-themes/YaruOk/metacity-1/Makefile desktop-themes/YaruOk/openbox-3/Makefile desktop-themes/YaruOk/xfwm4/Makefile desktop-themes/YaruOk/xfwm4/png/Makefile desktop-themes/YaruGreen/Makefile desktop-themes/YaruGreen/gtk-2.0/Makefile desktop-themes/YaruGreen/gtk-3.0/Makefile desktop-themes/YaruGreen/gtk-3.0/assets/Makefile desktop-themes/YaruGreen/metacity-1/Makefile marco-themes/Makefile icon-themes/Makefile icon-themes/ContrastHigh/Makefile icon-themes/ContrastHigh/16x16/Makefile icon-themes/ContrastHigh/16x16/actions/Makefile icon-themes/ContrastHigh/16x16/apps/Makefile icon-themes/ContrastHigh/16x16/categories/Makefile icon-themes/ContrastHigh/16x16/devices/Makefile icon-themes/ContrastHigh/16x16/emblems/Makefile icon-themes/ContrastHigh/16x16/emotes/Makefile icon-themes/ContrastHigh/16x16/mimetypes/Makefile icon-themes/ContrastHigh/16x16/places/Makefile icon-themes/ContrastHigh/16x16/status/Makefile icon-themes/ContrastHigh/16x16/stock/Makefile icon-themes/ContrastHigh/22x22/Makefile icon-themes/ContrastHigh/22x22/actions/Makefile icon-themes/ContrastHigh/22x22/apps/Makefile icon-themes/ContrastHigh/22x22/categories/Makefile icon-themes/ContrastHigh/22x22/devices/Makefile icon-themes/ContrastHigh/22x22/emblems/Makefile icon-themes/ContrastHigh/22x22/emotes/Makefile icon-themes/ContrastHigh/22x22/mimetypes/Makefile icon-themes/ContrastHigh/22x22/places/Makefile icon-themes/ContrastHigh/22x22/status/Makefile icon-themes/ContrastHigh/22x22/stock/Makefile icon-themes/ContrastHigh/24x24/Makefile icon-themes/ContrastHigh/24x24/actions/Makefile icon-themes/ContrastHigh/24x24/apps/Makefile icon-themes/ContrastHigh/24x24/categories/Makefile icon-themes/ContrastHigh/24x24/devices/Makefile icon-themes/ContrastHigh/24x24/emblems/Makefile icon-themes/ContrastHigh/24x24/emotes/Makefile icon-themes/ContrastHigh/24x24/mimetypes/Makefile icon-themes/ContrastHigh/24x24/places/Makefile icon-themes/ContrastHigh/24x24/status/Makefile icon-themes/ContrastHigh/24x24/stock/Makefile icon-themes/ContrastHigh/32x32/Makefile icon-themes/ContrastHigh/32x32/actions/Makefile icon-themes/ContrastHigh/32x32/apps/Makefile icon-themes/ContrastHigh/32x32/categories/Makefile icon-themes/ContrastHigh/32x32/devices/Makefile icon-themes/ContrastHigh/32x32/emblems/Makefile icon-themes/ContrastHigh/32x32/emotes/Makefile icon-themes/ContrastHigh/32x32/mimetypes/Makefile icon-themes/ContrastHigh/32x32/places/Makefile icon-themes/ContrastHigh/32x32/status/Makefile icon-themes/ContrastHigh/32x32/stock/Makefile icon-themes/ContrastHigh/48x48/Makefile icon-themes/ContrastHigh/48x48/actions/Makefile icon-themes/ContrastHigh/48x48/animations/Makefile icon-themes/ContrastHigh/48x48/apps/Makefile icon-themes/ContrastHigh/48x48/categories/Makefile icon-themes/ContrastHigh/48x48/devices/Makefile icon-themes/ContrastHigh/48x48/emblems/Makefile icon-themes/ContrastHigh/48x48/emotes/Makefile icon-themes/ContrastHigh/48x48/mimetypes/Makefile icon-themes/ContrastHigh/48x48/places/Makefile icon-themes/ContrastHigh/48x48/status/Makefile icon-themes/ContrastHigh/48x48/stock/Makefile icon-themes/ContrastHigh/256x256/Makefile icon-themes/ContrastHigh/256x256/actions/Makefile icon-themes/ContrastHigh/256x256/apps/Makefile icon-themes/ContrastHigh/256x256/categories/Makefile icon-themes/ContrastHigh/256x256/devices/Makefile icon-themes/ContrastHigh/256x256/emblems/Makefile icon-themes/ContrastHigh/256x256/emotes/Makefile icon-themes/ContrastHigh/256x256/mimetypes/Makefile icon-themes/ContrastHigh/256x256/places/Makefile icon-themes/ContrastHigh/256x256/status/Makefile icon-themes/ContrastHigh/256x256/stock/Makefile icon-themes/ContrastHigh/scalable/Makefile icon-themes/ContrastHigh/scalable/actions/Makefile icon-themes/ContrastHigh/scalable/actions-extra/Makefile icon-themes/ContrastHigh/scalable/apps/Makefile icon-themes/ContrastHigh/scalable/apps-extra/Makefile icon-themes/ContrastHigh/scalable/categories/Makefile icon-themes/ContrastHigh/scalable/devices/Makefile icon-themes/ContrastHigh/scalable/emblems/Makefile icon-themes/ContrastHigh/scalable/mimetypes/Makefile icon-themes/ContrastHigh/scalable/places/Makefile icon-themes/ContrastHigh/scalable/places-extra/Makefile icon-themes/ContrastHigh/scalable/status/Makefile icon-themes/ContrastHigh/scalable/status-extra/Makefile po/Makefile.in"
+ 

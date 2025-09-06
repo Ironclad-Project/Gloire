@@ -169,7 +169,7 @@ index bd8710a..feb59ee 100644
  	}
  	return nullptr;
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index 8cf23ba..04973b0 100644
+index 8cf23ba..62d23ad 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
 @@ -15,6 +15,7 @@
@@ -207,8 +207,26 @@ index 8cf23ba..04973b0 100644
  	return 0;
  }
  
+@@ -517,7 +511,7 @@ int grantpt(int) {
+ }
+ 
+ double strtod_l(const char *__restrict__ nptr, char ** __restrict__ endptr, locale_t) {
+-	mlibc::infoLogger() << "mlibc: strtod_l ignores locale!" << frg::endlog;
++	// mlibc::infoLogger() << "mlibc: strtod_l ignores locale!" << frg::endlog;
+ 	return strtod(nptr, endptr);
+ }
+ 
+@@ -527,7 +521,7 @@ long double strtold_l(const char *__restrict__, char ** __restrict__, locale_t)
+ }
+ 
+ float strtof_l(const char *__restrict__ nptr, char **__restrict__ endptr, locale_t) {
+-	mlibc::infoLogger() << "mlibc: strtof_l ignores locales" << frg::endlog;
++	// mlibc::infoLogger() << "mlibc: strtof_l ignores locales" << frg::endlog;
+ 	return strtof(nptr, endptr);
+ }
+ 
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index cd1cc2c..75283e4 100644
+index cd1cc2c..99937a0 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -293,7 +293,6 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
@@ -278,6 +296,35 @@ index cd1cc2c..75283e4 100644
  		if (ret == -1) {
  			return errno;
  		}
+@@ -1258,7 +1255,7 @@ int sys_sysconf(int num, long *rret) {
+ 				return EFAULT;
+ 			}
+ 		case _SC_OPEN_MAX:
+-			*rret = 100;
++			*rret = 1024;
+ 			return 0;
+ 		case _SC_AVPHYS_PAGES:
+ 			SYSCALL1(SYSCALL_MEMINFO, &mem);
+@@ -1421,6 +1418,19 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+ 	return errno;
+ }
+ 
++int sys_symlink(const char *target, const char *link_path) {
++	return sys_symlinkat(target, AT_FDCWD, link_path);
++}
++
++int sys_symlinkat(const char *target_path, int dirfd, const char *link_path) {
++	int ret;
++	int errno;
++	size_t target_len = strlen(target_path);
++	size_t link_len = strlen(link_path);
++	SYSCALL5(SYSCALL_SYMLINK, dirfd, target_path, target_len, link_path, link_len);
++	return errno;
++}
++
+ int sys_brk(void **out) {
+ 	(void)out;
+ 	return -1;
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 index cc56aa6..e11ad7f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h

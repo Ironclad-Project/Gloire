@@ -3,7 +3,7 @@
 name=ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=31
+revision=32
 source_dir="ironclad"
 source_hostdeps="autoconf automake pkg-config"
 imagedeps="texinfo gprbuild"

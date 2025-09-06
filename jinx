@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="14"
+jinx_minor_ver="15"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -120,20 +120,6 @@ if ! [ "$(uname -s)" = "Linux" ]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
-make_dir() {
-    for d in "$@"; do
-        mkdir -p "$d"
-        dn="$(cd "$d" && pwd -P)"
-        while true; do
-            if [ "$dn" = "$base_dir" ] || [ "$dn" = "$build_dir" ] || [ "$dn" = "/" ]; then
-                break
-            fi
-            chmod 755 "$dn"
-            dn="$(dirname "$dn")"
-        done
-    done
-}
-
 script_name="$(basename "$0")"
 script_dir="$(dirname "$0")"
 if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
@@ -202,13 +188,13 @@ if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
 fi
 
 if [ "$in_container" = "false" ]; then
-    make_dir "$JINX_CACHE_DIR"
+    mkdir -p "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
     export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}:/usr/sbin:/sbin"
     export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${PATH}"
 
-    make_dir "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
+    mkdir -p "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
 
 apt_cache="$JINX_CACHE_DIR/apt-cache"
@@ -228,11 +214,12 @@ trap 'cleanup; exit 1' INT TERM HUP QUIT
 trap 'cleanup' EXIT
 
 make_temp() {
-    tmp="$(mktemp "$JINX_CACHE_DIR/tmp.XXXXXXXX")"
+    mkdir -p "$JINX_CACHE_DIR/tmp"
+    tmp="$(mktemp "$JINX_CACHE_DIR/tmp/tmp.XXXXXXXX")"
     temp_collect="${temp_collect} \"${tmp}\""
     if [ "$1" = "-d" ]; then
         rm -f "${tmp}"
-        make_dir "${tmp}"
+        mkdir -p "${tmp}"
     fi
 }
 
@@ -275,7 +262,7 @@ get_hostdeps_file_run() {
     done
 
     for hostdep in ${deps_to_do}; do
-        "${script}" internal-get-hostdeps-file-run ${hostdep} "${hostdeps_file}"
+        "${script}" internal-get-hostdeps-file ${hostdep} "${hostdeps_file}"
     done
 }
 
@@ -288,7 +275,7 @@ get_hostdeps_file() {
     done
 
     for hostdep in ${deps_to_do}; do
-        "${script}" internal-get-hostdeps-file-run ${hostdep} "${hostdeps_file}"
+        "${script}" internal-get-hostdeps-file ${hostdep} "${hostdeps_file}"
     done
 }
 
@@ -405,7 +392,7 @@ prepare_container() {
             fi
 
             rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
-            make_dir "$JINX_CACHE_DIR/sets/${pkgset}"
+            mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
             want_link='l'
             want_experimental=''
@@ -448,12 +435,12 @@ run_in_container() {
         run_in_cont_colorterm="COLORTERM=\"$COLORTERM\""
     fi
 
-    make_dir "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
 
     container_pkgs_native_mount=""
     sysroot_native_mount=""
     if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
-        make_dir "${imgroot}/sysroot"
+        mkdir -p "${imgroot}/sysroot"
 
         container_pkgs_native_mount="mount -o ro --bind '${container_pkgs}' '${imgroot}/usr/local'"
         sysroot_native_mount="mount -o ro --bind '${sysroot_dir}' '${imgroot}/sysroot'"
@@ -494,8 +481,9 @@ run_in_container() {
         mount -o ro --bind /etc/resolv.conf '${imgroot}/etc/resolv.conf'
 
         mount ${container_base_dir_ro} --bind '${base_dir}' '${imgroot}/base_dir'
+        mount --bind '${base_dir}/.jinx-cache/tmp' '${imgroot}/base_dir/.jinx-cache/tmp'
         mount --bind '${build_dir}' '${imgroot}/build_dir'
-        mount ${container_sources_ro} --bind '${base_dir}/sources' '${imgroot}/sources'
+        mount ${container_sources_ro} --bind '${base_dir}/sources' '${imgroot}/base_dir/sources'
         ${container_pkgs_native_mount}
         ${sysroot_native_mount}
         ${shadow_git_dir_base}
@@ -603,7 +591,7 @@ do_tarball_fetch() {
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
     mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
-        make_dir "${base_dir}"/sources/${name}
+        mkdir -p "${base_dir}"/sources/${name}
         mv "${extract_dir}"/* "${base_dir}"/sources/${name}/
     )
 
@@ -611,49 +599,46 @@ do_tarball_fetch() {
 }
 
 get_real_source_dir() {
+    unset is_local_package
+    unset is_sourceless_package
+
+    if [ -z "${source_dir}" ] && [ -z "${git_url}" ] && [ -z "${hg_url}" ] && [ -z "${tarball_url}" ]; then
+        source_dir=/dev/null
+        is_local_package=true
+        is_sourceless_package=true
+        return
+    fi
+
     if [ -z "${source_dir}" ]; then
         source_dir="${base_dir}"/sources/${name}
     else
         source_dir="${base_dir}"/"${source_dir}"
+        if ! [ -d "${source_dir}" ]; then
+            die "* source_dir of a local package is not a valid path"
+        fi
         is_local_package=true
-    fi
-}
-
-cont_fetch() {
-    make_dir "${base_dir}"/sources
-
-    source_source_recipe $1
-
-    get_real_source_dir
-
-    if ! [ -z "${git_url}" ]; then
-        do_git_fetch
-    elif ! [ -z "${hg_url}" ]; then
-        do_hg_fetch
-    elif ! [ -z "${tarball_url}" ]; then
-        do_tarball_fetch
     fi
 }
 
 default_recipe_steps() {
     early_prepare() {
-        true
+        :
     }
 
     prepare() {
-        true
+        :
     }
 
     configure() {
-        true
+        :
     }
 
     build() {
-        true
+        :
     }
 
     package() {
-        true
+        :
     }
 }
 
@@ -675,12 +660,37 @@ source_source_recipe() {
     fi
 }
 
-cont_patch() {
+do_fetch() {
+    default_recipe_steps
+
     source_source_recipe $1
 
     get_real_source_dir
 
-    "${script}" internal-early-prepare $1
+    sysroot_dir="/sysroot"
+
+    if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
+        if ! [ -z "${git_url}" ]; then
+            do_git_fetch
+        elif ! [ -z "${hg_url}" ]; then
+            do_hg_fetch
+        elif ! [ -z "${tarball_url}" ]; then
+            do_tarball_fetch
+        fi
+    fi
+
+    if ! [ "${is_sourceless_package}" = true ]; then
+        (
+            cd "${source_dir}"
+            early_prepare
+        )
+    fi
+}
+
+do_patch() {
+    source_source_recipe $1
+
+    get_real_source_dir
 
     make_temp
     patch_trash="${tmp}"
@@ -725,24 +735,6 @@ cont_patch() {
     cp -rp "${source_dir}" "${base_dir}"/sources/${name}-workdir
 
     cd "${base_dir}"
-
-    touch "${base_dir}"/sources/${name}.patched
-}
-
-do_early_prepare() {
-    default_recipe_steps
-
-    source_source_recipe $1
-
-    get_real_source_dir
-
-    sysroot_dir="/sysroot"
-
-    cd "${source_dir}"
-    [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
-    early_prepare
-    container_base_dir_ro=""
-    cd "${base_dir}"
 }
 
 do_prepare() {
@@ -752,17 +744,11 @@ do_prepare() {
 
     get_real_source_dir
 
-    [ -f "${base_dir}"/sources/${name}.prepared ] && return
-
     sysroot_dir="/sysroot"
 
     cd "${source_dir}"
-    [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
     prepare
-    container_base_dir_ro=""
     cd "${base_dir}"
-
-    touch "${base_dir}"/sources/${name}.prepared
 }
 
 do_configure_host() {
@@ -771,7 +757,7 @@ do_configure_host() {
     unset from_source
     . "${base_dir}"/host-recipes/$1
 
-    make_dir "${build_dir}"/host-builds/${name}
+    mkdir -p "${build_dir}"/host-builds/${name}
 
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -798,7 +784,7 @@ do_build_host() {
     unset from_source
     . "${base_dir}"/host-recipes/$1
 
-    make_dir "${build_dir}"/host-builds/${name}
+    mkdir -p "${build_dir}"/host-builds/${name}
 
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -828,7 +814,7 @@ do_package_host() {
     dest_dir="${build_dir}"/host-pkgs/${name}
 
     rm -rf "${dest_dir}"
-    make_dir "${dest_dir}"
+    mkdir -p "${dest_dir}"
 
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -844,7 +830,7 @@ do_package_host() {
     prefix="/usr/local"
     sysroot_dir="/sysroot"
 
-    make_dir "${dest_dir}${prefix}"
+    mkdir -p "${dest_dir}${prefix}"
 
     cd "${build_dir}"/host-builds/${name}
     package
@@ -863,7 +849,7 @@ do_configure() {
     unset from_source
     . "${base_dir}"/recipes/$1
 
-    make_dir "${build_dir}"/builds/${name}
+    mkdir -p "${build_dir}"/builds/${name}
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
@@ -894,7 +880,7 @@ do_build() {
     unset from_source
     . "${base_dir}"/recipes/$1
 
-    make_dir "${build_dir}"/builds/${name}
+    mkdir -p "${build_dir}"/builds/${name}
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
@@ -928,7 +914,7 @@ do_package() {
     dest_dir="${build_dir}"/pkgs/${name}
 
     rm -rf "${dest_dir}"
-    make_dir "${dest_dir}"
+    mkdir -p "${dest_dir}"
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
@@ -948,7 +934,7 @@ do_package() {
     prefix="/usr"
     sysroot_dir="/sysroot"
 
-    make_dir "${dest_dir}${prefix}"
+    mkdir -p "${dest_dir}${prefix}"
 
     cd "${build_dir}"/builds/${name}
     package
@@ -961,42 +947,25 @@ do_package() {
     cd "${base_dir}"
 }
 
-precont_fetch() {
-    source_source_recipe $1
-
-    get_real_source_dir
-
-    if [ -f "${base_dir}"/sources/$1.version ] && [ "$(cat "${base_dir}"/sources/$1.version)" = "${version}" ]; then
-        return
-    fi
+clean_sources() {
     rm -rf "${base_dir}"/sources/$1
     rm -rf "${base_dir}"/sources/$1-clean
     rm -rf "${base_dir}"/sources/$1-workdir
     rm -rf "${base_dir}"/sources/$1.version
     rm -rf "${base_dir}"/sources/$1.patched
     rm -rf "${base_dir}"/sources/$1.prepared
-
-    cross_compile=yes
-    allow_network="yes"
-    prepare_container
-    run_in_container internal-cont-fetch $1
-    destroy_container
-
-    echo "${version}" >"${base_dir}"/sources/$1.version
 }
 
-precont_patch() {
-    source_source_recipe $1
+need_repatch() {
+    rm -rf "${base_dir}"/sources/$1
 
-    get_real_source_dir
+    if [ -d "${base_dir}"/sources/$1-clean ]; then
+        mv "${base_dir}"/sources/$1-clean "${base_dir}"/sources/$1
+    fi
 
-    [ -f "${base_dir}"/sources/$1.patched ] && return
-
-    cross_compile=yes
-    allow_network="yes"
-    prepare_container
-    run_in_container internal-cont-patch $1
-    destroy_container
+    rm -rf "${base_dir}"/sources/$1-workdir
+    rm -rf "${base_dir}"/sources/$1.patched
+    rm -rf "${base_dir}"/sources/$1.prepared
 }
 
 do_source() {
@@ -1004,31 +973,55 @@ do_source() {
 
     get_real_source_dir
 
-    "${script}" internal-precont-fetch $1
-
-    "${script}" internal-precont-patch $1
-
-    [ -f "${base_dir}"/sources/$1.prepared ] && return
-
     cross_compile=yes
     prepare_container
-    run_in_container internal-prepare $1
+
+    if ! [ -f "${base_dir}"/sources/$1.version ] || ! [ "$(cat "${base_dir}"/sources/$1.version)" = "${version}" ]; then
+        (
+            allow_network="yes"
+            clean_sources $1
+            [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
+            run_in_container internal-fetch $1
+            echo "${version}" >"${base_dir}"/sources/$1.version
+        )
+    fi
+
+    if ! [ -f "${base_dir}"/sources/$1.patched ]; then
+        (
+            if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
+                allow_network="yes"
+                run_in_container internal-patch $1
+            fi
+            touch "${base_dir}"/sources/$1.patched
+        )
+    fi
+
+    if ! [ -f "${base_dir}"/sources/$1.prepared ]; then
+        (
+            if ! [ "${is_sourceless_package}" = true ]; then
+                [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
+                run_in_container internal-prepare $1
+            fi
+            touch "${base_dir}"/sources/$1.prepared
+        )
+    fi
+
     destroy_container
 }
 
-do_cmd_rebuild() {
+do_rebuild() {
     rm -rf "${build_dir}"/builds/"$1"
 
     do_pkg "$1"
 }
 
-do_cmd_host_rebuild() {
+do_host_rebuild() {
     rm -rf "${build_dir}"/host-builds/"$1"
 
     do_host_pkg "$1"
 }
 
-do_cmd_prepare() {
+do_regen() {
     source_source_recipe $1
 
     [ -f "${base_dir}"/sources/$1.patched ] || die "cannot regenerate non-built package"
@@ -1068,7 +1061,7 @@ do_cmd_prepare() {
         fi
 
         if [ -s "${patch_file}" ]; then
-            make_dir "${base_dir}"/patches/$1
+            mkdir -p "${base_dir}"/patches/$1
             mv "${patch_file}" "${base_dir}"/patches/$1/jinx-working-patch.patch
         fi
 
@@ -1092,14 +1085,14 @@ do_host_pkg() {
 
     echo "* building host package: $name"
 
+    if ! [ -z "${from_source}" ]; then
+        ( do_source "${from_source}" )
+    else
+        ( do_source "${name}" )
+    fi
+
     cross_compile=yes
     prepare_container
-
-    if ! [ -z "${from_source}" ]; then
-        from_source="$(. "${base_dir}"/host-recipes/$1 && echo "$from_source")"
-        [ -f "${base_dir}"/sources/${from_source}.prepared ] || \
-            "${script}" internal-source "${from_source}"
-    fi
 
     container_sources_ro="-o ro"
     if ! [ -d "${build_dir}"/host-builds/$1 ]; then
@@ -1113,11 +1106,6 @@ do_host_pkg() {
     destroy_container
 
     if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
-        (
-        unset from_source
-        unset clean_workdirs
-        . "${base_dir}"/host-recipes/$1
-
         if ! [ "$clean_workdirs" = "no" ]; then
             rm -rf "${build_dir}"/host-builds/$1
 
@@ -1127,15 +1115,12 @@ do_host_pkg() {
                 source_source_recipe ${from_source}
             fi
 
-            rm -rf \
-                "${base_dir}"/sources/"${name}" \
-                "${base_dir}"/sources/"${name}"-clean \
-                "${base_dir}"/sources/"${name}"-workdir \
-                "${base_dir}"/sources/"${name}".version \
-                "${base_dir}"/sources/"${name}".patched \
-                "${base_dir}"/sources/"${name}".prepared
+            get_real_source_dir
+
+            if ! [ "${is_sourceless_package}" = true ] && ! [ "${is_local_package}" = true ]; then
+                clean_sources "${name}"
+            fi
         fi
-        )
     fi
 }
 
@@ -1157,29 +1142,26 @@ do_pkg() {
                 if ! [ -z "${from_source}" ]; then
                     name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
                 fi
-                rm -rf \
-                    "${base_dir}"/sources/"${name}" \
-                    "${base_dir}"/sources/"${name}"-clean \
-                    "${base_dir}"/sources/"${name}"-workdir \
-                    "${base_dir}"/sources/"${name}".version \
-                    "${base_dir}"/sources/"${name}".patched \
-                    "${base_dir}"/sources/"${name}".prepared
+                clean_sources "${name}"
                 )
             fi
             ;;
     esac
 
-    if ! [ -z "${from_source}" ]; then
-        [ -f "${base_dir}"/sources/${from_source}.prepared ] || \
-            "${script}" internal-source "${from_source}"
-    fi
-
-    if ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
-        "${script}" internal-source "${name}"
-    fi
-
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
         rm -rf "${build_dir}"/builds/"$1"
+        (
+        if ! [ -z "${from_source}" ]; then
+            name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
+        fi
+        need_repatch "${name}"
+        )
+    fi
+
+    if ! [ -z "${from_source}" ]; then
+        ( do_source "${from_source}" )
+    else
+        ( do_source "${name}" )
     fi
 
     prepare_container
@@ -1226,11 +1208,6 @@ do_pkg() {
         -f
 
     if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
-        (
-        unset from_source
-        unset clean_workdirs
-        . "${base_dir}"/recipes/$1
-
         if ! [ "$clean_workdirs" = "no" ]; then
             rm -rf "${build_dir}"/builds/$1
 
@@ -1240,22 +1217,19 @@ do_pkg() {
                 source_source_recipe ${from_source}
             fi
 
-            rm -rf \
-                "${base_dir}"/sources/"${name}" \
-                "${base_dir}"/sources/"${name}"-clean \
-                "${base_dir}"/sources/"${name}"-workdir \
-                "${base_dir}"/sources/"${name}".version \
-                "${base_dir}"/sources/"${name}".patched \
-                "${base_dir}"/sources/"${name}".prepared
+            get_real_source_dir
+
+            if ! [ "${is_sourceless_package}" = true ] && ! [ "${is_local_package}" = true ]; then
+                clean_sources "${name}"
+            fi
         fi
-        )
     fi
 }
 
 cmd_host_build() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
-            "${script}" internal-do-host-pkg "${pkg}"
+            ( do_host_pkg "${pkg}" )
         done
     done
 }
@@ -1263,7 +1237,7 @@ cmd_host_build() {
 cmd_build() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            "${script}" internal-do-pkg "${pkg}"
+            ( do_pkg "${pkg}" )
         done
     done
 }
@@ -1283,21 +1257,21 @@ cmd_build_if_needed() {
                 [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]
             ) && continue
 
-            "${script}" internal-do-pkg "${pkg}"
+            ( do_pkg "${pkg}" )
         done
     done
 }
 
-cmd_prepare() {
+cmd_regen() {
     for i in "$@"; do
-        "${script}" internal-do-prepare "$i"
+        ( do_regen "$i" )
     done
 }
 
 cmd_host_rebuild() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
-            "${script}" internal-do-host-rebuild "${pkg}"
+            ( do_host_rebuild "${pkg}" )
         done
     done
 }
@@ -1305,7 +1279,7 @@ cmd_host_rebuild() {
 cmd_rebuild() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            "${script}" internal-do-rebuild "${pkg}"
+            ( do_rebuild "${pkg}" )
         done
     done
 }
@@ -1343,10 +1317,7 @@ cmd_install() {
     for pkg in ${pkgs_to_install}; do
         echo "* installing ${pkg}..."
 
-        unset name
-        unset version
-        unset revision
-        unset from_source
+        (
         . "${base_dir}"/recipes/${pkg}
 
         if ! [ -z "${from_source}" ]; then
@@ -1357,7 +1328,7 @@ cmd_install() {
             if [ "$(id -u)" = "0" ]; then
                 die "$0: a package needs to be built, but Jinx was invoked as root"
             fi
-            "${script}" internal-do-pkg "${pkg}"
+            ( do_pkg "${pkg}" )
         fi
 
         # xbps seems to only install the package every second time when reinstalling.
@@ -1373,6 +1344,7 @@ cmd_install() {
             xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null 2>&1
 
         tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
+        )
     done
 
     echo "* checking for conflicts..."
@@ -1394,10 +1366,7 @@ cmd_install() {
             echo "  file path: ${elem}"
             printf "  in packages:"
             for pkg in ${pkgs_to_install}; do
-                unset name
-                unset version
-                unset revision
-                unset from_source
+                (
                 . "${base_dir}"/recipes/${pkg}
 
                 if ! [ -z "${from_source}" ]; then
@@ -1407,6 +1376,7 @@ cmd_install() {
                 if tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
                     printf " ${pkg}"
                 fi
+                )
             done
             printf "\n"
         done
@@ -1419,9 +1389,9 @@ reinit_container() {
     chmod -R 777 "$JINX_CACHE_DIR/apt-cache" 2>/dev/null || true
     rm -rf "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
 
-    make_dir "${apt_cache}"
+    mkdir -p "${apt_cache}"
 
-    make_dir "$JINX_CACHE_DIR/sets/.image"
+    mkdir -p "$JINX_CACHE_DIR/sets/.image"
 
     cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
 #include <stdio.h>
@@ -1580,7 +1550,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
 first_use() {
     echo "* preparing Jinx cache..."
 
-    make_dir "$JINX_CACHE_DIR"
+    mkdir -p "$JINX_CACHE_DIR"
 
     reinit_container
 
@@ -1623,23 +1593,14 @@ if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" 
 fi
 
 case "$1" in
-    internal-early-prepare)
-        do_early_prepare "$2"
-        ;;
     internal-prepare)
         do_prepare "$2"
         ;;
-    internal-precont-fetch)
-        precont_fetch "$2"
+    internal-fetch)
+        do_fetch "$2"
         ;;
-    internal-cont-fetch)
-        cont_fetch "$2"
-        ;;
-    internal-precont-patch)
-        precont_patch "$2"
-        ;;
-    internal-cont-patch)
-        cont_patch "$2"
+    internal-patch)
+        do_patch "$2"
         ;;
     internal-configure-host)
         do_configure_host "$2"
@@ -1664,28 +1625,10 @@ case "$1" in
         deps_file="$3"
         get_deps_file
         ;;
-    internal-get-hostdeps-file-run)
+    internal-get-hostdeps-file)
         . "${base_dir}"/host-recipes/$2
         hostdeps_file="$3"
         get_hostdeps_file_run
-        ;;
-    internal-source)
-        do_source "$2"
-        ;;
-    internal-do-host-pkg)
-        do_host_pkg "$2"
-        ;;
-    internal-do-pkg)
-        do_pkg "$2"
-        ;;
-    internal-do-prepare)
-        do_cmd_prepare "$2"
-        ;;
-    internal-do-host-rebuild)
-        do_cmd_host_rebuild "$2"
-        ;;
-    internal-do-rebuild)
-        do_cmd_rebuild "$2"
         ;;
     host-build)
         shift 1
@@ -1701,7 +1644,7 @@ case "$1" in
         ;;
     regenerate|regen)
         shift 1
-        cmd_prepare "$@"
+        cmd_regen "$@"
         ;;
     host-rebuild)
         shift 1

@@ -2,12 +2,12 @@
 
 name=vte
 version=0.80.3
-revision=2
+revision=3
 git_url="https://gitlab.gnome.org/GNOME/vte.git"
 commit=02eaf1997d904dbfb792e2ae9ae0ba8b82f117f1
 imagedeps="meson ninja-build libglib2.0-dev"
 hostdeps="gcc pkg-config"
-deps="core-libs fast_float gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
+deps="core-libs fast_float gnutls gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
 
 configure() {
     meson_configure \
@@ -17,7 +17,7 @@ configure() {
         -Dgir=false \
         -Dfribidi=true \
         -Dglade=true \
-        -Dgnutls=false \
+        -Dgnutls=true \
         -Dgtk3=true \
         -Dgtk4=false \
         -Dicu=true \

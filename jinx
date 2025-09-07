@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="15"
+jinx_minor_ver="16"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -238,7 +238,6 @@ build_deps() {
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
         (
-            set -e
             unset version
             unset from_source
             . "${base_dir}"/recipes/${dep}
@@ -1242,24 +1241,57 @@ cmd_build() {
     done
 }
 
+build_if_needed() {
+    unset version
+    unset from_source
+    . "${base_dir}"/recipes/$1
+    if ! [ -z "${from_source}" ]; then
+        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    fi
+
+    if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+        ( do_pkg "$1" )
+    fi
+}
+
+host_build_if_needed() {
+    # unimplemented
+    :
+}
+
 cmd_build_if_needed() {
+    deps=""
+    builddeps=""
+    hostdeps=""
+    hostrundeps=""
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            (
-                set -e
-                unset version
-                unset from_source
-                . "${base_dir}"/recipes/${pkg}
-                if ! [ -z "${from_source}" ]; then
-                    version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-                fi
-
-                [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]
-            ) && continue
-
-            ( do_pkg "${pkg}" )
+            hostdeps="${hostdeps} $(unset hostdeps hostrundeps && . "${base_dir}/recipes/${pkg}" && echo ${hostdeps} ${hostrundeps})"
+            deps="${deps} $(unset deps builddeps && . "${base_dir}/recipes/${pkg}" && echo ${deps} ${builddeps})"
         done
     done
+
+    deps="$(export LC_ALL=C; echo "${deps}" | tr ' ' '\n' | sort | uniq | xargs)"
+    hostdeps="$(export LC_ALL=C; echo "${hostdeps}" | tr ' ' '\n' | sort | uniq | xargs)"
+
+    (
+        make_temp
+        hostdeps_file="${tmp}"
+        make_temp
+        deps_file="${tmp}"
+
+        get_hostdeps_file
+        get_builddeps_file
+
+        for hostdep in $(cat "${hostdeps_file}"); do
+            ( host_build_if_needed "${hostdep}" )
+        done
+        for dep in $(cat "${deps_file}"); do
+            ( build_if_needed "${dep}" )
+        done
+
+        ( build_if_needed "${pkg}" )
+    )
 }
 
 cmd_regen() {

@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="16"
+jinx_minor_ver="17"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1241,7 +1241,7 @@ cmd_build() {
     done
 }
 
-build_if_needed() {
+do_build_if_needed() {
     unset version
     unset from_source
     . "${base_dir}"/recipes/$1
@@ -1254,7 +1254,7 @@ build_if_needed() {
     fi
 }
 
-host_build_if_needed() {
+do_host_build_if_needed() {
     # unimplemented
     :
 }
@@ -1267,7 +1267,7 @@ cmd_build_if_needed() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
             hostdeps="${hostdeps} $(unset hostdeps hostrundeps && . "${base_dir}/recipes/${pkg}" && echo ${hostdeps} ${hostrundeps})"
-            deps="${deps} $(unset deps builddeps && . "${base_dir}/recipes/${pkg}" && echo ${deps} ${builddeps})"
+            deps="${deps} ${pkg} $(unset deps builddeps && . "${base_dir}/recipes/${pkg}" && echo ${deps} ${builddeps})"
         done
     done
 
@@ -1284,13 +1284,11 @@ cmd_build_if_needed() {
         get_builddeps_file
 
         for hostdep in $(cat "${hostdeps_file}"); do
-            ( host_build_if_needed "${hostdep}" )
+            ( do_host_build_if_needed "${hostdep}" )
         done
         for dep in $(cat "${deps_file}"); do
-            ( build_if_needed "${dep}" )
+            ( do_build_if_needed "${dep}" )
         done
-
-        ( build_if_needed "${pkg}" )
     )
 }
 

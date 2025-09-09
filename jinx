@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="17"
+jinx_minor_ver="18"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -192,7 +192,7 @@ if [ "$in_container" = "false" ]; then
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
     export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}:/usr/sbin:/sbin"
-    export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${PATH}"
+    export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${LD_LIBRARY_PATH}"
 
     mkdir -p "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
@@ -1274,22 +1274,22 @@ cmd_build_if_needed() {
     deps="$(export LC_ALL=C; echo "${deps}" | tr ' ' '\n' | sort | uniq | xargs)"
     hostdeps="$(export LC_ALL=C; echo "${hostdeps}" | tr ' ' '\n' | sort | uniq | xargs)"
 
-    (
-        make_temp
-        hostdeps_file="${tmp}"
-        make_temp
-        deps_file="${tmp}"
+    make_temp
+    hostdeps_file="${tmp}"
+    make_temp
+    deps_file="${tmp}"
 
-        get_hostdeps_file
-        get_builddeps_file
+    get_hostdeps_file
+    get_builddeps_file
 
-        for hostdep in $(cat "${hostdeps_file}"); do
-            ( do_host_build_if_needed "${hostdep}" )
-        done
-        for dep in $(cat "${deps_file}"); do
-            ( do_build_if_needed "${dep}" )
-        done
-    )
+    unset deps builddeps hostdeps hostrundeps
+
+    for hostdep in $(cat "${hostdeps_file}"); do
+        ( do_host_build_if_needed "${hostdep}" )
+    done
+    for dep in $(cat "${deps_file}"); do
+        ( do_build_if_needed "${dep}" )
+    done
 }
 
 cmd_regen() {

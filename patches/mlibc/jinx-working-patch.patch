@@ -1,3 +1,15 @@
+diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
+index f6eeed0..2634cbe 100644
+--- mlibc-clean/abis/ironclad/signal.h
++++ mlibc-workdir/abis/ironclad/signal.h
+@@ -160,7 +160,6 @@ typedef struct {
+ } mcontext_t;
+ 
+ typedef struct __ucontext {
+-	unsigned long uc_flags;
+ 	struct __ucontext *uc_link;
+ 	stack_t uc_stack;
+ 	mcontext_t uc_mcontext;
 diff --git mlibc-clean/options/ansi/generic/environment.cpp mlibc-workdir/options/ansi/generic/environment.cpp
 index 5625592..4ac4999 100644
 --- mlibc-clean/options/ansi/generic/environment.cpp

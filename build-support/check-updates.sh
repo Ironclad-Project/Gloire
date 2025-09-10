@@ -2,7 +2,10 @@
 
 set -e
 
-base_dir="$(pwd -P)"
+script_dir="$(dirname "$0")"
+test -z "${script_dir}" && script_dir=.
+
+base_dir="$(cd "${script_dir}"/.. && pwd -P)"
 
 for pkg in "$@"; do
     unset repology_id

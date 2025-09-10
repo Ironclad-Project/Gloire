@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="20"
+jinx_minor_ver="21"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -989,10 +989,10 @@ do_source() {
     if ! [ -f "${base_dir}"/sources/$1.version ] || ! [ "$(cat "${base_dir}"/sources/$1.version)" = "${version}" ]; then
         tracked_subshell '
             allow_network="yes"
-            clean_sources $1
+            clean_sources '$1'
             [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
-            run_in_container internal-fetch $1
-            echo "${version}" >"${base_dir}"/sources/$1.version
+            run_in_container internal-fetch '$1'
+            echo "${version}" >"${base_dir}"/sources/'$1'.version
         '
     fi
 
@@ -1000,9 +1000,9 @@ do_source() {
         tracked_subshell '
             if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
                 allow_network="yes"
-                run_in_container internal-patch $1
+                run_in_container internal-patch '$1'
             fi
-            touch "${base_dir}"/sources/$1.patched
+            touch "${base_dir}"/sources/'$1'.patched
         '
     fi
 
@@ -1010,9 +1010,9 @@ do_source() {
         tracked_subshell '
             if ! [ "${is_sourceless_package}" = true ]; then
                 [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
-                run_in_container internal-prepare $1
+                run_in_container internal-prepare '$1'
             fi
-            touch "${base_dir}"/sources/$1.prepared
+            touch "${base_dir}"/sources/'$1'.prepared
         '
     fi
 
@@ -1257,7 +1257,7 @@ do_build_if_needed() {
     fi
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-        tracked_subshell 'do_pkg "$1"'
+        tracked_subshell 'do_pkg "'$1'"'
     fi
 }
 
@@ -1549,23 +1549,25 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         die "Jinx: Failed to verify XBPS tarball"
     fi
 
+    tracked_subshell '
+
     cd "$JINX_CACHE_DIR"
     tar -zxf xbps-${XBPS_VERSION}.tar.gz
     cd xbps-${XBPS_VERSION}
 
     # XXX: xbps upstream forgot to bump version string
-    sed 's/0\.60/'"${XBPS_VERSION}"'/g' configure >configure.sed
+    sed "s/0\.60/${XBPS_VERSION}/g" configure >configure.sed
     mv configure.sed configure
-    sed 's/&& DEBUG=yes/&& DEBUG=no/g' configure >configure.sed
+    sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
     mv configure.sed configure
     chmod +x configure
 
     CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
 
-    sed '/DBDIR/d' data/Makefile >data/Makefile.sed
+    sed "/DBDIR/d" data/Makefile >data/Makefile.sed
     mv data/Makefile.sed data/Makefile
 
-    sed 's/-lxml2/-lxml2 -llzma -lm/g' config.mk >config.mk.sed
+    sed "s/-lxml2/-lxml2 -llzma -lm/g" config.mk >config.mk.sed
     mv config.mk.sed config.mk
 
     if command -v gmake >/dev/null 2>&1; then
@@ -1579,6 +1581,8 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
 
     cd ..
     rm -rf xbps-${XBPS_VERSION}*
+
+    '
 }
 
 first_use() {

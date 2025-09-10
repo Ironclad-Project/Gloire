@@ -52,7 +52,7 @@ fi
 
 "${source_dir}"/jinx build-if-needed base $PKGS_TO_INSTALL
 
-$SUDO --preserve-env "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
+$SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 
@@ -86,7 +86,8 @@ PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart gloire_data ext2 5% 100%
 PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img set 1 esp on
 PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614174001
 PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
-LOOPBACK_DEV=$($SUDO losetup -Pf --show gloire.img)
+LOOPBACK_DEV=$($SUDO losetup -f)
+$SUDO losetup -Pf gloire.img
 $SUDO mkfs.fat ${LOOPBACK_DEV}p1
 $SUDO mkfs.ext2 ${LOOPBACK_DEV}p2
 mkdir -p mount_dir
@@ -188,11 +189,11 @@ if [ "$ARCH" = x86_64 ]; then # Assume its only defined for riscv64.
 EOF
 fi
 
-sudo cp "$CONFIG_TEMP" mount_dir/boot/limine.conf
+$SUDO cp "$CONFIG_TEMP" mount_dir/boot/limine.conf
 rm "$CONFIG_TEMP"
 
 # Modify the fstab to use our final partitions.
-sudo sh -c "
+$SUDO sh -c "
 cat << 'EOF' >> mount_dir/etc/fstab
 UUID=123e4567-e89b-12d3-a456-426614174000 / ext relatime 0 1
 UUID=123e4567-e89b-12d3-a456-426614174001 /boot fat relatime 0 1

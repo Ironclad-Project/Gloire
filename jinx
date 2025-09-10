@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="21"
+jinx_minor_ver="22"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1380,7 +1380,7 @@ cmd_install() {
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
             xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null 2>&1
 
-        tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
+        zstdcat "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | tar -tf - | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
         '
     done
 
@@ -1410,7 +1410,7 @@ cmd_install() {
                     version=$(unset version && source_source_recipe ${from_source} && echo "$version")
                 fi
 
-                if tar -tf "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
+                if zstdcat "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | tar -tf - | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
                     printf " ${pkg}"
                 fi
                 '

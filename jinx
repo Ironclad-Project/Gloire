@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="18"
+jinx_minor_ver="19"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -223,6 +223,59 @@ make_temp() {
     fi
 }
 
+include_recipe() {
+    unset cross_compile
+    unset name
+    unset version
+    unset revision
+    unset from_source
+    unset deps
+    unset builddeps
+    unset hostdeps
+    unset hostrundeps
+    unset imagedeps
+    unset allow_network
+    unset source_deps
+    unset source_hostdeps
+    unset source_imagedeps
+    unset source_allow_network
+    unset clean_workdirs
+    unset bootstrap_pkg
+    unset from_source
+    unset source_dir
+    unset hg_url
+    unset tag
+    unset git_url
+    unset commit
+    unset shallow
+    unset tarball_url
+    unset tarball_sha256
+    unset tarball_sha512
+    unset tarball_blake2b
+
+    early_prepare() {
+        :
+    }
+
+    prepare() {
+        :
+    }
+
+    configure() {
+        :
+    }
+
+    build() {
+        :
+    }
+
+    package() {
+        :
+    }
+
+    . "$1"
+}
+
 build_hostdeps() {
     for hostdep in ${hostdeps} ${hostrundeps}; do
         [ -f "${base_dir}"/host-recipes/${hostdep} ] || die "missing host dependency '${hostdep}' for recipe '${name}'"
@@ -238,9 +291,7 @@ build_deps() {
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
         (
-            unset version
-            unset from_source
-            . "${base_dir}"/recipes/${dep}
+            include_recipe "${base_dir}"/recipes/${dep}
             if ! [ -z "${from_source}" ]; then
                 version=$(unset version && source_source_recipe ${from_source} && echo "$version")
             fi
@@ -619,37 +670,12 @@ get_real_source_dir() {
     fi
 }
 
-default_recipe_steps() {
-    early_prepare() {
-        :
-    }
-
-    prepare() {
-        :
-    }
-
-    configure() {
-        :
-    }
-
-    build() {
-        :
-    }
-
-    package() {
-        :
-    }
-}
-
 source_source_recipe() {
     if [ -f "${base_dir}"/source-recipes/$1 ]; then
-        . "${base_dir}"/source-recipes/$1
+        include_recipe "${base_dir}"/source-recipes/$1
     elif [ -f "${base_dir}"/recipes/$1 ]; then
-        . "${base_dir}"/recipes/$1
+        include_recipe "${base_dir}"/recipes/$1
 
-        unset deps
-        unset builddeps
-        unset hostrundeps
         imagedeps="${source_imagedeps}"
         hostdeps="${source_hostdeps}"
         deps="${source_deps}"
@@ -660,8 +686,6 @@ source_source_recipe() {
 }
 
 do_fetch() {
-    default_recipe_steps
-
     source_source_recipe $1
 
     get_real_source_dir
@@ -737,8 +761,6 @@ do_patch() {
 }
 
 do_prepare() {
-    default_recipe_steps
-
     source_source_recipe $1
 
     get_real_source_dir
@@ -751,10 +773,7 @@ do_prepare() {
 }
 
 do_configure_host() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/host-recipes/$1
+    include_recipe "${base_dir}"/host-recipes/$1
 
     mkdir -p "${build_dir}"/host-builds/${name}
 
@@ -778,10 +797,7 @@ do_configure_host() {
 }
 
 do_build_host() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/host-recipes/$1
+    include_recipe "${base_dir}"/host-recipes/$1
 
     mkdir -p "${build_dir}"/host-builds/${name}
 
@@ -805,10 +821,7 @@ do_build_host() {
 }
 
 do_package_host() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/host-recipes/$1
+    include_recipe "${base_dir}"/host-recipes/$1
 
     dest_dir="${build_dir}"/host-pkgs/${name}
 
@@ -843,10 +856,7 @@ do_package_host() {
 }
 
 do_configure() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/recipes/$1
+    include_recipe "${base_dir}"/recipes/$1
 
     mkdir -p "${build_dir}"/builds/${name}
 
@@ -874,10 +884,7 @@ do_configure() {
 }
 
 do_build() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/recipes/$1
+    include_recipe "${base_dir}"/recipes/$1
 
     mkdir -p "${build_dir}"/builds/${name}
 
@@ -905,10 +912,7 @@ do_build() {
 }
 
 do_package() {
-    default_recipe_steps
-
-    unset from_source
-    . "${base_dir}"/recipes/$1
+    include_recipe "${base_dir}"/recipes/$1
 
     dest_dir="${build_dir}"/pkgs/${name}
 
@@ -1079,8 +1083,7 @@ do_regen() {
 }
 
 do_host_pkg() {
-    unset from_source
-    . "${base_dir}"/host-recipes/$1
+    include_recipe "${base_dir}"/host-recipes/$1
 
     echo "* building host package: $name"
 
@@ -1124,8 +1127,7 @@ do_host_pkg() {
 }
 
 do_pkg() {
-    unset from_source
-    . "${base_dir}"/recipes/$1
+    include_recipe "${base_dir}"/recipes/$1
 
     echo "* building package: $name"
 
@@ -1242,9 +1244,7 @@ cmd_build() {
 }
 
 do_build_if_needed() {
-    unset version
-    unset from_source
-    . "${base_dir}"/recipes/$1
+    include_recipe "${base_dir}"/recipes/$1
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
     fi
@@ -1348,7 +1348,7 @@ cmd_install() {
         echo "* installing ${pkg}..."
 
         (
-        . "${base_dir}"/recipes/${pkg}
+        include_recipe "${base_dir}"/recipes/${pkg}
 
         if ! [ -z "${from_source}" ]; then
             version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -1397,7 +1397,7 @@ cmd_install() {
             printf "  in packages:"
             for pkg in ${pkgs_to_install}; do
                 (
-                . "${base_dir}"/recipes/${pkg}
+                include_recipe "${base_dir}"/recipes/${pkg}
 
                 if ! [ -z "${from_source}" ]; then
                     version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -1651,12 +1651,12 @@ case "$1" in
         do_package "$2"
         ;;
     internal-get-deps-file)
-        . "${base_dir}"/recipes/$2
+        include_recipe "${base_dir}"/recipes/$2
         deps_file="$3"
         get_deps_file
         ;;
     internal-get-hostdeps-file)
-        . "${base_dir}"/host-recipes/$2
+        include_recipe "${base_dir}"/host-recipes/$2
         hostdeps_file="$3"
         get_hostdeps_file_run
         ;;

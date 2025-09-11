@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="22"
+jinx_minor_ver="23"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -42,6 +42,9 @@ debian_snapshot="20250627T143139Z"
 
 XBPS_VERSION=0.60.5
 XBPS_SHA256SUM=fba39edfdcfeb6f7e3f348a091453fefb087089999cf5bea20ea65ac6cf009dc
+
+debootstrap_version=1.0.141
+debootstrap_sha256sum=1066dd75b337156cdc4ebace2ad38f68fdff56fb8b7d20a1a4eb9739afe55c12
 
 die() {
     echo "$1"
@@ -191,8 +194,11 @@ if [ "$in_container" = "false" ]; then
     mkdir -p "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
-    export PATH="${JINX_CACHE_DIR}/xbps/bin:${PATH}:/usr/sbin:/sbin"
-    export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib:${LD_LIBRARY_PATH}"
+    export PATH="${JINX_CACHE_DIR}/xbps/bin:${JINX_CACHE_DIR}/debootstrap/usr/sbin:${PATH}:/usr/sbin:/sbin"
+    if ! [ -z "${LD_LIBRARY_PATH}" ]; then
+        LD_LIBRARY_PATH=":${LD_LIBRARY_PATH}"
+    fi
+    export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib${LD_LIBRARY_PATH}"
 
     mkdir -p "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
@@ -1430,6 +1436,14 @@ reinit_container() {
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image"
 
+    SHA256_COMMAND="sha256sum"
+    if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
+        SHA256_COMMAND="sha256"
+        if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
+            die "error: Cannot find sha256(sum) command"
+        fi
+    fi
+
     cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
 #include <stdio.h>
 #include <unistd.h>
@@ -1469,29 +1483,20 @@ EOF
         ppc64le) DEBOOTSTRAP_ARCH=ppc64el ;;
     esac
 
-    if ! command -v debootstrap >/dev/null 2>&1; then
-        die "error: missing debootstrap command"
-    fi
-
-    DEBOOTSTRAP_PATH="$(command -v debootstrap)"
-    make_temp -d
-    TMP_PATH="${tmp}"
-    cp "${DEBOOTSTRAP_PATH}" "${TMP_PATH}"/
-    sed "s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g" "${DEBOOTSTRAP_PATH}" >"${TMP_PATH}/debootstrap"
-    chmod +x "${TMP_PATH}/debootstrap"
-
-    cat >"$JINX_CACHE_DIR/debootstrap_wrap.c" <<EOF
-#include <unistd.h>
-
-int main(int argc, char *argv[]) {
-    (void)argc;
-    argv[0] = "${DEBOOTSTRAP_PATH}";
-    execv("${TMP_PATH}/debootstrap", argv);
-    return 1;
-}
-EOF
-    cc -O2 -pipe -std=gnu99 -Wall -Wextra "$JINX_CACHE_DIR/debootstrap_wrap.c" -o "$JINX_CACHE_DIR/debootstrap_wrap"
-    rm "$JINX_CACHE_DIR/debootstrap_wrap.c"
+    # Install debootstrap
+    tracked_subshell '
+        cd "${JINX_CACHE_DIR}"
+        wget -O debootstrap.tar.gz https://salsa.debian.org/installer-team/debootstrap/-/archive/${debootstrap_version}/debootstrap-${debootstrap_version}.tar.gz
+        if ! "${SHA256_COMMAND}" debootstrap.tar.gz | grep "${debootstrap_sha256sum}" >/dev/null 2>&1; then
+            die "Jinx: Failed to verify debootstrap tarball"
+        fi
+        tar -zxf debootstrap.tar.gz
+        make -C debootstrap-${debootstrap_version} DESTDIR="$(pwd -P)/debootstrap" install
+        rm -rf debootstrap.tar.gz debootstrap-${debootstrap_version}
+        sed "s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g;s|DEBOOTSTRAP_DIR=/usr/share/debootstrap|DEBOOTSTRAP_DIR=\"$(pwd -P)/debootstrap/usr/share/debootstrap\"|g" debootstrap/usr/sbin/debootstrap >debootstrap.sed
+        mv debootstrap.sed debootstrap/usr/sbin/debootstrap
+        chmod +x debootstrap/usr/sbin/debootstrap
+    '
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
@@ -1500,10 +1505,9 @@ EOF
 
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
-        LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' '$JINX_CACHE_DIR/debootstrap_wrap' \
+        LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
             --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${debian_snapshot}/
     "
-    rm "$JINX_CACHE_DIR/debootstrap_wrap"
 
     for dir in dev proc sys run tmp var/tmp; do
         rm -rf "${JINX_CACHE_DIR}/sets/.image/${dir}"
@@ -1536,15 +1540,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
     # Build xbps
-    SHA256_COMMAND="sha256sum"
-    if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
-        SHA256_COMMAND="sha256"
-        if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
-            die "error: Cannot find sha256(sum) command"
-        fi
-    fi
-
-    curl -Lo "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
+    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
     if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify XBPS tarball"
     fi

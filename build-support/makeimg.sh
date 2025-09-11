@@ -195,8 +195,8 @@ rm "$CONFIG_TEMP"
 # Modify the fstab to use our final partitions.
 $SUDO sh -c "
 cat << 'EOF' >> mount_dir/etc/fstab
-UUID=123e4567-e89b-12d3-a456-426614174000 / ext relatime 0 1
-UUID=123e4567-e89b-12d3-a456-426614174001 /boot fat relatime 0 1
+PARTUUID=123e4567-e89b-12d3-a456-426614174000 / ext relatime 0 1
+PARTUUID=123e4567-e89b-12d3-a456-426614174001 /boot fat relatime 0 1
 EOF
 "
 

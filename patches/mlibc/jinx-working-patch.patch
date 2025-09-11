@@ -353,6 +353,18 @@ index cd1cc2c..99937a0 100644
  int sys_brk(void **out) {
  	(void)out;
  	return -1;
+diff --git mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+index b55ecc6..5136bae 100644
+--- mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h
++++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+@@ -98,6 +98,6 @@
+ #define TIOCPKT_DOSTOP           32
+ #define TIOCPKT_IOCTL            64
+ #define TIOCSER_TEMT	         0x01
+-#define DEV_UUID                 0x9821
++#define DEV_PARTUUID             0x9821
+ 
+ #endif /* _ASM_IOCTLS_H */
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 index cc56aa6..e11ad7f 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h

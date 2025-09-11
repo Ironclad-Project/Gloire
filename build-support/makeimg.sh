@@ -88,7 +88,7 @@ PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614
 PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
 LOOPBACK_DEV=$($SUDO losetup -f)
 $SUDO losetup -Pf gloire.img
-$SUDO mkfs.fat ${LOOPBACK_DEV}p1
+$SUDO mkfs.fat -F 32 ${LOOPBACK_DEV}p1
 $SUDO mkfs.ext2 ${LOOPBACK_DEV}p2
 mkdir -p mount_dir
 $SUDO mount ${LOOPBACK_DEV}p2 mount_dir

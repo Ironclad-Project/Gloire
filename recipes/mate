@@ -1,0 +1,7 @@
+#! /bin/sh
+
+name=mate
+skip_pkg_check=yes
+version=0.0
+revision=1
+deps="marco caja atril mate-desktop mate-screensaver mate-themes mate-calc mate-icon-theme mate-utils mate-common mate-menus mate-settings-daemon mate-control-center mate-panel mate-terminal"

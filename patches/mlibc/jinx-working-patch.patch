@@ -237,6 +237,18 @@ index 8cf23ba..62d23ad 100644
  	return strtof(nptr, endptr);
  }
  
+diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
+index 49c42e5..2222258 100644
+--- mlibc-clean/options/posix/include/fcntl.h
++++ mlibc-workdir/options/posix/include/fcntl.h
+@@ -41,7 +41,6 @@ int creat(const char *__path, mode_t __mode);
+ int fallocate(int __fd, int __mode, off_t __offset, off_t __len);
+ int fcntl(int __fd, int __command, ...);
+ int open(const char *__path, int __flags, ...);
+-int open64(const char *__path, int __flags, ...);
+ int openat(int __dirfd, const char *__path, int __flags, ...);
+ int posix_fadvise(int __fd, off_t __offset, off_t __size, int __advice);
+ int posix_fallocate(int __fd, off_t __offset, off_t __size);
 diff --git mlibc-clean/options/posix/include/sys/stat.h mlibc-workdir/options/posix/include/sys/stat.h
 index 98f1d2a..e648292 100644
 --- mlibc-clean/options/posix/include/sys/stat.h
@@ -254,10 +266,23 @@ index 98f1d2a..e648292 100644
  int mkdirat(int __dirfd, const char *__pathname, mode_t __mode);
  int mkfifo(const char *__pathname, mode_t __mode);
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index cd1cc2c..99937a0 100644
+index cd1cc2c..e60a4d1 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -293,7 +293,6 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
+@@ -85,7 +85,11 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 
+ 	int path_len = strlen(path);
+ 	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
+-	if (ret != -1 && (flags & O_EXCL)) {
++
++	// Have to check for O_CREAT since there is a pesky Linux-specific O_EXCL
++	// extension that makes it not fail if we are opening a block device.
++	// Otherwise O_EXCL with the file existing should be always a failure.
++	if (ret != -1 && (flags & O_EXCL) && (flags & O_CREAT)) {
+ 		SYSCALL1(SYSCALL_CLOSE, ret);
+ 		return EEXIST;
+ 	}
+@@ -293,7 +297,6 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
  	*window = ret;
  
  	if ((errno == ENOMEM) && ((flags & MAP_ANON) == 0)) {
@@ -265,7 +290,7 @@ index cd1cc2c..99937a0 100644
  		int ret = sys_anon_allocate(size, window);
  		if (ret) {
  			return ret;
-@@ -524,6 +523,10 @@ int sys_ttyname(int fd, char *buff, size_t size) {
+@@ -524,6 +527,10 @@ int sys_ttyname(int fd, char *buff, size_t size) {
  	return errno;
  }
  
@@ -276,7 +301,7 @@ index cd1cc2c..99937a0 100644
  int sys_sethostname(const char *buff, size_t size) {
  	int ret, errno;
  
-@@ -1018,19 +1021,16 @@ int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval
+@@ -1018,19 +1025,16 @@ int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval
  }
  
  int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
@@ -300,7 +325,7 @@ index cd1cc2c..99937a0 100644
  		if (ret == -1) {
  			return errno;
  		}
-@@ -1042,19 +1042,16 @@ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
+@@ -1042,19 +1046,16 @@ int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
  }
  
  int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
@@ -324,7 +349,7 @@ index cd1cc2c..99937a0 100644
  		if (ret == -1) {
  			return errno;
  		}
-@@ -1258,7 +1255,7 @@ int sys_sysconf(int num, long *rret) {
+@@ -1258,7 +1259,7 @@ int sys_sysconf(int num, long *rret) {
  				return EFAULT;
  			}
  		case _SC_OPEN_MAX:
@@ -333,7 +358,7 @@ index cd1cc2c..99937a0 100644
  			return 0;
  		case _SC_AVPHYS_PAGES:
  			SYSCALL1(SYSCALL_MEMINFO, &mem);
-@@ -1421,6 +1418,19 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1421,6 +1422,19 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  

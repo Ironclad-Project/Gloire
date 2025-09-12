@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=e2fsprogs
-version=1.47.0
+version=1.47.3
 revision=1
 tarball_url="https://github.com/tytso/e2fsprogs/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="5b87b873c617f328162d20f109e47e1f452bc11172e5319c087190f1782e3ba846389b14b8cd9df664a9795da8d6783b9818e4475d922bd0a26d493710cbcb83"
+tarball_blake2b="dfaf39a2228e5e51302a79bc005074a8c3dffce1b7869399bbc2bee626872ddfac4b19f9ec18ca25fe6e1e8fde693c867f13bc6e94b4d0f0cabef5a0d9fb4f3e"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"

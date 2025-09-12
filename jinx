@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.6"
-jinx_minor_ver="23"
+jinx_minor_ver="24"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -293,9 +293,9 @@ build_hostdeps() {
     for hostdep in ${hostdeps} ${hostrundeps}; do
         [ -f "${base_dir}"/host-recipes/${hostdep} ] || die "missing host dependency '${hostdep}' for recipe '${name}'"
 
-        [ -d "${build_dir}"/host-pkgs/${hostdep} ] && continue
-
-        "${script}" host-build ${hostdep}
+        tracked_subshell '
+            do_host_build_if_needed ${hostdep}
+        '
     done
 }
 
@@ -304,15 +304,8 @@ build_deps() {
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
         tracked_subshell '
-            include_recipe "${base_dir}"/recipes/${dep}
-            if ! [ -z "${from_source}" ]; then
-                version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-            fi
-
-            [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]
-        ' && continue
-
-        "${script}" build ${dep}
+            do_build_if_needed ${dep}
+        '
     done
 }
 
@@ -320,12 +313,18 @@ get_hostdeps_file_run() {
     deps_to_do=""
 
     for hostdep in ${hostrundeps}; do
-        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf " ${hostdep} " >> "${hostdeps_file}"
+        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
+            deps_to_do="${deps_to_do} ${hostdep}"
+            new_hostdeps_file=" ${hostdep} $(cat "${hostdeps_file}") "
+            echo "${new_hostdeps_file}" >"${hostdeps_file}"
+        fi
     done
 
     for hostdep in ${deps_to_do}; do
-        "${script}" internal-get-hostdeps-file ${hostdep} "${hostdeps_file}"
+        tracked_subshell '
+            include_recipe "${base_dir}"/host-recipes/${hostdep}
+            get_hostdeps_file
+        '
     done
 }
 
@@ -333,12 +332,18 @@ get_hostdeps_file() {
     deps_to_do=""
 
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${hostdep}"
-        grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1 || printf " ${hostdep} " >> "${hostdeps_file}"
+        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
+            deps_to_do="${deps_to_do} ${hostdep}"
+            new_hostdeps_file=" ${hostdep} $(cat "${hostdeps_file}") "
+            echo "${new_hostdeps_file}" >"${hostdeps_file}"
+        fi
     done
 
     for hostdep in ${deps_to_do}; do
-        "${script}" internal-get-hostdeps-file ${hostdep} "${hostdeps_file}"
+        tracked_subshell '
+            include_recipe "${base_dir}"/host-recipes/${hostdep}
+            get_hostdeps_file
+        '
     done
 }
 
@@ -346,12 +351,18 @@ get_builddeps_file() {
     deps_to_do=""
 
     for dep in ${deps} ${builddeps}; do
-        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
-        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || printf " ${dep} " >> "${deps_file}"
+        if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
+            deps_to_do="${deps_to_do} ${dep}"
+            new_deps_file=" ${dep} $(cat "${deps_file}") "
+            echo "${new_deps_file}" >"${deps_file}"
+        fi
     done
 
     for dep in ${deps_to_do}; do
-        "${script}" internal-get-deps-file ${dep} "${deps_file}"
+        tracked_subshell '
+            include_recipe "${base_dir}"/recipes/${dep}
+            get_deps_file
+        '
     done
 }
 
@@ -359,12 +370,18 @@ get_deps_file() {
     deps_to_do=""
 
     for dep in ${deps}; do
-        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || deps_to_do="${deps_to_do} ${dep}"
-        grep " ${dep} " "${deps_file}" >/dev/null 2>&1 || printf " ${dep} " >> "${deps_file}"
+        if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
+            deps_to_do="${deps_to_do} ${dep}"
+            new_deps_file=" ${dep} $(cat "${deps_file}") "
+            echo "${new_deps_file}" >"${deps_file}"
+        fi
     done
 
     for dep in ${deps_to_do}; do
-        "${script}" internal-get-deps-file ${dep} "${deps_file}"
+        tracked_subshell '
+            include_recipe "${base_dir}"/recipes/${dep}
+            get_deps_file
+        '
     done
 }
 
@@ -1268,8 +1285,9 @@ do_build_if_needed() {
 }
 
 do_host_build_if_needed() {
-    # unimplemented
-    :
+    if ! [ -d "${build_dir}"/host-pkgs/${hostdep} ]; then
+        tracked_subshell 'do_host_pkg "'$1'"'
+    fi
 }
 
 cmd_build_if_needed() {
@@ -1284,9 +1302,6 @@ cmd_build_if_needed() {
         done
     done
 
-    deps="$(export LC_ALL=C; echo "${deps}" | tr ' ' '\n' | sort | uniq | xargs)"
-    hostdeps="$(export LC_ALL=C; echo "${hostdeps}" | tr ' ' '\n' | sort | uniq | xargs)"
-
     make_temp
     hostdeps_file="${tmp}"
     make_temp
@@ -1294,8 +1309,6 @@ cmd_build_if_needed() {
 
     get_hostdeps_file
     get_builddeps_file
-
-    unset deps builddeps hostdeps hostrundeps
 
     for hostdep in $(cat "${hostdeps_file}"); do
         tracked_subshell 'do_host_build_if_needed "${hostdep}"'
@@ -1653,16 +1666,6 @@ case "$1" in
         ;;
     internal-package)
         do_package "$2"
-        ;;
-    internal-get-deps-file)
-        include_recipe "${base_dir}"/recipes/$2
-        deps_file="$3"
-        get_deps_file
-        ;;
-    internal-get-hostdeps-file)
-        include_recipe "${base_dir}"/host-recipes/$2
-        hostdeps_file="$3"
-        get_hostdeps_file_run
         ;;
     host-build)
         shift 1

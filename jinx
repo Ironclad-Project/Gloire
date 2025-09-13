@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="1"
+jinx_minor_ver="2"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1354,7 +1354,7 @@ do_build_if_needed() {
             for hostdep in $(cat "${hostdeps_file}"); do
                 tracked_subshell '\''do_host_build_if_needed "${hostdep}"'\''
             done
-            for dep in $(tracked_subshell '\''get_builddeps "${pkg}"'\''); do
+            for dep in $(tracked_subshell '\''get_builddeps "${name}"'\''); do
                 tracked_subshell '\''do_build_if_needed_inner "${dep}"'\''
             done
         '
@@ -1631,6 +1631,11 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
     mv configure.sed configure
     chmod +x configure
+
+    # xbps is missing an include causing issues on some distros
+    echo "#include <limits.h>
+$(cat lib/verifysig.c)" >lib/verifysig.c.new
+    mv lib/verifysig.c.new lib/verifysig.c
 
     CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
 

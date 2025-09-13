@@ -1,6 +1,6 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.6
+JINX_MAJOR_VER=0.7
 
 HOST_CFLAGS="-O2 -pipe -fstack-clash-protection"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"

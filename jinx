@@ -33,8 +33,8 @@ export LC_COLLATE
 
 umask 0022
 
-jinx_major_ver="0.6"
-jinx_minor_ver="24"
+jinx_major_ver="0.7"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -345,6 +345,58 @@ get_hostdeps_file() {
             get_hostdeps_file
         '
     done
+}
+
+topo_sort_visit() {
+    grep -q "^$1$" "$_visited" 2>/dev/null && return
+    echo "$1" >> "$_visited"
+
+    _deps=$(grep "^$1:" "$_tmpdir/graph" | cut -d: -f2)
+    for _dep in $_deps; do
+        [ -n "$_dep" ] && topo_sort_visit "$_dep"
+    done
+
+    echo "$1" >> "$_result"
+}
+
+topo_sort() {
+    make_temp -d
+    _tmpdir="${tmp}"
+    _visited="$_tmpdir/visited"
+    _result="$_tmpdir/result"
+
+    echo "$1" > "$_tmpdir/graph"
+
+    cut -d: -f1 "$_tmpdir/graph" | sort -u > "$_tmpdir/nodes"
+
+    while read _node; do
+        topo_sort_visit "$_node"
+    done < "$_tmpdir/nodes"
+
+    tr '\n' ' ' < "$_result" 2>/dev/null | sed 's/ $/\n/'
+}
+
+get_builddeps() {
+    pkg="$1"
+
+    include_recipe "${base_dir}/recipes/${pkg}"
+
+    make_temp
+    deps_file="${tmp}"
+
+    get_builddeps_file
+
+    graph="${pkg}:${deps}"
+    if ! [ -z "${builddeps}" ]; then
+        graph=$(echo "${graph} ${builddeps}" | sed 's/: /:/g')
+    fi
+
+    for dep in $(cat "${deps_file}"); do
+        graph="${graph}
+${dep}:$(include_recipe "${base_dir}/recipes/${dep}" && echo ${deps})"
+    done
+
+    topo_sort "${graph}"
 }
 
 get_builddeps_file() {
@@ -1290,31 +1342,29 @@ do_host_build_if_needed() {
     fi
 }
 
-cmd_build_if_needed() {
-    deps=""
-    builddeps=""
-    hostdeps=""
-    hostrundeps=""
+cmd_update() {
+    if [ -z "$1" ]; then
+        set -- '*'
+    fi
+
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            hostdeps="${hostdeps} $(unset hostdeps hostrundeps && . "${base_dir}/recipes/${pkg}" && echo ${hostdeps} ${hostrundeps})"
-            deps="${deps} ${pkg} $(unset deps builddeps && . "${base_dir}/recipes/${pkg}" && echo ${deps} ${builddeps})"
+            tracked_subshell '
+                include_recipe "${base_dir}/recipes/${pkg}"
+
+                make_temp
+                hostdeps_file="${tmp}"
+
+                get_hostdeps_file
+
+                for hostdep in $(cat "${hostdeps_file}"); do
+                    tracked_subshell '\''do_host_build_if_needed "${hostdep}"'\''
+                done
+                for dep in $(tracked_subshell '\''get_builddeps "${pkg}"'\''); do
+                    tracked_subshell '\''do_build_if_needed "${dep}"'\''
+                done
+            '
         done
-    done
-
-    make_temp
-    hostdeps_file="${tmp}"
-    make_temp
-    deps_file="${tmp}"
-
-    get_hostdeps_file
-    get_builddeps_file
-
-    for hostdep in $(cat "${hostdeps_file}"); do
-        tracked_subshell 'do_host_build_if_needed "${hostdep}"'
-    done
-    for dep in $(cat "${deps_file}"); do
-        tracked_subshell 'do_build_if_needed "${dep}"'
     done
 }
 
@@ -1675,9 +1725,9 @@ case "$1" in
         shift 1
         cmd_build "$@"
         ;;
-    build-if-needed)
+    update)
         shift 1
-        cmd_build_if_needed "$@"
+        cmd_update "$@"
         ;;
     regenerate|regen)
         shift 1

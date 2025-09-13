@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="0"
+jinx_minor_ver="1"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1325,7 +1325,7 @@ cmd_build() {
     done
 }
 
-do_build_if_needed() {
+do_build_if_needed_inner() {
     include_recipe "${base_dir}"/recipes/$1
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -1333,6 +1333,31 @@ do_build_if_needed() {
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
         tracked_subshell 'do_pkg "'$1'"'
+    fi
+}
+
+do_build_if_needed() {
+    include_recipe "${base_dir}"/recipes/$1
+    if ! [ -z "${from_source}" ]; then
+        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    fi
+
+    if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+        tracked_subshell '
+            include_recipe "${base_dir}/recipes/${name}"
+
+            make_temp
+            hostdeps_file="${tmp}"
+
+            get_hostdeps_file
+
+            for hostdep in $(cat "${hostdeps_file}"); do
+                tracked_subshell '\''do_host_build_if_needed "${hostdep}"'\''
+            done
+            for dep in $(tracked_subshell '\''get_builddeps "${pkg}"'\''); do
+                tracked_subshell '\''do_build_if_needed_inner "${dep}"'\''
+            done
+        '
     fi
 }
 
@@ -1349,21 +1374,7 @@ cmd_update() {
 
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell '
-                include_recipe "${base_dir}/recipes/${pkg}"
-
-                make_temp
-                hostdeps_file="${tmp}"
-
-                get_hostdeps_file
-
-                for hostdep in $(cat "${hostdeps_file}"); do
-                    tracked_subshell '\''do_host_build_if_needed "${hostdep}"'\''
-                done
-                for dep in $(tracked_subshell '\''get_builddeps "${pkg}"'\''); do
-                    tracked_subshell '\''do_build_if_needed "${dep}"'\''
-                done
-            '
+            tracked_subshell 'do_build_if_needed "${pkg}"'
         done
     done
 }

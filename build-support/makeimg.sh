@@ -50,7 +50,7 @@ if ! [ -f .jinx-parameters ]; then
     "${source_dir}"/jinx init "${source_dir}" ARCH="${ARCH}"
 fi
 
-"${source_dir}"/jinx build-if-needed base $PKGS_TO_INSTALL
+"${source_dir}"/jinx update base $PKGS_TO_INSTALL
 
 $SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 

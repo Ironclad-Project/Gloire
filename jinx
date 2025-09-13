@@ -61,7 +61,7 @@ cmd_help() {
     printf "\n   version|--version  Prints the version"
     printf "\n   init               Initialises a build directory"
     printf "\n   build              Builds package(s), does incremental builds"
-    printf "\n   build-if-needed    Builds package(s) if necessary"
+    printf "\n   update             Update package(s) and their dependencies if necessary"
     printf "\n   rebuild            Rebuilds package(s)"
     printf "\n   host-build         Same as build, but for host package(s)"
     printf "\n   host-rebuild       Same as rebuild, but for host package(s)"
@@ -69,7 +69,7 @@ cmd_help() {
     printf "\n   install            Installs package(s)"
     printf "\n   reinstall          Reinstalls package(s)"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
-    printf "\n\nexample: $0 build-if-needed '*'\n"
+    printf "\n\nexample: $0 update '*'\n"
 }
 
 cmd_init() {

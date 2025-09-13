@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=limine
-version=9.6.6
+version=9.6.7
 revision=1
 tarball_url="https://codeberg.org/Limine/Limine/releases/download/v${version}/limine-${version}.tar.gz"
-tarball_blake2b="67ebe44c68629d794310f2f21dcc2c2c14845e34accff473dfa931a452ce3d299dd5d1d81481bf744dbd5394453a86f60b065cb89f7b8d9ec5fca67a7f72b934"
+tarball_blake2b="dd55c9118f43b73ddf14306329ea11a0bb3dc81cc7dcacb5551af3fe9ddb88dbd1773aa1e163885fc792e782586359947535c2946822e065b1e28ca1ff60d1e2"
 imagedeps="mtools nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs"

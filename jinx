@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -304,7 +304,7 @@ build_deps() {
         [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
 
         tracked_subshell '
-            do_build_if_needed ${dep}
+            do_update ${dep}
         '
     done
 }
@@ -348,32 +348,34 @@ get_hostdeps_file() {
 }
 
 topo_sort_visit() {
-    grep -q "^$1$" "$_visited" 2>/dev/null && return
-    echo "$1" >> "$_visited"
+    case " $_global_visited " in
+        *" $1 "*) return ;;
+    esac
+    _global_visited="$_global_visited $1"
 
-    _deps=$(grep "^$1:" "$_tmpdir/graph" | cut -d: -f2)
+    _deps=$(awk -F: -v node="$1" '$1 == node {print $2; exit}' "$_graph")
     for _dep in $_deps; do
         [ -n "$_dep" ] && topo_sort_visit "$_dep"
     done
 
-    echo "$1" >> "$_result"
+    _global_result="$_global_result$1
+"
 }
 
 topo_sort() {
-    make_temp -d
-    _tmpdir="${tmp}"
-    _visited="$_tmpdir/visited"
-    _result="$_tmpdir/result"
+    make_temp
+    _graph="${tmp}"
+    _global_visited=" "
+    _global_result=""
 
-    echo "$1" > "$_tmpdir/graph"
+    printf '%s\n' "$1" > "$_graph"
 
-    cut -d: -f1 "$_tmpdir/graph" | sort -u > "$_tmpdir/nodes"
-
-    while read _node; do
-        topo_sort_visit "$_node"
-    done < "$_tmpdir/nodes"
-
-    tr '\n' ' ' < "$_result" 2>/dev/null | sed 's/ $/\n/'
+    awk -F: '{print $1}' "$_graph" | sort -u | {
+        while read _node; do
+            topo_sort_visit "$_node"
+        done
+        printf '%s' "$_global_result" | tr '\n' ' ' | sed 's/ $/\n/'
+    }
 }
 
 get_builddeps() {
@@ -405,8 +407,7 @@ get_builddeps_file() {
     for dep in ${deps} ${builddeps}; do
         if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
             deps_to_do="${deps_to_do} ${dep}"
-            new_deps_file=" ${dep} $(cat "${deps_file}") "
-            echo "${new_deps_file}" >"${deps_file}"
+            printf " ${dep} " >>"${deps_file}"
         fi
     done
 
@@ -424,8 +425,7 @@ get_deps_file() {
     for dep in ${deps}; do
         if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
             deps_to_do="${deps_to_do} ${dep}"
-            new_deps_file=" ${dep} $(cat "${deps_file}") "
-            echo "${new_deps_file}" >"${deps_file}"
+            printf " ${dep} " >>"${deps_file}"
         fi
     done
 
@@ -1325,7 +1325,7 @@ cmd_build() {
     done
 }
 
-do_build_if_needed_inner() {
+do_build_if_needed() {
     include_recipe "${base_dir}"/recipes/$1
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
@@ -1336,34 +1336,30 @@ do_build_if_needed_inner() {
     fi
 }
 
-do_build_if_needed() {
+do_host_build_if_needed() {
+    if ! [ -d "${build_dir}"/host-pkgs/${hostdep} ]; then
+        tracked_subshell 'do_host_pkg "'$1'"'
+    fi
+}
+
+do_update() {
     include_recipe "${base_dir}"/recipes/$1
     if ! [ -z "${from_source}" ]; then
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
     fi
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-        tracked_subshell '
-            include_recipe "${base_dir}/recipes/${name}"
+        make_temp
+        hostdeps_file="${tmp}"
 
-            make_temp
-            hostdeps_file="${tmp}"
+        get_hostdeps_file
 
-            get_hostdeps_file
-
-            for hostdep in $(cat "${hostdeps_file}"); do
-                tracked_subshell '\''do_host_build_if_needed "${hostdep}"'\''
-            done
-            for dep in $(tracked_subshell '\''get_builddeps "${name}"'\''); do
-                tracked_subshell '\''do_build_if_needed_inner "${dep}"'\''
-            done
-        '
-    fi
-}
-
-do_host_build_if_needed() {
-    if ! [ -d "${build_dir}"/host-pkgs/${hostdep} ]; then
-        tracked_subshell 'do_host_pkg "'$1'"'
+        for hostdep in $(cat "${hostdeps_file}"); do
+            tracked_subshell 'do_host_build_if_needed "${hostdep}"'
+        done
+        for dep in $(tracked_subshell 'get_builddeps "${name}"'); do
+            tracked_subshell 'do_build_if_needed "${dep}"'
+        done
     fi
 }
 
@@ -1374,7 +1370,7 @@ cmd_update() {
 
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_build_if_needed "${pkg}"'
+            tracked_subshell 'do_update "${pkg}"'
         done
     done
 }

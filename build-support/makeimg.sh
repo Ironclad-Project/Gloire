@@ -75,17 +75,19 @@ fallocate -l "${IMAGE_SIZE}" gloire.img
 
 # Format and mount the image.
 PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mklabel gpt
-PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart ESP fat32 2048s 5%
-PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart gloire_data ext2 5% 100%
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart ESP fat32 2048s 64MiB
 PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img set 1 esp on
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart bios_boot 64MiB 65MiB
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img set 2 bios_grub on
+PATH=$PATH:/usr/sbin:/sbin parted -s gloire.img mkpart gloire_data ext2 65MiB 100%
 PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 1:123e4567-e89b-12d3-a456-426614174001
-PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 2:123e4567-e89b-12d3-a456-426614174000
+PATH=$PATH:/usr/sbin:/sbin sgdisk gloire.img -u 3:123e4567-e89b-12d3-a456-426614174000
 LOOPBACK_DEV=$($SUDO losetup -f)
 $SUDO losetup -Pf gloire.img
 $SUDO mkfs.fat -F 32 ${LOOPBACK_DEV}p1
-$SUDO mkfs.ext2 ${LOOPBACK_DEV}p2
+$SUDO mkfs.ext2 ${LOOPBACK_DEV}p3
 mkdir -p mount_dir
-$SUDO mount ${LOOPBACK_DEV}p2 mount_dir
+$SUDO mount ${LOOPBACK_DEV}p3 mount_dir
 
 # Copy the system root to the initramfs filesystem.
 $SUDO cp -rp sysroot/* mount_dir/
@@ -203,7 +205,7 @@ $SUDO losetup -d ${LOOPBACK_DEV}
 
 # Arch-specific image triggers.
 if [ "$ARCH" = x86_64 ]; then
-    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
+    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img 2
 fi
 
 sync

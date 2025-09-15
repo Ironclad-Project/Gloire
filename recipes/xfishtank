@@ -2,7 +2,7 @@
 
 name=xfishtank
 version=2.5
-revision=1
+revision=2
 git_url="https://github.com/sydneyjd/xfishtank.git"
 commit=098f67f39319067fc031fc1dbcba2c19a0320468
 imagedeps="build-essential"
@@ -15,10 +15,12 @@ build() {
 
     set -x
 
-    gcc ${HOST_CFLAGS} -std=c99 ${HOST_LDFLAGS} makeh.c -o makeh
+    gcc ${HOST_CFLAGS} -std=gnu89 ${HOST_LDFLAGS} makeh.c -o makeh
     ./makeh > xfishy.h
 
     "${OS_TRIPLET}"-gcc ${TARGET_CFLAGS} -ansi -Dlinux -I./fishmaps ${TARGET_LDFLAGS} xfish.c medcut.c -lX11 -lImlib2 -lm -o xfishtank
+
+    set +x
 }
 
 package() {

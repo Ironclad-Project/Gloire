@@ -21,12 +21,6 @@ case "$(basename "${build_dir}")" in
         ;;
 esac
 
-# Ensure that the Ironclad kernel has been cloned.
-if ! [ -d "${source_dir}"/ironclad ]; then
-    git clone https://codeberg.org/Ironclad/Ironclad "${source_dir}"/ironclad
-    git -C "${source_dir}"/ironclad checkout $(cat "${source_dir}"/.ironclad-commit)
-fi
-
 # Create build directory if needed.
 mkdir -p "${build_dir}"
 

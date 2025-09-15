@@ -1,27 +1,28 @@
 #! /bin/sh
 
 name=xfishtank
-repology_id=xfishtank
-version=0.0git
+version=2.5
 revision=1
 git_url="https://github.com/sydneyjd/xfishtank.git"
-commit=63022c8877710cefa7e4815dda8bd6ae50557fb5
+commit=098f67f39319067fc031fc1dbcba2c19a0320468
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxext libxpm libxinerama libxkbcommon libxtst imlib2"
 
 build() {
-	# the build system sucks, so we will directly call the compiler and ignore it!
-	cp -rp ${source_dir}/* .
+    # the build system sucks, so we will directly call the compiler and ignore it!
+    cp -rp "${source_dir}"/. ./
 
-	gcc makeh.c -o makeh
+    set -x
 
-	./makeh fishmaps/?*.h > xfishy.h
-	"${OS_TRIPLET}"-gcc -ansi -Dlinux -I./fishmaps -lX11 -lImlib2 -lm xfish.c medcut.c -o xfishtank
+    gcc ${HOST_CFLAGS} -std=c99 ${HOST_LDFLAGS} makeh.c -o makeh
+    ./makeh > xfishy.h
+
+    "${OS_TRIPLET}"-gcc ${TARGET_CFLAGS} -ansi -Dlinux -I./fishmaps ${TARGET_LDFLAGS} xfish.c medcut.c -lX11 -lImlib2 -lm -o xfishtank
 }
 
 package() {
-	mkdir -p ${dest_dir}/usr/bin/
-	cp -v xfishtank ${dest_dir}/usr/bin/xfishtank
+    install -D xfishtank "${dest_dir}/usr/bin/xfishtank"
+
     post_package_strip
 }

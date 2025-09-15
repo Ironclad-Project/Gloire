@@ -1,5 +1,5 @@
-/ironclad
 /build*
+!/build-support
 /sources
 /bochsout.txt
 /bx_enh_dbg.ini

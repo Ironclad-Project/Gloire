@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libxml2
-version=2.14.5
+version=2.14.6
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/libxml2.git"
-commit=74f3154320df8950eceae4951975cc9dfc3a254d
+commit=d23960a130c5bb82779c9405fbbf85e65fb3c57c
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib"
 

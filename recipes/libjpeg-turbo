@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libjpeg-turbo
-version=3.1.1
+version=3.1.2
 revision=1
-tarball_url="https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="d0654ff4067c4c1aef25d0a7df90844bdce9c41e87147ef1fcf8c8a441fc9570f7f41dbba5867ebbbc973e64fd20692be6168dbd59e4aa59dcf3018d228e25df"
+git_url="https://github.com/libjpeg-turbo/libjpeg-turbo.git"
+commit=4e151a4ad91001b3aa8c2ece2205c15f487ce320
 imagedeps="nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs"

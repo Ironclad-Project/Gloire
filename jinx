@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -47,7 +47,7 @@ debootstrap_version=1.0.141
 debootstrap_sha256sum=1066dd75b337156cdc4ebace2ad38f68fdff56fb8b7d20a1a4eb9739afe55c12
 
 die() {
-    echo "$1"
+    echo "$1" 1>&2
     exit 1
 }
 
@@ -216,8 +216,8 @@ cleanup() {
     eval "rm -rf ${temp_collect}"
 }
 
-trap 'cleanup; exit 1' INT TERM HUP QUIT
-trap 'cleanup' EXIT
+trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT
+trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' EXIT
 
 make_temp() {
     mkdir -p "$JINX_CACHE_DIR/tmp"
@@ -229,11 +229,15 @@ tracked_subshell() {
     (
         temp_collect=""
         cleanup_done=no
-        trap 'cleanup; exit 1' INT TERM HUP QUIT
-        trap 'cleanup' EXIT
+        trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT
+        trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' EXIT
         set -e
         eval "$1"
     )
+    retval=$?
+    if ! [ ${retval} = 0 ]; then
+        exit ${retval}
+    fi
 }
 
 include_recipe() {
@@ -285,6 +289,10 @@ include_recipe() {
     package() {
         :
     }
+
+    if ! [ -f "$1" ]; then
+        die "$0: recipe '$1' not found"
+    fi
 
     . "$1"
 }
@@ -394,6 +402,10 @@ get_builddeps() {
     fi
 
     for dep in $(cat "${deps_file}"); do
+        if ! [ -f "${base_dir}/recipes/${dep}" ]; then
+            die "$0: dependency '${dep}' for recipe '${pkg}' not found"
+        fi
+
         graph="${graph}
 ${dep}:$(include_recipe "${base_dir}/recipes/${dep}" && echo ${deps})"
     done
@@ -1357,7 +1369,8 @@ do_update() {
         for hostdep in $(cat "${hostdeps_file}"); do
             tracked_subshell 'do_host_build_if_needed "${hostdep}"'
         done
-        for dep in $(tracked_subshell 'get_builddeps "${name}"'); do
+        builddeps_var="$(tracked_subshell 'get_builddeps "${name}"')"
+        for dep in ${builddeps_var}; do
             tracked_subshell 'do_build_if_needed "${dep}"'
         done
     fi

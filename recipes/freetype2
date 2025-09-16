@@ -2,13 +2,12 @@
 
 name=freetype2
 repology_id=freetype
-version=2.13.3
-revision=2
-tarball_url="https://download.savannah.gnu.org/releases/freetype/freetype-${version}.tar.xz"
-tarball_blake2b="f9591c6998df02b072adaf38a968e91deae8ed4d53ea0cb74d08982c4f0e48b1a98c1378a698164e4f730f07a3b0bea308a94fcc2e2b8ce9967dbf9478b599bd"
-imagedeps="build-essential"
+version=2.14.1
+revision=1
+git_url="https://gitlab.freedesktop.org/freetype/freetype.git"
+commit=526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b
 hostdeps="gcc pkg-config"
-deps="core-libs bzip2 libpng zlib"
+deps="core-libs bzip2 libpng brotli zlib"
 
 configure() {
     meson_configure

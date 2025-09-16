@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libproxy
-version=0.5.10
+version=0.5.11
 revision=1
-tarball_url="https://github.com/libproxy/libproxy/archive/${version}/libproxy-${version}.tar.gz"
-tarball_blake2b="8d2a4fbce47bd3733d29d1f094b745954bcce609b8a79939d011c161ec83877332fb47934e19acc6babd3159f87b3ed12ad7d6a132842da3b6558a81a3b9a0c3"
+git_url="https://github.com/libproxy/libproxy.git"
+commit=3fd3a6e845c0386d91abc742453d0f29bf28c404
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 gsettings-desktop-schemas"
 

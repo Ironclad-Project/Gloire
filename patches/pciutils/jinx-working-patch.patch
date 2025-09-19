@@ -1,0 +1,183 @@
+diff --git pciutils-clean/lib/Makefile pciutils-workdir/lib/Makefile
+index 3ed5e45..b4f9b96 100644
+--- pciutils-clean/lib/Makefile
++++ pciutils-workdir/lib/Makefile
+@@ -60,6 +60,10 @@ ifdef PCI_HAVE_PM_SYLIXOS_DEVICE
+ OBJS += sylixos-device
+ endif
+ 
++ifdef PCI_HAVE_PM_IRONCLAD_DEVICE
++OBJS += ironclad-device
++endif
++
+ ifdef PCI_HAVE_PM_HURD_CONF
+ OBJS += hurd
+ endif
+diff --git pciutils-clean/lib/configure pciutils-workdir/lib/configure
+index 4aad925..2dcc23b 100755
+--- pciutils-clean/lib/configure
++++ pciutils-workdir/lib/configure
+@@ -166,6 +166,9 @@ case $sys in
+ 		echo >>$c '#define PCI_HAVE_PM_HURD_CONF'
+ 		echo >>$c '#define PCI_HAVE_PM_INTEL_CONF'
+ 		;;
++    ironclad)
++		echo >>$c '#define PCI_HAVE_PM_IRONCLAD_DEVICE'
++        ;;
+ 	djgpp)
+ 		echo_n " i386-ports mem-ports ecam"
+ 		echo >>$c '#define PCI_HAVE_PM_INTEL_CONF'
+diff --git pciutils-clean/lib/init.c pciutils-workdir/lib/init.c
+index b0e5018..53707d7 100644
+--- pciutils-clean/lib/init.c
++++ pciutils-workdir/lib/init.c
+@@ -126,6 +126,11 @@ static struct pci_methods *pci_methods[PCI_ACCESS_MAX] = {
+ #else
+   NULL,
+ #endif
++#ifdef PCI_HAVE_PM_IRONCLAD_DEVICE
++  &pm_ironclad_device,
++#else
++  NULL,
++#endif
+ #ifdef PCI_HAVE_PM_HURD_CONF
+   &pm_hurd,
+ #else
+diff --git pciutils-clean/lib/internal.h pciutils-workdir/lib/internal.h
+index 43be8d1..ee10284 100644
+--- pciutils-clean/lib/internal.h
++++ pciutils-workdir/lib/internal.h
+@@ -142,8 +142,8 @@ void pci_free_caps(struct pci_dev *);
+ 
+ extern struct pci_methods pm_intel_conf1, pm_intel_conf2, pm_linux_proc,
+ 	pm_fbsd_device, pm_aix_device, pm_nbsd_libpci, pm_obsd_device,
+-	pm_dump, pm_linux_sysfs, pm_darwin, pm_sylixos_device, pm_hurd,
+-	pm_mmio_conf1, pm_mmio_conf1_ext, pm_ecam,
++	pm_dump, pm_linux_sysfs, pm_darwin, pm_sylixos_device, pm_ironclad_device,
++  pm_hurd, pm_mmio_conf1, pm_mmio_conf1_ext, pm_ecam,
+ 	pm_win32_cfgmgr32, pm_win32_kldbg, pm_win32_sysdbg, pm_aos_expansion,
+ 	pm_rt_thread_smart_dm;
+ 
+diff --git pciutils-workdir/lib/ironclad-device.c pciutils-workdir/lib/ironclad-device.c
+new file mode 100644
+index 0000000..c82ec3f
+--- /dev/null
++++ pciutils-workdir/lib/ironclad-device.c
+@@ -0,0 +1,78 @@
++/*
++ *	The PCI Library -- Direct Configuration access via ironclad Ports
++ *
++ *	Copyright (c) 2018 YuJian.Gong <gongyujian@acoinfo.com>
++ *
++ *	Can be freely distributed and used under the terms of the GNU GPL v2+.
++ *
++ *	SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#define _GNU_SOURCE
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "internal.h"
++
++static void
++ironclad_scan(struct pci_access *a)
++{
++  puts("a");
++  return;
++}
++
++static void
++ironclad_config(struct pci_access *a UNUSED)
++{
++  puts("b");
++  return;
++}
++
++static int
++ironclad_detect(struct pci_access *a)
++{
++  puts("c");
++  return 1;
++}
++
++static void
++ironclad_init(struct pci_access *a UNUSED)
++{
++  puts("d");
++  return;
++}
++
++static void
++ironclad_cleanup(struct pci_access *a UNUSED)
++{
++  puts("e");
++  return;
++}
++
++static int
++ironclad_read(struct pci_dev *d, int pos, byte *buf, int len)
++{
++  puts("f");
++  return 0;
++}
++
++static int
++ironclad_write(struct pci_dev *d, int pos, byte *buf, int len)
++{
++  puts("g");
++  return 0;
++}
++
++struct pci_methods pm_ironclad_device = {
++  .name = "ironclad-device",
++  .help = "Ironclad PCI device",
++  .config = ironclad_config,
++  .detect = ironclad_detect,
++  .init = ironclad_init,
++  .cleanup = ironclad_cleanup,
++  .scan = ironclad_scan,
++  .fill_info = pci_generic_fill_info,
++  .read = ironclad_read,
++  .write = ironclad_write,
++};
+diff --git pciutils-clean/lib/pci.h pciutils-workdir/lib/pci.h
+index e93e991..be65cd8 100644
+--- pciutils-clean/lib/pci.h
++++ pciutils-workdir/lib/pci.h
+@@ -48,6 +48,7 @@ enum pci_access_type {
+   PCI_ACCESS_DUMP,			/* Dump file */
+   PCI_ACCESS_DARWIN,			/* Darwin */
+   PCI_ACCESS_SYLIXOS_DEVICE,		/* SylixOS pci */
++  PCI_ACCESS_IRONCLAD_DEVICE, /* Ironclad PCI */
+   PCI_ACCESS_HURD,			/* GNU/Hurd */
+   PCI_ACCESS_WIN32_CFGMGR32,		/* Win32 cfgmgr32.dll */
+   PCI_ACCESS_WIN32_KLDBG,		/* Win32 kldbgdrv.sys */
+diff --git pciutils-clean/lib/sysdep.h pciutils-workdir/lib/sysdep.h
+index 7f22427..f5244a3 100644
+--- pciutils-clean/lib/sysdep.h
++++ pciutils-workdir/lib/sysdep.h
+@@ -91,6 +91,10 @@ typedef u16 word;
+ #include <endian.h>
+ #endif
+ 
++#ifdef PCI_OS_IRONCLAD
++#include <endian.h>
++#endif
++
+ #ifdef PCI_OS_DJGPP
+   #define BIG_ENDIAN 4321
+   #define LITTLE_ENDIAN	1234
+diff --git pciutils-clean/setpci.c pciutils-workdir/setpci.c
+index 2a2c72a..2498d94 100644
+--- pciutils-clean/setpci.c
++++ pciutils-workdir/setpci.c
+@@ -13,6 +13,7 @@
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <errno.h>
++#include <strings.h>
+ 
+ #define PCIUTILS_SETPCI
+ #include "pciutils.h"

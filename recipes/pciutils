@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=pciutils
+version=3.14.0
+revision=1
+tarball_url="https://mj.ucw.cz/download/linux/pci/pciutils-3.14.0.tar.gz"
+tarball_blake2b="3ab270c4523cc1968d5f3a03d2564eff5560b60eb8307bafe44ee240a6636dc676fbf0a28effe3c9abc99bfc86a975aea066d634a5e5adaffb2c63ba226511d9"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    make lib/config.mk OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET}
+
+    make OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install PREFIX="${prefix}" OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET} STRIP=""
+
+    mkdir -p "${dest_dir}${prefix}/bin"
+    mv -v "${dest_dir}${prefix}/sbin/"* "${dest_dir}${prefix}/bin/"
+    rm -rfv "${dest_dir}${prefix}/sbin"
+
+    post_package_strip
+}

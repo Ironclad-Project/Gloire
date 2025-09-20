@@ -1641,11 +1641,6 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     mv configure.sed configure
     chmod +x configure
 
-    # xbps is missing an include causing issues on some distros
-    echo "#include <limits.h>
-$(cat lib/verifysig.c)" >lib/verifysig.c.new
-    mv lib/verifysig.c.new lib/verifysig.c
-
     CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
 
     sed "/DBDIR/d" data/Makefile >data/Makefile.sed

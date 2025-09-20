@@ -372,7 +372,7 @@ index b55ecc6..5136bae 100644
  
  #endif /* _ASM_IOCTLS_H */
 diff --git mlibc-clean/sysdeps/ironclad/include/sys/syscall.h mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
-index cc56aa6..e11ad7f 100644
+index cc56aa6..be8b17d 100644
 --- mlibc-clean/sysdeps/ironclad/include/sys/syscall.h
 +++ mlibc-workdir/sysdeps/ironclad/include/sys/syscall.h
 @@ -111,10 +111,11 @@
@@ -388,3 +388,12 @@ index cc56aa6..e11ad7f 100644
  #define SYSCALL_LISTNETINTER        108
  #define SYSCALL_DUMPLOGS            109
  #define SYSCALL_LISTFLOCKS          110
+@@ -146,6 +147,8 @@
+ #define SYSCALL_NVMM_VCPU_DUMP      136
+ #define SYSCALL_NVMM_VCPU_STOP      137
+ #define SYSCALL_SETSID              138
++#define SYSCALL_PCI_READ            139
++#define SYSCALL_PCI_WRITE           140
+ 
+ #if defined(__x86_64__)
+ #define SYSCALL0(NUM) ({ \

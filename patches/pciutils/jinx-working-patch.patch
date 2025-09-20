@@ -14,24 +14,25 @@ index 3ed5e45..b4f9b96 100644
  OBJS += hurd
  endif
 diff --git pciutils-clean/lib/configure pciutils-workdir/lib/configure
-index 4aad925..2dcc23b 100755
+index 4aad925..15b98b4 100755
 --- pciutils-clean/lib/configure
 +++ pciutils-workdir/lib/configure
-@@ -166,6 +166,9 @@ case $sys in
+@@ -166,6 +166,10 @@ case $sys in
  		echo >>$c '#define PCI_HAVE_PM_HURD_CONF'
  		echo >>$c '#define PCI_HAVE_PM_INTEL_CONF'
  		;;
 +    ironclad)
 +		echo >>$c '#define PCI_HAVE_PM_IRONCLAD_DEVICE'
-+        ;;
++        IDSDIR="/usr/share"
++		;;
  	djgpp)
  		echo_n " i386-ports mem-ports ecam"
  		echo >>$c '#define PCI_HAVE_PM_INTEL_CONF'
 diff --git pciutils-clean/lib/init.c pciutils-workdir/lib/init.c
-index b0e5018..53707d7 100644
+index b0e5018..249621f 100644
 --- pciutils-clean/lib/init.c
 +++ pciutils-workdir/lib/init.c
-@@ -126,6 +126,11 @@ static struct pci_methods *pci_methods[PCI_ACCESS_MAX] = {
+@@ -168,6 +168,11 @@ static struct pci_methods *pci_methods[PCI_ACCESS_MAX] = {
  #else
    NULL,
  #endif
@@ -40,9 +41,17 @@ index b0e5018..53707d7 100644
 +#else
 +  NULL,
 +#endif
- #ifdef PCI_HAVE_PM_HURD_CONF
-   &pm_hurd,
- #else
+ };
+ 
+ // If PCI_ACCESS_AUTO is selected, we probe the access methods in this order
+@@ -187,6 +192,7 @@ static int probe_sequence[] = {
+   PCI_ACCESS_WIN32_SYSDBG,
+   PCI_ACCESS_AOS_EXPANSION,
+   PCI_ACCESS_RT_THREAD_SMART_DM,
++  PCI_ACCESS_IRONCLAD_DEVICE,
+   // Low-level methods poking the hardware directly
+   PCI_ACCESS_ECAM,
+   PCI_ACCESS_I386_TYPE1,
 diff --git pciutils-clean/lib/internal.h pciutils-workdir/lib/internal.h
 index 43be8d1..ee10284 100644
 --- pciutils-clean/lib/internal.h
@@ -60,10 +69,10 @@ index 43be8d1..ee10284 100644
  
 diff --git pciutils-workdir/lib/ironclad-device.c pciutils-workdir/lib/ironclad-device.c
 new file mode 100644
-index 0000000..c82ec3f
+index 0000000..05da7cf
 --- /dev/null
 +++ pciutils-workdir/lib/ironclad-device.c
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,123 @@
 +/*
 + *	The PCI Library -- Direct Configuration access via ironclad Ports
 + *
@@ -78,61 +87,106 @@ index 0000000..c82ec3f
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <string.h>
-+
++#include <unistd.h>
++#include <fcntl.h>
++#include <sys/syscall.h>
 +#include "internal.h"
++
++struct devinfo {
++    uint8_t  bus;
++    uint8_t  func;
++    uint8_t  slot;
++    uint16_t device_id;
++    uint16_t vendor_id;
++    uint8_t  rev_id;
++    uint8_t  subclass;
++    uint8_t  device_class;
++    uint8_t  prog_if;
++};
 +
 +static void
 +ironclad_scan(struct pci_access *a)
 +{
-+  puts("a");
-+  return;
++  int ret, errno;
++  struct devinfo *buffer = malloc(20 * sizeof(struct devinfo));
++  if (!buffer) {
++    return;
++  }
++
++  SYSCALL2(SYSCALL_LISTPCI, buffer, 20);
++  if (ret > 20) {
++    buffer = realloc(buffer, ret * sizeof(struct devinfo));
++    if (!buffer) {
++      return;
++    }
++    SYSCALL2(SYSCALL_LISTPCI, buffer, ret);
++  }
++
++  for (int i = 0; i < ret; i++) {
++    struct pci_dev *d;
++	  d = pci_alloc_dev(a);
++  	d->domain = 0;
++	  d->bus = buffer[i].bus;
++  	d->dev = buffer[i].slot;
++	  d->func = buffer[i].func;
++	  d->vendor_id = buffer[i].vendor_id;
++	  d->device_id = buffer[i].device_id;
++	  d->known_fields = PCI_FILL_IDENT;
++	  pci_link_dev(a, d);
++  }
 +}
 +
 +static void
 +ironclad_config(struct pci_access *a UNUSED)
 +{
-+  puts("b");
 +  return;
 +}
 +
 +static int
-+ironclad_detect(struct pci_access *a)
++ironclad_detect(struct pci_access *a UNUSED)
 +{
-+  puts("c");
 +  return 1;
 +}
 +
 +static void
 +ironclad_init(struct pci_access *a UNUSED)
 +{
-+  puts("d");
 +  return;
 +}
 +
 +static void
 +ironclad_cleanup(struct pci_access *a UNUSED)
 +{
-+  puts("e");
 +  return;
 +}
 +
 +static int
 +ironclad_read(struct pci_dev *d, int pos, byte *buf, int len)
 +{
-+  puts("f");
-+  return 0;
++  if (!(len == 1 || len == 2 || len == 4))
++    return pci_generic_block_read(d, pos, buf, len);
++
++  size_t ret;
++  int errno;
++  SYSCALL6(SYSCALL_PCI_READ, d->bus, d->dev, d->func, pos, buf, len);
++  return ret;
 +}
 +
 +static int
 +ironclad_write(struct pci_dev *d, int pos, byte *buf, int len)
 +{
-+  puts("g");
-+  return 0;
++  if (!(len == 1 || len == 2 || len == 4))
++    return pci_generic_block_read(d, pos, buf, len);
++
++  size_t ret;
++  int errno;
++  SYSCALL6(SYSCALL_PCI_WRITE, d->bus, d->dev, d->func, pos, buf, len);
++  return ret;
 +}
 +
 +struct pci_methods pm_ironclad_device = {
 +  .name = "ironclad-device",
-+  .help = "Ironclad PCI device",
++  .help = "Ironclad PCI subsystem",
 +  .config = ironclad_config,
 +  .detect = ironclad_detect,
 +  .init = ironclad_init,

@@ -34,14 +34,14 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 debian_snapshot="20250627T143139Z"
 
-XBPS_VERSION=213c8290ceca38264d2907d6d01f91775951bd14
-XBPS_SHA256SUM=6c4420c86212be203cdbc061ab2e53255f6407e15b7aee307eac2a8f370eb3c4
+XBPS_VERSION=0.60.5
+XBPS_SHA256SUM=fba39edfdcfeb6f7e3f348a091453fefb087089999cf5bea20ea65ac6cf009dc
 
 debootstrap_version=1.0.141
 debootstrap_sha256sum=1066dd75b337156cdc4ebace2ad38f68fdff56fb8b7d20a1a4eb9739afe55c12
@@ -1623,7 +1623,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
     # Build xbps
-    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/${XBPS_VERSION}.tar.gz
+    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/refs/tags/${XBPS_VERSION}.tar.gz
     if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
         die "Jinx: Failed to verify XBPS tarball"
     fi
@@ -1635,11 +1635,18 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     cd xbps-${XBPS_VERSION}
 
     # XXX: xbps upstream forgot to bump version string
-    sed "s/0\.60/0.60.5/g" configure >configure.sed
+    sed "s/0\.60/${XBPS_VERSION}/g" configure >configure.sed
     mv configure.sed configure
     sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
     mv configure.sed configure
     chmod +x configure
+
+    # xbps is missing an include causing issues on some distros
+    {
+        echo "include <limits.h>"
+        cat lib/verifysig.c
+    } >lib/verifysig.c.new
+    mv lib/verifysig.c.new lib/verifysig.c
 
     CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
 

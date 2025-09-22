@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="8"
+jinx_minor_ver="9"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -538,13 +538,15 @@ prepare_container() {
             rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
             mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
+            want_link='l'
             want_experimental=''
             if echo "${pkg}" | grep -q '^experimental:'; then
+                want_link=''
                 want_experimental='-t experimental'
                 pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
             fi
 
-            cp -Ppr "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+            cp -Pp${want_link}rf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
             rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
 

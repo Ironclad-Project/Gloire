@@ -18,7 +18,7 @@ index 41fe97a..e82638a 100644
 --- fox-clean/include/FXStream.h
 +++ fox-workdir/include/FXStream.h
 @@ -52,9 +52,9 @@ enum FXStreamStatus {
- 
+
  /// Stream seeking
  enum FXWhence {
 -  FXFromStart=0,                /// Seek from start position
@@ -28,31 +28,4 @@ index 41fe97a..e82638a 100644
 +  FXFromCurrent=2,              /// Seek from current position
 +  FXFromEnd=4                   /// Seek from end position
    };
- 
- 
-diff --git fox-clean/src/FXString.cpp fox-workdir/src/FXString.cpp
-index c79ccf6..b1a28c5 100644
---- fox-clean/src/FXString.cpp
-+++ fox-workdir/src/FXString.cpp
-@@ -2501,18 +2501,18 @@ FXString FXStringVal(FXuint num,FXint base){
- 
- 
- // Formatting for reals
--static const char *const expo[]={"%.*f","%.*E","%.*G"};
-+static const char *const expo[]={"%f","%f","%f"};
- 
- 
- // Conversion of float to string
- FXString FXStringVal(FXfloat num,FXint prec,FXint exp){
--  return FXStringFormat(expo[exp],prec,num);
-+  return FXStringFormat("%f",num);
-   }
- 
- 
- // Conversion of double to string
- FXString FXStringVal(FXdouble num,FXint prec,FXint exp){
--  return FXStringFormat(expo[exp],prec,num);
-+  return FXStringFormat("%f",num);
-   }
- 
- 
+

@@ -1,8 +1,17 @@
 diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
-index 92c56e2..fe262e9 100644
+index 92c56e2..d229458 100644
 --- epoch-clean/src/actions.c
 +++ epoch-workdir/src/actions.c
-@@ -35,57 +35,6 @@ struct _EnvVarList *GlobalEnvVars;
+@@ -19,6 +19,8 @@
+ #include <sys/shm.h>
+ #include <sys/syscall.h>
+ #include <signal.h>
++#include <sys/time.h>
++#include <utmpx.h>
+ #include "epoch.h"
+ 
+ /*Prototypes.*/
+@@ -35,57 +37,6 @@ struct _EnvVarList *GlobalEnvVars;
  /*Functions.*/
  static void MountVirtuals(void)
  {
@@ -60,7 +69,7 @@ index 92c56e2..fe262e9 100644
  }
  
  static void PrimaryLoop(void)
-@@ -669,7 +618,9 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+@@ -669,7 +620,9 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
  	sync();
  
  	/*pivot_root now.*/
@@ -71,6 +80,26 @@ index 92c56e2..fe262e9 100644
  	{
  		SpitError("Failed to pivot_root()!");
  		EmergencyShell();
+@@ -869,6 +822,19 @@ void LaunchBootup(void)
+ 		putc('\007', stderr); /*Beep.*/
+ 	}
+ 	
++	/* Add utmpx entry */
++    struct utmpx entry;
++    entry.ut_type = BOOT_TIME;
++    if (gettimeofday(&entry.ut_tv, NULL)) {
++        perror("epoch: could not get time of day");
++    }
++
++	setutxent();
++    if (pututxline(&entry) == NULL) {
++        perror("epoch: could not set BOOT_TIME entry");
++    }
++	endutxent();
++
+ 	PrimaryLoop(); /*Does everything after initial boot.*/
+ }
+ 
 diff --git epoch-clean/src/epoch.h epoch-workdir/src/epoch.h
 index 8130386..66800b7 100644
 --- epoch-clean/src/epoch.h
@@ -88,39 +117,6 @@ index 8130386..66800b7 100644
  #define OSCTL_DISABLE_CTRLALTDEL 0 /*Now isn't this hilarious. It's zero.*/
  #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
  
-diff --git epoch-clean/src/main.c epoch-workdir/src/main.c
-index 62bff39..28b2123 100644
---- epoch-clean/src/main.c
-+++ epoch-workdir/src/main.c
-@@ -17,6 +17,8 @@
- #include <sys/reboot.h>
- #include <sys/shm.h>
- #include <sys/stat.h>
-+#include <utmpx.h>
-+#include <sys/time.h>
- 
- #ifndef NO_EXECINFO
- #include <execinfo.h>
-@@ -1746,6 +1748,19 @@ int main(int argc, char **argv)
- 		const Bool NoKArgs = NoKArgsFileExists();
- 		const char *TConfigFile = NoKArgs ? NULL : getenv("epochconfig");
- 		
-+        /* Add utmpx entry */
-+        struct utmpx entry;
-+        entry.ut_type = BOOT_TIME;
-+        if (gettimeofday(&entry.ut_tv, NULL)) {
-+            perror("epoch: could not get time of day");
-+        }
-+
-+        setutxent();
-+        if (pututxline(&entry) == NULL) {
-+            perror("epoch: could not set BOOT_TIME entry");
-+        }
-+        endutxent();
-+
- 		if (TConfigFile != NULL)
- 		{ /*Someone specified a config file from disk?*/
- 			snprintf(ConfigFile, MAX_LINE_SIZE, "%s", TConfigFile);
 diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
 index b52068c..bb9a7cd 100644
 --- epoch-clean/src/modes.c

@@ -1,14 +1,3 @@
-diff --git mlibc-clean/abis/ironclad/auxv.h mlibc-workdir/abis/ironclad/auxv.h
-index 8a80546..b113288 100644
---- mlibc-clean/abis/ironclad/auxv.h
-+++ mlibc-workdir/abis/ironclad/auxv.h
-@@ -4,6 +4,5 @@
- #define AT_HWCAP 16
- #define AT_SECURE 23
- #define AT_RANDOM 25
--#define AT_EXECFN 31
- 
- #endif
 diff --git mlibc-clean/abis/ironclad/signal.h mlibc-workdir/abis/ironclad/signal.h
 index f6eeed0..2634cbe 100644
 --- mlibc-clean/abis/ironclad/signal.h

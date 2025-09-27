@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=dconf
-version=0.40.0
-revision=2
-tarball_url="https://download.gnome.org/sources/dconf/0.40/dconf-${version}.tar.xz"
-tarball_blake2b="bdbc48b71e46fdc4353358cd08fb96933d07af587300a6f91bc45826aeafb3f34f482fe6e09041dd839e507b863a8e33d09bad88a91c1c868983f8afb52c5c85"
+version=0.49.0
+revision=1
+tarball_url="https://download.gnome.org/sources/dconf/0.49/dconf-${version}.tar.xz"
+tarball_blake2b="eb2ba8b00225dc612aecffa8d37a5251764e4b71232a92de97b4d6f02d1074a7c7b8b7230e2f254c852b836ddd910bdea02cef4ec4177102268ca8bc8e95129e"
 imagedeps="meson ninja-build libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs dbus glib2 bash-completion"

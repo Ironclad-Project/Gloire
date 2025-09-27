@@ -2,10 +2,10 @@
 
 name=libexpat
 repology_id=expat
-version=2.7.2
+version=2.7.3
 revision=1
-git_url="https://github.com/libexpat/libexpat.git"
-commit=7643f96bd5b9f5d3b26ea112519e05e17ef91cfb
+tarball_url="https://github.com/libexpat/libexpat/archive/refs/tags/R_2_7_3.tar.gz"
+tarball_blake2b="bdf97e470b3940edc01c58f9859e31a85293a5e28c9e0544e5aab4ea97cb01fee521831c5e0ad282b9e6ed62073398fe728c85cd5b989896947ffd50486c0700"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

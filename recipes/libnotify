@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libnotify
-version=0.8.6
-revision=2
+version=0.8.7
+revision=1
 tarball_url="https://download.gnome.org/sources/libnotify/0.8/libnotify-${version}.tar.xz"
-tarball_blake2b="5598a3539deb9a08bdb03f4cad5efb1610f07c48fa6029657bcdbedb6a73966512fcc313d038a4f26c762fc0e26cb3e6c3aa9caa3e59f57fccf2f51adced6773"
+tarball_blake2b="80b16886b2ad10f0e0301e8c070944d81d292a5aece8258d5aed904b7bd67e9f7c038fa9284375dd25a419fdb6edf466514048022377907e8ac442e3e1f9d287"
 imagedeps="meson ninja-build libglib2.0-dev docbook-xsl-ns"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 gtk3"
@@ -12,6 +12,7 @@ deps="core-libs glib2 gtk3"
 configure() {
     meson_configure \
         -Dgtk_doc=false \
+        -Dtests=false \
         -Dintrospection=disabled
 }
 

@@ -1,11 +1,11 @@
 #! /bin/sh
 
 name=gobject-introspection
-version=1.84.0
-version_short=1.84
+version=1.86.0
+version_short=1.86
 revision=1
 tarball_url="https://download.gnome.org/sources/gobject-introspection/${version_short}/gobject-introspection-${version}.tar.xz"
-tarball_blake2b="c888cc36f980db61bf7da46199fecfbe944034b9ffdf3e6e21cc56b2177c3ece1a0571166ab37c63c6f0d5c80be91963c9e342f5162e2b908838d8eef9e193e3"
+tarball_blake2b="425d60c8c4bd582c55030ed91b4c2f3982e3c502da1c6f2579c4cc1e05d82d8a8c9a533af3e4a7ae8f6a031761d763d7f7ad8031e38ae3bd7d2549c9f6bcf7f3"
 imagedeps="libpython3-dev gobject-introspection"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 python"

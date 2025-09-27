@@ -1,16 +1,12 @@
 #! /bin/sh
 
 name=p11-kit
-version=0.25.8
+version=0.25.10
 revision=1
-git_url="https://github.com/p11-glue/p11-kit.git"
-commit=2ee61264fa004e65176adf601c0bacc355d8b63b
+tarball_url="https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz"
+tarball_blake2b="9f5a1be36a5b67ac35b294afdacf1b3a5c1c579b04e3407ea7bc6899cfe74330682653da50975a13e443b3a79379fdf6c6ed2a778933cf5dbba4fdf6dc52c99a"
 hostdeps="gcc pkg-config"
 deps="core-libs libffi libtasn1"
-
-early_prepare() {
-    git submodule update --init --recursive
-}
 
 prepare() {
     sed '20,$ d' -i ${source_dir}/trust/trust-extract-compat

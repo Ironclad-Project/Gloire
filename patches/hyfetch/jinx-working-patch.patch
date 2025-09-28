@@ -1,0 +1,13 @@
+diff --git hyfetch-clean/neofetch hyfetch-workdir/neofetch
+index 5548fdb..ed7e216 100755
+--- hyfetch-clean/neofetch
++++ hyfetch-workdir/neofetch
+@@ -2152,7 +2152,7 @@ get_packages() {
+ 
+     # OS-specific package managers.
+     case $os in
+-        Linux|BSD|"iPhone OS"|Solaris|illumos|Interix)
++        Linux|BSD|"iPhone OS"|Solaris|illumos|Interix|Ironclad)
+             # Package Manager Programs.
+             has kiss       && tot kiss l
+             has cpt-list   && tot cpt-list

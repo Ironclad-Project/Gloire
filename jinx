@@ -34,11 +34,11 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="9"
+jinx_minor_ver="10"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-debian_snapshot="20250627T143139Z"
+debian_snapshot="20250926T202717Z"
 
 XBPS_VERSION=213c8290ceca38264d2907d6d01f91775951bd14
 XBPS_SHA256SUM=6c4420c86212be203cdbc061ab2e53255f6407e15b7aee307eac2a8f370eb3c4
@@ -538,19 +538,11 @@ prepare_container() {
             rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
             mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
-            want_link='l'
-            want_experimental=''
-            if echo "${pkg}" | grep -q '^experimental:'; then
-                want_link=''
-                want_experimental='-t experimental'
-                pkg="$(echo "${pkg}" | sed 's/^experimental://g')"
-            fi
-
-            cp -Pp${want_link}rf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
+            cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
 
             rm -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
 
-            run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y ${want_experimental} "${pkg}"
+            run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y "${pkg}"
 
             # Fix permissions of files
             for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
@@ -1607,9 +1599,6 @@ EOF
 APT::Install-Recommends "0";
 APT::Sandbox::User "root";
 Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.conf"
-
-    sources_list_tmp="$(sed 's/sid/experimental/g' "$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list")"
-    echo "${sources_list_tmp}" >>"$JINX_CACHE_DIR/sets/.image/etc/apt/sources.list"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get update
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y locales

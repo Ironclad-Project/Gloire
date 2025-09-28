@@ -1,6 +1,6 @@
 #! /bin/sh
 
-imagedeps="$imagedeps experimental:gnat-15"
+imagedeps="$imagedeps gnat-15"
 
 ada_symlink_gnat() {
     TMPPATH="$(mktemp -d)"

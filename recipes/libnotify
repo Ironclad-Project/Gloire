@@ -3,8 +3,8 @@
 name=libnotify
 version=0.8.7
 revision=1
-tarball_url="https://download.gnome.org/sources/libnotify/0.8/libnotify-${version}.tar.xz"
-tarball_blake2b="80b16886b2ad10f0e0301e8c070944d81d292a5aece8258d5aed904b7bd67e9f7c038fa9284375dd25a419fdb6edf466514048022377907e8ac442e3e1f9d287"
+git_url="https://gitlab.gnome.org/GNOME/libnotify.git"
+commit=1d9767a392cbac7e899e7ab80235cfceebd52731
 imagedeps="meson ninja-build libglib2.0-dev docbook-xsl-ns"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 gtk3"

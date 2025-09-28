@@ -3,8 +3,8 @@
 name=adwaita-icon-theme
 version=49.0
 revision=1
-tarball_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/archive/${version}/adwaita-icon-theme-${version}.tar.gz"
-tarball_blake2b="d62a66285013a4b1b1b2ea77840ec8216752744d115662202a2cdca36326d6f61f8a7afba8b938fa7d7bf6e90ff1a1ba30279e13f7c54e42c02134416c0ddf76"
+git_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git"
+commit=084370e79b7f02cec50ab70c82da49f64b45f120
 imagedeps="gtk-update-icon-cache"
 hostdeps="gcc pkg-config"
 deps="core-libs gtk3"

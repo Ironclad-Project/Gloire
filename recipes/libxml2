@@ -3,8 +3,8 @@
 name=libxml2
 version=2.15.0
 revision=1
-tarball_url="https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${version}/libxml2-v${version}.tar.gz"
-tarball_blake2b="d87c133fbd6ae3869a2d7c52a8d0810e146a03adb1372bba0a2443a7a9b599ae48f07516390031319543d2764df3c23a86c1bc9880ad56cc1e9793cf761f371e"
+git_url="https://gitlab.gnome.org/GNOME/libxml2.git"
+commit=0bea77c8289324483c0504d36ac730bb03f6a70b
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib"
 

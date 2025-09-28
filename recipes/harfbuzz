@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=harfbuzz
-version=11.5.1
+version=12.0.0
 revision=1
-tarball_url="https://github.com/harfbuzz/harfbuzz/releases/download/${version}/harfbuzz-${version}.tar.xz"
-tarball_blake2b="0d5fc089a8bd1506bd4a77c3804c32537288b21c7af472806672bad7eea85012392d62f0c28bf24cc7049c919719c1bddbcce1cd2da1950a4034579086b3c76d"
+git_url="https://github.com/harfbuzz/harfbuzz.git"
+commit=720f1a3b6699df28c6f600f5d750100ba22d389b
 hostdeps="gcc pkg-config"
 deps="core-libs graphite2 glib2 zlib freetype2 cairo icu"
 

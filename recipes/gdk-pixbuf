@@ -3,8 +3,8 @@
 name=gdk-pixbuf
 version=2.44.2
 revision=1
-tarball_url="https://download.gnome.org/sources/gdk-pixbuf/2.44/gdk-pixbuf-${version}.tar.xz"
-tarball_blake2b="bd02058980dfd6dbeb8ff1328d2160ea2deed8a957e456a15803ef7619818939a868f711c9d85a7947fe9ebea023210c930aaf8be09ad38351ae8ed3ce511188"
+git_url="https://gitlab.gnome.org/GNOME/gdk-pixbuf.git"
+commit=f964c322d7dfefc3f03e43c6ae3b35ecfe01721c
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 libjpeg-turbo libpng libx11 libtiff"

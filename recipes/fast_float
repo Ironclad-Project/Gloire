@@ -4,8 +4,8 @@ name=fast_float
 repology_id="fast-float"
 version=8.1.0
 revision=1
-tarball_url="https://github.com/fastfloat/fast_float/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="fa84e318a6cb4a14a7d80c89f23bdc5e2c365198098ffbc2a417e4f386bedb2dbe25df06936bfdf4c59aeccda14161bb2098900c19c04494b6ac138f8c88b8cd"
+git_url="https://github.com/fastfloat/fast_float.git"
+commit=88b1e5321c6918cbe091afd76728296290668403
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

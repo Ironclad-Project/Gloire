@@ -3,9 +3,9 @@
 name=glib2
 repology_id=glib
 version=2.86.0
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/glib.git"
-commit=5713425544d504864061b2e7063af2a6c86ccc71
+commit=e33be08bda99f453e497064e9e021d6306bbeb7d
 imagedeps="python3-docutils"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 libffi zlib"

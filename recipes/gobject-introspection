@@ -2,10 +2,9 @@
 
 name=gobject-introspection
 version=1.86.0
-version_short=1.86
 revision=1
-tarball_url="https://download.gnome.org/sources/gobject-introspection/${version_short}/gobject-introspection-${version}.tar.xz"
-tarball_blake2b="425d60c8c4bd582c55030ed91b4c2f3982e3c502da1c6f2579c4cc1e05d82d8a8c9a533af3e4a7ae8f6a031761d763d7f7ad8031e38ae3bd7d2549c9f6bcf7f3"
+git_url="https://gitlab.gnome.org/GNOME/gobject-introspection.git"
+commit=0f1412500b7d9039510b7b36b07c9f8ba0809bfa
 imagedeps="libpython3-dev gobject-introspection"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 python"

@@ -4,8 +4,8 @@ name=libtiff
 repology_id=tiff
 version=4.7.1
 revision=1
-tarball_url="https://download.osgeo.org/libtiff/tiff-${version}.tar.xz"
-tarball_blake2b="07de35ac364c345ce86a8952c0e348afd1355c412b467e854f9e56b7294294149a3e8b3652723c40494175f6e51a5b909b5291d0c6cac3d80f3d821125d1ee79"
+git_url="https://gitlab.com/libtiff/libtiff.git"
+commit=5fe20d0e9aba49a6a350ed533459d1505203838f
 hostdeps="gcc pkg-config"
 deps="core-libs freeglut libjpeg-turbo zlib zstd xz"
 

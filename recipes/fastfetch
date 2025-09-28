@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=fastfetch
+version=2.52.0
+revision=1
+tarball_url="https://github.com/fastfetch-cli/fastfetch/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="a94b5ed26387936326bbf5d7d7eeae60899cf0692e91f9ad8712ed9678fe818b5af816c3d01b73df36f4d16b36b82fd9fab6e3527df758f94724de7292874ceb"
+hostdeps="gcc pkg-config"
+deps="core-libs zlib libxcb libxrandr glib2 dconf sqlite"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

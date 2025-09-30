@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=coreutils
-version=9.7
+version=9.8
 revision=1
 tarball_url="https://ftpmirror.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
-tarball_blake2b="e5e5f7ec26c3952eb6a25988f78d3a1f8a70cf97a2fbc7b433dfcd1721cd38e6e0a8b9cb83f854a22df325bcb5ea8c4534c5a217273762cd5d575b381db69ee8"
+tarball_blake2b="a93e26c8dda875b11541808d82ff8d6537f521b9c44e2a9959ee8f452823a4df5aed2793ac32766e2d3f832606d7190f7f53ea5870419f585aa66429a9626d98"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

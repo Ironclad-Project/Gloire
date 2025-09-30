@@ -3,10 +3,10 @@
 name=gtk3
 repology_id=gtk
 repology_srcname=gtk3
-version=3.24.50
+version=3.24.51
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/gtk.git"
-commit=93f05958bd683cb573236bd2a4cede68160595ca
+commit=0d3e55cf22abc81b532a3011462b3195f1480974
 imagedeps="libglib2.0-dev libgdk-pixbuf-2.0 python3-packaging"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core cairo glib2 gdk-pixbuf libx11 libxext libxcb libxinerama libxrender libxrandr libxfixes libxdamage pango fribidi libepoxy libxkbcommon fontconfig freetype2 libxi harfbuzz libxcursor gsettings-desktop-schemas dbus hicolor-icon-theme"

@@ -1,0 +1,19 @@
+#! /bin/sh
+
+name=os-test
+skip_pkg_check=yes
+version=0.0git
+revision=1
+git_url="https://gitlab.com/sortix/os-test.git"
+commit=645f26525bd1a83b6929c6ad253ea3c64aa7fad9
+deps="core-libs"
+
+configure() {
+    cp -rp "${source_dir}/." ./
+    rm -rf .git
+}
+
+package() {
+    mkdir -p "${dest_dir}${prefix}/share/os-test"
+    cp -rp . "${dest_dir}${prefix}/share/os-test/"
+}

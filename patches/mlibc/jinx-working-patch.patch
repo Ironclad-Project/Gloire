@@ -239,9 +239,20 @@ index 98f1d2a..e648292 100644
  int mkdirat(int __dirfd, const char *__pathname, mode_t __mode);
  int mkfifo(const char *__pathname, mode_t __mode);
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index e60a4d1..9e25927 100644
+index e60a4d1..e4e2351 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -95,8 +95,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 	}
+ 
+ 	// We implement creating files in this sysdep.
+-	if ((errno == ENOENT) && (flags & O_CREAT)) {
+-		SYSCALL5(SYSCALL_MAKENODE, AT_FDCWD, path, path_len, mode, 0);
++	if ((errno == ENOENT) && (flags & O_CREAT) && ((flags & O_DIRECTORY) == 0)) {
++		SYSCALL5(SYSCALL_MAKENODE, AT_FDCWD, path, path_len, S_IFREG | mode, 0);
+ 		if (ret == -1) {
+ 			return errno;
+ 		}
 @@ -628,8 +628,8 @@ int sys_dup(int fd, int flags, int *newfd) {
  
  int sys_dup2(int fd, int flags, int newfd) {

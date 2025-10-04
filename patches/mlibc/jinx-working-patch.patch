@@ -239,7 +239,7 @@ index 98f1d2a..e648292 100644
  int mkdirat(int __dirfd, const char *__pathname, mode_t __mode);
  int mkfifo(const char *__pathname, mode_t __mode);
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index e60a4d1..e4e2351 100644
+index e60a4d1..18b2bfa 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -95,8 +95,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
@@ -253,7 +253,21 @@ index e60a4d1..e4e2351 100644
  		if (ret == -1) {
  			return errno;
  		}
-@@ -628,8 +628,8 @@ int sys_dup(int fd, int flags, int *newfd) {
+@@ -362,6 +362,13 @@ pid_t sys_getpid() {
+ 	return ret;
+ }
+ 
++pid_t sys_gettid() {
++	pid_t ret;
++	int errno;
++	SYSCALL0(SYSCALL_GETTID);
++	return ret;
++}
++
+ pid_t sys_getppid() {
+ 	pid_t ret;
+ 	int errno;
+@@ -628,8 +635,8 @@ int sys_dup(int fd, int flags, int *newfd) {
  
  int sys_dup2(int fd, int flags, int newfd) {
  	int ret = sys_close(newfd);
@@ -264,7 +278,7 @@ index e60a4d1..e4e2351 100644
  	}
  
  	int errno;
-@@ -640,7 +640,7 @@ int sys_dup2(int fd, int flags, int newfd) {
+@@ -640,7 +647,7 @@ int sys_dup2(int fd, int flags, int newfd) {
  	}
  
  	if (ret != -1 && ret != newfd) {
@@ -273,7 +287,7 @@ index e60a4d1..e4e2351 100644
  	}
  
  	if (errno == 0) {
-@@ -755,10 +755,7 @@ int sys_mkdir(const char *path, mode_t mode) {
+@@ -755,10 +762,7 @@ int sys_mkdir(const char *path, mode_t mode) {
  }
  
  int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
@@ -285,7 +299,16 @@ index e60a4d1..e4e2351 100644
  }
  
  int sys_rmdir(const char* path){
-@@ -1422,6 +1419,15 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
+@@ -1414,7 +1418,7 @@ int sys_renameat(int olddirfd, const char *old_path, int newdirfd, const char *n
+ 	return errno;
+ }
+ 
+-int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
++int sys_mknodat(int dirfd, const char *path, int mode, int dev) {
+ 	int ret;
+ 	int errno;
+ 	size_t len = strlen(path);
+@@ -1422,6 +1426,15 @@ int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev) {
  	return errno;
  }
  

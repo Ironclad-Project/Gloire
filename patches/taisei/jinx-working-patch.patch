@@ -1,0 +1,19 @@
+diff --git taisei-clean/external/basis_universal/meson.build taisei-workdir/external/basis_universal/meson.build
+index 0c3aafa..fc335bf 100644
+--- taisei-clean/external/basis_universal/meson.build
++++ taisei-workdir/external/basis_universal/meson.build
+@@ -5,14 +5,12 @@ project('basisu', 'c', 'cpp',
+     default_options : [
+         'cpp_std=c++17',
+         'cpp_eh=none',
+-        'cpp_rtti=false',
+     ]
+ )
+ 
+ cpp_options = [
+     'cpp_std=c++17',
+     'cpp_eh=none',
+-    'cpp_rtti=false',
+ ]
+ 
+ enable_ktx2 = get_option('enable_ktx2')

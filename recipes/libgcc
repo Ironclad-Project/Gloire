@@ -5,7 +5,7 @@ skip_pkg_check=yes
 version="$(. "${base_dir}/source-recipes/gcc-host" && echo ${version})"
 revision=1
 hostdeps="gcc pkg-config"
-imagedeps="experimental:build-essential"
+imagedeps="build-essential"
 deps="mlibc"
 
 . "${base_dir}"/build-support/gcc-ada-helpers

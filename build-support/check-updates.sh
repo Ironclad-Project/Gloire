@@ -37,11 +37,11 @@ for pkg in "$@"; do
     if [ -z "$repology_status" ]; then
         status_to_check=""
     else
-        status_to_check=".status == \"$repology_status\" and"
+        status_to_check=".status==\"$repology_status\" and"
     fi
     sleep .5
     repology_response="$(curl -s -A '' https://repology.org/api/v1/project/$name_to_check)"
-    checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera")).version' | sort -Vr | head -n 1)
+    checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera" or .repo=="homebrew")).version' | grep -v '"HEAD"' | sort -Vr | head -n 1)
     if [ -z "$checked_vers" ]; then
         checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)
     fi

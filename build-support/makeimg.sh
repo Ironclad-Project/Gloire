@@ -205,7 +205,7 @@ $SUDO losetup -d ${LOOPBACK_DEV}
 
 # Arch-specific image triggers.
 if [ "$ARCH" = x86_64 ]; then
-    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img 2
+    host-pkgs/limine/usr/local/bin/limine bios-install gloire.img
 fi
 
 sync

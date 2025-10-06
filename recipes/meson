@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=meson
+version=1.9.1
+revision=1
+git_url="https://github.com/mesonbuild/meson.git"
+commit=751b09390996163348612f0b106114256305ee40
+imagedeps="python3-build python3-installer"
+hostdeps="pkg-config"
+deps="core-libs python ninja"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    python3 -m build \
+        --wheel \
+        --no-isolation
+}
+
+package() {
+    DEB_PYTHON_INSTALL_LAYOUT=deb python3 -m installer \
+        --destdir="${dest_dir}" \
+        --prefix="${prefix}" \
+        dist/*.whl
+
+    post_package_strip
+}

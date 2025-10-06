@@ -3,9 +3,9 @@
 name=mlibc
 skip_pkg_check=yes
 version=0.0git
-revision=48
+revision=49
 git_url="https://github.com/managarm/mlibc.git"
-commit=f6a3d0c1de149786b06de356d68f1a1b411af7fa
+commit=f47089e6445b8839388aada83093b634d8f4bdf2
 hostdeps="gcc pkg-config"
 deps="mlibc-headers"
 

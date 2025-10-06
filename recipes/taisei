@@ -2,7 +2,7 @@
 
 name=taisei
 version=1.4.4
-revision=1
+revision=2
 tarball_url="https://github.com/taisei-project/taisei/releases/download/v${version}/taisei-${version}.tar.xz"
 tarball_blake2b="8dcd65265062f510e407494ab977a1f2d98937fef3657fb61cc582f8ec855dc8402c79fa059a9ceff52e45a0ff50fde810d72c3a1b270ed64824d6dcb42ab983"
 imagedeps="build-essential"
@@ -24,6 +24,10 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    mkdir -p "${dest_dir}${prefix}/lib"
+    rm -rf subprojects/koishi/src/*.so*.p
+    cp -Ppv subprojects/koishi/src/*.so* "${dest_dir}${prefix}/lib/"
 
     post_package_strip
 }

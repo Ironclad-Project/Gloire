@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=gtest
+version=1.17.0
+tarball_url="https://github.com/google/googletest/releases/download/v${version}/googletest-${version}.tar.gz"
+tarball_sha512=0f57e9ef06925e5b7722df1eb92ef5850e8dce79220ea16a8aaff586a71c0b01460ef1713649ee24ffedb2e6ad5a51e9198c5a5ae1b2789e43feb1f494e7d45c
+revision=1
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

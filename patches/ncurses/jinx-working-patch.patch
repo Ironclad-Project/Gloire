@@ -1,17 +1,17 @@
 diff --git ncurses-clean/c++/Makefile.in ncurses-workdir/c++/Makefile.in
-index 61e25e6..ac4a939 100644
+index e2661ee..43b5638 100644
 --- ncurses-clean/c++/Makefile.in
 +++ ncurses-workdir/c++/Makefile.in
-@@ -120,7 +120,7 @@ SHLIB_LIST	= $(SHLIB_DIRS) \
- 		-l@FORM_NAME@@USE_LIB_SUFFIX@ \
- 		-l@MENU_NAME@@USE_LIB_SUFFIX@ \
- 		-l@PANEL_NAME@@USE_LIB_SUFFIX@ \
--		-lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
-+		-lncurses@USE_LIB_SUFFIX@
+@@ -119,7 +119,7 @@ SHLIB_LIST	= $(SHLIB_DIRS) \
+ 		-l@FORM_NAME@@ABI_SUFFIX@ \
+ 		-l@MENU_NAME@@ABI_SUFFIX@ \
+ 		-l@PANEL_NAME@@ABI_SUFFIX@ \
+-		-lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++		-lncurses@ABI_SUFFIX@
  
  LIBROOT		= ncurses++
  
-@@ -159,7 +159,7 @@ LDFLAGS_SHARED	= $(TEST_LDFLAGS) $(CFLAGS_SHARED) @LD_SHARED_OPTS@
+@@ -158,7 +158,7 @@ LDFLAGS_SHARED	= $(TEST_LDFLAGS) $(CFLAGS_SHARED) @LD_SHARED_OPTS@
  LDFLAGS_DEFAULT	= $(LINK_@DFT_UPR_MODEL@) $(LDFLAGS_@DFT_UPR_MODEL@)
  
  # flags for library built by this makefile
@@ -20,7 +20,7 @@ index 61e25e6..ac4a939 100644
  	@LD_MODEL@ $(TEST_LIBS) @LIBS@ $(CXXLIBS)
  
  AUTO_SRC	= \
-@@ -184,7 +184,7 @@ AUTO_SRC	= \
+@@ -183,7 +183,7 @@ AUTO_SRC	= \
  all \
  libs ::		$(AUTO_SRC) $(LIBRARIES)
  
@@ -29,7 +29,7 @@ index 61e25e6..ac4a939 100644
  
  depend :
  
-@@ -258,20 +258,20 @@ $(INCDIR)/panel.h :
+@@ -257,20 +257,20 @@ $(INCDIR)/panel.h :
  
  ###############################################################################
  
@@ -63,10 +63,10 @@ index 61e25e6..ac4a939 100644
  etip.h:	$(srcdir)/etip.h.in $(srcdir)/edit_cfg.sh
  	cp $(srcdir)/etip.h.in $@
 diff --git ncurses-clean/configure ncurses-workdir/configure
-index dad6c3e..3e37ddd 100755
+index 2acf60a..5ca741b 100755
 --- ncurses-clean/configure
 +++ ncurses-workdir/configure
-@@ -3821,7 +3821,7 @@ echo $ECHO_N "checking if $CXX works... $ECHO_C" >&6
+@@ -3826,7 +3826,7 @@ echo $ECHO_N "checking if $CXX works... $ECHO_C" >&6
  
  		save_CPPFLAGS="$CPPFLAGS"
  		eval cf_includedir=${includedir}
@@ -74,8 +74,8 @@ index dad6c3e..3e37ddd 100755
 +		CPPFLAGS="$CPPFLAGS"
  
  cat >"conftest.$ac_ext" <<_ACEOF
- #line 3827 "configure"
-@@ -7270,6 +7270,10 @@ CF_EOF
+ #line 3832 "configure"
+@@ -7243,6 +7243,10 @@ CF_EOF
  		LINK_PROGS="$SHELL ${rel_builddir}/mk_prog.sh"
  		LINK_TESTS="$SHELL ${rel_builddir}/mk_prog.sh"
  		;;
@@ -87,15 +87,15 @@ index dad6c3e..3e37ddd 100755
  		cf_cv_shlib_version=mingw
  		cf_cv_shlib_version_infix=mingw
 diff --git ncurses-clean/form/Makefile.in ncurses-workdir/form/Makefile.in
-index 2216972..c892ef3 100644
+index 8656e76..9615d36 100644
 --- ncurses-clean/form/Makefile.in
 +++ ncurses-workdir/form/Makefile.in
-@@ -112,7 +112,7 @@ LINK		= $(LIBTOOL_LINK)
+@@ -115,7 +115,7 @@ LINK		= $(LIBTOOL_LINK)
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
  
  SHLIB_DIRS	= -L../lib
--SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
-+SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
  
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
@@ -113,7 +113,7 @@ index c369dd2..abca88f 100644
  	case $opt in
  	-l*) # LIBS is handled specially below
 diff --git ncurses-clean/misc/ncurses-config.in ncurses-workdir/misc/ncurses-config.in
-index c671407..8ce6545 100644
+index 88464fa..4cb8310 100644
 --- ncurses-clean/misc/ncurses-config.in
 +++ ncurses-workdir/misc/ncurses-config.in
 @@ -110,7 +110,7 @@ fi
@@ -126,20 +126,20 @@ index c671407..8ce6545 100644
  	case $opt in
  	-specs*) # ignore linker specs-files which were used to build library
 diff --git ncurses-clean/panel/Makefile.in ncurses-workdir/panel/Makefile.in
-index 8516611..6d1ea19 100644
+index 59ad33c..e1e099e 100644
 --- ncurses-clean/panel/Makefile.in
 +++ ncurses-workdir/panel/Makefile.in
-@@ -114,7 +114,7 @@ LINK		= $(LIBTOOL_LINK)
+@@ -117,7 +117,7 @@ LINK		= $(LIBTOOL_LINK)
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
  
  SHLIB_DIRS	= -L../lib
--SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@ @SHLIB_LIST@
-+SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@USE_LIB_SUFFIX@
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
  
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
 diff --git ncurses-clean/progs/Makefile.in ncurses-workdir/progs/Makefile.in
-index 82c9940..144714b 100644
+index fb2d6f0..ba1af5f 100644
 --- ncurses-clean/progs/Makefile.in
 +++ ncurses-workdir/progs/Makefile.in
 @@ -80,7 +80,7 @@ LIBTOOL_INSTALL	= @LIB_INSTALL@

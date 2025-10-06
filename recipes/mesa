@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mesa
-version=25.2.3
+version=25.2.4
 revision=1
 git_url="https://gitlab.freedesktop.org/mesa/mesa.git"
-commit=62f9be9a657a493b8416534feea20294d0e98539
+commit=ab462ae6b7064ed63b8c94f31d5e3be60dcfede6
 imagedeps="python3-mako python3-yaml glslang-tools"
 hostdeps="gcc pkg-config"
 deps="core-libs llvm-libs libexpat libx11 libxcb libxext libxshmfence libxxf86vm libxrandr zlib zstd"

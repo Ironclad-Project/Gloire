@@ -1221,27 +1221,13 @@ do_pkg() {
         version=$(unset version && source_source_recipe ${from_source} && echo "$version")
     fi
 
-    case "${version}" in
-        *git)
-            if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-                rm -rf "${build_dir}"/builds/"$1"
-                tracked_subshell '
-                if ! [ -z "${from_source}" ]; then
-                    name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
-                fi
-                clean_sources "${name}"
-                '
-            fi
-            ;;
-    esac
-
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
         rm -rf "${build_dir}"/builds/"$1"
         tracked_subshell '
         if ! [ -z "${from_source}" ]; then
             name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
         fi
-        need_repatch "${name}"
+        clean_sources "${name}"
         '
     fi
 

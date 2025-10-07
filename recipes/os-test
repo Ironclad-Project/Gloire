@@ -13,7 +13,9 @@ deps="core-libs"
 configure() {
     cp -rp "${source_dir}/." ./
     rm -rf .git
+}
 
+build() {
     make all -j${parallelism} \
         OS=ironclad \
         CC=${OS_TRIPLET}-gcc \

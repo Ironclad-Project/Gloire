@@ -1,0 +1,53 @@
+name=vim
+version=9.0.1676
+revision=1
+tarball_url="https://github.com/vim/vim/archive/refs/tags/v${version}.tar.gz"
+tarball_sha512=89e2e142d2dcbd162efd3f552ac745c2f2aaa905c08f8ffb88122feb53c9150a8906cfbfbba6203c186d7651276c8582ffc39c0b54f5bbf81e9a32546e7b1715
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs ncurses"
+
+configure() {
+	cp -rp ${source_dir}/* .
+
+	vim_cv_toupper_broken="no" \
+	ac_cv_small_wchar_t="no" \
+	ac_cv_func_sigsetjmp="no" \
+	vim_cv_terminfo="yes" \
+	vim_cv_tgetent="zero" \
+	vim_cv_tty_group="" \
+	vim_cv_tty_mode="0620" \
+	vim_cv_getcwd_broken="no" \
+	vim_cv_timer_create="no" \
+	vim_cv_timer_create_with_lrt="no" \
+	vim_cv_stat_ignores_slash="no" \
+	vim_cv_memmove_handles_overlap="yes" \
+	vim_cv_bcopy_handles_overlap="yes" \
+	vim_cv_memcpy_handles_overlap="yes" \
+    autotools_configure \
+        --with-tlib=tinfo \
+        --with-features=huge \
+        --with-wayland=no \
+        --enable-gpm \
+        --enable-acl \
+        --with-x=no \
+        --disable-gui \
+        --enable-multibyte \
+        --enable-cscope \
+        --enable-netbeans \
+        --enable-perlinterp=dynamic \
+        --enable-python3interp=dynamic \
+        --enable-rubyinterp=dynamic \
+        --enable-luainterp=dynamic \
+        --enable-tclinterp=dynamic \
+        --disable-canberra
+
+}
+
+build() {
+	make -j ${parallelism}
+}
+
+package() {
+	make install DESTDIR=${dest_dir}
+}

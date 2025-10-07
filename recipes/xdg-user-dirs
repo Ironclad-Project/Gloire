@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=xdg-user-dirs
+version=0.19
+revision=1
+tarball_url="https://gitlab.freedesktop.org/xdg/xdg-user-dirs/-/archive/v${version}/xdg-user-dirs-v${version}.tar.gz"
+tarball_blake2b="414cdc1eb7aed6ad893536bed7ffe113574ecf97836a7480cb2e77c4b131fc093dc5e159b3281f57240bc074973276a2c6d37fe26538a128023714388b87b48d"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

@@ -95,9 +95,6 @@ $SUDO rm -rf mount_dir/boot
 $SUDO mkdir -p mount_dir/boot
 $SUDO mount ${LOOPBACK_DEV}p1 mount_dir/boot
 
-# Just plop a random seed file from the systems RNG.
-$SUDO dd if=/dev/random of=mount_dir/root/seedfile.bin bs=40M count=1 iflag=fullblock
-
 # Copy the bootloader wallpaper and kernel to the ISO root.
 $SUDO cp "${source_dir}"/artwork/background.png mount_dir/boot/
 $SUDO cp sysroot/usr/share/ironclad/ironclad mount_dir/boot/

@@ -5,7 +5,6 @@ version=0.19
 revision=2
 git_url="https://gitlab.freedesktop.org/xdg/xdg-user-dirs.git"
 commit=0577968675b9d7d660b3715cf6b2e00c6d491d67
-#imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

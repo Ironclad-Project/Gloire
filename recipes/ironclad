@@ -3,9 +3,9 @@
 name=ironclad
 skip_pkg_check=yes
 version=0.0git
-revision=37
+revision=38
 git_url="https://codeberg.org/Ironclad/Ironclad.git"
-commit=2537ad4e73bd6c000a89cd1242c05ab4cf531d92
+commit=bf8fa26e881c34676bd28bfdc7bae85632abfe34
 source_hostdeps="autoconf automake pkg-config"
 imagedeps="texinfo gprbuild"
 hostdeps="gcc pkg-config"

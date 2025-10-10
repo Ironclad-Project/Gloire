@@ -3,7 +3,7 @@
 name=libcanberra
 version=0.30
 revision=1
-tarball_url="https://0pointer.de/lennart/projects/libcanberra/libcanberra-${version}.tar.xz"
+tarball_url="https://web.archive.org/web/20250920050416if_/http://0pointer.de/lennart/projects/libcanberra/libcanberra-${version}.tar.xz"
 tarball_blake2b="c90c6863738b103c256eeb0907060a0f74b73ef50ac0728d2114aa558a7a1ad7cbae4184860573d3fac0032eba77327a4de94c459b99a81c3dc19da0e98adfda"
 hostdeps="gcc pkg-config"
 deps="core-libs libvorbis gtk3 libtool"

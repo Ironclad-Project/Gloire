@@ -1,8 +1,8 @@
 diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
-index 3147478..20d0a92 100644
+index 8f3749f..20d0a92 100644
 --- mlibc-clean/abis/ironclad/fcntl.h
 +++ mlibc-workdir/abis/ironclad/fcntl.h
-@@ -64,7 +66,7 @@
+@@ -66,7 +66,7 @@
  /* At flags. */
  #define AT_REMOVEDIR        500
  #define AT_EACCESS          512
@@ -217,7 +217,7 @@ index 98f1d2a..e648292 100644
  int mkdirat(int __dirfd, const char *__pathname, mode_t __mode);
  int mkfifo(const char *__pathname, mode_t __mode);
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 18b2bfa..82b45d4 100644
+index abe181b..64f1e28 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
 @@ -1025,7 +1025,7 @@ int sys_shutdown(int sockfd, int how) {
@@ -241,3 +241,36 @@ index 18b2bfa..82b45d4 100644
  int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
  		fd_set *except_set, const struct timespec *timeout,
  		const sigset_t *sigmask, int *num_events) {
+@@ -1454,13 +1459,18 @@ int sys_openpt(int oflags, int *fd) {
+ 	if (!(oflags & O_NOCTTY)) {
+ 		ioctl(*fd, TIOCSCTTY);
+ 	}
++	if (oflags & O_NONBLOCK) {
++		fdflags = fcntl(*fd, F_GETFL);
++		fcntl(*fd, F_SETFL, fdflags | O_NONBLOCK);
++	}
+ 
+ 	return e;
+ }
+ 
+ int sys_unlockpt(int fd) {
+ 	int unlock = 0;
+-	return sys_ioctl(fd, TIOCSPTLCK, &unlock, NULL);
++	int ret;
++	return sys_ioctl(fd, TIOCSPTLCK, &unlock, &ret);
+ }
+ 
+ int sys_symlink(const char *target, const char *link_path) {
+diff --git mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+index 5136bae..0e00aa8 100644
+--- mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h
++++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
+@@ -61,7 +61,7 @@
+ #define TIOCGRS485               0x542E
+ #define TIOCSRS485               0x542F
+ #define TIOCGPTN                 3
+-#define TIOCSPTLCK               3
++#define TIOCSPTLCK               0x5430
+ #define TIOCGDEV                 3
+ #define TCGETX                   0x5432
+ #define TCSETX                   0x5433

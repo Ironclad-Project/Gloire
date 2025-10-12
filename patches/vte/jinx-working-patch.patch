@@ -24,19 +24,6 @@ index c769fb4..68dfc79 100644
          /* Use sysconf() function provided by the system if it is known to be
           * async-signal safe.
           */
-@@ -250,10 +250,9 @@ fdwalk(int (*cb)(void *data, int fd),
- #endif
-
-   for (fd = 0; fd < int(open_max); fd++)
--      if ((res = cb (data, fd)) != 0)
--          break;
-+      cb (data, fd);
-
--  return res;
-+  return 0;
- }
- #endif /* !HAVE_FDWALK */
-
 diff --git vte-clean/src/widget.cc vte-workdir/src/widget.cc
 index 0daaed1..f667db1 100644
 --- vte-clean/src/widget.cc

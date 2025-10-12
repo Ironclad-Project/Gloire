@@ -2,7 +2,7 @@
 
 name=vte
 version=0.80.3
-revision=4
+revision=5
 git_url="https://gitlab.gnome.org/GNOME/vte.git"
 commit=02eaf1997d904dbfb792e2ae9ae0ba8b82f117f1
 imagedeps="meson ninja-build libglib2.0-dev"

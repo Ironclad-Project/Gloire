@@ -1,0 +1,34 @@
+diff --git lynx-clean/src/LYUtils.c lynx-workdir/src/LYUtils.c
+index e45e641..767af21 100644
+--- lynx-clean/src/LYUtils.c
++++ lynx-workdir/src/LYUtils.c
+@@ -3073,19 +3073,7 @@ static BOOLEAN LYToggleSigDfl(int sig,
+ 
+ /* For systems that have both, but both can't be included, duh (or neither) */
+ /* FIXME: this whole chunk may be redundant */
+-#ifdef TERMIO_AND_CURSES
+-# ifdef TERMIO_AND_TERMIOS
+-#  include <termio.h>
+-# else
+-#  ifdef HAVE_TERMIOS_H
+-#   include <termios.h>
+-#  else
+-#   ifdef HAVE_TERMIO_H
+-#    include <termio.h>
+-#   endif /* HAVE_TERMIO_H */
+-#  endif /* HAVE_TERMIOS_H */
+-# endif	/* TERMIO_AND_TERMIOS */
+-#endif /* TERMIO_AND_CURSES */
++#include <termios.h>
+ 
+ void LYGetScreenSize(int sig GCC_UNUSED)
+ {
+@@ -5158,6 +5146,8 @@ static char *HomeEnv(void)
+     return result;
+ }
+ 
++#include <pwd.h>
++
+ const char *Home_Dir(void)
+ {
+     static const char *homedir = NULL;

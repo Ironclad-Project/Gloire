@@ -1,16 +1,3 @@
-diff --git mlibc-clean/abis/ironclad/fcntl.h mlibc-workdir/abis/ironclad/fcntl.h
-index 8f3749f..20d0a92 100644
---- mlibc-clean/abis/ironclad/fcntl.h
-+++ mlibc-workdir/abis/ironclad/fcntl.h
-@@ -66,7 +66,7 @@
- /* At flags. */
- #define AT_REMOVEDIR        500
- #define AT_EACCESS          512
--#define AT_FDCWD            0x7FFFFFFF
-+#define AT_FDCWD            -100
- #define AT_EMPTY_PATH       1
- #define AT_SYMLINK_FOLLOW   0
- #define AT_SYMLINK_NOFOLLOW 2
 diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
 index c42b4f4..232c229 100644
 --- mlibc-clean/options/internal/generic/charset.cpp

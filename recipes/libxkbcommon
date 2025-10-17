@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libxkbcommon
-version=1.11.0
+version=1.12.0
 revision=1
 git_url="https://github.com/xkbcommon/libxkbcommon.git"
-commit=0f9cefb1fedb23433666fa5d9045e48ff030c006
+commit=f4e247e50dd4d06542c5e177cfe53f82dfab69b6
 hostdeps="gcc pkg-config"
 deps="core-libs libxcb libxml2 xkeyboard-config"
 

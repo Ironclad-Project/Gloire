@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gsettings-desktop-schemas
-version=49.0
+version=49.1
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git"
-commit=d3559010b4eddec3df9cdb9ea738c03e9e6800fe
+commit=476d0e766396e1e99b9048fa9d0854482d9da7e0
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2"

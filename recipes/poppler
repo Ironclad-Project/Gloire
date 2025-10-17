@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=poppler
-version=25.09.1
+version=25.10.0
 revision=1
 git_url="https://gitlab.freedesktop.org/poppler/poppler.git"
-commit=afdec00e75200fa8d831901c6d53ce96d9ba88cb
+commit=da906ddbfa5aa992c116fee7c95959cd79915f16
 hostdeps="gcc pkg-config"
 deps="core-libs fontconfig glib2 cairo curl libjpeg-turbo libpng libtiff"
 

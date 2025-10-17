@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=nasm
-version=3.00
+version=3.01
 revision=1
 tarball_url="https://www.nasm.us/pub/nasm/releasebuilds/${version}/nasm-${version}.tar.xz"
-tarball_blake2b="9cfb8debdc4623cbd5dee2dbc8f4c52bedbf6bee6aa9165bf0abc31658e969ad54446e327ee3b65978396640dce5bb2dfe1ba2314afc0e5eb32b918d90d66a4e"
+tarball_blake2b="182d908e949e8212ec29bfaa4b747312f7b57dd686195c9b44701f0055ced4b40555624e27d1e1183b356095da76ba1ac8b2a5aa84b2e0d2277106de8ca915d1"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

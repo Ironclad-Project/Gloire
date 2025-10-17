@@ -1,9 +1,8 @@
 #! /bin/sh
 
 name=ca-certificates
+skip_pkg_check=yes
 version_url=1.16.1
-# While unusual, version will be the date of the last bump + the NSS version used.
-# If needed, we can always fetch a set NSS commit past the last release to fix critical bugs.
 version="$(. "${base_dir}/recipes/nss" && echo "${version}")"
 revision=1
 tarball_url="https://github.com/lfs-book/make-ca/archive/v${version_url}/make-ca-${version_url}.tar.gz"

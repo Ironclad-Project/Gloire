@@ -1,3 +1,18 @@
+diff --git python-clean/Lib/site.py python-workdir/Lib/site.py
+index aedf363..b56b236 100644
+--- python-clean/Lib/site.py
++++ python-workdir/Lib/site.py
+@@ -409,6 +409,10 @@ def getsitepackages(prefixes=None):
+                                     f"{implementation}{ver[0]}.{ver[1]}{abi_thread}",
+                                     "site-packages")
+                 sitepackages.append(path)
++                path = os.path.join(prefix, libdir,
++                                    f"{implementation}{ver[0]}.{ver[1]}{abi_thread}",
++                                    "dist-packages")
++                sitepackages.append(path)
+         else:
+             sitepackages.append(prefix)
+             sitepackages.append(os.path.join(prefix, "Lib", "site-packages"))
 diff --git python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
 index 49626d3..8fb0403 100644
 --- python-clean/Modules/timemodule.c
@@ -37,7 +52,7 @@ index 4d3fb65..55c7139 100644
    return madvise(addr, size, advice);
    #endif
 diff --git python-clean/configure python-workdir/configure
-index 519caa8..17737ed 100755
+index 901a26c..b14a858 100755
 --- python-clean/configure
 +++ python-workdir/configure
 @@ -4067,6 +4067,9 @@ then

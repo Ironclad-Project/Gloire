@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=fastfetch
-version=2.53.0
+version=2.54.0
 revision=1
 git_url="https://github.com/fastfetch-cli/fastfetch.git"
-commit=9ab5c33008c4bd116135867dacdc29caad7c6efd
+commit=46c4a71ba30a7c3c1abdf95d4aa91028a93908ae
 hostdeps="gcc pkg-config"
 deps="core-libs zlib libxcb libxrandr glib2 dconf sqlite"
 

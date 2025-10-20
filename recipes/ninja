@@ -2,7 +2,7 @@
 
 name=ninja
 version=1.13.1
-revision=2
+revision=3
 git_url="https://github.com/ninja-build/ninja.git"
 commit=79feac0f3e3bc9da9effc586cd5fea41e7550051
 hostdeps="gcc pkg-config"

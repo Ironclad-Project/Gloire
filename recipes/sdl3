@@ -2,7 +2,7 @@
 
 name=sdl3
 version=3.2.24
-revision=1
+revision=2
 git_url="https://github.com/libsdl-org/SDL.git"
 commit=a8589a84226a6202831a3d49ff4edda4acab9acd
 hostdeps="gcc pkg-config"

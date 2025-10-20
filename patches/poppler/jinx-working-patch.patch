@@ -1,7 +1,0 @@
-diff --git poppler-workdir/cmake/modules/Platform/Ironclad.cmake poppler-workdir/cmake/modules/Platform/Ironclad.cmake
-new file mode 100644
-index 0000000..54a156b
---- /dev/null
-+++ poppler-workdir/cmake/modules/Platform/Ironclad.cmake
-@@ -0,0 +1 @@
-+include(Platform/UnixPaths)

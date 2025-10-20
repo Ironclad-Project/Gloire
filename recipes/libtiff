@@ -3,7 +3,7 @@
 name=libtiff
 repology_id=tiff
 version=4.7.1
-revision=1
+revision=2
 git_url="https://gitlab.com/libtiff/libtiff.git"
 commit=5fe20d0e9aba49a6a350ed533459d1505203838f
 hostdeps="gcc pkg-config"

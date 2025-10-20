@@ -1,7 +1,0 @@
-diff --git graphite2-workdir/Platform/Ironclad.cmake graphite2-workdir/Platform/Ironclad.cmake
-new file mode 100644
-index 0000000..54a156b
---- /dev/null
-+++ graphite2-workdir/Platform/Ironclad.cmake
-@@ -0,0 +1 @@
-+include(Platform/UnixPaths)

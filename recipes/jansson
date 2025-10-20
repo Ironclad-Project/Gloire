@@ -2,7 +2,7 @@
 
 name=jansson
 version=2.14.1
-revision=2
+revision=3
 git_url="https://github.com/akheron/jansson.git"
 commit=ed5cae4ed0621ef409510f94270c9f8f263736d0
 hostdeps="gcc pkg-config"

@@ -2,7 +2,7 @@
 
 name=libpng
 version=1.6.50
-revision=1
+revision=2
 git_url="https://github.com/pnggroup/libpng.git"
 commit=2b978915d82377df13fcbb1fb56660195ded868a
 hostdeps="gcc pkg-config"

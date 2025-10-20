@@ -35,10 +35,3 @@ index 237477d..61dd255 100644
  	server[argc] = NULL;
  
  	switch (ServerPID) {
-diff --git slim-workdir/cmake/modules/Platform/Ironclad.cmake slim-workdir/cmake/modules/Platform/Ironclad.cmake
-new file mode 100644
-index 0000000..54a156b
---- /dev/null
-+++ slim-workdir/cmake/modules/Platform/Ironclad.cmake
-@@ -0,0 +1 @@
-+include(Platform/UnixPaths)

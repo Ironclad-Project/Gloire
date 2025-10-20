@@ -2,7 +2,7 @@
 
 name=libjpeg-turbo
 version=3.1.2
-revision=1
+revision=2
 git_url="https://github.com/libjpeg-turbo/libjpeg-turbo.git"
 commit=4e151a4ad91001b3aa8c2ece2205c15f487ce320
 imagedeps="nasm"

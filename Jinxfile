@@ -2,6 +2,8 @@
 
 JINX_MAJOR_VER=0.7
 
+JINX_CMAKE_PLATFORM=build-support/Ironclad.cmake
+
 HOST_CFLAGS="-O2 -pipe -fstack-clash-protection"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
 HOST_LDFLAGS="-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now"

@@ -1,7 +1,0 @@
-diff --git jansson-workdir/cmake/Platform/Ironclad.cmake jansson-workdir/cmake/Platform/Ironclad.cmake
-new file mode 100644
-index 0000000..54a156b
---- /dev/null
-+++ jansson-workdir/cmake/Platform/Ironclad.cmake
-@@ -0,0 +1 @@
-+include(Platform/UnixPaths)

@@ -3,7 +3,7 @@
 name=fast_float
 repology_id="fast-float"
 version=8.1.0
-revision=1
+revision=2
 git_url="https://github.com/fastfloat/fast_float.git"
 commit=88b1e5321c6918cbe091afd76728296290668403
 hostdeps="gcc pkg-config"

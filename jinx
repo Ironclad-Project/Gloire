@@ -34,11 +34,11 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.7"
-jinx_minor_ver="10"
+jinx_minor_ver="11"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-debian_snapshot="20251004T202933Z"
+debian_snapshot="20251020T082908Z"
 
 XBPS_VERSION=213c8290ceca38264d2907d6d01f91775951bd14
 XBPS_SHA256SUM=6c4420c86212be203cdbc061ab2e53255f6407e15b7aee307eac2a8f370eb3c4
@@ -1505,6 +1505,47 @@ reinit_container() {
         fi
     fi
 
+    # Build xbps
+    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/${XBPS_VERSION}.tar.gz
+    if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify XBPS tarball"
+    fi
+
+    tracked_subshell '
+
+    cd "$JINX_CACHE_DIR"
+    tar -zxf xbps-${XBPS_VERSION}.tar.gz
+    cd xbps-${XBPS_VERSION}
+
+    # XXX: xbps upstream forgot to bump version string
+    sed "s/0\.60/0.60.5/g" configure >configure.sed
+    mv configure.sed configure
+    sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
+    mv configure.sed configure
+    chmod +x configure
+
+    CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
+
+    sed "/DBDIR/d" data/Makefile >data/Makefile.sed
+    mv data/Makefile.sed data/Makefile
+
+    sed "s/-lxml2/-lxml2 -llzma -lm/g" config.mk >config.mk.sed
+    mv config.mk.sed config.mk
+
+    if command -v gmake >/dev/null 2>&1; then
+        MAKE=gmake
+    else
+        MAKE=make
+    fi
+
+    ${MAKE} -j${parallelism}
+    ${MAKE} install
+
+    cd ..
+    rm -rf xbps-${XBPS_VERSION}*
+
+    '
+
     cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
 #include <stdio.h>
 #include <unistd.h>
@@ -1597,46 +1638,9 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
 
-    # Build xbps
-    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/${XBPS_VERSION}.tar.gz
-    if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
-        die "Jinx: Failed to verify XBPS tarball"
+    if ! [ -z "${JINX_CMAKE_PLATFORM}" ]; then
+        cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/
     fi
-
-    tracked_subshell '
-
-    cd "$JINX_CACHE_DIR"
-    tar -zxf xbps-${XBPS_VERSION}.tar.gz
-    cd xbps-${XBPS_VERSION}
-
-    # XXX: xbps upstream forgot to bump version string
-    sed "s/0\.60/0.60.5/g" configure >configure.sed
-    mv configure.sed configure
-    sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
-    mv configure.sed configure
-    chmod +x configure
-
-    CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
-
-    sed "/DBDIR/d" data/Makefile >data/Makefile.sed
-    mv data/Makefile.sed data/Makefile
-
-    sed "s/-lxml2/-lxml2 -llzma -lm/g" config.mk >config.mk.sed
-    mv config.mk.sed config.mk
-
-    if command -v gmake >/dev/null 2>&1; then
-        MAKE=gmake
-    else
-        MAKE=make
-    fi
-
-    ${MAKE} -j${parallelism}
-    ${MAKE} install
-
-    cd ..
-    rm -rf xbps-${XBPS_VERSION}*
-
-    '
 }
 
 first_use() {
@@ -1662,6 +1666,7 @@ if ! [ -f "$JINX_CONFIG_FILE" ]; then
     die "$0: missing Jinxfile in directory '$base_dir'"
 fi
 
+unset JINX_CMAKE_PLATFORM
 . "${JINX_CONFIG_FILE}"
 
 if [ -z "$JINX_MAJOR_VER" ]; then

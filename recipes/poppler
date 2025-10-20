@@ -2,7 +2,7 @@
 
 name=poppler
 version=25.10.0
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/poppler/poppler.git"
 commit=da906ddbfa5aa992c116fee7c95959cd79915f16
 hostdeps="gcc pkg-config"

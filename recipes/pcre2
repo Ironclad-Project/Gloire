@@ -2,7 +2,7 @@
 
 name=pcre2
 version=10.46
-revision=1
+revision=2
 git_url="https://github.com/PCRE2Project/pcre2.git"
 commit=b2bd4254b379b9d7dc9a3dda060a7e27009ccdff
 hostdeps="gcc pkg-config"

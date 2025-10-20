@@ -220,7 +220,6 @@ trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QU
 trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' EXIT
 
 make_temp() {
-    mkdir -p "$JINX_CACHE_DIR/tmp"
     tmp="$(mktemp $1 "$JINX_CACHE_DIR/tmp/tmp.XXXXXXXX")"
     temp_collect="${temp_collect} \"${tmp}\""
 }
@@ -1494,6 +1493,7 @@ reinit_container() {
     rm -rf "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
 
     mkdir -p "${apt_cache}"
+    mkdir -p "${JINX_CACHE_DIR}/tmp"
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image"
 

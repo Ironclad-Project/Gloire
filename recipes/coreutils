@@ -2,7 +2,7 @@
 
 name=coreutils
 version=9.8
-revision=1
+revision=2
 tarball_url="https://ftpmirror.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
 tarball_blake2b="a93e26c8dda875b11541808d82ff8d6537f521b9c44e2a9959ee8f452823a4df5aed2793ac32766e2d3f832606d7190f7f53ea5870419f585aa66429a9626d98"
 hostdeps="gcc pkg-config"
@@ -13,6 +13,7 @@ prepare() {
 }
 
 configure() {
+    gl_cv_host_operating_system="Gloire" \
     autotools_configure \
         CFLAGS="$TARGET_CFLAGS -DSLOW_BUT_NO_HACKS" \
         --enable-no-install-program="mkfifo,runcon,chroot"

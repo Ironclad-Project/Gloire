@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=qemu
-version=10.1.1
+version=10.1.2
 revision=1
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
-tarball_blake2b="3617898fb4275e1e18f9567e9a9137ad0f3e3e3bc6a1b77301fd59614047757d77a9b810ece2e504ff47c1b98e2b9881a1ff551a4bc356c87c0d5d85f471a59b"
+tarball_blake2b="6e6e27c5de4f70f928a19ef64c00adbcb9723882db3eabd6acd7543f6b3d886db2862cf75ddcec86012c103d6927be464f03e2a3e91873b87cbbcafa0be95671"
 imagedeps="build-essential python3-venv"
 hostdeps="gcc pkg-config"
 deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman libjpeg-turbo bzip2 zstd vte gnutls libtasn1"

@@ -5,7 +5,7 @@ version=0.49.0
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/dconf.git"
 commit=a6b86bd66d3b42d8cfeacc2cc71a4fc78abadb71
-imagedeps="meson ninja-build libglib2.0-dev"
+imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs dbus glib2 bash-completion"
 

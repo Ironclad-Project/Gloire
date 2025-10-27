@@ -5,7 +5,7 @@ version=0.80.3
 revision=5
 git_url="https://gitlab.gnome.org/GNOME/vte.git"
 commit=02eaf1997d904dbfb792e2ae9ae0ba8b82f117f1
-imagedeps="meson ninja-build libglib2.0-dev"
+imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs fast_float gnutls gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
 

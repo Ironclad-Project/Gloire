@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=pcre2
-version=10.46
-revision=2
+version=10.47
+revision=1
 git_url="https://github.com/PCRE2Project/pcre2.git"
-commit=b2bd4254b379b9d7dc9a3dda060a7e27009ccdff
+commit=f454e231fe5006dd7ff8f4693fd2b8eb94333429
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 readline zlib"
 

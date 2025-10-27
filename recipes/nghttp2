@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=nghttp2
-version=1.67.1
-revision=2
+version=1.68.0
+revision=1
 git_url="https://github.com/nghttp2/nghttp2.git"
-commit=49908f992027821912b96a13898b665a35aa3a0a
+commit=534b74b72524e962c18c7146470914632ca7eb2d
 hostdeps="gcc pkg-config"
 deps="core-libs brotli jansson libevent libxml2 openssl"
 

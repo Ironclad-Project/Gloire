@@ -5,7 +5,7 @@ version=0.8.7
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/libnotify.git"
 commit=1d9767a392cbac7e899e7ab80235cfceebd52731
-imagedeps="libglib2.0-dev docbook-xsl-ns"
+imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 gtk3"
 

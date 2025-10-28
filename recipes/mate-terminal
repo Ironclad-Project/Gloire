@@ -5,7 +5,7 @@ version=1.28.1
 revision=2
 git_url="https://github.com/mate-desktop/mate-terminal.git"
 commit=8634b87ff36933acf072393486a422670330f7e7
-imagedeps="libglib2.0-dev git itstool"
+imagedeps="libglib2.0-dev itstool"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core glib2 dconf gdk-pixbuf libice libsm libx11 pango gtk3 vte mate-desktop"
 

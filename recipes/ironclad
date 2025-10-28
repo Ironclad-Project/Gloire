@@ -7,7 +7,7 @@ revision=41
 git_url="https://codeberg.org/Ironclad/Ironclad.git"
 commit=479f2a9d972e66f6d47b895cecf8f7f8c9396b60
 source_hostdeps="autoconf automake pkg-config"
-imagedeps="texinfo gprbuild"
+imagedeps="gprbuild"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

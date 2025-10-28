@@ -33,12 +33,10 @@ export LC_COLLATE
 
 umask 0022
 
-jinx_major_ver="0.7"
-jinx_minor_ver="11"
+jinx_major_ver="0.8"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
-
-debian_snapshot="20251020T082908Z"
 
 XBPS_VERSION=213c8290ceca38264d2907d6d01f91775951bd14
 XBPS_SHA256SUM=6c4420c86212be203cdbc061ab2e53255f6407e15b7aee307eac2a8f370eb3c4
@@ -68,6 +66,7 @@ cmd_help() {
     printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
     printf "\n   install            Installs package(s)"
     printf "\n   reinstall          Reinstalls package(s)"
+    printf "\n   dry-run            Prints all packages that need to be built in order (space separated)"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
     printf "\n\nexample: $0 update '*'\n"
 }
@@ -136,7 +135,7 @@ script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
 in_container=false
-if [ "$script" = "/base_dir/jinx" ]; then
+if [ "$script" = "//jinx" ]; then
     in_container=true
 fi
 
@@ -259,8 +258,6 @@ include_recipe() {
     unset bootstrap_pkg
     unset from_source
     unset source_dir
-    unset hg_url
-    unset tag
     unset git_url
     unset commit
     unset shallow
@@ -360,7 +357,7 @@ topo_sort_visit() {
     esac
     _global_visited="$_global_visited $1"
 
-    _deps=$(awk -F: -v node="$1" '$1 == node {print $2; exit}' "$_graph")
+    _deps=$(awk -F: -v node="$1" '$1 == node {print $2; exit}' "$_global_graph")
     for _dep in $_deps; do
         [ -n "$_dep" ] && topo_sort_visit "$_dep"
     done
@@ -371,13 +368,13 @@ topo_sort_visit() {
 
 topo_sort() {
     make_temp
-    _graph="${tmp}"
+    _global_graph="${tmp}"
     _global_visited=" "
     _global_result=""
 
-    printf '%s\n' "$1" > "$_graph"
+    printf '%s\n' "$1" > "$_global_graph"
 
-    awk -F: '{print $1}' "$_graph" | sort -u | {
+    awk -F: '{print $1}' "$_global_graph" | sort -u | {
         while read _node; do
             topo_sort_visit "$_node"
         done
@@ -410,6 +407,54 @@ ${dep}:$(include_recipe "${base_dir}/recipes/${dep}" && echo ${deps})"
     done
 
     topo_sort "${graph}"
+}
+
+get_hostdeps_builddeps() {
+    # Similar to get_builddeps, but for host recipes.
+    # Builds a topological ordering of host recipe dependencies.
+    hostpkg="$1"
+
+    include_recipe "${base_dir}/host-recipes/${hostpkg}"
+
+    make_temp
+    hostdeps_file="${tmp}"
+
+    get_hostdeps_file_for_topo
+
+    graph="${hostpkg}:${hostdeps} ${hostrundeps}"
+    if ! [ -z "${hostdeps}" ] || ! [ -z "${hostrundeps}" ]; then
+        graph=$(echo "${graph}" | sed 's/: /:/g')
+    fi
+
+    for hostdep in $(cat "${hostdeps_file}"); do
+        if ! [ -f "${base_dir}/host-recipes/${hostdep}" ]; then
+            die "$0: host dependency '${hostdep}' for host recipe '${hostpkg}' not found"
+        fi
+
+        graph="${graph}
+${hostdep}:$(include_recipe "${base_dir}/host-recipes/${hostdep}" && echo ${hostdeps} ${hostrundeps})"
+    done
+
+    topo_sort "${graph}"
+}
+
+get_hostdeps_file_for_topo() {
+    # Collects all host dependencies recursively for use in topological sort.
+    deps_to_do=""
+
+    for hostdep in ${hostdeps} ${hostrundeps}; do
+        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
+            deps_to_do="${deps_to_do} ${hostdep}"
+            printf " ${hostdep} " >>"${hostdeps_file}"
+        fi
+    done
+
+    for hostdep in ${deps_to_do}; do
+        tracked_subshell '
+            include_recipe "${base_dir}"/host-recipes/${hostdep}
+            get_hostdeps_file_for_topo
+        '
+    done
 }
 
 get_builddeps_file() {
@@ -452,6 +497,8 @@ run_in_container1() {
     run_in_cont1_root="$1"
     shift 1
 
+    cat /etc/resolv.conf >"${run_in_cont1_root}/etc/resolv.conf"
+
     unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
@@ -462,7 +509,6 @@ run_in_container1() {
         mount -t tmpfs tmpfs '${run_in_cont1_root}/tmp'
         mount -t tmpfs tmpfs '${run_in_cont1_root}/var/tmp'
 
-        mount -o ro --bind /etc/resolv.conf '${run_in_cont1_root}/etc/resolv.conf'
         mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
         env -i PATH="${PATH}" chroot '${run_in_cont1_root}' /bin/sh -c '
@@ -479,6 +525,8 @@ run_in_container1() {
             # keep this whitespace
         '
     "
+
+    rm "${run_in_cont1_root}/etc/resolv.conf"
 }
 
 check_duplicates() {
@@ -571,6 +619,8 @@ run_in_container() {
     fi
 
     mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    cat /etc/resolv.conf >"${imgroot}/etc/resolv.conf"
+    touch "${imgroot}/jinx"
 
     container_pkgs_native_mount=""
     sysroot_native_mount=""
@@ -613,8 +663,7 @@ run_in_container() {
         mount -t tmpfs tmpfs '${imgroot}/tmp'
         mount -t tmpfs tmpfs '${imgroot}/var/tmp'
 
-        mount -o ro --bind /etc/resolv.conf '${imgroot}/etc/resolv.conf'
-
+        mount -o ro --bind '${script}' '${imgroot}/jinx'
         mount ${container_base_dir_ro} --bind '${base_dir}' '${imgroot}/base_dir'
         mount --bind '${base_dir}/.jinx-cache/tmp' '${imgroot}/base_dir/.jinx-cache/tmp'
         mount --bind '${build_dir}' '${imgroot}/build_dir'
@@ -640,22 +689,18 @@ run_in_container() {
             JINX_PARALLELISM=${parallelism} \
             JINX_CONFIG_FILE=/base_dir/Jinxfile \
             JINX_SOURCE_DIR=/base_dir \
-            /bin/bash /base_dir/jinx \
+            /bin/bash /jinx \
             $(for arg in "$@"; do echo '"'"$(echo "${arg}" | sed 's/"/\\"/g')"'" \'; done)
             # keep this whitespace
         '
     "
 
-    rm -rf "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    rm -rf "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir" "${imgroot}/jinx"
+    rm "${imgroot}/etc/resolv.conf"
 }
 
 destroy_container() {
     rm -rf "${container_pkgs}" "${sysroot_dir}"
-}
-
-do_hg_fetch() {
-    hg clone "${hg_url}" "${base_dir}"/sources/${name}
-    ( cd "${base_dir}"/sources/${name} && hg up "${tag}" )
 }
 
 do_git_fetch() {
@@ -737,7 +782,7 @@ get_real_source_dir() {
     unset is_local_package
     unset is_sourceless_package
 
-    if [ -z "${source_dir}" ] && [ -z "${git_url}" ] && [ -z "${hg_url}" ] && [ -z "${tarball_url}" ]; then
+    if [ -z "${source_dir}" ] && [ -z "${git_url}" ] && [ -z "${tarball_url}" ]; then
         source_dir=/dev/null
         is_local_package=true
         is_sourceless_package=true
@@ -780,8 +825,6 @@ do_fetch() {
     if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
         if ! [ -z "${git_url}" ]; then
             do_git_fetch
-        elif ! [ -z "${hg_url}" ]; then
-            do_hg_fetch
         elif ! [ -z "${tarball_url}" ]; then
             do_tarball_fetch
         fi
@@ -945,7 +988,7 @@ do_configure() {
 
     mkdir -p "${build_dir}"/builds/${name}
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
+    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
             version=$(unset version && source_source_recipe ${from_source} && echo "$version")
             source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
@@ -973,7 +1016,7 @@ do_build() {
 
     mkdir -p "${build_dir}"/builds/${name}
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
+    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
             version=$(unset version && source_source_recipe ${from_source} && echo "$version")
             source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
@@ -1004,7 +1047,7 @@ do_package() {
     rm -rf "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${hg_url}" ] || ! [ -z "${source_dir}" ]; then
+    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
         if ! [ -z "${from_source}" ]; then
             version=$(unset version && source_source_recipe ${from_source} && echo "$version")
             source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
@@ -1133,9 +1176,6 @@ do_regen() {
         if ! [ -z "${git_url}" ]; then
             mv $1-clean/.git "${vc_dir_clean}"
             mv $1-workdir/.git "${vc_dir_workdir}"
-        elif ! [ -z "${hg_url}" ]; then
-            mv $1-clean/.hg "${vc_dir_clean}"
-            mv $1-workdir/.hg "${vc_dir_workdir}"
         fi
 
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
@@ -1143,9 +1183,6 @@ do_regen() {
         if ! [ -z "${git_url}" ]; then
             mv "${vc_dir_clean}" $1-clean/.git
             mv "${vc_dir_workdir}" $1-workdir/.git
-        elif ! [ -z "${hg_url}" ]; then
-            mv "${vc_dir_clean}" $1-clean/.hg
-            mv "${vc_dir_workdir}" $1-workdir/.hg
         fi
 
         if [ -s "${patch_file}" ]; then
@@ -1363,6 +1400,179 @@ cmd_update() {
             tracked_subshell 'do_update "${pkg}"'
         done
     done
+}
+
+get_deps_fast() {
+    # Fast dep extraction without sourcing the recipe file
+    # Outputs: space-separated deps and builddeps
+    recipe_file="$1"
+    deps_line="$(grep '^deps=' "$recipe_file" 2>/dev/null | head -1)"
+    builddeps_line="$(grep '^builddeps=' "$recipe_file" 2>/dev/null | head -1)"
+
+    # Extract values: deps="foo bar" -> foo bar
+    deps_line="${deps_line#deps=}"
+    builddeps_line="${builddeps_line#builddeps=}"
+
+    # Remove quotes if present
+    deps_line="${deps_line%\"}"
+    deps_line="${deps_line#\"}"
+    builddeps_line="${builddeps_line%\"}"
+    builddeps_line="${builddeps_line#\"}"
+
+    printf '%s' "${deps_line} ${builddeps_line}"
+}
+
+get_hostdeps_fast() {
+    # Fast host dep extraction without sourcing the recipe file
+    recipe_file="$1"
+    hostdeps_line="$(grep '^hostdeps=' "$recipe_file" 2>/dev/null | head -1)"
+    hostrundeps_line="$(grep '^hostrundeps=' "$recipe_file" 2>/dev/null | head -1)"
+
+    hostdeps_line="${hostdeps_line#hostdeps=}"
+    hostrundeps_line="${hostrundeps_line#hostrundeps=}"
+
+    hostdeps_line="${hostdeps_line%\"}"
+    hostdeps_line="${hostdeps_line#\"}"
+    hostrundeps_line="${hostrundeps_line%\"}"
+    hostrundeps_line="${hostrundeps_line#\"}"
+
+    printf '%s' "${hostdeps_line} ${hostrundeps_line}"
+}
+
+cmd_dry_run() {
+    # Print all packages that would be built (space separated), but only those
+    # that are not already built in the build cache. Host packages (prefixed 'host:')
+    # are mentioned inline just before the regular package that needs them,
+    # and only if they haven't been mentioned before.
+    if [ -z "$1" ]; then
+        set -- '*'
+    fi
+
+    # Expand all package patterns upfront
+    all_packages=""
+    for ppkg in "$@"; do
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            all_packages="${all_packages} ${pkg}"
+        done
+    done
+
+    # Build a fast lookup table: package -> deps (without sourcing)
+    make_temp
+    pkg_deps_cache="${tmp}"
+    touch "${pkg_deps_cache}"
+
+    for pkg in ${all_packages}; do
+        fast_deps="$(get_deps_fast "${base_dir}/recipes/${pkg}")"
+        printf "%s:%s\n" "${pkg}" "${fast_deps}" >> "${pkg_deps_cache}"
+    done
+
+    # Recursively collect all transitive deps (without sourcing recipes)
+    make_temp
+    all_deps_cache="${tmp}"
+    touch "${all_deps_cache}"
+
+    collect_all_deps() {
+        pkg="$1"
+        if grep -q "^${pkg}$" "${all_deps_cache}" 2>/dev/null; then
+            return
+        fi
+        printf "%s\n" "${pkg}" >> "${all_deps_cache}"
+
+        deps="$(grep "^${pkg}:" "${pkg_deps_cache}" | cut -d: -f2-)"
+        for dep in ${deps}; do
+            if [ ! -z "${dep}" ]; then
+                collect_all_deps "${dep}"
+            fi
+        done
+    }
+
+    # Collect all deps for all packages
+    for pkg in ${all_packages}; do
+        collect_all_deps "${pkg}"
+    done
+
+    # Now check which ones are unbuilt
+    all_unbuilt=""
+    for dep in $(cat "${all_deps_cache}"); do
+        include_recipe "${base_dir}"/recipes/"${dep}"
+        if ! [ -z "${from_source}" ]; then
+            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+        fi
+        if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+            all_unbuilt="${all_unbuilt} ${dep}"
+        fi
+    done
+
+    # Collect host deps for all unbuilt packages (fast)
+    make_temp
+    pkg_hostdeps_cache="${tmp}"
+    touch "${pkg_hostdeps_cache}"
+
+    all_hostdeps_unsorted=""
+    for pkg in ${all_unbuilt}; do
+        hostdeps="$(get_hostdeps_fast "${base_dir}/recipes/${pkg}")"
+        if ! [ -z "${hostdeps}" ]; then
+            printf "%s:%s\n" "${pkg}" "${hostdeps}" >> "${pkg_hostdeps_cache}"
+            all_hostdeps_unsorted="${all_hostdeps_unsorted} ${hostdeps}"
+        fi
+    done
+
+    # Topo sort host deps once
+    hostdeps_sorted=""
+    if ! [ -z "${all_hostdeps_unsorted}" ]; then
+        hostdeps_unique="$(printf '%s\n' ${all_hostdeps_unsorted} | awk '!seen[$0]++' | tr '\n' ' ')"
+        hostdeps_sorted="$(tracked_subshell '
+            for hostdep in '"${hostdeps_unique}"'; do
+                sorted_hostdeps="$(get_hostdeps_builddeps "${hostdep}")"
+                printf "%s\n" "${sorted_hostdeps}"
+            done | awk "!seen[\$0]++"
+        ')"
+    fi
+
+    # Build topologically sorted list of unbuilt deps
+    make_temp
+    topo_sorted_unbuilt="${tmp}"
+    make_temp
+    topo_graph="${tmp}"
+
+    # Build graph for topo sort
+    for dep in ${all_unbuilt}; do
+        deps_of_dep="$(grep "^${dep}:" "${pkg_deps_cache}" | cut -d: -f2-)"
+        # Only include deps that are also unbuilt
+        unbuilt_deps_of_dep=""
+        for d in ${deps_of_dep}; do
+            if printf ' %s ' "${all_unbuilt}" | grep -q " ${d} "; then
+                unbuilt_deps_of_dep="${unbuilt_deps_of_dep} ${d}"
+            fi
+        done
+        printf "%s:%s\n" "${dep}" "${unbuilt_deps_of_dep}" >> "${topo_graph}"
+    done
+
+    topo_sort_result="$(topo_sort "$(cat "${topo_graph}")")"
+
+    # Emit in topological order with host deps inline
+    pending_list=""
+    emitted_hostdeps=" "
+
+    for dep in ${topo_sort_result}; do
+        # Emit host deps for this package first
+        dep_hostdeps="$(grep "^${dep}:" "${pkg_hostdeps_cache}" 2>/dev/null | cut -d: -f2-)"
+        if ! [ -z "${dep_hostdeps}" ]; then
+            for hostdep in ${dep_hostdeps}; do
+                if ! printf '%s' "${emitted_hostdeps}" | grep -q " ${hostdep} "; then
+                    if ! [ -d "${build_dir}/host-pkgs/${hostdep}" ]; then
+                        pending_list="${pending_list} host:${hostdep}"
+                    fi
+                    emitted_hostdeps="${emitted_hostdeps}${hostdep} "
+                fi
+            done
+        fi
+        # Then emit the package itself
+        pending_list="${pending_list} ${dep}"
+    done
+
+    # Print packages preserving order, space separated, with global deduplication
+    printf '%s\n' ${pending_list} | awk '!seen[$0]++{printf "%s ", $0} END{print ""}'
 }
 
 cmd_regen() {
@@ -1608,7 +1818,7 @@ EOF
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
         LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
-            --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${debian_snapshot}/
+            --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
     "
 
     for dir in dev proc sys run tmp var/tmp; do
@@ -1616,7 +1826,7 @@ EOF
         mkdir -p "${JINX_CACHE_DIR}/sets/.image/${dir}"
     done
 
-    echo >"${JINX_CACHE_DIR}/sets/.image/etc/resolv.conf"
+    rm "${JINX_CACHE_DIR}/sets/.image/etc/resolv.conf"
     echo localhost >"${JINX_CACHE_DIR}/sets/.image/etc/hostname"
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" /debootstrap/debootstrap --second-stage
@@ -1636,7 +1846,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
         chmod 755 "$f"
     done
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y autopoint bash bison bzip2 cmake curl diffutils docbook-xsl doxygen file findutils flex gawk gettext git grep gzip lzip m4 make mercurial meson ninja-build patch perl python3 sed tar texinfo w3m which xmlto xsltproc xz-utils zstd
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 curl diffutils findutils gawk git grep gzip lzip patch sed tar xz-utils zstd ${JINX_BASE_PACKAGES}
 
     if ! [ -z "${JINX_CMAKE_PLATFORM}" ]; then
         cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/
@@ -1666,15 +1876,22 @@ if ! [ -f "$JINX_CONFIG_FILE" ]; then
     die "$0: missing Jinxfile in directory '$base_dir'"
 fi
 
+unset JINX_MAJOR_VER
+unset JINX_DEBIAN_SNAPSHOT
+unset JINX_BASE_PACKAGES
 unset JINX_CMAKE_PLATFORM
 . "${JINX_CONFIG_FILE}"
 
-if [ -z "$JINX_MAJOR_VER" ]; then
-    die "$0: required config variable \$JINX_MAJOR_VER missing"
+if [ -z "${JINX_MAJOR_VER}" ]; then
+    die "$0: required Jinxfile variable JINX_MAJOR_VER missing"
 fi
 
 if ! [ "$JINX_MAJOR_VER" = "$jinx_major_ver" ]; then
     die "$0: needed major version ($JINX_MAJOR_VER) differs from Jinx-provided major version ($jinx_major_ver)"
+fi
+
+if [ -z "${JINX_DEBIAN_SNAPSHOT}" ]; then
+    die "$0: required Jinxfile variable JINX_DEBIAN_SNAPSHOT missing"
 fi
 
 if [ -z "$JINX_ARCH" ]; then
@@ -1751,6 +1968,10 @@ case "$1" in
         ;;
     rebuild-cache)
         redo_first_use
+        ;;
+    dry-run)
+        shift 1
+        cmd_dry_run "$@"
         ;;
     *)
         die "$0: unknown command: $1"

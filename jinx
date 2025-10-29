@@ -1413,6 +1413,14 @@ get_deps_fast() {
     deps_line="${deps_line#deps=}"
     builddeps_line="${builddeps_line#builddeps=}"
 
+    # Remove comments first (everything from # onwards)
+    deps_line="${deps_line%%#*}"
+    builddeps_line="${builddeps_line%%#*}"
+
+    # Remove trailing whitespace
+    deps_line="$(printf '%s' "$deps_line" | sed 's/[[:space:]]*$//')"
+    builddeps_line="$(printf '%s' "$builddeps_line" | sed 's/[[:space:]]*$//')"
+
     # Remove quotes if present
     deps_line="${deps_line%\"}"
     deps_line="${deps_line#\"}"
@@ -1431,6 +1439,15 @@ get_hostdeps_fast() {
     hostdeps_line="${hostdeps_line#hostdeps=}"
     hostrundeps_line="${hostrundeps_line#hostrundeps=}"
 
+    # Remove comments first (everything from # onwards)
+    hostdeps_line="${hostdeps_line%%#*}"
+    hostrundeps_line="${hostrundeps_line%%#*}"
+
+    # Remove trailing whitespace
+    hostdeps_line="$(printf '%s' "$hostdeps_line" | sed 's/[[:space:]]*$//')"
+    hostrundeps_line="$(printf '%s' "$hostrundeps_line" | sed 's/[[:space:]]*$//')"
+
+    # Remove quotes if present
     hostdeps_line="${hostdeps_line%\"}"
     hostdeps_line="${hostdeps_line#\"}"
     hostrundeps_line="${hostrundeps_line%\"}"

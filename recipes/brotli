@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=brotli
-version=1.1.0
-revision=2
-tarball_url="https://github.com/google/brotli/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="7ac767fd6dafaabfb4e3834d690f71abceb4d4e7f131849d6c328a04f3a16c54d0a9463a37f03663a4158c35e970a089512c8a5bc43eda79fb43c1f61223379e"
+version=1.2.0
+revision=1
+git_url="https://github.com/google/brotli.git"
+commit=028fb5a23661f123017c060daa546b55cf4bde29
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

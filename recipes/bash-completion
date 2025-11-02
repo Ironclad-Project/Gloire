@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=bash-completion
-version=2.16.0
+version=2.17.0
 revision=1
 tarball_url="https://github.com/scop/bash-completion/releases/download/${version}/bash-completion-${version}.tar.xz"
-tarball_blake2b="389be47536f8f9aa383ff85bf19a00562b30b6d3e3652feaa01284987af13c2dc9850b59341956dd8e94e54251cd36902a60d5e3420ebfa2567216546144f675"
+tarball_blake2b="ee11f2bff82b0852979e4843c7ad5e5b976e4d1e44ab5ed1b96da64fe9b32d91150f12f32bf7c6c0286cd2a0c424d786bbad47066403c71f8d3c8425487427dd"
 hostdeps="gcc pkg-config"
 deps="bash"
 

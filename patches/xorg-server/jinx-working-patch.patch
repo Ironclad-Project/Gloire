@@ -1,43 +1,3 @@
-diff --git xorg-server-clean/configure xorg-server-workdir/configure
-index a20b08a..401b499 100755
---- xorg-server-clean/configure
-+++ xorg-server-workdir/configure
-@@ -30570,7 +30570,7 @@ printf "%s\n" "#define SHAPE 1" >>confdefs.h
- 
- 
- if test "x$XKBPATH" = "xauto"; then
--    XKBPATH=$(pkg-config --variable datadir xkbcomp || echo ${datadir})/X11/xkb
-+    XKBPATH=$($PKG_CONFIG --variable datadir xkbcomp || echo ${datadir})/X11/xkb
- fi
- 
- 
-@@ -30600,7 +30600,7 @@ fi
- 
- 
- if test "x$XKB_BIN_DIRECTORY" = "xauto"; then
--    XKB_BIN_DIRECTORY=$(pkg-config --variable bindir xkbcomp)
-+    XKB_BIN_DIRECTORY=$($PKG_CONFIG --variable bindir xkbcomp)
-     if test -z $XKB_BIN_DIRECTORY; then
-         XKB_BIN_DIRECTORY="$bindir"
-     fi
-@@ -32701,6 +32701,8 @@ fi
- 		XORG_DRIVER_MODESETTING=yes
- 	fi
- 
-+	XORG_DRIVER_MODESETTING=no
-+
- 
- 
- 
-@@ -33762,7 +33764,7 @@ else
- printf "%s\n" "yes" >&6; }
- 
- fi
--		KHRONOS_SPEC_DIR=`pkg-config khronos-opengl-registry --variable=specdir`
-+		KHRONOS_SPEC_DIR=`$PKG_CONFIG khronos-opengl-registry --variable=specdir`
-            fi
- 
- 	fi
 diff --git xorg-server-clean/hw/xfree86/common/xf86Bus.c xorg-server-workdir/hw/xfree86/common/xf86Bus.c
 index fd144db..6eb018c 100644
 --- xorg-server-clean/hw/xfree86/common/xf86Bus.c
@@ -246,6 +206,16 @@ index 4984ccf..bb3e2f8 100644
                                    char *device);
  
  extern _X_EXPORT char *fbdevHWGetName(ScrnInfoPtr pScrn);
+diff --git xorg-server-clean/hw/xfree86/fbdevhw/meson.build xorg-server-workdir/hw/xfree86/fbdevhw/meson.build
+index f3146f3..9d07524 100644
+--- xorg-server-clean/hw/xfree86/fbdevhw/meson.build
++++ xorg-server-workdir/hw/xfree86/fbdevhw/meson.build
+@@ -1,4 +1,4 @@
+-if host_machine.system() == 'linux'
++if host_machine.system() == 'ironclad'
+     srcs_fbdevhw = 'fbdevhw.c'
+ else
+     srcs_fbdevhw = 'fbdevhwstub.c'
 diff --git xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c xorg-server-workdir/hw/xfree86/os-support/shared/posix_tty.c
 index 0cb9788..e8cac5d 100644
 --- xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c
@@ -286,6 +256,19 @@ index 7db2408..8862645 100644
  #ifdef MONOTONIC_CLOCK
  #include <time.h>
  #endif
+diff --git xorg-server-clean/meson.build xorg-server-workdir/meson.build
+index 39e6e90..962e84f 100644
+--- xorg-server-clean/meson.build
++++ xorg-server-workdir/meson.build
+@@ -41,7 +41,7 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
+         '-Werror=sequence-point',
+         '-Werror=return-type',
+         '-Werror=trigraphs',
+-        '-Werror=array-bounds',
++        #'-Werror=array-bounds',
+         '-Werror=write-strings',
+         '-Werror=address',
+         '-Werror=int-to-pointer-cast',
 diff --git xorg-server-clean/mi/mibitblt.c xorg-server-workdir/mi/mibitblt.c
 index 0b13e49..aff6539 100644
 --- xorg-server-clean/mi/mibitblt.c

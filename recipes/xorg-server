@@ -1,54 +1,50 @@
 #! /bin/sh
 
 name=xorg-server
-version=21.1.18
+version=21.1.20
 revision=1
-tarball_url="https://www.x.org/releases/individual/xserver/xorg-server-${version}.tar.xz"
-tarball_blake2b="48c7b745c07a31d11d3a95f8eba056ff46bf69f2c70d499f677cbd706347e0c3c28a8197be5c0d65670c5b2f87f559ea10e7c21ee88bdc767c6a921d5fa8d3b2"
+git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
+commit=065f02d946a798924a1d331769961b940cbf3224
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros xorg-proto xcb-proto xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman"
-
-prepare() {
-    autotools_recursive_regen
-}
+deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus"
 
 configure() {
-    autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -Wno-error=array-bounds" \
-        --with-xkb-bin-directory=/usr/bin \
-        --with-xkb-path=/usr/share/X11/xkb \
-        --with-xkb-output=/var/lib/xkb \
-        --with-fontrootdir=/usr/share/fonts/X11 \
-        --enable-xorg \
-        --enable-xv \
-        --enable-xvfb \
-        --disable-xephyr \
-        --disable-xnest \
-        --disable-suid-wrapper \
-        --disable-pciaccess \
-        --disable-dpms \
-        --enable-screensaver \
-        --disable-xres \
-        --disable-xvmc \
-        --disable-systemd-logind \
-        --disable-secure-rpc \
-        --disable-config-udev \
-        --disable-dri \
-        --disable-dri2 \
-        --disable-dri3 \
-        --disable-int10-module \
-        --disable-vgahw \
-        --disable-libdrm \
-        --disable-glamor \
-        --disable-glx
+    meson_configure \
+        -Dxkb_bin_dir=${prefix}/bin \
+        -Dxkb_dir=${prefix}/share/X11/xkb \
+        -Dxkb_output_dir=/var/lib/xkb \
+        -Ddefault_font_path=${prefix}/share/fonts/X11 \
+        -Dxorg=true \
+        -Dxv=true \
+        -Dxvfb=true \
+        -Dxephyr=false \
+        -Dxnest=false \
+        -Dsuid_wrapper=false \
+        -Dpciaccess=false \
+        -Ddpms=false \
+        -Dscreensaver=true \
+        -Dxres=false \
+        -Dxvmc=false \
+        -Dsystemd_logind=false \
+        -Dsecure-rpc=false \
+        -Dudev=false \
+        -Dudev_kms=false \
+        -Ddri1=false \
+        -Ddri2=false \
+        -Ddri3=false \
+        -Dint10=false \
+        -Dvgahw=false \
+        -Ddrm=false \
+        -Dglamor=false \
+        -Dglx=false
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     mkdir -p "${dest_dir}"/etc/X11
     cp -v "${base_dir}"/build-support/xorg-server/xorg.conf "${dest_dir}"/etc/X11/

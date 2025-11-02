@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sdl3
-version=3.2.24
-revision=2
+version=3.2.26
+revision=1
 git_url="https://github.com/libsdl-org/SDL.git"
-commit=a8589a84226a6202831a3d49ff4edda4acab9acd
+commit=badbf8da4ee72b3ef599c721ffc9899e8d7c8d90
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxext libxcursor libxi libxfixes libxkbcommon libxrandr libxrender libxxf86vm mesa"
 

@@ -175,34 +175,6 @@ index 0dff9d4..cdebf00 100644
  	size_t bytes = 0;
  	for(int i = 0; i < iovc; i++) {
  		if(SSIZE_MAX - bytes < iovs[i].iov_len) {
-diff --git mlibc-clean/options/posix/include/fcntl.h mlibc-workdir/options/posix/include/fcntl.h
-index 49c42e5..2222258 100644
---- mlibc-clean/options/posix/include/fcntl.h
-+++ mlibc-workdir/options/posix/include/fcntl.h
-@@ -41,7 +41,6 @@ int creat(const char *__path, mode_t __mode);
- int fallocate(int __fd, int __mode, off_t __offset, off_t __len);
- int fcntl(int __fd, int __command, ...);
- int open(const char *__path, int __flags, ...);
--int open64(const char *__path, int __flags, ...);
- int openat(int __dirfd, const char *__path, int __flags, ...);
- int posix_fadvise(int __fd, off_t __offset, off_t __size, int __advice);
- int posix_fallocate(int __fd, off_t __offset, off_t __size);
-diff --git mlibc-clean/options/posix/include/sys/stat.h mlibc-workdir/options/posix/include/sys/stat.h
-index 98f1d2a..e648292 100644
---- mlibc-clean/options/posix/include/sys/stat.h
-+++ mlibc-workdir/options/posix/include/sys/stat.h
-@@ -19,11 +19,9 @@ int chmod(const char *__pathname, mode_t __mode);
- int fchmod(int __fd, mode_t __mode);
- int fchmodat(int __fd, const char *__pathname, mode_t __mode, int __flags);
- int fstat(int __fd, struct stat *__result);
--int fstat64(int __fd, struct stat64 *__result);
- int fstatat(int __fd, const char *__restrict __pathname, struct stat *__restrict __buf, int __flags);
- int futimens(int __fd, const struct timespec __times[2]);
- int lstat(const char *__restrict __pathname, struct stat *__restrict __buf);
--int lstat64(const char *__restrict __pathname, struct stat64 *__restrict __buf);
- int mkdir(const char *__pathname, mode_t __mode);
- int mkdirat(int __dirfd, const char *__pathname, mode_t __mode);
- int mkfifo(const char *__pathname, mode_t __mode);
 diff --git mlibc-clean/options/rtld/generic/main.cpp mlibc-workdir/options/rtld/generic/main.cpp
 index 3147059..22acc70 100644
 --- mlibc-clean/options/rtld/generic/main.cpp
@@ -216,61 +188,3 @@ index 3147059..22acc70 100644
  	} else {
  		if (env_ld_library_path) {
  			for(auto path : parseList(env_ld_library_path, ":;"))
-diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index abe181b..64f1e28 100644
---- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
-+++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -1025,7 +1025,7 @@ int sys_shutdown(int sockfd, int how) {
- 
- int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value) {
- 	(void)which; (void)new_value; (void)old_value;
--	return ENOSYS;
-+	return 0;
- }
- 
- int sys_msg_recv(int fd, struct msghdr *hdr, int flags, ssize_t *length) {
-@@ -1097,6 +1097,11 @@ int sys_sigsuspend(const sigset_t *set) {
- 	return sys_ppoll(NULL, 0, NULL, set, NULL);
- }
- 
-+int sys_sigpending(sigset_t *set) {
-+	*set = 0;
-+	return 0;
-+}
-+
- int sys_pselect(int nfds, fd_set *read_set, fd_set *write_set,
- 		fd_set *except_set, const struct timespec *timeout,
- 		const sigset_t *sigmask, int *num_events) {
-@@ -1454,13 +1459,18 @@ int sys_openpt(int oflags, int *fd) {
- 	if (!(oflags & O_NOCTTY)) {
- 		ioctl(*fd, TIOCSCTTY);
- 	}
-+	if (oflags & O_NONBLOCK) {
-+		fdflags = fcntl(*fd, F_GETFL);
-+		fcntl(*fd, F_SETFL, fdflags | O_NONBLOCK);
-+	}
- 
- 	return e;
- }
- 
- int sys_unlockpt(int fd) {
- 	int unlock = 0;
--	return sys_ioctl(fd, TIOCSPTLCK, &unlock, NULL);
-+	int ret;
-+	return sys_ioctl(fd, TIOCSPTLCK, &unlock, &ret);
- }
- 
- int sys_symlink(const char *target, const char *link_path) {
-diff --git mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
-index 5136bae..0e00aa8 100644
---- mlibc-clean/sysdeps/ironclad/include/asm/ioctls.h
-+++ mlibc-workdir/sysdeps/ironclad/include/asm/ioctls.h
-@@ -61,7 +61,7 @@
- #define TIOCGRS485               0x542E
- #define TIOCSRS485               0x542F
- #define TIOCGPTN                 3
--#define TIOCSPTLCK               3
-+#define TIOCSPTLCK               0x5430
- #define TIOCGDEV                 3
- #define TCGETX                   0x5432
- #define TCSETX                   0x5433

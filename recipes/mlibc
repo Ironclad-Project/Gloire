@@ -3,7 +3,7 @@
 name=mlibc
 skip_pkg_check=yes
 version=0.0git
-revision=64
+revision=65
 git_url="https://github.com/managarm/mlibc.git"
 commit=8cb53bc58173322bcbee9ea68431aedee49f09ac
 hostdeps="gcc pkg-config"

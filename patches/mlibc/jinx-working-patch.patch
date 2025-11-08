@@ -176,17 +176,18 @@ index 0dff9d4..cdebf00 100644
  	for(int i = 0; i < iovc; i++) {
  		if(SSIZE_MAX - bytes < iovs[i].iov_len) {
 diff --git mlibc-clean/options/posix/include/bits/posix/stat.h mlibc-workdir/options/posix/include/bits/posix/stat.h
-index 430f8a6..40e01f3 100644
+index 430f8a6..7a128c7 100644
 --- mlibc-clean/options/posix/include/bits/posix/stat.h
 +++ mlibc-workdir/options/posix/include/bits/posix/stat.h
-@@ -14,6 +14,9 @@
+@@ -14,6 +14,10 @@
  #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
  #define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
  #define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
-+#define S_TYPEISMQ(m) (((m) & S_IFMT) == S_IMQ)
-+#define S_TYPEISSEM(m) (((m) & S_IFMT) == S_ISEM)
-+#define S_TYPEISSHM(m) (((m) & S_IFMT) == S_ISHM)
- 
++#define S_TYPEISMQ(buf) (((buf)->st_mode & S_IFMT) == S_IMQ)
++#define S_TYPEISSEM(buf) (((buf)->st_mode & S_IFMT) == S_ISEM)
++#define S_TYPEISSHM(buf) (((buf)->st_mode & S_IFMT) == S_ISHM)
++#define S_TYPEISTMO(buf) (0)
+
  /* POSIX compatibility macros */
  #define st_atime st_atim.tv_sec
 diff --git mlibc-clean/options/posix/include/dirent.h mlibc-workdir/options/posix/include/dirent.h

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sqlite
-version=3.50.4
+version=3.51.0
 revision=1
-tarball_url="https://sqlite.org/2025/sqlite-autoconf-3500400.tar.gz"
-tarball_blake2b="cb7b3509079a6b57dd7a0443e249b8fe6d1ff43b1bb318d07a1403a754ddbfa5d25f191405c062a5cdb872315aac78daa1e95d6687aab37e18889e21bc6d8c71"
+tarball_url="https://sqlite.org/2025/sqlite-autoconf-3510000.tar.gz"
+tarball_blake2b="1e4f1589fa546a11bc505a0ed8c2960ba96a907854daedd116586412597855d9e454637ce9ccf8671ad1943bfdcf23c8913057f79c8baea886ce883be584dea1"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs readline zlib"

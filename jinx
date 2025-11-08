@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="0"
+jinx_minor_ver="1"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -1877,7 +1877,9 @@ first_use() {
 
     reinit_container
 
-    echo "$jinx_version" > "$JINX_CACHE_DIR/version"
+    echo "${jinx_version}" >"${JINX_CACHE_DIR}/version"
+    echo "${JINX_DEBIAN_SNAPSHOT}" >"${JINX_CACHE_DIR}/debian_snapshot"
+    echo "${JINX_BASE_PACKAGES}" >"${JINX_CACHE_DIR}/base_packages"
 
     echo "* done"
 }
@@ -1919,7 +1921,9 @@ if ! [ -d "$JINX_CACHE_DIR" ]; then
     first_use
 fi
 
-if ! [ -f "$JINX_CACHE_DIR/version" ] || ! [ "$(cat "$JINX_CACHE_DIR/version")" = "$jinx_version" ]; then
+if  ( ! [ -f "${JINX_CACHE_DIR}/version" ] || ! [ "$(cat "${JINX_CACHE_DIR}/version")" = "${jinx_version}" ] ) \
+ || ( ! [ -f "${JINX_CACHE_DIR}/debian_snapshot" ] || ! [ "$(cat "${JINX_CACHE_DIR}/debian_snapshot")" = "${JINX_DEBIAN_SNAPSHOT}" ] ) \
+ || ( ! [ -f "${JINX_CACHE_DIR}/base_packages" ] || ! [ "$(cat "${JINX_CACHE_DIR}/base_packages")" = "${JINX_BASE_PACKAGES}" ] ); then
     redo_first_use
 fi
 

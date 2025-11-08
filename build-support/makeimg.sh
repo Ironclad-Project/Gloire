@@ -153,24 +153,24 @@ EOF
 
 if [ -f sysroot/usr/bin/slim ]; then
     cat << 'EOF' >> "$CONFIG_TEMP"
-    //Gloire - Live Graphical Debug (nolocaslr, noprogaslr)
+    //Gloire - Live Graphical Debug (noaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=graphical-multiuser /sbin/init" nolocaslr noprogaslr
+        cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=graphical-multiuser /sbin/init" noaslr
 
 EOF
 fi
 
 cat << 'EOF' >> "$CONFIG_TEMP"
-    //Gloire - Live TTY Debug (nolocaslr, noprogaslr)
+    //Gloire - Live TTY Debug (noaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=console-multiuser /sbin/init" nolocaslr noprogaslr
+        cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=console-multiuser /sbin/init" noaslr
 
-    //Gloire - Live Emergency shell (nolocaslr, noprogaslr)
+    //Gloire - Live Emergency shell (noaslr)
         protocol: ${PROTOCOL}
         path: ${KERNEL_PATH}
-        cmdline: init=/bin/gcon rootuuid=123e4567-e89b-12d3-a456-426614174000  nolocaslr noprogaslr
+        cmdline: init=/bin/gcon rootuuid=123e4567-e89b-12d3-a456-426614174000  noaslr
 EOF
 
 if [ "$ARCH" = x86_64 ]; then # Assume its only defined for riscv64.

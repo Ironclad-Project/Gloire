@@ -12,11 +12,11 @@ index bba9297..0524bf1 100644
  #endif
  
 diff --git nspr-clean/nspr/configure nspr-workdir/nspr/configure
-index c52cc04..058e85c 100755
+index d4b1645..bd0eab5 100755
 --- nspr-clean/nspr/configure
 +++ nspr-workdir/nspr/configure
-@@ -7490,7 +7490,7 @@ tools are selected during the Xcode/Developer Tools installation." "$LINENO" 5
-     fi
+@@ -7326,7 +7326,7 @@ tools are selected during the Xcode/Developer Tools installation." "$LINENO" 5
+     PR_MD_CSRCS=freebsd.c
      ;;
  
 -*-linux*|*-gnu*|*-k*bsd*-gnu|*-android*|*-linuxandroid*)
@@ -25,19 +25,19 @@ index c52cc04..058e85c 100755
          USE_PTHREADS=1
          IMPL_STRATEGY=_PTH
 diff --git nspr-clean/nspr/pr/include/md/_pth.h nspr-workdir/nspr/pr/include/md/_pth.h
-index 92010d7..0c56962 100644
+index 7bcea96..5fd9536 100644
 --- nspr-clean/nspr/pr/include/md/_pth.h
 +++ nspr-workdir/nspr/pr/include/md/_pth.h
-@@ -66,7 +66,7 @@
-     || defined(HPUX) || defined(FREEBSD) \
-     || defined(NETBSD) || defined(OPENBSD) \
+@@ -65,7 +65,7 @@
+     || defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
+     || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
      || defined(NTO) || defined(DARWIN) \
 -    || defined(RISCOS)
 +    || defined(RISCOS) || defined(__mlibc__)
  #define _PT_PTHREAD_INVALIDATE_THR_HANDLE(t)  (t) = 0
  #define _PT_PTHREAD_THR_HANDLE_IS_INVALID(t)  (t) == 0
  #define _PT_PTHREAD_COPY_THR_HANDLE(st, dt)   (dt) = (st)
-@@ -92,7 +92,7 @@
+@@ -91,7 +91,7 @@
  #if (defined(AIX) && !defined(AIX4_3_PLUS)) \
      || defined(LINUX) || defined(__GNU__)|| defined(__GLIBC__) \
      || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
@@ -46,16 +46,16 @@ index 92010d7..0c56962 100644
  #define PT_NO_SIGTIMEDWAIT
  #endif
  
-@@ -109,7 +109,7 @@
- #define PT_PRIO_MIN            sched_get_priority_min(SCHED_OTHER)
- #define PT_PRIO_MAX            sched_get_priority_max(SCHED_OTHER)
+@@ -104,7 +104,7 @@
+ #define PT_PRIO_MIN            DEFAULT_PRIO
+ #define PT_PRIO_MAX            DEFAULT_PRIO
  #elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
 -    || defined(FREEBSD)
 +    || defined(FREEBSD) || defined(__mlibc__)
  #define PT_PRIO_MIN            sched_get_priority_min(SCHED_OTHER)
  #define PT_PRIO_MAX            sched_get_priority_max(SCHED_OTHER)
  #elif defined(NTO)
-@@ -153,7 +153,7 @@ extern int (*_PT_aix_yield_fcn)();
+@@ -148,7 +148,7 @@ extern int (*_PT_aix_yield_fcn)();
      || defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
      || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
      || defined(NTO) || defined(DARWIN) \
@@ -78,12 +78,12 @@ index 7d444cd..e21ac41 100644
  #define FD_SETSIZE  4096
  #endif
 diff --git nspr-clean/nspr/pr/include/md/prosdep.h nspr-workdir/nspr/pr/include/md/prosdep.h
-index 34d5e6c..9c261dd 100644
+index 0eeb48d..91f1c65 100644
 --- nspr-clean/nspr/pr/include/md/prosdep.h
 +++ nspr-workdir/nspr/pr/include/md/prosdep.h
-@@ -43,7 +43,7 @@ PR_BEGIN_EXTERN_C
- #elif defined(HPUX)
- #include "md/_hpux.h"
+@@ -40,7 +40,7 @@ PR_BEGIN_EXTERN_C
+ #elif defined(OPENBSD)
+ #include "md/_openbsd.h"
  
 -#elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)
 +#elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)
@@ -91,7 +91,7 @@ index 34d5e6c..9c261dd 100644
  
  #elif defined(DARWIN)
 diff --git nspr-clean/nspr/pr/src/md/unix/unix.c nspr-workdir/nspr/pr/src/md/unix/unix.c
-index 54f9351..e5813e4 100644
+index be2feb4..e7cdff8 100644
 --- nspr-clean/nspr/pr/src/md/unix/unix.c
 +++ nspr-workdir/nspr/pr/src/md/unix/unix.c
 @@ -33,7 +33,7 @@
@@ -101,7 +101,7 @@ index 54f9351..e5813e4 100644
 -#if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2)
 +#if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__mlibc__)
  #  define _PRSockLen_t socklen_t
- #elif defined(HPUX) || defined(SOLARIS) || defined(AIX4_1) || \
+ #elif defined(SOLARIS) || defined(AIX4_1) || \
      defined(LINUX) || defined(DARWIN) || defined(QNX)
 diff --git nspr-clean/nspr/pr/src/md/unix/uxproces.c nspr-workdir/nspr/pr/src/md/unix/uxproces.c
 index 1ea075f..66676f4 100644
@@ -126,10 +126,10 @@ index 1ea075f..66676f4 100644
  #endif
  
 diff --git nspr-clean/nspr/pr/src/md/unix/uxrng.c nspr-workdir/nspr/pr/src/md/unix/uxrng.c
-index b4fc9c8..d9e5727 100644
+index 7c9cdb6..ea2c04c 100644
 --- nspr-clean/nspr/pr/src/md/unix/uxrng.c
 +++ nspr-workdir/nspr/pr/src/md/unix/uxrng.c
-@@ -52,7 +52,7 @@ static size_t GetHighResClock(void* buf, size_t maxbytes) { return 0; }
+@@ -27,7 +27,7 @@ static size_t GetHighResClock(void* buf, size_t maxbytes) { return 0; }
  
  #elif (defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD_kernel__) || \
         defined(NETBSD) || defined(__NetBSD_kernel__) || defined(OPENBSD) || \
@@ -139,10 +139,10 @@ index b4fc9c8..d9e5727 100644
  #  include <sys/stat.h>
  #  include <fcntl.h>
 diff --git nspr-clean/nspr/pr/src/pthreads/ptio.c nspr-workdir/nspr/pr/src/pthreads/ptio.c
-index f045b8c..1e418ce 100644
+index 1baba7c..7778781 100644
 --- nspr-clean/nspr/pr/src/pthreads/ptio.c
 +++ nspr-workdir/nspr/pr/src/pthreads/ptio.c
-@@ -149,7 +149,7 @@ static ssize_t (*pt_aix_sendfile_fptr)() = NULL;
+@@ -143,7 +143,7 @@ static ssize_t (*pt_aix_sendfile_fptr)() = NULL;
  #    endif /* HAVE_SEND_FILE */
  #  endif   /* AIX */
  
@@ -151,7 +151,7 @@ index f045b8c..1e418ce 100644
  #    include <sys/sendfile.h>
  #  endif
  
-@@ -190,7 +190,7 @@ static PRBool _pr_ipv6_v6only_on_by_default;
+@@ -182,7 +182,7 @@ static PRBool _pr_ipv6_v6only_on_by_default;
        defined(HPUX10_30) || defined(HPUX11) || defined(LINUX) ||    \
        defined(__GNU__) || defined(__GLIBC__) || defined(FREEBSD) || \
        defined(NETBSD) || defined(OPENBSD) || defined(NTO) ||        \
@@ -160,7 +160,7 @@ index f045b8c..1e418ce 100644
  #    define _PRSelectFdSetArg_t fd_set*
  #  else
  #    error "Cannot determine architecture"
-@@ -278,7 +278,7 @@ static PRBool IsValidNetAddrLen(const PRNetAddr* addr, PRInt32 addr_len) {
+@@ -265,7 +265,7 @@ static PRBool IsValidNetAddrLen(const PRNetAddr* addr, PRInt32 addr_len) {
   * defines this type as socklen_t.  It is size_t or int on
   * most current systems.
   */
@@ -169,7 +169,7 @@ index f045b8c..1e418ce 100644
  typedef socklen_t pt_SockLen;
  #  elif (defined(AIX) && !defined(AIX4_1))
  typedef PRSize pt_SockLen;
-@@ -1090,6 +1090,11 @@ static PRBool pt_solaris_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
+@@ -910,6 +910,11 @@ static PRBool pt_solaris_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
  
  #  ifdef LINUX
  static PRBool pt_linux_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
@@ -181,7 +181,7 @@ index f045b8c..1e418ce 100644
    ssize_t rv;
    off_t oldoffset;
  
-@@ -1111,6 +1116,7 @@ static PRBool pt_linux_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
+@@ -931,6 +936,7 @@ static PRBool pt_linux_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
      return PR_FALSE;
    }
    return PR_TRUE;
@@ -189,7 +189,7 @@ index f045b8c..1e418ce 100644
  }
  #  endif /* LINUX */
  
-@@ -2641,8 +2647,13 @@ static PRInt32 pt_LinuxSendFile(PRFileDesc* sd, PRSendFileData* sfd,
+@@ -2470,8 +2476,13 @@ static PRInt32 pt_LinuxSendFile(PRFileDesc* sd, PRSendFileData* sfd,
    if (file_nbytes_to_send != 0) {
      offset = sfd->file_offset;
      do {
@@ -203,8 +203,8 @@ index f045b8c..1e418ce 100644
      } while (rv == -1 && (syserrno = errno) == EINTR);
      if (rv == -1) {
        if (syserrno != EAGAIN && syserrno != EWOULDBLOCK) {
-@@ -3276,7 +3287,7 @@ static PRIOMethods _pr_socketpollfd_methods = {
- #  if defined(HPUX) || defined(SOLARIS) || defined(LINUX) ||     \
+@@ -3105,7 +3116,7 @@ static PRIOMethods _pr_socketpollfd_methods = {
+ #  if defined(SOLARIS) || defined(LINUX) ||     \
        defined(__GNU__) || defined(__GLIBC__) || defined(AIX) ||  \
        defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) || \
 -      defined(NTO) || defined(DARWIN) || defined(RISCOS)
@@ -212,10 +212,10 @@ index f045b8c..1e418ce 100644
  #    define _PR_FCNTL_FLAGS O_NONBLOCK
  #  else
  #    error "Can't determine architecture"
-@@ -4736,7 +4747,7 @@ PR_IMPLEMENT(PRInt32) PR_FD_NISSET(PRInt32 fd, PR_fd_set* set) {
+@@ -4303,7 +4314,7 @@ PR_IMPLEMENT(PRInt32) PR_FD_NISSET(PRInt32 fd, PR_fd_set* set) {
  #  include <sys/types.h>
  #  include <sys/time.h>
- #  if !defined(HPUX) && !defined(LINUX) && !defined(__GNU__) && \
+ #  if !defined(LINUX) && !defined(__GNU__) && \
 -      !defined(__GLIBC__)
 +      !defined(__GLIBC__) && !defined(__mlibc__)
  #    include <sys/select.h>

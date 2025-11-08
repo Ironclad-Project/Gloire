@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=harfbuzz
-version=12.1.0
+version=12.2.0
 revision=1
 git_url="https://github.com/harfbuzz/harfbuzz.git"
-commit=a790c38b782f9d8e6f0299d2837229e5726fc669
+commit=0426759f2b03e479495e987608f10e0866e70180
 hostdeps="gcc pkg-config"
 deps="core-libs graphite2 glib2 zlib freetype2 cairo icu"
 

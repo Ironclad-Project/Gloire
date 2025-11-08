@@ -178,6 +178,42 @@ index c42b4f4..232c229 100644
  	return c;
  }
  
+diff --git mlibc-clean/options/linux/generic/linux-unistd.cpp mlibc-workdir/options/linux/generic/linux-unistd.cpp
+index 264d30c..820d1b7 100644
+--- mlibc-clean/options/linux/generic/linux-unistd.cpp
++++ mlibc-workdir/options/linux/generic/linux-unistd.cpp
+@@ -6,19 +6,6 @@
+ #include <mlibc/linux-sysdeps.hpp>
+ #include <unistd.h>
+ 
+-int dup3(int oldfd, int newfd, int flags) {
+-	if(oldfd == newfd) {
+-		errno = EINVAL;
+-		return -1;
+-	}
+-	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_dup2, -1);
+-	if(int e = mlibc::sys_dup2(oldfd, flags, newfd); e) {
+-		errno = e;
+-		return -1;
+-	}
+-	return newfd;
+-}
+-
+ int vhangup(void) {
+ 	__ensure(!"Not implemented");
+ 	__builtin_unreachable();
+diff --git mlibc-clean/options/linux/include/bits/linux/linux_unistd.h mlibc-workdir/options/linux/include/bits/linux/linux_unistd.h
+index 7aa4103..1ded98a 100644
+--- mlibc-clean/options/linux/include/bits/linux/linux_unistd.h
++++ mlibc-workdir/options/linux/include/bits/linux/linux_unistd.h
+@@ -7,7 +7,6 @@ extern "C" {
+ 
+ #ifndef __MLIBC_ABI_ONLY
+ 
+-int dup3(int __fd, int __newfd, int __flags);
+ int vhangup(void);
+ int getdtablesize(void);
+ int syncfs(int __fd);
 diff --git mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
 index f19e623..811b46f 100644
 --- mlibc-clean/options/posix/generic/posix_locale.cpp
@@ -217,6 +253,30 @@ index 0dff9d4..cdebf00 100644
  	size_t bytes = 0;
  	for(int i = 0; i < iovc; i++) {
  		if(SSIZE_MAX - bytes < iovs[i].iov_len) {
+diff --git mlibc-clean/options/posix/generic/unistd.cpp mlibc-workdir/options/posix/generic/unistd.cpp
+index 8783885..afb3157 100644
+--- mlibc-clean/options/posix/generic/unistd.cpp
++++ mlibc-workdir/options/posix/generic/unistd.cpp
+@@ -1134,6 +1134,19 @@ int dup2(int fd, int newfd) {
+ 	return newfd;
+ }
+ 
++int dup3(int oldfd, int newfd, int flags) {
++	if(oldfd == newfd) {
++		errno = EINVAL;
++		return -1;
++	}
++	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_dup2, -1);
++	if(int e = mlibc::sys_dup2(oldfd, flags, newfd); e) {
++		errno = e;
++		return -1;
++	}
++	return newfd;
++}
++
+ pid_t fork(void) {
+ 	auto self = mlibc::get_current_tcb();
+ 	pid_t child;
 diff --git mlibc-clean/options/posix/include/bits/posix/stat.h mlibc-workdir/options/posix/include/bits/posix/stat.h
 index 430f8a6..40e01f3 100644
 --- mlibc-clean/options/posix/include/bits/posix/stat.h
@@ -260,6 +320,18 @@ index b819c30..5577aff 100644
  
  /* The character array d_name is of unspecified size, but the number of bytes preceding
   * the terminating null byte will not exceed {NAME_MAX}. */
+diff --git mlibc-clean/options/posix/include/unistd.h mlibc-workdir/options/posix/include/unistd.h
+index bf4eb83..8223948 100644
+--- mlibc-clean/options/posix/include/unistd.h
++++ mlibc-workdir/options/posix/include/unistd.h
+@@ -268,6 +268,7 @@ size_t confstr(int __name, char *__buf, size_t __size);
+ char *ctermid(char *__s);
+ int dup(int __fd);
+ int dup2(int __src_fd, int __dest_fd);
++int dup3(int __fd, int __newfd, int __flags);
+ __attribute__((__noreturn__)) void _exit(int __status);
+ void endusershell(void);
+ int execl(const char *__path, const char *__arg, ...);
 diff --git mlibc-clean/options/rtld/generic/main.cpp mlibc-workdir/options/rtld/generic/main.cpp
 index 6c92521..0d2ecae 100644
 --- mlibc-clean/options/rtld/generic/main.cpp
@@ -274,31 +346,53 @@ index 6c92521..0d2ecae 100644
  		if (env_ld_library_path) {
  			for(auto path : parseList(env_ld_library_path, ":;"))
 diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-index 1975812..99936fd 100644
+index 1975812..bb57e2e 100644
 --- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
 +++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
-@@ -620,18 +620,20 @@ int sys_kill(int pid, int sig) {
+@@ -83,6 +83,12 @@ int sys_open(const char *path, int flags, mode_t mode, int *fd) {
+ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 	int ret, errno;
+ 
++	// Check clashing sysdep-implemented files here before we do anything else.
++	if ((flags & O_CREAT) && ((flags & O_WRONLY) == 0)) {
++		return EISDIR;
++	}
++
++	// Attempt to open.
+ 	int path_len = strlen(path);
+ 	SYSCALL4(SYSCALL_OPEN, dirfd, path, path_len, flags);
+ 
+@@ -94,7 +100,6 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd) {
+ 		return EEXIST;
+ 	}
+ 
+-	// We implement creating files in this sysdep.
+ 	if ((errno == ENOENT) && (flags & O_CREAT) && ((flags & O_DIRECTORY) == 0)) {
+ 		SYSCALL5(SYSCALL_MAKENODE, AT_FDCWD, path, path_len, S_IFREG | mode, 0);
+ 		if (ret == -1) {
+@@ -620,40 +625,46 @@ int sys_kill(int pid, int sig) {
  
  int sys_dup(int fd, int flags, int *newfd) {
  	int ret, errno;
-+	SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
-+
-+	int fcntl_flags = 0;
- 	if (flags & O_CLOEXEC) {
+-	if (flags & O_CLOEXEC) {
 -		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD_CLOEXEC, 0);
 -	} else {
 -		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
-+		fcntl_flags |= FD_CLOEXEC;
- 	}
+-	}
 -
 -	*newfd = ret;
--
++	SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, 0);
+ 
 -	if (errno == 0) {
 -		SYSCALL3(SYSCALL_FCNTL, *newfd, F_SETFD, flags);
-+	if (flags & O_CLOFORK) {
-+		fcntl_flags |= FD_CLOFORK;
-+	}
-+	if (errno == 0 && fcntl_flags != 0) {
++	if (errno == 0 && flags != 0) {
++		int fcntl_flags = 0;
++		if (flags & O_CLOEXEC) {
++			fcntl_flags |= FD_CLOEXEC;
++		}
++		if (flags & O_CLOFORK) {
++			fcntl_flags |= FD_CLOFORK;
++		}
 +		SYSCALL3(SYSCALL_FCNTL, ret, F_SETFD, fcntl_flags);
  	}
  
@@ -306,3 +400,40 @@ index 1975812..99936fd 100644
  	return errno;
  }
  
+ int sys_dup2(int fd, int flags, int newfd) {
++	// We are to do nothing if they are equal.
++	if (fd == newfd) {
++		return 0;
++	}
++
+ 	int ret = sys_close(newfd);
+ 	if (ret != 0 && ret != EBADF) {
+ 		return EBADF;
+ 	}
+ 
+ 	int errno;
+-	if (flags & O_CLOEXEC) {
+-		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD_CLOEXEC, newfd);
+-	} else {
+-		SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, newfd);
+-	}
++	SYSCALL3(SYSCALL_FCNTL, fd, F_DUPFD, newfd);
+ 
+-	if (ret != -1 && ret != newfd) {
+-		return EBADF;
+-	}
+-
+-	if (errno == 0) {
+-		SYSCALL3(SYSCALL_FCNTL, newfd, F_SETFD, flags);
++	if (errno == 0 && flags != 0) {
++		int fcntl_flags = 0;
++		if (flags & O_CLOEXEC) {
++			fcntl_flags |= FD_CLOEXEC;
++		}
++		if (flags & O_CLOFORK) {
++			fcntl_flags |= FD_CLOFORK;
++		}
++		SYSCALL3(SYSCALL_FCNTL, ret, F_SETFD, fcntl_flags);
+ 	}
+ 
+ 	return errno;

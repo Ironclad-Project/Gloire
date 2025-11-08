@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=curl
-version=8.16.0
-revision=2
+version=8.17.0
+revision=1
 git_url="https://github.com/curl/curl.git"
-commit=11b991232fbcaa88e2b1faecac224416b0001e35
+commit=400fffa90f30c7a2dc762fa33009d24851bd2016
 hostdeps="gcc pkg-config"
 deps="core-libs openssl zlib zstd libpsl libidn2 brotli nghttp2"
 

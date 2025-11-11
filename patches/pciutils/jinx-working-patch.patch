@@ -63,7 +63,7 @@ index 43be8d1..ee10284 100644
 -	pm_dump, pm_linux_sysfs, pm_darwin, pm_sylixos_device, pm_hurd,
 -	pm_mmio_conf1, pm_mmio_conf1_ext, pm_ecam,
 +	pm_dump, pm_linux_sysfs, pm_darwin, pm_sylixos_device, pm_ironclad_device,
-+  pm_hurd, pm_mmio_conf1, pm_mmio_conf1_ext, pm_ecam,
++	pm_hurd, pm_mmio_conf1, pm_mmio_conf1_ext, pm_ecam,
  	pm_win32_cfgmgr32, pm_win32_kldbg, pm_win32_sysdbg, pm_aos_expansion,
  	pm_rt_thread_smart_dm;
  
@@ -223,15 +223,3 @@ index 7f22427..f5244a3 100644
  #ifdef PCI_OS_DJGPP
    #define BIG_ENDIAN 4321
    #define LITTLE_ENDIAN	1234
-diff --git pciutils-clean/setpci.c pciutils-workdir/setpci.c
-index 2a2c72a..2498d94 100644
---- pciutils-clean/setpci.c
-+++ pciutils-workdir/setpci.c
-@@ -13,6 +13,7 @@
- #include <stdlib.h>
- #include <stdarg.h>
- #include <errno.h>
-+#include <strings.h>
- 
- #define PCIUTILS_SETPCI
- #include "pciutils.h"

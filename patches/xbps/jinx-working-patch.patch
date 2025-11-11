@@ -181,15 +181,6 @@ diff --git xbps-clean/lib/fetch/ftp.c xbps-workdir/lib/fetch/ftp.c
 index 9986a57..4da7fe0 100644
 --- xbps-clean/lib/fetch/ftp.c
 +++ xbps-workdir/lib/fetch/ftp.c
-@@ -74,7 +74,7 @@
- #include <string.h>
- #include <time.h>
- #include <unistd.h>
--
-+#include <strings.h>
- #include "fetch.h"
- #include "common.h"
- #include "ftperr.h"
 @@ -142,7 +142,7 @@ unmappedaddr(struct sockaddr_in6 *sin6, socklen_t *len)
  	sin4->sin_port = port;
  	sin4->sin_family = AF_INET;
@@ -199,16 +190,3 @@ index 9986a57..4da7fe0 100644
  	sin4->sin_len = sizeof(struct sockaddr_in);
  #endif
  }
-diff --git xbps-clean/lib/fetch/http.c xbps-workdir/lib/fetch/http.c
-index b23e919..9a04fcc 100644
---- xbps-clean/lib/fetch/http.c
-+++ xbps-workdir/lib/fetch/http.c
-@@ -74,7 +74,7 @@
- #include <string.h>
- #include <time.h>
- #include <unistd.h>
--
-+#include <strings.h>
- #include <netinet/in.h>
- #include <netinet/tcp.h>
-

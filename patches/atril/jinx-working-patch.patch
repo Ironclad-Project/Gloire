@@ -45,15 +45,3 @@ index 68afb36..aba94fd 100644
    type: 'desktop',
    po_dir: po_dir,
    install: true,
-diff --git atril-clean/libdocument/ev-document.c atril-workdir/libdocument/ev-document.c
-index 96b8094..2c274b5 100644
---- atril-clean/libdocument/ev-document.c
-+++ atril-workdir/libdocument/ev-document.c
-@@ -23,6 +23,7 @@
- 
- #include <stdlib.h>
- #include <string.h>
-+#include <strings.h>
- 
- #include "ev-document.h"
- #ifdef ENABLE_SYNCTEX

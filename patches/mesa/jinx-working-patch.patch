@@ -37,30 +37,6 @@ index 427cfde..1bdff0c 100644
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
-diff --git mesa-clean/src/compiler/spirv/spirv_to_nir.c mesa-workdir/src/compiler/spirv/spirv_to_nir.c
-index 6c956ea..ec61ed0 100644
---- mesa-clean/src/compiler/spirv/spirv_to_nir.c
-+++ mesa-workdir/src/compiler/spirv/spirv_to_nir.c
-@@ -44,6 +44,7 @@
- #include "util/float8.h"
- 
- #include <stdio.h>
-+#include <strings.h>
- 
- /* Table of all implemented capabilities.  These are the capabilities that are
-  * implemented in the spirv_to_nir, not what the device supports.
-diff --git mesa-clean/src/egl/main/egllog.c mesa-workdir/src/egl/main/egllog.c
-index 0de00b2..59d8fdf 100644
---- mesa-clean/src/egl/main/egllog.c
-+++ mesa-workdir/src/egl/main/egllog.c
-@@ -37,6 +37,7 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <strings.h>
- #include "c11/threads.h"
- #include "util/macros.h"
- #include "util/os_misc.h"
 diff --git mesa-clean/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp mesa-workdir/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp
 index 3d2b8cf..0be69b0 100644
 --- mesa-clean/src/gallium/auxiliary/gallivm/lp_bld_init_orc.cpp
@@ -161,18 +137,6 @@ index da8ad7a..aa9aca4 100644
     struct timespec time;
     time.tv_sec = usecs / 1000000;
     time.tv_nsec = (usecs % 1000000) * 1000;
-diff --git mesa-clean/src/util/u_debug.c mesa-workdir/src/util/u_debug.c
-index 96f7cca..40fe2dc 100644
---- mesa-clean/src/util/u_debug.c
-+++ mesa-workdir/src/util/u_debug.c
-@@ -33,6 +33,7 @@
- #include "c11/threads.h"
- #include <inttypes.h>
- 
-+#include <strings.h>
- #include <stdio.h>
- #include <limits.h> /* CHAR_BIT */
- #include <ctype.h> /* isalnum */
 diff --git mesa-clean/src/util/u_thread.c mesa-workdir/src/util/u_thread.c
 index 255c5f6..7c20f8d 100644
 --- mesa-clean/src/util/u_thread.c

@@ -404,14 +404,6 @@ diff --git fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrb
 index 7d50d6a..5c3b2f9 100644
 --- fastfetch-clean/src/util/FFstrbuf.h
 +++ fastfetch-workdir/src/util/FFstrbuf.h
-@@ -7,6 +7,7 @@
- #include <stdbool.h>
- #include <stdio.h>
- #include <string.h>
-+#include <strings.h>
- #include <stdlib.h>
- #include <assert.h>
- 
 @@ -22,6 +23,10 @@
      #define strcasestr StrStrIA
  #endif

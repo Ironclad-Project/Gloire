@@ -1,3 +1,33 @@
+diff --git mlibc-clean/abis/ironclad/stat.h mlibc-workdir/abis/ironclad/stat.h
+index 638a022..fde5929 100644
+--- mlibc-clean/abis/ironclad/stat.h
++++ mlibc-workdir/abis/ironclad/stat.h
+@@ -13,17 +13,14 @@
+ #include <bits/ansi/time_t.h>
+ #include <bits/ansi/timespec.h>
+ 
+-#define S_IFMT   0x3FF000
+-#define S_IFIFO  0x01000
+-#define S_IFCHR  0x02000
+-#define S_IFDIR  0x04000
+-#define S_IFBLK  0x08000
+-#define S_IFREG  0x10000
+-#define S_IFLNK  0x20000
+-#define S_IFSOCK 0x40000
+-#define S_IMQ    0x80000
+-#define S_ISEM   0x100000
+-#define S_ISHM   0x200000
++#define S_IFMT   0xF000
++#define S_IFIFO  0x1000
++#define S_IFCHR  0x2000
++#define S_IFDIR  0x4000
++#define S_IFBLK  0x6000
++#define S_IFREG  0x8000
++#define S_IFLNK  0xA000
++#define S_IFSOCK 0xC000
+ 
+ #define S_IRWXU 0700
+ #define S_IRUSR 0400
 diff --git mlibc-clean/options/internal/generic/charset.cpp mlibc-workdir/options/internal/generic/charset.cpp
 index c42b4f4..232c229 100644
 --- mlibc-clean/options/internal/generic/charset.cpp
@@ -176,22 +206,22 @@ index 0dff9d4..cdebf00 100644
  	for(int i = 0; i < iovc; i++) {
  		if(SSIZE_MAX - bytes < iovs[i].iov_len) {
 diff --git mlibc-clean/options/posix/include/bits/posix/stat.h mlibc-workdir/options/posix/include/bits/posix/stat.h
-index 430f8a6..7a128c7 100644
+index 430f8a6..1fecd19 100644
 --- mlibc-clean/options/posix/include/bits/posix/stat.h
 +++ mlibc-workdir/options/posix/include/bits/posix/stat.h
 @@ -14,6 +14,10 @@
  #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
  #define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
  #define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
-+#define S_TYPEISMQ(buf) (((buf)->st_mode & S_IFMT) == S_IMQ)
-+#define S_TYPEISSEM(buf) (((buf)->st_mode & S_IFMT) == S_ISEM)
-+#define S_TYPEISSHM(buf) (((buf)->st_mode & S_IFMT) == S_ISHM)
++#define S_TYPEISMQ(buf) (0)
++#define S_TYPEISSEM(buf) (0)
++#define S_TYPEISSHM(buf) (0)
 +#define S_TYPEISTMO(buf) (0)
-
+ 
  /* POSIX compatibility macros */
  #define st_atime st_atim.tv_sec
 diff --git mlibc-clean/options/posix/include/dirent.h mlibc-workdir/options/posix/include/dirent.h
-index b819c30..5577aff 100644
+index 6c4d8b3..6ece466 100644
 --- mlibc-clean/options/posix/include/dirent.h
 +++ mlibc-workdir/options/posix/include/dirent.h
 @@ -17,14 +17,16 @@ extern "C" {
@@ -220,7 +250,7 @@ index b819c30..5577aff 100644
  /* The character array d_name is of unspecified size, but the number of bytes preceding
   * the terminating null byte will not exceed {NAME_MAX}. */
 diff --git mlibc-clean/options/rtld/generic/main.cpp mlibc-workdir/options/rtld/generic/main.cpp
-index 6c92521..0d2ecae 100644
+index e4d36c7..57b50a1 100644
 --- mlibc-clean/options/rtld/generic/main.cpp
 +++ mlibc-workdir/options/rtld/generic/main.cpp
 @@ -475,7 +475,7 @@ extern "C" void *interpreterMain(uintptr_t *entry_stack) {

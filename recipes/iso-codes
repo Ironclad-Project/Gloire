@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=iso-codes
-version=4.18.0
+version=4.19.0
 revision=1
 tarball_url="https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v${version}/iso-codes-v${version}.tar.gz"
-tarball_blake2b="9d382682b1491d9470a536e3bd63e892c8901ab80f911c78cdcf33ed6f40a0f2da84464369f3ac82297ef72433124c9b486f658be351162f0ad5e730fb4ef897"
+tarball_blake2b="18d2bce972108b92fcfada95274f784f2ab1f1c84921e0569d814c42f779598194562aa816d31596113aeee66789ea20d068ca8d47ed7bbe8c322ed93ad42f32"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

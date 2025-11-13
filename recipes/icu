@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=icu
-version=77.1
+version=78.1
 revision=1
-tarball_url="https://github.com/unicode-org/icu/releases/download/release-77-1/icu4c-77_1-src.tgz"
-tarball_blake2b="7ee4457dbb9abfee543aa91314e052282fb1c73e5fd9d9b21777d2ea32ae29c3eb3d83a78aafc7d00530435c014aa0f6196faf82ed67593c844e28395ab4720e"
+tarball_url="https://github.com/unicode-org/icu/releases/download/release-${version}/icu4c-${version}-sources.tgz"
+tarball_blake2b="382f57d25642aab2be8eea7713b205928d0a226b0ef5ff3ce2205be7a215a6dca2045617778643f62aa5d174b3f96ea9723c6c3847742dc5649686c131c511c7"
 source_imagedeps="build-essential pkg-config"
 hostdeps="gcc pkg-config"
 deps="core-libs"

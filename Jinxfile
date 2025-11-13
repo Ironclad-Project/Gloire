@@ -32,7 +32,7 @@ post_package_strip() {
         strip_command="${OS_TRIPLET}-strip"
     fi
 
-    for f in $(find "${dest_dir}"); do
+    for f in $(find "${dest_dir}${prefix}/bin" "${dest_dir}${prefix}/lib" "${dest_dir}${prefix}/libexec" 2>/dev/null); do
         if file "$f" | grep 'not stripped' >/dev/null; then
             echo "* stripping '$f'..."
             stripped_file="$(mktemp)"

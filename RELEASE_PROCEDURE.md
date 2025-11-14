@@ -12,7 +12,7 @@ The releases have the following packages:
 base ace-of-penguins slim xorg-server st jwm fastfetch xfe mesa-demos
 xorg-xeyes nyancat xorg-xwininfo xorg-xfontsel gloire-install mate-icon-theme
 dbus xorg-xinit xf86-input-keyboard xf86-input-mouse xf86-video-fbdev gdb
-metalog cronie nano vim
+metalog cronie nano vim sed file gawk
 ```
 
 ## Release steps

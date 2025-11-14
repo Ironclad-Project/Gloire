@@ -136,6 +136,40 @@ index c42b4f4..232c229 100644
  	return c;
  }
  
+diff --git mlibc-clean/options/linux/include/mlibc/linux-sysdeps.hpp mlibc-workdir/options/linux/include/mlibc/linux-sysdeps.hpp
+index c30421e..8cfd84a 100644
+--- mlibc-clean/options/linux/include/mlibc/linux-sysdeps.hpp
++++ mlibc-workdir/options/linux/include/mlibc/linux-sysdeps.hpp
+@@ -33,8 +33,6 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result);
+ [[gnu::weak]] int sys_epoll_ctl(int epfd, int mode, int fd, struct epoll_event *ev);
+ [[gnu::weak]] int sys_epoll_pwait(int epfd, struct epoll_event *ev, int n,
+ 		int timeout, const sigset_t *sigmask, int *raised);
+-[[gnu::weak]] int sys_ppoll(struct pollfd *fds, nfds_t count, const struct timespec *ts,
+-		const sigset_t *mask, int *num_events);
+ [[gnu::weak]] int sys_mount(const char *source, const char *target,
+ 		const char *fstype, unsigned long flags, const void *data);
+ [[gnu::weak]] int sys_umount2(const char *target, int flags);
+diff --git mlibc-clean/options/posix/generic/poll.cpp mlibc-workdir/options/posix/generic/poll.cpp
+index 70a3caf..778b4ae 100644
+--- mlibc-clean/options/posix/generic/poll.cpp
++++ mlibc-workdir/options/posix/generic/poll.cpp
+@@ -16,10 +16,6 @@ int poll(struct pollfd *fds, nfds_t count, int timeout) {
+ 	return num_events;
+ }
+ 
+-#if __MLIBC_LINUX_OPTION
+-
+-#include <mlibc/linux-sysdeps.hpp>
+-
+ int ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts, const sigset_t *sigmask) {
+ 	if (mlibc::sys_ppoll) {
+ 		int num_events;
+@@ -39,5 +35,3 @@ int ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts, co
+ 
+ 	return ready;
+ }
+-#endif // __MLIBC_LINUX_OPTION
+-
 diff --git mlibc-clean/options/posix/generic/posix_locale.cpp mlibc-workdir/options/posix/generic/posix_locale.cpp
 index f19e623..811b46f 100644
 --- mlibc-clean/options/posix/generic/posix_locale.cpp
@@ -219,6 +253,35 @@ index 6c4d8b3..6ece466 100644
  
  /* The character array d_name is of unspecified size, but the number of bytes preceding
   * the terminating null byte will not exceed {NAME_MAX}. */
+diff --git mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+index f96b153..3f5542a 100644
+--- mlibc-clean/options/posix/include/mlibc/posix-sysdeps.hpp
++++ mlibc-workdir/options/posix/include/mlibc/posix-sysdeps.hpp
+@@ -162,6 +162,8 @@ int sys_vm_unmap(void *pointer, size_t size);
+ [[gnu::weak]] int sys_pipe(int *fds, int flags);
+ [[gnu::weak]] int sys_socketpair(int domain, int type_and_flags, int proto, int *fds);
+ [[gnu::weak]] int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events);
++[[gnu::weak]] int sys_ppoll(struct pollfd *fds, nfds_t count, const struct timespec *ts,
++		const sigset_t *mask, int *num_events);
+ [[gnu::weak]] int sys_ioctl(int fd, unsigned long request, void *arg, int *result);
+ [[gnu::weak]] int sys_getsockopt(int fd, int layer, int number,
+ 		void *__restrict buffer, socklen_t *__restrict size);
+diff --git mlibc-clean/options/posix/include/sys/poll.h mlibc-workdir/options/posix/include/sys/poll.h
+index bebe627..86d8ab5 100644
+--- mlibc-clean/options/posix/include/sys/poll.h
++++ mlibc-workdir/options/posix/include/sys/poll.h
+@@ -23,11 +23,8 @@ struct pollfd {
+ #ifndef __MLIBC_ABI_ONLY
+ 
+ int poll(struct pollfd *__fds, nfds_t __nfds, int __timeout);
+-
+-#if __MLIBC_LINUX_OPTION
+ int ppoll(struct pollfd *__fds, nfds_t __nfds,
+ 		const struct timespec *__timeout_ts, const sigset_t *__sigmask);
+-#endif /* __MLIBC_LINUX_OPTION */
+ 
+ #endif /* !__MLIBC_ABI_ONLY */
+ 
 diff --git mlibc-clean/options/rtld/generic/main.cpp mlibc-workdir/options/rtld/generic/main.cpp
 index e4d36c7..57b50a1 100644
 --- mlibc-clean/options/rtld/generic/main.cpp
@@ -232,3 +295,19 @@ index e4d36c7..57b50a1 100644
  	} else {
  		if (env_ld_library_path) {
  			for(auto path : parseList(env_ld_library_path, ":;"))
+diff --git mlibc-clean/sysdeps/ironclad/generic/generic.cpp mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+index bb57e2e..15b4dcc 100644
+--- mlibc-clean/sysdeps/ironclad/generic/generic.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/generic.cpp
+@@ -1084,9 +1084,9 @@ int sys_msg_send(int fd, const struct msghdr *hdr, int flags, ssize_t *length) {
+ }
+ 
+ 
+-int sys_ppoll(struct pollfd *fds, int nfds, const struct timespec *timeout, const sigset_t *sigmask, int *num_events) {
++int sys_ppoll(struct pollfd *fds, nfds_t count, const struct timespec *ts, const sigset_t *mask, int *num_events) {
+ 	int ret, errno;
+-	SYSCALL4(SYSCALL_PPOLL, fds, nfds, timeout, sigmask);
++	SYSCALL4(SYSCALL_PPOLL, fds, count, ts, mask);
+ 	if (ret == -1) {
+ 		return errno;
+ 	}

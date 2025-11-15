@@ -2,7 +2,4 @@
 
 set -e
 
-TMPDIR="$(mktemp -d)"
-./jinx install "$TMPDIR" '*'
-find "$TMPDIR"/ -name '*.la'
-rm -rf "$TMPDIR"
+for f in pkgs/*; do tar -tvf $f | grep ' .*\.la$' && echo $f; done

@@ -1,14 +1,23 @@
 #! /bin/sh
 
-TMPDIR="$(mktemp -d)"
-./jinx install "$TMPDIR" '*'
-rm -rf "$TMPDIR/bin" "$TMPDIR/sbin" "$TMPDIR/lib" "$TMPDIR/lib64" "$TMPDIR/usr/sbin" "$TMPDIR/usr/lib64"
-for f in $(find "$TMPDIR" -type f); do
-    stuff="$(strings "$f" | grep '/sysroot' | grep -v Assertion | grep -v '\--enable-languages')"
-    if [ -z "$stuff" ]; then
-        continue
-    fi
-    echo "in $f"
-    echo "$stuff"
+for f in pkgs/*; do
+    PKGPATH="$(realpath "$f")"
+    TMPDIR="$(mktemp -d)"
+    (
+        cd "$TMPDIR"
+        PRINT_PKG=0
+        zstdcat < "$PKGPATH" | tar -xf -
+        for ff in $(find . -type f); do
+            stuff="$(strings "$ff" | grep '/sysroot' | grep -v Assertion | grep -v '\--enable-languages')"
+            if [ -z "$stuff" ]; then
+                continue
+            fi
+            echo "    $ff"
+            PRINT_PKG=1
+        done
+        if [ "$PRINT_PKG" = 1 ]; then
+            echo "$f"
+        fi
+    )
+    rm -rf "$TMPDIR"
 done
-rm -rf "$TMPDIR"

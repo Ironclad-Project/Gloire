@@ -1,14 +1,24 @@
 #! /bin/sh
 
-TMPDIR="$(mktemp -d)"
-./jinx install "$TMPDIR" '*'
-rm -rf "$TMPDIR/bin" "$TMPDIR/sbin" "$TMPDIR/lib" "$TMPDIR/lib64" "$TMPDIR/usr/sbin" "$TMPDIR/usr/lib64"
-for f in $(find "$TMPDIR" -name '*.so*' -type f); do
-    if ! readelf --dynamic "$f" >/dev/null 2>&1; then
-        continue
-    fi
-    if ! readelf --dynamic "$f" | grep -q 'SONAME'; then
-        echo "$f has no soname"
-    fi
+for f in pkgs/*; do
+    PKGPATH="$(realpath "$f")"
+    TMPDIR="$(mktemp -d)"
+    (
+        cd "$TMPDIR"
+        PRINT_PKG=0
+        zstdcat < "$PKGPATH" | tar -xf -
+        for ff in $(find ./usr/bin ./usr/lib ./usr/libexec -name '*.so*' -type f 2>/dev/null); do
+            if ! readelf --dynamic "$ff" >/dev/null 2>&1; then
+                continue
+            fi
+            if ! readelf --dynamic "$ff" | grep -q 'SONAME'; then
+                echo "$ff has no soname"
+                PRINT_PKG=1
+            fi
+        done
+        if [ "$PRINT_PKG" = 1 ]; then
+            echo "$f"
+        fi
+    )
+    rm -rf "$TMPDIR"
 done
-rm -rf "$TMPDIR"

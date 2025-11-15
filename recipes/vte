@@ -1,8 +1,8 @@
 #! /bin/sh
 
 name=vte
-version=0.80.3
-revision=5
+version=0.82.1
+revision=1
 git_url="https://gitlab.gnome.org/GNOME/vte.git"
 commit=02eaf1997d904dbfb792e2ae9ae0ba8b82f117f1
 imagedeps="libglib2.0-dev"

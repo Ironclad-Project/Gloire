@@ -2,7 +2,7 @@
 
 name=e2fsprogs
 version=1.47.3
-revision=1
+revision=2
 tarball_url="https://github.com/tytso/e2fsprogs/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="dfaf39a2228e5e51302a79bc005074a8c3dffce1b7869399bbc2bee626872ddfac4b19f9ec18ca25fe6e1e8fde693c867f13bc6e94b4d0f0cabef5a0d9fb4f3e"
 imagedeps="build-essential"
@@ -14,8 +14,9 @@ prepare() {
 }
 
 configure() {
-  LIBS="-lintl" \
-    autotools_configure
+        LIBS="-lintl" \
+    autotools_configure \
+        --enable-elf-shlibs
 }
 
 build() {
@@ -24,6 +25,12 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
+
+    # Use generic awk instead of gawk in compile_et.
+    sed -i -e 's/^AWK=.*/AWK=awk/' "${dest_dir}${prefix}/bin/compile_et"
+
+    # Remove static libraries.
+    rm -v "${dest_dir}${prefix}/lib"/*.a
 
     post_package_strip
 }

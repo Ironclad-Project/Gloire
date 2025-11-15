@@ -1,30 +1,28 @@
 #! /bin/sh
 
 name=xfishtank
-version=2.5
-revision=2
-git_url="https://github.com/sydneyjd/xfishtank.git"
-commit=098f67f39319067fc031fc1dbcba2c19a0320468
+version=3.3.2
+revision=1
+tarball_url="https://ratrabbit.nl/downloads/xfishtank/xfishtank-${version}.tar.gz"
+tarball_blake2b="c90d39843d12ec1ec5446ed4df05cf553526fc092e5adc0fadf36a2c9885e0174f3509cc1f4cdece35e542f39560d6da067344dfb0ba531fca9bb4891c26071e"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxext libxpm libxinerama libxkbcommon libxtst imlib2"
+deps="core-libs libxpm gtk3"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
 
 build() {
-    # the build system sucks, so we will directly call the compiler and ignore it!
-    cp -rp "${source_dir}"/. ./
-
-    set -x
-
-    gcc ${HOST_CFLAGS} -std=gnu89 ${HOST_LDFLAGS} makeh.c -o makeh
-    ./makeh > xfishy.h
-
-    "${OS_TRIPLET}"-gcc ${TARGET_CFLAGS} -ansi -Dlinux -I./fishmaps ${TARGET_LDFLAGS} xfish.c medcut.c -lX11 -lImlib2 -lm -o xfishtank
-
-    set +x
+    make -j${parallelism}
 }
 
 package() {
-    install -D xfishtank "${dest_dir}/usr/bin/xfishtank"
+    DESTDIR="${dest_dir}" make install
 
     post_package_strip
 }

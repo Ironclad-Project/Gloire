@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="1"
+jinx_minor_ver="2"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -204,6 +204,11 @@ fi
 
 apt_cache="$JINX_CACHE_DIR/apt-cache"
 
+force_remove() {
+    chmod -R 777 "$@" 2>/dev/null || true
+    rm -rf "$@"
+}
+
 temp_collect=""
 
 cleanup_done=no
@@ -212,7 +217,7 @@ cleanup() {
         return
     fi
     cleanup_done=yes
-    eval "rm -rf ${temp_collect}"
+    eval "force_remove ${temp_collect}"
 }
 
 trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT
@@ -582,7 +587,7 @@ prepare_container() {
                 continue
             fi
 
-            rm -rf "$JINX_CACHE_DIR/sets/${pkgset}"
+            force_remove "$JINX_CACHE_DIR/sets/${pkgset}"
             mkdir -p "$JINX_CACHE_DIR/sets/${pkgset}"
 
             cp -Pplrf "$JINX_CACHE_DIR/sets/${pkgset}../.image" "$JINX_CACHE_DIR/sets/${pkgset}.image"
@@ -695,12 +700,12 @@ run_in_container() {
         '
     "
 
-    rm -rf "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir" "${imgroot}/jinx"
+    force_remove "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir" "${imgroot}/jinx"
     rm "${imgroot}/etc/resolv.conf"
 }
 
 destroy_container() {
-    rm -rf "${container_pkgs}" "${sysroot_dir}"
+    force_remove "${container_pkgs}" "${sysroot_dir}"
 }
 
 do_git_fetch() {
@@ -775,7 +780,7 @@ do_tarball_fetch() {
         mv "${extract_dir}"/* "${base_dir}"/sources/${name}/
     )
 
-    rm -rf "${extract_dir}" "${tarball_path}"
+    force_remove "${extract_dir}" "${tarball_path}"
 }
 
 get_real_source_dir() {
@@ -849,7 +854,7 @@ do_patch() {
     cd "${source_dir}"
 
     needs_match_timestamps=no
-    rm -rf "${base_dir}"/sources/${name}-clean
+    force_remove "${base_dir}"/sources/${name}-clean
     if [ -d "${base_dir}"/patches/${name} ]; then
         for patch in "${base_dir}"/patches/${name}/*; do
             [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
@@ -868,7 +873,7 @@ do_patch() {
             for f in $(diff -rq --no-dereference "${base_dir}"/sources/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
                 touch --reference="$f" "$(echo "$f" | sed "s|sources/${name}-clean|sources/${name}|g")"
             done
-            rm -rf "${base_dir}"/sources/${name}-clean
+            force_remove "${base_dir}"/sources/${name}-clean
         fi
     fi
 
@@ -953,7 +958,7 @@ do_package_host() {
 
     dest_dir="${build_dir}"/host-pkgs/${name}
 
-    rm -rf "${dest_dir}"
+    force_remove "${dest_dir}"
     mkdir -p "${dest_dir}"
 
     if ! [ -z "${from_source}" ]; then
@@ -1044,7 +1049,7 @@ do_package() {
 
     dest_dir="${build_dir}"/pkgs/${name}
 
-    rm -rf "${dest_dir}"
+    force_remove "${dest_dir}"
     mkdir -p "${dest_dir}"
 
     if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
@@ -1079,24 +1084,24 @@ do_package() {
 }
 
 clean_sources() {
-    rm -rf "${base_dir}"/sources/$1
-    rm -rf "${base_dir}"/sources/$1-clean
-    rm -rf "${base_dir}"/sources/$1-workdir
-    rm -rf "${base_dir}"/sources/$1.version
-    rm -rf "${base_dir}"/sources/$1.patched
-    rm -rf "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/sources/$1
+    force_remove "${base_dir}"/sources/$1-clean
+    force_remove "${base_dir}"/sources/$1-workdir
+    force_remove "${base_dir}"/sources/$1.version
+    force_remove "${base_dir}"/sources/$1.patched
+    force_remove "${base_dir}"/sources/$1.prepared
 }
 
 need_repatch() {
-    rm -rf "${base_dir}"/sources/$1
+    force_remove "${base_dir}"/sources/$1
 
     if [ -d "${base_dir}"/sources/$1-clean ]; then
         mv "${base_dir}"/sources/$1-clean "${base_dir}"/sources/$1
     fi
 
-    rm -rf "${base_dir}"/sources/$1-workdir
-    rm -rf "${base_dir}"/sources/$1.patched
-    rm -rf "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/sources/$1-workdir
+    force_remove "${base_dir}"/sources/$1.patched
+    force_remove "${base_dir}"/sources/$1.prepared
 }
 
 do_source() {
@@ -1141,13 +1146,13 @@ do_source() {
 }
 
 do_rebuild() {
-    rm -rf "${build_dir}"/builds/"$1"
+    force_remove "${build_dir}"/builds/"$1"
 
     do_pkg "$1"
 }
 
 do_host_rebuild() {
-    rm -rf "${build_dir}"/host-builds/"$1"
+    force_remove "${build_dir}"/host-builds/"$1"
 
     do_host_pkg "$1"
 }
@@ -1168,10 +1173,10 @@ do_regen() {
         # exclude version control dirs
         make_temp -d
         vc_dir_clean="${tmp}"
-        rm -rf "${vc_dir_clean}"
+        force_remove "${vc_dir_clean}"
         make_temp -d
         vc_dir_workdir="${tmp}"
-        rm -rf "${vc_dir_workdir}"
+        force_remove "${vc_dir_workdir}"
 
         if ! [ -z "${git_url}" ]; then
             mv $1-clean/.git "${vc_dir_clean}"
@@ -1192,11 +1197,11 @@ do_regen() {
 
         cd "${base_dir}"
 
-        rm -rf "${source_dir}"
+        force_remove "${source_dir}"
         cp -rp "${base_dir}"/sources/$1-workdir "${source_dir}"
     fi
 
-    rm -rf "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/sources/$1.prepared
 
     cross_compile=yes
     prepare_container
@@ -1223,7 +1228,7 @@ do_host_pkg() {
         run_in_container internal-configure-host $1
     fi
     run_in_container internal-build-host $1
-    rm -rf "${build_dir}"/host-pkgs/$1
+    force_remove "${build_dir}"/host-pkgs/$1
     run_in_container internal-package-host $1
     unset container_sources_ro
 
@@ -1231,7 +1236,7 @@ do_host_pkg() {
 
     if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
         if ! [ "$clean_workdirs" = "no" ]; then
-            rm -rf "${build_dir}"/host-builds/$1
+            force_remove "${build_dir}"/host-builds/$1
 
             if [ -z "${from_source}" ]; then
                 source_source_recipe $1
@@ -1258,7 +1263,7 @@ do_pkg() {
     fi
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-        rm -rf "${build_dir}"/builds/"$1"
+        force_remove "${build_dir}"/builds/"$1"
         tracked_subshell '
         if ! [ -z "${from_source}" ]; then
             name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
@@ -1280,7 +1285,7 @@ do_pkg() {
         run_in_container internal-configure $1
     fi
     run_in_container internal-build $1
-    rm -rf "${build_dir}"/pkgs/$1
+    force_remove "${build_dir}"/pkgs/$1
     run_in_container internal-package $1
     unset container_sources_ro
 
@@ -1308,7 +1313,7 @@ do_pkg() {
         -D "${xbps_deps}" \
         "${dest_dir}"
 
-    rm -rf "${dest_dir}"
+    force_remove "${dest_dir}"
 
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
@@ -1318,7 +1323,7 @@ do_pkg() {
 
     if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
         if ! [ "$clean_workdirs" = "no" ]; then
-            rm -rf "${build_dir}"/builds/$1
+            force_remove "${build_dir}"/builds/$1
 
             if [ -z "${from_source}" ]; then
                 source_source_recipe $1
@@ -1715,9 +1720,7 @@ cmd_install() {
 }
 
 reinit_container() {
-    chmod -R 777 "$JINX_CACHE_DIR/sets" 2>/dev/null || true
-    chmod -R 777 "$JINX_CACHE_DIR/apt-cache" 2>/dev/null || true
-    rm -rf "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
+    force_remove "$JINX_CACHE_DIR/sets" "$JINX_CACHE_DIR/apt-cache"
 
     mkdir -p "${apt_cache}"
     mkdir -p "${JINX_CACHE_DIR}/tmp"
@@ -1769,7 +1772,7 @@ reinit_container() {
     ${MAKE} install
 
     cd ..
-    rm -rf xbps-${XBPS_VERSION}*
+    force_remove xbps-${XBPS_VERSION}*
 
     '
 
@@ -1821,7 +1824,7 @@ EOF
         fi
         tar -zxf debootstrap.tar.gz
         make -C debootstrap-${debootstrap_version} DESTDIR="$(pwd -P)/debootstrap" install
-        rm -rf debootstrap.tar.gz debootstrap-${debootstrap_version}
+        force_remove debootstrap.tar.gz debootstrap-${debootstrap_version}
         sed "s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g;s|DEBOOTSTRAP_DIR=/usr/share/debootstrap|DEBOOTSTRAP_DIR=\"$(pwd -P)/debootstrap/usr/share/debootstrap\"|g" debootstrap/usr/sbin/debootstrap >debootstrap.sed
         mv debootstrap.sed debootstrap/usr/sbin/debootstrap
         chmod +x debootstrap/usr/sbin/debootstrap
@@ -1839,7 +1842,7 @@ EOF
     "
 
     for dir in dev proc sys run tmp var/tmp; do
-        rm -rf "${JINX_CACHE_DIR}/sets/.image/${dir}"
+        force_remove "${JINX_CACHE_DIR}/sets/.image/${dir}"
         mkdir -p "${JINX_CACHE_DIR}/sets/.image/${dir}"
     done
 
@@ -1886,8 +1889,7 @@ first_use() {
 
 redo_first_use() {
     echo "* purging old Jinx cache..."
-    chmod -R 777 "$JINX_CACHE_DIR" || true
-    rm -rf "$JINX_CACHE_DIR"
+    force_remove "$JINX_CACHE_DIR"
     first_use
 }
 

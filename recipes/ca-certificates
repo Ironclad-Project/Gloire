@@ -2,10 +2,10 @@
 
 name=ca-certificates
 skip_pkg_check=yes
-version_url=1.16.1
 version="$(. "${base_dir}/recipes/nss" && echo "${version}")"
 revision=2
-tarball_url="https://github.com/lfs-book/make-ca/archive/v${version_url}/make-ca-${version_url}.tar.gz"
+make_ca_version=1.16.1
+tarball_url="https://github.com/lfs-book/make-ca/archive/v${make_ca_version}/make-ca-${make_ca_version}.tar.gz"
 tarball_blake2b="f054fe6e96b74bfc02038e9dc4dd09628a22b75711f692a346c4952a6fa07456b63cff7863d3c11feddeb1ef37b1b786934e2713008b808570da8443e978ece3"
 imagedeps="p11-kit"
 hostdeps="gcc pkg-config"

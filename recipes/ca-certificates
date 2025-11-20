@@ -4,7 +4,7 @@ name=ca-certificates
 skip_pkg_check=yes
 version_url=1.16.1
 version="$(. "${base_dir}/recipes/nss" && echo "${version}")"
-revision=1
+revision=2
 tarball_url="https://github.com/lfs-book/make-ca/archive/v${version_url}/make-ca-${version_url}.tar.gz"
 tarball_blake2b="f054fe6e96b74bfc02038e9dc4dd09628a22b75711f692a346c4952a6fa07456b63cff7863d3c11feddeb1ef37b1b786934e2713008b808570da8443e978ece3"
 imagedeps="p11-kit"
@@ -16,19 +16,8 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
-
-    install -v -dm755 "${dest_dir}/etc/ssl/local"
-
-    # Move /usr/sbin to /usr/bin
-    mv "${dest_dir}${prefix}/sbin" "${dest_dir}${prefix}/bin"
-
-    # Create the initial CA certificate store
-    export P11_KIT_TRUST_PATH="${dest_dir}/etc/pki/anchors"
+    chmod +x ./make-ca
     ./make-ca -f -C "${sysroot_dir}${prefix}/share/nss/certdata.txt" -D "${dest_dir}"
-
-    # Fix permissions
-    chmod -v 0755 "${dest_dir}/etc/ssl/certs"
 
     # Remove unneeded systemd timers
     rm -rvf ${dest_dir}${prefix}/lib

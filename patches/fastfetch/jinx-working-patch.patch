@@ -1,8 +1,8 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index f3b27dd..c298cdf 100644
+index 77647cc..8be4cdf 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
-@@ -34,6 +34,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
+@@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
      set(Haiku TRUE CACHE BOOL "..." FORCE)
  elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "GNU")
      set(GNU TRUE CACHE BOOL "..." FORCE)
@@ -11,7 +11,7 @@ index f3b27dd..c298cdf 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -60,14 +62,14 @@ include(CMakeDependentOption)
+@@ -71,14 +73,14 @@ include(CMakeDependentOption)
  
  cmake_dependent_option(ENABLE_VULKAN "Enable vulkan" ON "LINUX OR APPLE OR FreeBSD OR OpenBSD OR NetBSD OR WIN32 OR ANDROID OR SunOS OR Haiku OR GNU" OFF)
  cmake_dependent_option(ENABLE_WAYLAND "Enable wayland-client" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR GNU" OFF)
@@ -31,7 +31,7 @@ index f3b27dd..c298cdf 100644
  cmake_dependent_option(ENABLE_RPM "Enable rpm" ON "LINUX OR GNU" OFF)
  cmake_dependent_option(ENABLE_IMAGEMAGICK7 "Enable imagemagick 7" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR ANDROID OR WIN32 OR SunOS OR Haiku OR GNU" OFF)
  cmake_dependent_option(ENABLE_IMAGEMAGICK6 "Enable imagemagick 6" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR SunOS OR GNU" OFF)
-@@ -437,7 +439,9 @@ set(LIBFASTFETCH_SRC
+@@ -450,7 +452,9 @@ set(LIBFASTFETCH_SRC
      src/modules/lm/lm.c
      src/modules/loadavg/loadavg.c
      src/modules/locale/locale.c
@@ -42,7 +42,7 @@ index f3b27dd..c298cdf 100644
      src/modules/memory/memory.c
      src/modules/monitor/monitor.c
      src/modules/netio/netio.c
-@@ -1285,6 +1289,78 @@ elseif(GNU)
+@@ -1298,6 +1302,78 @@ elseif(GNU)
          src/util/platform/FFPlatform_unix.c
          src/util/binary_linux.c
     )
@@ -121,6 +121,15 @@ index f3b27dd..c298cdf 100644
  endif()
  
  if(ENABLE_DIRECTX_HEADERS)
+@@ -1418,6 +1494,8 @@ elseif(NetBSD)
+     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
+ elseif(Haiku)
+     target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
++elseif(Ironclad)
++    target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
+ elseif(GNU)
+     target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
+     # On Hurd PATH_MAX is not defined. Set an arbitrary limit as workaround.
 diff --git fastfetch-clean/presets/all.jsonc fastfetch-workdir/presets/all.jsonc
 index 74bea1f..fed5b02 100644
 --- fastfetch-clean/presets/all.jsonc
@@ -274,7 +283,7 @@ index 3d83f3a..81eed38 100644
 +#endif
  }
 diff --git fastfetch-clean/src/detection/publicip/publicip.c fastfetch-workdir/src/detection/publicip/publicip.c
-index 7fed00c..809264d 100644
+index 2f8fdcb..5608a0c 100644
 --- fastfetch-clean/src/detection/publicip/publicip.c
 +++ fastfetch-workdir/src/detection/publicip/publicip.c
 @@ -1,6 +1,8 @@
@@ -297,7 +306,7 @@ index 7fed00c..809264d 100644
      FFNetworkingState* state = &states[options->ipv6];
      const char** status = &statuses[options->ipv6];
      if (*status == FF_UNITIALIZED)
-@@ -95,4 +101,5 @@ const char* ffDetectPublicIp(FFPublicIPOptions* options, FFPublicIpResult* resul
+@@ -99,4 +105,5 @@ const char* ffDetectPublicIp(FFPublicIPOptions* options, FFPublicIpResult* resul
      ffStrbufInitMove(&result->ip, &response);
      ffStrbufTrimRightSpace(&result->ip);
      return NULL;
@@ -401,10 +410,10 @@ index 0edcfeb..a81e0bf 100644
      FFDsForceDrmType dsForceDrm;
      #elif defined(_WIN32)
 diff --git fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrbuf.h
-index 7d50d6a..5c3b2f9 100644
+index d202561..9b2d3fc 100644
 --- fastfetch-clean/src/util/FFstrbuf.h
 +++ fastfetch-workdir/src/util/FFstrbuf.h
-@@ -22,6 +23,10 @@
+@@ -22,6 +22,10 @@
      #define strcasestr StrStrIA
  #endif
  
@@ -416,10 +425,10 @@ index 7d50d6a..5c3b2f9 100644
  
  typedef struct FFstrbuf
 diff --git fastfetch-clean/src/util/platform/FFPlatform_unix.c fastfetch-workdir/src/util/platform/FFPlatform_unix.c
-index 682c2e6..0346c35 100644
+index 85e624a..762cf26 100644
 --- fastfetch-clean/src/util/platform/FFPlatform_unix.c
 +++ fastfetch-workdir/src/util/platform/FFPlatform_unix.c
-@@ -61,6 +61,8 @@ static void getExePath(FFPlatform* platform)
+@@ -62,6 +62,8 @@ static void getExePath(FFPlatform* platform)
                  break;
              }
          }

@@ -2,10 +2,10 @@
 
 name=limine
 version=10.3.1
-revision=1
+revision=2
 tarball_url="https://codeberg.org/Limine/Limine/releases/download/v${version}/limine-${version}.tar.gz"
 tarball_blake2b="0abfd79521f708bb7c6634c5b8957d7d13a154348414cad991baecc5c7244cd4d1c7a9dd7ccc10811ca00606acdfe73f3db9c0cab6851beebb206a301ca00703"
-imagedeps="mtools nasm"
+imagedeps="mtools nasm llvm lld clang"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
@@ -14,19 +14,8 @@ prepare() {
 }
 
 configure() {
-    if [ "${JINX_ARCH}" = "x86_64" ]; then
-        X86_FLAGS="--enable-bios \
-                   --enable-bios-cd \
-                   --enable-bios-pxe \
-                   --enable-uefi-ia32 \
-        "
-    fi
-
     autotools_configure \
-        $X86_FLAGS \
-        --enable-uefi-${JINX_ARCH} \
-        --enable-uefi-cd \
-        TOOLCHAIN_FOR_TARGET=${OS_TRIPLET}-
+        --enable-all
 }
 
 build() {

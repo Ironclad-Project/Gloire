@@ -1,0 +1,13 @@
+diff --git vim-clean/src/time.c vim-workdir/src/time.c
+index 62b38b4..ada5a7e 100644
+--- vim-clean/src/time.c
++++ vim-workdir/src/time.c
+@@ -11,6 +11,8 @@
+  * time.c: functions related to time and timers
+  */
+ 
++#define _XOPEN_SOURCE
++
+ #include "vim.h"
+ 
+ /*

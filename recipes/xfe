@@ -2,7 +2,7 @@
 
 name=xfe
 version=2.1.1
-revision=1
+revision=2
 tarball_url="https://downloads.sourceforge.net/sourceforge/xfe/xfe-${version}.tar.xz"
 tarball_blake2b="f67dcc8130649a7713a10edfc2a60f05e5c75ec8c4cf1a232912689f114848d6cb7cdc01d10d321acd1a55514343a7173a53b99778e5c67ee09043efa1be7ab8"
 hostdeps="gcc pkg-config"

@@ -34,10 +34,18 @@ index 2fc854e..320ea32 100644
  # OpenBSD:
  #CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
 diff --git st-clean/st.c st-workdir/st.c
-index 8e57991..337eb2d 100644
+index 8e57991..7705bd4 100644
 --- st-clean/st.c
 +++ st-workdir/st.c
-@@ -16,17 +16,12 @@
+@@ -1,4 +1,7 @@
+ /* See LICENSE for license details. */
++
++#define _DEFAULT_SOURCE
++
+ #include <ctype.h>
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -16,17 +19,12 @@
  #include <termios.h>
  #include <unistd.h>
  #include <wchar.h>

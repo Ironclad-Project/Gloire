@@ -1,0 +1,14 @@
+diff --git xorriso-clean/libisofs/util.c xorriso-workdir/libisofs/util.c
+index 8c51307..cf8f8f7 100644
+--- xorriso-clean/libisofs/util.c
++++ xorriso-workdir/libisofs/util.c
+@@ -9,6 +9,9 @@
+  * See COPYING file for details.
+  */
+ 
++#define _DEFAULT_SOURCE
++#define _XOPEN_SOURCE
++
+ #ifdef HAVE_CONFIG_H
+ #include "../config.h"
+ #endif

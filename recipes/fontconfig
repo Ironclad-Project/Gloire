@@ -2,7 +2,7 @@
 
 name=fontconfig
 version=2.17.1
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/fontconfig/fontconfig.git"
 commit=6d0a98982ec351c165c9224c8b7dbdfca3010e47
 imagedeps="gperf"
@@ -11,7 +11,8 @@ deps="core-libs freetype2 libexpat libxml2"
 
 configure() {
     meson_configure \
-        -Dxml-backend=libxml2
+        -Dxml-backend=libxml2 \
+        -Dtests=disabled
 }
 
 build() {

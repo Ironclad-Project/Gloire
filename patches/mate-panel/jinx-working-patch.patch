@@ -1,0 +1,35 @@
+diff --git mate-panel-clean/applets/clock/clock-location-tile.c mate-panel-workdir/applets/clock/clock-location-tile.c
+index 385d0da..ac0ef9b 100644
+--- mate-panel-clean/applets/clock/clock-location-tile.c
++++ mate-panel-workdir/applets/clock/clock-location-tile.c
+@@ -1,3 +1,6 @@
++#define _DEFAULT_SOURCE
++#define _XOPEN_SOURCE
++
+ #ifdef HAVE_CONFIG_H
+ #include <config.h>
+ #endif
+diff --git mate-panel-clean/applets/clock/clock-location.c mate-panel-workdir/applets/clock/clock-location.c
+index 637d834..818bedb 100644
+--- mate-panel-clean/applets/clock/clock-location.c
++++ mate-panel-workdir/applets/clock/clock-location.c
+@@ -1,3 +1,6 @@
++#define _DEFAULT_SOURCE
++#define _XOPEN_SOURCE
++
+ #ifdef HAVE_CONFIG_H
+ #include <config.h>
+ #endif
+diff --git mate-panel-clean/applets/clock/clock.c mate-panel-workdir/applets/clock/clock.c
+index edd53ed..56be4c5 100644
+--- mate-panel-clean/applets/clock/clock.c
++++ mate-panel-workdir/applets/clock/clock.c
+@@ -30,6 +30,8 @@
+  *      Stefano Karapetsas
+  */
+ 
++#define _XOPEN_SOURCE
++
+ #include <config.h>
+ 
+ #include <stdio.h>

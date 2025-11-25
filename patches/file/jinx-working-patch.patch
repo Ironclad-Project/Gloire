@@ -1,0 +1,18 @@
+diff --git file-clean/src/file.h file-workdir/src/file.h
+index 9922632..11930e7 100644
+--- file-clean/src/file.h
++++ file-workdir/src/file.h
+@@ -517,13 +517,7 @@ struct magic_set {
+ #define	FILE_REGEX_MAX			8192
+ #define	FILE_ENCODING_MAX		(64 * 1024)
+ #define	FILE_MAGWARN_MAX		64
+-#if defined(HAVE_NEWLOCALE) && defined(HAVE_USELOCALE) && defined(HAVE_FREELOCALE)
+-#define USE_C_LOCALE
+-	locale_t c_lc_ctype;
+-#define file_locale_used
+-#else
+ #define file_locale_used __attribute__((__unused__))
+-#endif
+ };
+ 
+ /* Type for Unicode characters */

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 JINX_MAJOR_VER=0.8
-JINX_DEBIAN_SNAPSHOT=20251120T023713Z
+JINX_DEBIAN_SNAPSHOT=20251125T145640Z
 JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext groff m4 make meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
 JINX_CMAKE_PLATFORM=build-support/Ironclad.cmake
 

@@ -150,10 +150,10 @@ index f19e623..811b46f 100644
  	}
  	return nullptr;
 diff --git mlibc-clean/options/posix/generic/posix_stdlib.cpp mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-index 54c96d8..b4c6bef 100644
+index 523a7d2..29ca60b 100644
 --- mlibc-clean/options/posix/generic/posix_stdlib.cpp
 +++ mlibc-workdir/options/posix/generic/posix_stdlib.cpp
-@@ -534,7 +534,7 @@ long double strtold_l(const char *__restrict__, char ** __restrict__, locale_t)
+@@ -533,7 +533,7 @@ long double strtold_l(const char *__restrict__, char ** __restrict__, locale_t)
  }
  
  float strtof_l(const char *__restrict__ nptr, char **__restrict__ endptr, locale_t) {
@@ -163,7 +163,7 @@ index 54c96d8..b4c6bef 100644
  }
  
 diff --git mlibc-clean/options/posix/generic/sys-uio.cpp mlibc-workdir/options/posix/generic/sys-uio.cpp
-index 0dff9d4..cdebf00 100644
+index 51cd30d..586ea4c 100644
 --- mlibc-clean/options/posix/generic/sys-uio.cpp
 +++ mlibc-workdir/options/posix/generic/sys-uio.cpp
 @@ -41,7 +41,7 @@ ssize_t writev(int fd, const struct iovec *iovs, int iovc) {
@@ -191,7 +191,7 @@ index 430f8a6..1fecd19 100644
  /* POSIX compatibility macros */
  #define st_atime st_atim.tv_sec
 diff --git mlibc-clean/options/posix/include/dirent.h mlibc-workdir/options/posix/include/dirent.h
-index 6c4d8b3..6ece466 100644
+index 7bdd2d2..d6b1d12 100644
 --- mlibc-clean/options/posix/include/dirent.h
 +++ mlibc-workdir/options/posix/include/dirent.h
 @@ -17,14 +17,16 @@ extern "C" {
@@ -232,3 +232,50 @@ index e4d36c7..57b50a1 100644
  	} else {
  		if (env_ld_library_path) {
  			for(auto path : parseList(env_ld_library_path, ":;"))
+diff --git mlibc-clean/options/rtld/x86_64/runtime.S mlibc-workdir/options/rtld/x86_64/runtime.S
+index ba9a520..3f14d30 100644
+--- mlibc-clean/options/rtld/x86_64/runtime.S
++++ mlibc-workdir/options/rtld/x86_64/runtime.S
+@@ -44,7 +44,9 @@ pltRelocateStub:
+ 	push %r9
+ 	push %r10
+ 
++	sub $8, %rsp
+ 	call lazyRelocate
++	add $8, %rsp
+ 	mov %rax, %r11
+ 
+ 	pop %r10
+@@ -53,7 +55,7 @@ pltRelocateStub:
+ 	pop %rdx
+ 	pop %rcx
+ 	pop %rax
+-	
++
+ 	pop %rdi
+ 	pop %rsi
+ 	add $16, %rsp
+diff --git mlibc-clean/sysdeps/ironclad/generic/entry.cpp mlibc-workdir/sysdeps/ironclad/generic/entry.cpp
+index 9efec85..37f6200 100644
+--- mlibc-clean/sysdeps/ironclad/generic/entry.cpp
++++ mlibc-workdir/sysdeps/ironclad/generic/entry.cpp
+@@ -10,12 +10,18 @@ extern "C" void __dlapi_enter(uintptr_t *);
+ 
+ extern char **environ;
+ 
+-extern "C" void __mlibc_sigret(void) {
++namespace {
++extern "C" void __inner_sigret(void) {
+ 	int ret, errno;
+ 	SYSCALL0(SYSCALL_SIGNAL_RETURN);
+ 	mlibc::panicLogger() << "mlibc: failed to exit signal with " << errno << frg::endlog;
+ 	__builtin_unreachable();
+ }
++}
++
++extern "C" __attribute__((naked)) void __mlibc_sigret(void) {
++	asm("call __inner_sigret");
++}
+ 
+ extern "C" void __mlibc_entry(uintptr_t *entry_stack, int (*main_fn)(int argc, char *argv[], char *env[])) {
+ 	__dlapi_enter(entry_stack);

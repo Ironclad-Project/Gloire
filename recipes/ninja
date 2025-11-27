@@ -1,15 +1,16 @@
 #! /bin/sh
 
 name=ninja
-version=1.13.1
-revision=3
+version=1.13.2
+revision=1
 git_url="https://github.com/ninja-build/ninja.git"
-commit=79feac0f3e3bc9da9effc586cd5fea41e7550051
+commit=3441b633c2fe2c494e958780ba0f4227b1327634
 hostdeps="gcc pkg-config"
 deps="core-libs gtest"
 
 configure() {
-    cmake_configure
+    cmake_configure \
+        -DBUILD_TESTING=OFF
 }
 
 build() {

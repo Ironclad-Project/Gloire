@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=fmt
+version=12.1.0
+revision=1
+git_url="https://github.com/fmtlib/fmt.git"
+commit=407c905e45ad75fc29bf0f9bb7c5c2fd3475976f
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure \
+        -DFMT_TEST=OFF
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

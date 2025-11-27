@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libproxy
-version=0.5.11
+version=0.5.12
 revision=1
 git_url="https://github.com/libproxy/libproxy.git"
-commit=3fd3a6e845c0386d91abc742453d0f29bf28c404
+commit=99da01926b1b1e303a4d2331bbd74bed424863e7
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 gsettings-desktop-schemas"
 
@@ -14,7 +14,8 @@ configure() {
         -Dpacrunner-duktape=false \
         -Dcurl=false \
         -Dvapi=false \
-        -Dintrospection=false
+        -Dintrospection=false \
+        -Dtests=false
 }
 
 build() {
@@ -23,6 +24,9 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    # Remove static libraries.
+    rm -v "${dest_dir}${prefix}"/lib/*.a
 
     post_package_strip
 }

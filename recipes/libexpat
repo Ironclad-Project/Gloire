@@ -3,7 +3,7 @@
 name=libexpat
 repology_id=expat
 version=2.7.3
-revision=2
+revision=3
 git_url="https://github.com/libexpat/libexpat.git"
 commit=4575e52f83e0d6d7bd24939eab8952bbc7bc358f
 hostdeps="gcc pkg-config"

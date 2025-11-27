@@ -2,7 +2,7 @@
 
 name=sqlite
 version=3.51.0
-revision=1
+revision=2
 tarball_url="https://sqlite.org/2025/sqlite-autoconf-3510000.tar.gz"
 tarball_blake2b="1e4f1589fa546a11bc505a0ed8c2960ba96a907854daedd116586412597855d9e454637ce9ccf8671ad1943bfdcf23c8913057f79c8baea886ce883be584dea1"
 imagedeps="build-essential"

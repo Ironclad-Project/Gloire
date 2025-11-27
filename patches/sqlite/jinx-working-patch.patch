@@ -1,0 +1,14 @@
+diff --git sqlite-clean/shell.c sqlite-workdir/shell.c
+index 1817733..d83b420 100644
+--- sqlite-clean/shell.c
++++ sqlite-workdir/shell.c
+@@ -30,6 +30,9 @@
+ ** This file contains code to implement the "sqlite" command line
+ ** utility for accessing SQLite databases.
+ */
++
++#define _XOPEN_SOURCE
++
+ #if (defined(_WIN32) || defined(WIN32)) && !defined(_CRT_SECURE_NO_WARNINGS)
+ /* This needs to come before any includes for MSVC compiler */
+ #define _CRT_SECURE_NO_WARNINGS

@@ -1,15 +1,16 @@
 #! /bin/sh
 
 name=libarchive
-version=3.8.2
+version=3.8.3
 revision=1
 git_url="https://github.com/libarchive/libarchive.git"
-commit=7f53fce04e4e672230f4eb80b219af17975e4f83
+commit=1368b08875351df8aa268237b882c8f4ceb0882d
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 libexpat libxml2 xz zlib zstd"
 
 configure() {
-    cmake_configure
+    cmake_configure \
+        -DENABLE_TEST=OFF
 }
 
 build() {

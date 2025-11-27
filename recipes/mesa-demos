@@ -9,6 +9,7 @@ hostdeps="gcc pkg-config"
 deps="core-libs freetype2 mesa glu libx11 libxext"
 
 configure() {
+        TARGET_CFLAGS="${TARGET_CFLAGS} -D_XOPEN_SOURCE -D_GNU_SOURCE" \
     meson_configure \
         -Dgles1=disabled \
         -Dosmesa=disabled \

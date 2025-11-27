@@ -1,16 +1,17 @@
 #! /bin/sh
 
 name=libpng
-version=1.6.50
-revision=2
+version=1.6.51
+revision=1
 git_url="https://github.com/pnggroup/libpng.git"
-commit=2b978915d82377df13fcbb1fb56660195ded868a
+commit=49363adcfaf098748d7a4c8c624ad8c45a8c3a86
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 
 configure() {
     cmake_configure \
-        -DPNG_STATIC=OFF
+        -DPNG_STATIC=OFF \
+        -DPNG_TESTS=OFF
 }
 
 build() {

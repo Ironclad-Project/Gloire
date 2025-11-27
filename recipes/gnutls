@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gnutls
-version=3.8.10
+version=3.8.11
 revision=1
 tarball_url="https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-${version}.tar.xz"
-tarball_blake2b="0b62e93b2818d2265ca11e561724547fa3c24d08986eb77ea743b4af52773db975c1859164c7d405d9a9bedfa981af58f10f85100b6c0e3542a38c49af407a4d"
+tarball_blake2b="54ec3fb396187294ae59c65fa92a515175d8ab19d9f5656569b372b5764b3090724aaa8cedd9467b530f2c74e86a6bfd956d3bd9439a7b69656dcc24e303cbe6"
 hostdeps="gcc pkg-config"
 deps="core-libs libffi libunistring libtasn1 nettle p11-kit zlib brotli zstd libidn2"
 

@@ -1,0 +1,14 @@
+diff --git curl-clean/src/tool_filetime.c curl-workdir/src/tool_filetime.c
+index 041cc4d..c5f76f6 100644
+--- curl-clean/src/tool_filetime.c
++++ curl-workdir/src/tool_filetime.c
+@@ -21,6 +21,9 @@
+  * SPDX-License-Identifier: curl
+  *
+  ***************************************************************************/
++
++#define _XOPEN_SOURCE
++
+ #include "tool_filetime.h"
+ #include "tool_cfgable.h"
+ #include "tool_msgs.h"

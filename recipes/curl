@@ -2,7 +2,7 @@
 
 name=curl
 version=8.17.0
-revision=1
+revision=2
 git_url="https://github.com/curl/curl.git"
 commit=400fffa90f30c7a2dc762fa33009d24851bd2016
 hostdeps="gcc pkg-config"

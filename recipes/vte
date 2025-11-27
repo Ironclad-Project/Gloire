@@ -1,13 +1,13 @@
 #! /bin/sh
 
 name=vte
-version=0.82.1
+version=0.82.2
 revision=1
 git_url="https://gitlab.gnome.org/GNOME/vte.git"
-commit=02eaf1997d904dbfb792e2ae9ae0ba8b82f117f1
+commit=1e7f7d58520b858458b5388ecdb25ba762dcd584
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
-deps="core-libs fast_float gnutls gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
+deps="core-libs fast_float simdutf fmt gnutls gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
 
 configure() {
     meson_configure \

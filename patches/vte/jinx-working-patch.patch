@@ -1,8 +1,8 @@
 diff --git vte-clean/meson.build vte-workdir/meson.build
-index 3979c7d..545ebbd 100644
+index 02b01db..54c274b 100644
 --- vte-clean/meson.build
 +++ vte-workdir/meson.build
-@@ -262,7 +262,7 @@ endforeach
+@@ -267,7 +267,7 @@ endforeach
  # Check for symbols
  
  check_symbols_required = [
@@ -38,10 +38,10 @@ index c769fb4..68dfc79 100644
  #endif /* !HAVE_FDWALK */
  
 diff --git vte-clean/src/pty.cc vte-workdir/src/pty.cc
-index 067dba3..2dba2ac 100644
+index 6a1098f..51de35d 100644
 --- vte-clean/src/pty.cc
 +++ vte-workdir/src/pty.cc
-@@ -96,86 +96,11 @@ Pty::unref() noexcept
+@@ -96,88 +96,11 @@ Pty::unref() noexcept
  int
  Pty::get_peer(bool cloexec) const noexcept
  {
@@ -71,13 +71,12 @@ index 067dba3..2dba2ac 100644
 -            errno != EINVAL &&
 -            errno != ENOTTY) {
 -                auto errsv = vte::libc::ErrnoSaver{};
--                _vte_debug_print(VTE_DEBUG_PTY, "%s failed: %s\n",
+-                _vte_debug_print(vte::debug::category::PTY,
+-                                 "{} failed: {}",
 -                                 "ioctl(TIOCGPTPEER)", g_strerror(errsv));
 -                return -1;
-+        if (cloexec) {
-+                vte::libc::fd_set_cloexec(m_slave_fd.get());
-         }
- 
+-        }
+-
 -        /* Fall back to ptsname + open */
 -#endif
 -
@@ -85,24 +84,27 @@ index 067dba3..2dba2ac 100644
 -                auto const name = ptsname(m_pty_fd.get());
 -                if (name == nullptr) {
 -                        auto errsv = vte::libc::ErrnoSaver{};
--                        _vte_debug_print(VTE_DEBUG_PTY, "%s failed: %s\n",
+-                        _vte_debug_print(vte::debug::category::PTY,
+-                                         "{} failed: {}",
 -                                         "ptsname", g_strerror(errsv));
 -                        return -1;
 -                }
 -
--                _vte_debug_print (VTE_DEBUG_PTY,
--                                  "Setting up child pty: master FD = %d name = %s\n",
--                                  m_pty_fd.get(), name);
+-                _vte_debug_print(vte::debug::category::PTY,
+-                                 "Setting up child pty: master FD = {} name = {}",
+-                                 m_pty_fd.get(), name);
 -
 -                peer_fd = ::open(name, fd_flags);
 -                if (!peer_fd) {
 -                        auto errsv = vte::libc::ErrnoSaver{};
--                        _vte_debug_print (VTE_DEBUG_PTY, "Failed to open PTY: %s\n",
--                                          g_strerror(errsv));
+-                        _vte_debug_print(vte::debug::category::PTY, "Failed to open PTY: {}",
+-                                         g_strerror(errsv));
 -                        return -1;
 -                }
--        }
--
++        if (cloexec) {
++                vte::libc::fd_set_cloexec(m_slave_fd.get());
+         }
+ 
 -        assert(bool(peer_fd));
 -
 -#if defined(__sun) && defined(HAVE_STROPTS_H)
@@ -131,7 +133,7 @@ index 067dba3..2dba2ac 100644
  }
  
  void
-@@ -411,13 +336,16 @@ fd_setup(vte::libc::FD& fd)
+@@ -418,13 +341,16 @@ fd_setup(vte::libc::FD& fd)
   * Returns: the new PTY's master FD, or -1
   */
  static vte::libc::FD
@@ -151,7 +153,7 @@ index 067dba3..2dba2ac 100644
  
  #ifdef __NetBSD__
          // NetBSD is a special case: prior to 9.99.101, posix_openpt() will not return
-@@ -565,22 +493,19 @@ Pty::set_utf8(bool utf8) const noexcept
+@@ -577,22 +503,19 @@ Pty::set_utf8(bool utf8) const noexcept
  Pty*
  Pty::create(VtePtyFlags flags)
  {
@@ -199,10 +201,10 @@ index 2dc8ac9..509bf85 100644
          {
          }
 diff --git vte-clean/src/widget.cc vte-workdir/src/widget.cc
-index 0daaed1..f667db1 100644
+index 794ec88..044c95f 100644
 --- vte-clean/src/widget.cc
 +++ vte-workdir/src/widget.cc
-@@ -913,6 +913,10 @@ Widget::direction_changed(GtkTextDirection old_direction) noexcept
+@@ -914,6 +914,10 @@ Widget::direction_changed(GtkTextDirection old_direction) noexcept
          // FIXME: does this need to feed to BiDi somehow?
  }
  

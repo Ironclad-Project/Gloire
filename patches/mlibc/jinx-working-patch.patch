@@ -232,50 +232,15 @@ index e4d36c7..57b50a1 100644
  	} else {
  		if (env_ld_library_path) {
  			for(auto path : parseList(env_ld_library_path, ":;"))
-diff --git mlibc-clean/options/rtld/x86_64/runtime.S mlibc-workdir/options/rtld/x86_64/runtime.S
-index ba9a520..3f14d30 100644
---- mlibc-clean/options/rtld/x86_64/runtime.S
-+++ mlibc-workdir/options/rtld/x86_64/runtime.S
-@@ -44,7 +44,9 @@ pltRelocateStub:
- 	push %r9
- 	push %r10
+diff --git mlibc-clean/sysdeps/ironclad/include/linux/fb.h mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
+index 5060a53..adf1127 100644
+--- mlibc-clean/sysdeps/ironclad/include/linux/fb.h
++++ mlibc-workdir/sysdeps/ironclad/include/linux/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _LINUX_FB_H
+ #define _LINUX_FB_H
  
-+	sub $8, %rsp
- 	call lazyRelocate
-+	add $8, %rsp
- 	mov %rax, %r11
++#include <stdint.h>
+ #include <stddef.h>
  
- 	pop %r10
-@@ -53,7 +55,7 @@ pltRelocateStub:
- 	pop %rdx
- 	pop %rcx
- 	pop %rax
--	
-+
- 	pop %rdi
- 	pop %rsi
- 	add $16, %rsp
-diff --git mlibc-clean/sysdeps/ironclad/generic/entry.cpp mlibc-workdir/sysdeps/ironclad/generic/entry.cpp
-index 9efec85..37f6200 100644
---- mlibc-clean/sysdeps/ironclad/generic/entry.cpp
-+++ mlibc-workdir/sysdeps/ironclad/generic/entry.cpp
-@@ -10,12 +10,18 @@ extern "C" void __dlapi_enter(uintptr_t *);
- 
- extern char **environ;
- 
--extern "C" void __mlibc_sigret(void) {
-+namespace {
-+extern "C" void __inner_sigret(void) {
- 	int ret, errno;
- 	SYSCALL0(SYSCALL_SIGNAL_RETURN);
- 	mlibc::panicLogger() << "mlibc: failed to exit signal with " << errno << frg::endlog;
- 	__builtin_unreachable();
- }
-+}
-+
-+extern "C" __attribute__((naked)) void __mlibc_sigret(void) {
-+	asm("call __inner_sigret");
-+}
- 
- extern "C" void __mlibc_entry(uintptr_t *entry_stack, int (*main_fn)(int argc, char *argv[], char *env[])) {
- 	__dlapi_enter(entry_stack);
+ /* Definitions of frame buffers						*/

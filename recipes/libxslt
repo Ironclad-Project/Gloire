@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libxslt
-version=1.1.43
+version=1.1.45
 revision=1
 tarball_url="https://download.gnome.org/sources/libxslt/1.1/libxslt-${version}.tar.xz"
-tarball_blake2b="84d1cff32c78c4eeff4db614214ee1808bcf958d55711b08e7e2191a4343fb61d38d6b3d9b43f6f12be2dc909fced0a5b5905fa2c5ec7761c83125007e1ce265"
+tarball_blake2b="ab93de7b37c03b99bd170e0e781bce262c9e0f107bc1d47998995cdacbaa5ee0163692c2758d4240bcb260f8376055541f378f428da63f63b3d2c9d12bb92efb"
 hostdeps="gcc pkg-config"
 deps="core-libs libxml2"
 

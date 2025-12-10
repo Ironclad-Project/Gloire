@@ -1,24 +1,9 @@
-diff --git fox-clean/configure fox-workdir/configure
-index 9304716..d666a86 100755
---- fox-clean/configure
-+++ fox-workdir/configure
-@@ -18821,8 +18821,8 @@ fi
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xft" >&5
- $as_echo "$with_xft" >&6; }
- if test "x$with_xft" != "xno"; then
--XFTCFLAGS="-I/usr/include/freetype2"
--XFTLIBS="-lfreetype -lfontconfig -lXft"
-+XFTCFLAGS="$($PKG_CONFIG --cflags freetype2 fontconfig xft)"
-+XFTLIBS="$($PKG_CONFIG --libs freetype2 fontconfig xft)"
- saved_cppflags="${CXXFLAGS}"
- CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
- X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
 diff --git fox-clean/include/FXStream.h fox-workdir/include/FXStream.h
-index 41fe97a..e82638a 100644
+index c343efd..2216e9f 100644
 --- fox-clean/include/FXStream.h
 +++ fox-workdir/include/FXStream.h
-@@ -52,9 +52,9 @@ enum FXStreamStatus {
-
+@@ -48,9 +48,9 @@ enum FXStreamStatus {
+ 
  /// Stream seeking
  enum FXWhence {
 -  FXFromStart=0,                /// Seek from start position
@@ -28,4 +13,27 @@ index 41fe97a..e82638a 100644
 +  FXFromCurrent=2,              /// Seek from current position
 +  FXFromEnd=4                   /// Seek from end position
    };
-
+ 
+ 
+diff --git fox-clean/lib/FXReadWriteLock.cpp fox-workdir/lib/FXReadWriteLock.cpp
+index 7472b79..5a06353 100644
+--- fox-clean/lib/FXReadWriteLock.cpp
++++ fox-workdir/lib/FXReadWriteLock.cpp
+@@ -62,7 +62,7 @@ FXReadWriteLock::FXReadWriteLock(){
+   InitializeCriticalSection(((RWLOCK*)data)->mutex);
+   InitializeCriticalSection(((RWLOCK*)data)->access);
+   ((RWLOCK*)data)->readers=0;
+-#elif (_XOPEN_SOURCE >= 500) || (_POSIX_C_SOURCE >= 200809L)
++/*#elif (_XOPEN_SOURCE >= 500) || (_POSIX_C_SOURCE >= 200809L)
+   // If this fails on your machine, determine what value
+   // of sizeof(pthread_rwlock_t) is supposed to be on your
+   // machine and mail it to: jeroen@fox-toolkit.net!!
+@@ -72,7 +72,7 @@ FXReadWriteLock::FXReadWriteLock(){
+   pthread_rwlockattr_init(&rwlockatt);
+   pthread_rwlockattr_setkind_np(&rwlockatt,PTHREAD_RWLOCK_PREFER_WRITER_NP);
+   pthread_rwlock_init((pthread_rwlock_t*)data,&rwlockatt);
+-  pthread_rwlockattr_destroy(&rwlockatt);
++  pthread_rwlockattr_destroy(&rwlockatt);*/
+ #else
+   // If this fails on your machine, determine what value
+   // of sizeof(pthread_rwlock_t) is supposed to be on your

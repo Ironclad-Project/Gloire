@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index 77647cc..8be4cdf 100644
+index ef74527..70d64f8 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
@@ -31,7 +31,7 @@ index 77647cc..8be4cdf 100644
  cmake_dependent_option(ENABLE_RPM "Enable rpm" ON "LINUX OR GNU" OFF)
  cmake_dependent_option(ENABLE_IMAGEMAGICK7 "Enable imagemagick 7" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR ANDROID OR WIN32 OR SunOS OR Haiku OR GNU" OFF)
  cmake_dependent_option(ENABLE_IMAGEMAGICK6 "Enable imagemagick 6" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR SunOS OR GNU" OFF)
-@@ -450,7 +452,9 @@ set(LIBFASTFETCH_SRC
+@@ -451,7 +453,9 @@ set(LIBFASTFETCH_SRC
      src/modules/lm/lm.c
      src/modules/loadavg/loadavg.c
      src/modules/locale/locale.c
@@ -42,7 +42,7 @@ index 77647cc..8be4cdf 100644
      src/modules/memory/memory.c
      src/modules/monitor/monitor.c
      src/modules/netio/netio.c
-@@ -1298,6 +1302,78 @@ elseif(GNU)
+@@ -1289,6 +1293,77 @@ elseif(GNU)
          src/util/platform/FFPlatform_unix.c
          src/util/binary_linux.c
     )
@@ -114,14 +114,13 @@ index 77647cc..8be4cdf 100644
 +        src/detection/swap/swap_nosupport.c # Reads procfs
 +        src/detection/wmtheme/wmtheme_linux.c
 +        src/detection/camera/camera_nosupport.c
-+        src/detection/zpool/zpool_nosupport.c
 +        src/util/platform/FFPlatform_unix.c
 +        src/util/binary_linux.c
 +    )
  endif()
  
  if(ENABLE_DIRECTX_HEADERS)
-@@ -1418,6 +1494,8 @@ elseif(NetBSD)
+@@ -1409,6 +1484,8 @@ elseif(NetBSD)
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
  elseif(Haiku)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
@@ -239,7 +238,7 @@ index 6ae4010..700cb32 100644
  const char* ffDetectLoadavg(double result[3])
  {
 diff --git fastfetch-clean/src/detection/packages/packages_linux.c fastfetch-workdir/src/detection/packages/packages_linux.c
-index 3d83f3a..81eed38 100644
+index fc5a0cf..a0e1f1a 100644
 --- fastfetch-clean/src/detection/packages/packages_linux.c
 +++ fastfetch-workdir/src/detection/packages/packages_linux.c
 @@ -414,6 +414,7 @@ static uint32_t getFlatpakPackages(FFstrbuf* baseDir, const char* dirname)
@@ -250,7 +249,7 @@ index 3d83f3a..81eed38 100644
      if (!(options->disabled & FF_PACKAGES_FLAG_APK_BIT)) packageCounts->apk += getNumStrings(baseDir, "/lib/apk/db/installed", "C:Q", "apk");
      if (!(options->disabled & FF_PACKAGES_FLAG_DPKG_BIT)) packageCounts->dpkg += getNumStrings(baseDir, "/var/lib/dpkg/status", "Status: install ok installed", "dpkg");
      if (!(options->disabled & FF_PACKAGES_FLAG_LPKG_BIT)) packageCounts->lpkg += getNumStrings(baseDir, "/opt/Loc-OS-LPKG/installed-lpkg/Listinstalled-lpkg.list", "\n", "lpkg");
-@@ -434,7 +435,9 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
+@@ -435,7 +436,9 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
          packageCounts->rpm += getSQLite3Int(baseDir, "/var/lib/rpm/rpmdb.sqlite", "SELECT count(*) FROM Sigmd5", "rpm");
      }
      if (!(options->disabled & FF_PACKAGES_FLAG_SNAP_BIT)) packageCounts->snap += getSnap(baseDir);
@@ -260,7 +259,7 @@ index 3d83f3a..81eed38 100644
      if (!(options->disabled & FF_PACKAGES_FLAG_BREW_BIT))
      {
          packageCounts->brewCask += getNumElements(baseDir, "/home/linuxbrew/.linuxbrew/Caskroom", true);
-@@ -452,6 +455,7 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
+@@ -453,6 +456,7 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
      if (!(options->disabled & FF_PACKAGES_FLAG_PACSTALL_BIT)) packageCounts->pacstall += getNumElements(baseDir, "/var/lib/pacstall/metadata", false);
      if (!(options->disabled & FF_PACKAGES_FLAG_PISI_BIT)) packageCounts->pisi += getNumElements(baseDir, "/var/lib/pisi/package", true);
      if (!(options->disabled & FF_PACKAGES_FLAG_PKGSRC_BIT)) packageCounts->pkgsrc += getNumElements(baseDir, "/usr/pkg/pkgdb", DT_DIR);
@@ -268,7 +267,7 @@ index 3d83f3a..81eed38 100644
  }
  
  static void getPackageCountsRegular(FFstrbuf* baseDir, FFPackagesResult* packageCounts, FFPackagesOptions* options)
-@@ -519,6 +523,7 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
+@@ -520,6 +524,7 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
      #endif
  
      ffStrbufSet(&baseDir, &instance.state.platform.homeDir);
@@ -276,7 +275,7 @@ index 3d83f3a..81eed38 100644
      if (!(options->disabled & FF_PACKAGES_FLAG_NIX_BIT))
      {
          // Count packages from $HOME/.nix-profile
-@@ -558,4 +563,5 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
+@@ -559,4 +564,5 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
  
      if (!(options->disabled & FF_PACKAGES_FLAG_SOAR_BIT))
          result->soar += getSQLite3Int(&baseDir, ".local/share/soar/db/soar.db", "SELECT COUNT(DISTINCT pkg_id || pkg_name) FROM packages WHERE is_installed = true", "soar");
@@ -410,7 +409,7 @@ index 0edcfeb..a81e0bf 100644
      FFDsForceDrmType dsForceDrm;
      #elif defined(_WIN32)
 diff --git fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrbuf.h
-index d202561..9b2d3fc 100644
+index 07fa98c..201d539 100644
 --- fastfetch-clean/src/util/FFstrbuf.h
 +++ fastfetch-workdir/src/util/FFstrbuf.h
 @@ -22,6 +22,10 @@

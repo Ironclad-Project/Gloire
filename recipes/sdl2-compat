@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sdl2-compat
-version=2.32.58
+version=2.32.60
 revision=1
-git_url="https://github.com/libsdl-org/sdl2-compat.git"
-commit=7c830290c6325190147abb7aedf39ef0e914d71a
+tarball_url="https://github.com/libsdl-org/sdl2-compat/releases/download/release-${version}/sdl2-compat-${version}.tar.gz"
+tarball_sha512=3dbb86f27a7fd19c78b6b69d0d5cd2ea608077d79e58b7a9fe6dbf431e9d273a9e9d77509b0ceec6d583f74eebdbb32c4e7d29f0bd8333f5cb41714f30cdee80
 hostdeps="gcc pkg-config"
 deps="sdl3"
 

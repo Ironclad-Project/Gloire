@@ -53,7 +53,7 @@ index b0e5018..249621f 100644
    PCI_ACCESS_ECAM,
    PCI_ACCESS_I386_TYPE1,
 diff --git pciutils-clean/lib/internal.h pciutils-workdir/lib/internal.h
-index 43be8d1..ee10284 100644
+index 43be8d1..21b82ff 100644
 --- pciutils-clean/lib/internal.h
 +++ pciutils-workdir/lib/internal.h
 @@ -142,8 +142,8 @@ void pci_free_caps(struct pci_dev *);
@@ -69,10 +69,10 @@ index 43be8d1..ee10284 100644
  
 diff --git pciutils-workdir/lib/ironclad-device.c pciutils-workdir/lib/ironclad-device.c
 new file mode 100644
-index 0000000..05da7cf
+index 0000000..25c4d7c
 --- /dev/null
 +++ pciutils-workdir/lib/ironclad-device.c
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,118 @@
 +/*
 + *	The PCI Library -- Direct Configuration access via ironclad Ports
 + *
@@ -107,19 +107,18 @@ index 0000000..05da7cf
 +static void
 +ironclad_scan(struct pci_access *a)
 +{
-+  int ret, errno;
 +  struct devinfo *buffer = malloc(20 * sizeof(struct devinfo));
 +  if (!buffer) {
 +    return;
 +  }
 +
-+  SYSCALL2(SYSCALL_LISTPCI, buffer, 20);
++  long ret = syscall(SYS_listpci, buffer, 20);
 +  if (ret > 20) {
 +    buffer = realloc(buffer, ret * sizeof(struct devinfo));
 +    if (!buffer) {
 +      return;
 +    }
-+    SYSCALL2(SYSCALL_LISTPCI, buffer, ret);
++    ret = syscall(SYS_listpci, buffer, ret);
 +  }
 +
 +  for (int i = 0; i < ret; i++) {
@@ -166,9 +165,7 @@ index 0000000..05da7cf
 +  if (!(len == 1 || len == 2 || len == 4))
 +    return pci_generic_block_read(d, pos, buf, len);
 +
-+  size_t ret;
-+  int errno;
-+  SYSCALL6(SYSCALL_PCI_READ, d->bus, d->dev, d->func, pos, buf, len);
++  long ret = syscall(SYS_pci_read, d->bus, d->dev, d->func, pos, buf, len);
 +  return ret;
 +}
 +
@@ -178,9 +175,7 @@ index 0000000..05da7cf
 +  if (!(len == 1 || len == 2 || len == 4))
 +    return pci_generic_block_read(d, pos, buf, len);
 +
-+  size_t ret;
-+  int errno;
-+  SYSCALL6(SYSCALL_PCI_WRITE, d->bus, d->dev, d->func, pos, buf, len);
++  long ret = syscall(SYS_pci_write, d->bus, d->dev, d->func, pos, buf, len);
 +  return ret;
 +}
 +

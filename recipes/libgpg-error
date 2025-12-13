@@ -10,7 +10,7 @@ hostdeps="gcc pkg-config"
 deps="core-libs"
 
 prepare() {
-    cp -v src/syscfg/lock-obj-pub.${JINX_ARCH}-unknown-linux-gnu.h src/syscfg/lock-obj-pub.ironclad-mlibc.h
+    cp -v src/syscfg/lock-obj-pub.${JINX_ARCH}-unknown-linux-gnu.h src/syscfg/lock-obj-pub.ironclad-gnu.h
 
     autotools_recursive_regen
 }

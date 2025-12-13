@@ -1,57 +1,77 @@
-diff --git gcc-host-clean/fixincludes/mkfixinc.sh gcc-host-workdir/fixincludes/mkfixinc.sh
-index 7112f4d..7aadf83 100755
---- gcc-host-clean/fixincludes/mkfixinc.sh
-+++ gcc-host-workdir/fixincludes/mkfixinc.sh
-@@ -12,6 +12,7 @@ target=fixinc.sh
- # Check for special fix rules for particular targets
- case $machine in
-     i?86-*-cygwin* | \
-+    *-mlibc* | \
-     *-mingw32* | \
-     powerpc-*-eabisim* | \
-     powerpc-*-eabi*    | \
-diff --git gcc-host-workdir/gcc/config/i386/ironclad.h gcc-host-workdir/gcc/config/i386/ironclad.h
+diff --git gcc-host-workdir/gcc/config/i386/ironclad-gnu.h gcc-host-workdir/gcc/config/i386/ironclad-gnu.h
 new file mode 100644
-index 0000000..e3017a9
+index 0000000..aa69dd2
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/i386/ironclad.h
-@@ -0,0 +1,30 @@
-+#undef TARGET_IRONCLAD
-+#define TARGET_IRONCLAD 1
-+
-+#undef LIB_SPEC
-+#define LIB_SPEC "-lc"
-+
-+#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared: %{static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s}} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
-+
-+#undef ENDFILE_SPEC
-+#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
++++ gcc-host-workdir/gcc/config/i386/ironclad-gnu.h
+@@ -0,0 +1,8 @@
 +
 +#define GNU_USER_LINK_EMULATION32 "elf_i386"
 +#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
 +#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
 +
-+#define GNU_USER_DYNAMIC_LINKER32 "/does_not_exist"
-+#define GNU_USER_DYNAMIC_LINKER64 "/usr/lib/ld.so"
-+#define GNU_USER_DYNAMIC_LINKERX32 "/does_not_exist"
++#define GLIBC_DYNAMIC_LINKER32 "/lib/ld-ironclad-i386.so.2"
++#define GLIBC_DYNAMIC_LINKER64 "/lib/ld-ironclad-x86-64.so.2"
++#define GLIBC_DYNAMIC_LINKERX32 "/lib/ld-ironclad-x32.so.2"
+diff --git gcc-host-workdir/gcc/config/i386/t-ironclad64 gcc-host-workdir/gcc/config/i386/t-ironclad64
+new file mode 100644
+index 0000000..b3385f4
+--- /dev/null
++++ gcc-host-workdir/gcc/config/i386/t-ironclad64
+@@ -0,0 +1,26 @@
++# Copyright (C) 2002-2025 Free Software Foundation, Inc.
++#
++# This file is part of GCC.
++#
++# GCC is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3, or (at your option)
++# any later version.
++#
++# GCC is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with GCC; see the file COPYING3.  If not see
++# <http://www.gnu.org/licenses/>.
 +
-+#undef TARGET_OS_CPP_BUILTINS
-+#define TARGET_OS_CPP_BUILTINS()         \
-+  do {                                   \
-+    builtin_define ("__ironclad__");    \
-+    builtin_define ("__mlibc__");         \
-+    builtin_define ("__unix__");         \
-+    builtin_assert ("system=ironclad"); \
-+    builtin_assert ("system=unix");      \
-+    builtin_assert ("system=posix");     \
-+  } while (0);
++# Ironclad uses /lib for all libraries (no /lib64).
++
++comma=,
++MULTILIB_OPTIONS    = $(subst $(comma),/,$(TM_MULTILIB_CONFIG))
++MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
++MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-ironclad-gnu)
++MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-ironclad-gnu)
++MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-ironclad-gnux32)
+diff --git gcc-host-workdir/gcc/config/ironclad-gnu.h gcc-host-workdir/gcc/config/ironclad-gnu.h
+new file mode 100644
+index 0000000..eada791
+--- /dev/null
++++ gcc-host-workdir/gcc/config/ironclad-gnu.h
+@@ -0,0 +1,16 @@
++
++#define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
++  do						\
++    {						\
++	builtin_define ("__ironclad__");	\
++	builtin_define ("__GLIBC__");		\
++	builtin_define_std ("unix");		\
++	builtin_assert ("system=unix");		\
++	builtin_assert ("system=posix");	\
++    }						\
++  while (0)
++
++#define GNU_USER_DYNAMIC_LINKER        GLIBC_DYNAMIC_LINKER
++#define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
++#define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64
++#define GNU_USER_DYNAMIC_LINKERX32     GLIBC_DYNAMIC_LINKERX32
 diff --git gcc-host-workdir/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
 new file mode 100644
-index 0000000..5fd4f00
+index 0000000..cb889e8
 --- /dev/null
 +++ gcc-host-workdir/gcc/config/riscv/ironclad.h
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,45 @@
 +#undef TARGET_IRONCLAD
 +#define TARGET_IRONCLAD 1
 +
@@ -67,7 +87,7 @@ index 0000000..5fd4f00
 +  "%{mabi=ilp32:_ilp32}"
 +
 +#define GNU_USER_LINK_EMULATION "elf64lriscv"
-+#define GNU_USER_DYNAMIC_LINKER "/usr/lib/ld.so"
++#define GNU_USER_DYNAMIC_LINKER "/usr/lib/ld-ironclad-riscv64.so.1"
 +
 +#define LINK_SPEC "\
 +-melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " \
@@ -91,10 +111,9 @@ index 0000000..5fd4f00
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS()         \
 +  do {                                   \
-+    builtin_define ("__ironclad__");    \
-+    builtin_define ("__mlibc__");         \
++    builtin_define ("__ironclad__");     \
 +    builtin_define ("__unix__");         \
-+    builtin_assert ("system=ironclad"); \
++    builtin_assert ("system=ironclad");  \
 +    builtin_assert ("system=unix");      \
 +    builtin_assert ("system=posix");     \
 +  } while (0);
@@ -112,49 +131,93 @@ index 7c80a0b..8fac7e4 100644
  
  # System-specific settings.
 diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
-index 087aaa7..0bee278 100644
+index 087aaa7..2461e7c 100644
 --- gcc-host-clean/gcc/config.gcc
 +++ gcc-host-workdir/gcc/config.gcc
-@@ -879,6 +879,15 @@ case ${target} in
-   rust_target_objs="${rust_target_objs} freebsd-rust.o"
+@@ -885,7 +885,7 @@ case ${target} in
+   rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
    ;;
-+*-*-*-mlibc)
-+  extra_options="$extra_options gnu-user.opt"
-+  gas=yes
-+  gnu_ld=yes
-+  default_use_cxa_atexit=yes
-+  use_gcc_stdint=wrap
-+  tmake_file="${tmake_file} t-slibgcc"
-+  thread_file='posix'
-+  ;;
- *-*-fuchsia*)
-   native_system_header_dir=/include
-   tmake_file="t-fuchsia"
-@@ -2320,6 +2329,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
- 			;;
+-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
++*-*-linux* | frv-*-*linux* | *-*-ironclad*-gnu | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
+   extra_options="$extra_options gnu-user.opt"
+   gas=yes
+   gnu_ld=yes
+@@ -894,7 +894,7 @@ case ${target} in
+   esac
+   tmake_file="t-slibgcc"
+   case $target in
+-    *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
++    *-*-linux* | frv-*-*linux* | *-*-ironclad*-gnu | *-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
+       :;;
+     *-*-gnu*)
+       native_system_header_dir=/include
+@@ -957,6 +957,8 @@ case ${target} in
+       rust_target_objs="${rust_target_objs} linux-rust.o"
+       target_has_targetrustm=yes
+       ;;
++    *-*-ironclad*-gnu)
++      ;;
+     *-*-kfreebsd*-gnu)
+       d_target_objs="${d_target_objs} kfreebsd-d.o"
+       target_has_targetdm=yes
+@@ -2008,7 +2010,7 @@ x86_64-*-openbsd*)
+ 	gas=yes
+ 	gnu_ld=yes
+ 	;;
+-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
++i[34567]86-*-linux* | i[34567]86-*-ironclad*-gnu | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
+ 			# Intel 80386's running GNU/*
+ 			# with ELF format using glibc 2
+ 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h"
+@@ -2056,6 +2058,9 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
+ 			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux-common.h i386/linux.h"
+ 		fi
+ 		;;
++	i[34567]86-*-ironclad*-gnu)
++		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h ironclad-gnu.h i386/ironclad-gnu.h"
++		;;
+ 	i[34567]86-*-kfreebsd*-gnu)
+ 		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
+ 		;;
+@@ -2067,7 +2072,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
+ 		;;
  	esac
  	;;
-+x86_64-*-ironclad*)
-+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/ironclad.h"
-+	;;
- x86_64-*-fuchsia*)
- 	tmake_file="${tmake_file} i386/t-x86_64-elf"
- 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
-@@ -2519,6 +2531,13 @@ microblaze*-*-elf)
- 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
- 	tmake_file="${tmake_file} microblaze/t-microblaze"
+-x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
++x86_64-*-linux* | x86_64-*-ironclad*-gnu | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
+ 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h \
+ 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
+ 	case ${target} in
+@@ -2075,6 +2080,9 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
+ 		tm_file="${tm_file} linux.h linux-android.h i386/linux-common.h i386/linux64.h"
+ 		extra_options="${extra_options} linux-android.opt"
+ 	  	;;
++	x86_64-*-ironclad*-gnu)
++		tm_file="${tm_file} ironclad-gnu.h i386/ironclad-gnu.h"
++		;;
+ 	x86_64-*-kfreebsd*-gnu)
+ 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
+ 		;;
+@@ -3670,7 +3678,7 @@ esac
+ case ${target} in
+ *-*-linux*android*|*-*-linux*uclibc*|*-*-linux*musl*)
          ;;
-+riscv*-*-ironclad*)
-+	tm_file="${tm_file} elfos.h gnu-user.h glibc-stdint.h riscv/ironclad.h"
-+	tmake_file="${tmake_file} riscv/t-riscv"
-+	gnu_ld=yes
-+	gas=yes
-+	gcc_cv_initfini_array=yes
-+	;;
- riscv*-*-linux*)
- 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
- 	case "x${enable_multilib}" in
+-*-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
++*-*-ironclad*-gnu | *-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
+         ;;
+ *-*-linux* | *-*-gnu*)
+ 	case ${target} in
+@@ -6106,6 +6114,9 @@ case ${target} in
+ 	visium-*-*)
+ 		target_cpu_default2="TARGET_CPU_$with_cpu"
+ 		;;
++	x86_64-*-ironclad*-gnu*)
++		tmake_file="$tmake_file i386/t-ironclad64"
++		;;
+ 	x86_64-*-gnu*)
+ 		tmake_file="$tmake_file i386/t-gnu64"
+ 		;;
 diff --git gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
 index 1deadcc..9b72332 100644
 --- gcc-host-clean/gcc/cp/module.cc
@@ -181,19 +244,6 @@ index 1deadcc..9b72332 100644
  
    hdr.buffer = (char *)mapping;
  #else
-diff --git gcc-host-clean/libatomic/configure.tgt gcc-host-workdir/libatomic/configure.tgt
-index 6db039d..e4fc391 100644
---- gcc-host-clean/libatomic/configure.tgt
-+++ gcc-host-workdir/libatomic/configure.tgt
-@@ -151,7 +151,7 @@ case "${target}" in
-   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
-   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
-   | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
--  | *-*-darwin* | *-*-aix* | *-*-cygwin*)
-+  | *-*-darwin* | *-*-aix* | *-*-cygwin* | *-*-mlibc*)
- 	# POSIX system.  The OS is supported.
- 	config_path="${config_path} posix"
- 	;;
 diff --git gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
 index bb07e46..821fe80 100644
 --- gcc-host-clean/libcpp/Makefile.in
@@ -221,56 +271,40 @@ index bb07e46..821fe80 100644
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
 diff --git gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
-index 6a88ee5..86bd7f3 100644
+index 6a88ee5..543c21e 100644
 --- gcc-host-clean/libgcc/config.host
 +++ gcc-host-workdir/libgcc/config.host
-@@ -310,6 +310,11 @@ case ${host} in
+@@ -310,7 +310,7 @@ case ${host} in
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
-+*-*-*-mlibc)
-+  extra_parts="$extra_parts crtbegin.o crtbeginS.o crtend.o crtendS.o"
-+  tmake_file="$tmake_file t-crtstuff-pic"
-+  tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-libgcc-pic"
-+  ;;
- *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
+-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
++*-*-linux* | frv-*-*linux* | *-*-ironclad*-gnu | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -767,6 +772,10 @@ x86_64-*-elf* | x86_64-*-rtems*)
- x86_64-*-fuchsia*)
- 	tmake_file="$tmake_file t-libgcc-pic"
+   if test x$enable_vtable_verify = xyes; then
+@@ -800,7 +800,7 @@ i[34567]86-*-linux*)
+ 	md_unwind_header=i386/linux-unwind.h
+ 	tmake_file="${tmake_file} i386/t-heap-trampoline"
  	;;
-+x86_64-*-*-mlibc)
-+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
-+	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
-+	;;
- i[34567]86-*-dragonfly*)
- 	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
- 	md_unwind_header=i386/dragonfly-unwind.h
-@@ -1349,6 +1358,10 @@ pru-*-*)
- 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
- 	tm_file="$tm_file pru/pru-abi.h"
- 	;;
-+riscv*-*-mlibc*)
-+    tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
-+    extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-+	;;
- riscv*-*-linux*)
- 	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
- 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff --git gcc-host-clean/libstdc++-v3/configure gcc-host-workdir/libstdc++-v3/configure
-index 819a1d8..52df448 100755
---- gcc-host-clean/libstdc++-v3/configure
-+++ gcc-host-workdir/libstdc++-v3/configure
-@@ -38856,7 +38856,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
- 
-   fi
+-i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
++i[34567]86-*-ironclad*-gnu | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
+ 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+ 	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
+ 	tm_file="${tm_file} i386/elf-lib.h"
+diff --git gcc-host-clean/libstdc++-v3/configure.host gcc-host-workdir/libstdc++-v3/configure.host
+index 253e5a9..0d620f6 100644
+--- gcc-host-clean/libstdc++-v3/configure.host
++++ gcc-host-workdir/libstdc++-v3/configure.host
+@@ -268,7 +268,7 @@ case "${host_os}" in
+   linux-musl*)
+     os_include_dir="os/generic"
      ;;
--  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
-+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris* | *-mlibc*)
- 
-   # All these tests are for C++; save the language and the compiler flags.
-   # The CXXFLAGS thing is suspicious, but based on similar bits previously
+-  gnu* | linux* | kfreebsd*-gnu | uclinux*)
++  gnu* | linux* | kfreebsd*-gnu | uclinux* | ironclad*)
+     if [ "$uclibc" = "yes" ]; then
+       os_include_dir="os/uclibc"
+     elif [ "$bionic" = "yes" ]; then
 diff --git gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
 index b94b2cd..1a5eaa5 100644
 --- gcc-host-clean/libstdc++-v3/include/bits/ios_base.h

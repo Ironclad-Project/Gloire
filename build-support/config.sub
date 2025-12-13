@@ -1525,7 +1525,7 @@ EOF
 		;;
 	ironclad*)
 		kernel=ironclad
-		os=`echo "$basic_os" | sed -e 's|ironclad|mlibc|'`
+		os=`echo "$basic_os" | sed -e 's|ironclad|gnu|'`
 		;;
 	linux*)
 		kernel=linux
@@ -2220,7 +2220,7 @@ case $kernel-$os-$obj in
 		;;
 	uclinux-uclibc*- | uclinux-gnu*- )
 		;;
-	ironclad-mlibc*-)
+	ironclad-gnu*-)
 		;;
 	managarm-mlibc*- | managarm-kernel*- )
 		;;

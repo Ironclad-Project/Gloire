@@ -1,13 +1,28 @@
-diff --git coreutils-clean/lib/getlocalename_l-unsafe.c coreutils-workdir/lib/getlocalename_l-unsafe.c
-index 6a72c81..eaeea83 100644
---- coreutils-clean/lib/getlocalename_l-unsafe.c
-+++ coreutils-workdir/lib/getlocalename_l-unsafe.c
-@@ -469,6 +469,8 @@ getlocalename_l_unsafe (int category, locale_t locale)
-       struct gl_locale_category_t *plc =
-         &locale->category[gl_log2_lcmask_to_index (gl_log2_lc_mask (category))];
-       return (struct string_with_storage) { plc->name, STORAGE_OBJECT };
-+#elif defined __mlibc__
-+      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
- #elif __GLIBC__ >= 2 && !defined __UCLIBC__
-       /* Work around an incorrect definition of the _NL_LOCALE_NAME macro in
-          glibc < 2.12.
+diff --git coreutils-clean/lib/pselect.c coreutils-workdir/lib/pselect.c
+index 78f0446..92928be 100644
+--- coreutils-clean/lib/pselect.c
++++ coreutils-workdir/lib/pselect.c
+@@ -25,6 +25,7 @@
+ 
+ #include <errno.h>
+ #include <signal.h>
++#include <stddef.h>
+ 
+ /* Examine the size-NFDS file descriptor sets in RFDS, WFDS, and XFDS
+    to see whether some of their descriptors are ready for reading,
+diff --git coreutils-clean/src/system.h coreutils-workdir/src/system.h
+index b8612ff..52817af 100644
+--- coreutils-clean/src/system.h
++++ coreutils-workdir/src/system.h
+@@ -31,6 +31,11 @@
+ 
+ #include <unistd.h>
+ 
++/* Ironclad doesn't have lchown - define to 0 if not already defined.  */
++#ifndef HAVE_LCHOWN
++# define HAVE_LCHOWN 0
++#endif
++
+ #include <limits.h>
+ 
+ #include "pathmax.h"

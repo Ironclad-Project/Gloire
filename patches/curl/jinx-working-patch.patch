@@ -1,14 +1,13 @@
-diff --git curl-clean/src/tool_filetime.c curl-workdir/src/tool_filetime.c
-index 041cc4d..c5f76f6 100644
---- curl-clean/src/tool_filetime.c
-+++ curl-workdir/src/tool_filetime.c
-@@ -21,6 +21,9 @@
-  * SPDX-License-Identifier: curl
-  *
-  ***************************************************************************/
-+
-+#define _XOPEN_SOURCE
-+
- #include "tool_filetime.h"
- #include "tool_cfgable.h"
- #include "tool_msgs.h"
+diff --git curl-clean/CMakeLists.txt curl-workdir/CMakeLists.txt
+index 4772a62..62ed43f 100644
+--- curl-clean/CMakeLists.txt
++++ curl-workdir/CMakeLists.txt
+@@ -278,7 +278,7 @@ endif()
+ 
+ include(PickyWarnings)
+ 
+-if(CYGWIN OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "GNU")
++if(CYGWIN OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "GNU" OR CMAKE_SYSTEM_NAME STREQUAL "Ironclad")
+   set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "_GNU_SOURCE")  # Required for accept4(), pipe2(), sendmmsg()
+   list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")  # Apply to all feature checks
+ endif()

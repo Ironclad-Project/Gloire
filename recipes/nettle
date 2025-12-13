@@ -3,7 +3,7 @@
 name=nettle
 version=3.10.2
 revision=2
-tarball_url="https://ftpmirror.gnu.org/gnu/nettle/nettle-${version}.tar.gz"
+tarball_url="https://ftp.gnu.org/gnu/nettle/nettle-${version}.tar.gz"
 tarball_blake2b="2bcd54c97d793238a9c6527f0ba4851dd9e5b53c80abc1ed012ef53e9dbed1fc47c474ca7c29a2c0a989830e45f85eb61db4752dd8b8487cffc8559f43788c89"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"

@@ -1,77 +1,65 @@
-diff --git binutils-clean/bfd/config.bfd binutils-workdir/bfd/config.bfd
-index 4e5a838..4fb123d 100644
---- binutils-clean/bfd/config.bfd
-+++ binutils-workdir/bfd/config.bfd
-@@ -665,6 +665,11 @@ case "${targ}" in
-     targ_selvecs=
-     targ64_selvecs=x86_64_elf64_vec
-     ;;
-+  i[3-7]86-*-ironclad*)
-+    targ_defvec=i386_elf32_vec
-+    targ_selvecs=
-+    targ64_selvecs=x86_64_elf64_vec
-+    ;;
- #ifdef BFD64
-   x86_64-*-cloudabi*)
-     targ_defvec=x86_64_elf64_cloudabi_vec
-@@ -735,6 +740,11 @@ case "${targ}" in
-     targ_selvecs="i386_elf32_vec iamcu_elf32_vec x86_64_elf32_vec"
-     want64=true
-     ;;
-+  x86_64-*-ironclad*)
-+    targ_defvec=x86_64_elf64_vec
-+    targ_selvecs=i386_elf32_vec
-+    want64=true
-+    ;;
+diff --git binutils-clean/bfd/config.in binutils-workdir/bfd/config.in
+index 7458362..1d12c4d 100644
+--- binutils-clean/bfd/config.in
++++ binutils-workdir/bfd/config.in
+@@ -2,7 +2,7 @@
+ 
+ /* Check that config.h is #included before system headers
+     (this works only for glibc, but that should be enough).  */
+-#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__CONFIG_H__)
++#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__ironclad__) && !defined(__CONFIG_H__)
+ #  error config.h must be #included before system headers
  #endif
-   i[3-7]86-*-lynxos*)
-     targ_defvec=i386_elf32_vec
-diff --git binutils-clean/configure binutils-workdir/configure
-index bbfb597..7eee314 100755
---- binutils-clean/configure
-+++ binutils-workdir/configure
-@@ -3083,7 +3083,7 @@ case "${ENABLE_GOLD}" in
-       *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
-       | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
-       | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* \
--      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku*)
-+      | *-*-solaris2* | *-*-nto* | *-*-nacl* | *-*-haiku* | *-*-mlibc*)
-         case "${target}" in
-           *-*-linux*aout* | *-*-linux*oldld*)
-             ;;
-diff --git binutils-clean/gas/configure.tgt binutils-workdir/gas/configure.tgt
-index 7c81bff..bb3a256 100644
---- binutils-clean/gas/configure.tgt
-+++ binutils-workdir/gas/configure.tgt
-@@ -229,6 +229,7 @@ case ${generic_target} in
-   i386-*-beos*)				fmt=elf ;;
-   i386-*-elfiamcu)			fmt=elf arch=iamcu ;;
-   i386-*-elf*)				fmt=elf ;;
-+  i386-*-ironclad*)				fmt=elf em=gnu ;;
-   i386-*-fuchsia*)			fmt=elf ;;
-   i386-*-haiku*)			fmt=elf em=haiku ;;
-   i386-*-genode*)			fmt=elf ;;
-diff --git binutils-clean/ld/configure.tgt binutils-workdir/ld/configure.tgt
-index ea01ccf..ce1b332 100644
---- binutils-clean/ld/configure.tgt
-+++ binutils-workdir/ld/configure.tgt
-@@ -384,6 +384,9 @@ i[3-7]86-*-linux-*)	targ_emul=elf_i386
- i[3-7]86-*-redox*)	targ_emul=elf_i386
- 			targ_extra_emuls=elf_x86_64
- 			;;
-+i[3-7]86-*-ironclad*)	targ_emul=elf_i386
-+			targ_extra_emuls=elf_x86_64
-+			;;
- i[3-7]86-*-solaris2*)	targ_emul=elf_i386_sol2
- 			targ_extra_emuls="elf_i386_ldso elf_i386 elf_iamcu elf_x86_64_sol2 elf_x86_64"
- 			targ_extra_libpath=$targ_extra_emuls
-@@ -1019,6 +1022,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
- x86_64-*-redox*)	targ_emul=elf_x86_64
- 			targ_extra_emuls=elf_i386
- 			;;
-+x86_64-*-ironclad*)	targ_emul=elf_x86_64
-+			targ_extra_emuls=elf_i386
-+			;;
- x86_64-*-solaris2*)	targ_emul=elf_x86_64_sol2
- 			targ_extra_emuls="elf_x86_64 elf_i386_sol2 elf_i386_ldso elf_i386 elf_iamcu"
- 			targ_extra_libpath=$targ_extra_emuls
+ #define __CONFIG_H__ 1
+diff --git binutils-clean/binutils/config.in binutils-workdir/binutils/config.in
+index 93ff046..8036d5c 100644
+--- binutils-clean/binutils/config.in
++++ binutils-workdir/binutils/config.in
+@@ -2,7 +2,7 @@
+ 
+ /* Check that config.h is #included before system headers
+    (this works only for glibc, but that should be enough).  */
+-#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__CONFIG_H__)
++#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__ironclad__) && !defined(__CONFIG_H__)
+ #  error config.h must be #included before system headers
+ #endif
+ #define __CONFIG_H__ 1
+diff --git binutils-clean/gas/config.in binutils-workdir/gas/config.in
+index bb89624..543eede 100644
+--- binutils-clean/gas/config.in
++++ binutils-workdir/gas/config.in
+@@ -2,7 +2,7 @@
+ 
+ /* Check that config.h is #included before system headers
+    (this works only for glibc, but that should be enough).  */
+-#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__CONFIG_H__)
++#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__ironclad__) && !defined(__CONFIG_H__)
+ #  error config.h must be #included before system headers
+ #endif
+ #define __CONFIG_H__ 1
+diff --git binutils-clean/ld/config.in binutils-workdir/ld/config.in
+index 790efd3..a8da3e4 100644
+--- binutils-clean/ld/config.in
++++ binutils-workdir/ld/config.in
+@@ -2,7 +2,7 @@
+ 
+ /* Check that config.h is #included before system headers
+    (this works only for glibc, but that should be enough).  */
+-#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__CONFIG_H__)
++#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__ironclad__) && !defined(__CONFIG_H__)
+ #  error config.h must be #included before system headers
+ #endif
+ #define __CONFIG_H__ 1
+diff --git binutils-clean/opcodes/config.in binutils-workdir/opcodes/config.in
+index 64b3303..ecd5c2b 100644
+--- binutils-clean/opcodes/config.in
++++ binutils-workdir/opcodes/config.in
+@@ -2,7 +2,7 @@
+ 
+ /* Check that config.h is #included before system headers
+    (this works only for glibc, but that should be enough).  */
+-#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__CONFIG_H__)
++#if defined(__GLIBC__) && !defined(__FreeBSD_kernel__) && !defined(__ironclad__) && !defined(__CONFIG_H__)
+ #  error config.h must be #included before system headers
+ #endif
+ #define __CONFIG_H__ 1

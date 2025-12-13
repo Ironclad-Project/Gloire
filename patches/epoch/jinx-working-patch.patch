@@ -1,8 +1,16 @@
 diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
-index 92c56e2..d229458 100644
+index 92c56e2..8f664c3 100644
 --- epoch-clean/src/actions.c
 +++ epoch-workdir/src/actions.c
-@@ -19,6 +19,8 @@
+@@ -10,6 +10,7 @@
+ #include <string.h>
+ #include <time.h>
+ #include <unistd.h>
++#include <fcntl.h>
+ #include <sys/reboot.h>
+ #include <sys/mount.h>
+ #include <sys/types.h>
+@@ -19,6 +20,8 @@
  #include <sys/shm.h>
  #include <sys/syscall.h>
  #include <signal.h>
@@ -11,7 +19,7 @@ index 92c56e2..d229458 100644
  #include "epoch.h"
  
  /*Prototypes.*/
-@@ -35,57 +37,6 @@ struct _EnvVarList *GlobalEnvVars;
+@@ -35,57 +38,6 @@ struct _EnvVarList *GlobalEnvVars;
  /*Functions.*/
  static void MountVirtuals(void)
  {
@@ -69,27 +77,35 @@ index 92c56e2..d229458 100644
  }
  
  static void PrimaryLoop(void)
-@@ -669,7 +620,9 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
+@@ -669,7 +621,8 @@ void PerformPivotRoot(const char *NewRoot, const char *OldRootDir)
  	sync();
  
  	/*pivot_root now.*/
 -	if (syscall(SYS_pivot_root, NewRoot, OldRootDir) != 0)
-+   int ret, errno;
-+   SYSCALL4(SYSCALL_PIVOT_ROOT, NewRoot, strlen(NewRoot), OldRootDir, strlen(OldRootDir));
++	long ret = syscall(SYS_pivot_root, NewRoot, strlen(NewRoot), OldRootDir, strlen(OldRootDir));
 +	if (ret != 0)
  	{
  		SpitError("Failed to pivot_root()!");
  		EmergencyShell();
-@@ -869,6 +822,19 @@ void LaunchBootup(void)
+@@ -869,6 +822,28 @@ void LaunchBootup(void)
  		putc('\007', stderr); /*Beep.*/
  	}
  	
 +	/* Add utmpx entry */
 +    struct utmpx entry;
++    struct timeval tv;
++    memset(&entry, 0, sizeof(entry));
 +    entry.ut_type = BOOT_TIME;
-+    if (gettimeofday(&entry.ut_tv, NULL)) {
++    if (gettimeofday(&tv, NULL)) {
 +        perror("epoch: could not get time of day");
 +    }
++    entry.ut_tv.tv_sec = tv.tv_sec;
++    entry.ut_tv.tv_usec = tv.tv_usec;
++
++    /* Ensure utmp file exists (glibc requires it to exist before writing).  */
++    int utmp_fd = open("/run/utmp", O_WRONLY | O_CREAT, 0644);
++    if (utmp_fd >= 0)
++        close(utmp_fd);
 +
 +	setutxent();
 +    if (pututxline(&entry) == NULL) {
@@ -118,15 +134,16 @@ index 8130386..66800b7 100644
  #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
  
 diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
-index b52068c..bb9a7cd 100644
+index b52068c..ae76c97 100644
 --- epoch-clean/src/modes.c
 +++ epoch-workdir/src/modes.c
-@@ -137,6 +137,18 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
+@@ -137,6 +137,19 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
  	}
  }
  
 +#include <sys/syscall.h>
 +#include <errno.h>
++#include <stdint.h>
 +
 +struct procinfo {
 +    char     id[20];
@@ -140,7 +157,7 @@ index b52068c..bb9a7cd 100644
  ReturnCode EmulKillall5(unsigned InSignal)
  { /*Used as the killall5 utility.*/
  	DIR *ProcDir;
-@@ -144,43 +156,17 @@ ReturnCode EmulKillall5(unsigned InSignal)
+@@ -144,43 +157,17 @@ ReturnCode EmulKillall5(unsigned InSignal)
  	pid_t CurPID;
  	const pid_t OurPID = getpid(), OurSID = getsid(0);
  

@@ -471,14 +471,6 @@ diff --git xfe-clean/st/st.c xfe-workdir/st/st.c
 index 6df978b..eee42e5 100644
 --- xfe-clean/st/st.c
 +++ xfe-workdir/st/st.c
-@@ -1,5 +1,7 @@
- /* See license terms in x.c */
- 
-+#define _DEFAULT_SOURCE
-+
- #ifndef _XOPEN_SOURCE
- #define _XOPEN_SOURCE 600
- #endif
 @@ -21,17 +23,22 @@
  #include <termios.h>
  #include <unistd.h>

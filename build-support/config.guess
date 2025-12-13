@@ -1598,10 +1598,10 @@ EOF
 	GUESS=$UNAME_MACHINE-unknown-unleashed$UNAME_RELEASE
 	;;
     x86_64:[Ii]ronclad:*:*|i?86:[Ii]ronclad:*:*)
-	GUESS=$UNAME_MACHINE-pc-ironclad-mlibc
+	GUESS=$UNAME_MACHINE-pc-ironclad-gnu
 	;;
     *:[Ii]ronclad:*:*)
-	GUESS=$UNAME_MACHINE-unknown-ironclad-mlibc
+	GUESS=$UNAME_MACHINE-unknown-ironclad-gnu
 	;;
 esac
 

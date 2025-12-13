@@ -3,7 +3,7 @@
 name=m4
 version=1.4.20
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/m4/m4-${version}.tar.xz"
+tarball_url="https://ftp.gnu.org/gnu/m4/m4-${version}.tar.xz"
 tarball_blake2b="d8e6716dd4f35e17b866917f0697f980d7b6fbfa9aa92feb1234fdb49fb62107dc48405036a8ca97db73889d7638b90b69ea005352992b7bf45e8605127b318f"
 hostdeps="gcc pkg-config"
 deps="core-libs"

@@ -1,10 +1,10 @@
 [binaries]
-c = 'riscv64-ironclad-mlibc-gcc'
-cpp = 'riscv64-ironclad-mlibc-g++'
-ar = 'riscv64-ironclad-mlibc-ar'
-nm = 'riscv64-ironclad-mlibc-nm'
-strip = 'riscv64-ironclad-mlibc-strip'
-pkg-config = 'riscv64-ironclad-mlibc-pkg-config'
+c = 'riscv64-ironclad-gnu-gcc'
+cpp = 'riscv64-ironclad-gnu-g++'
+ar = 'riscv64-ironclad-gnu-ar'
+nm = 'riscv64-ironclad-gnu-nm'
+strip = 'riscv64-ironclad-gnu-strip'
+pkg-config = 'riscv64-ironclad-gnu-pkg-config'
 llvm-config = '/base_dir/build-support/cross-llvm-config'
 
 [host_machine]

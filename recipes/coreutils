@@ -3,7 +3,7 @@
 name=coreutils
 version=9.9
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
+tarball_url="https://ftp.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
 tarball_blake2b="ddae0c1ff882739712e901d6eb1373e4172de9335b95b4c1004773aadc6b7e3cb3bf5aa583f13034062a75dc9194bf8534b0f7f1258c8ff64595b1301964e124"
 hostdeps="gcc pkg-config"
 deps="core-libs"

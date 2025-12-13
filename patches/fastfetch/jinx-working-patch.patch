@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index ef74527..70d64f8 100644
+index ef74527..0a8e128 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
@@ -129,6 +129,17 @@ index ef74527..70d64f8 100644
  elseif(GNU)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
      # On Hurd PATH_MAX is not defined. Set an arbitrary limit as workaround.
+@@ -1752,6 +1829,10 @@ elseif(Haiku)
+         PRIVATE "be"
+         PRIVATE "gnu"
+     )
++elseif(Ironclad)
++    target_link_libraries(libfastfetch
++        PRIVATE "m"
++    )
+ endif()
+ 
+ target_include_directories(libfastfetch
 diff --git fastfetch-clean/presets/all.jsonc fastfetch-workdir/presets/all.jsonc
 index 74bea1f..fed5b02 100644
 --- fastfetch-clean/presets/all.jsonc
@@ -158,11 +169,12 @@ index 7ad2210..b208411 100644
  
 diff --git fastfetch-workdir/src/detection/cpu/cpu_ironclad.c fastfetch-workdir/src/detection/cpu/cpu_ironclad.c
 new file mode 100644
-index 0000000..04fbfe4
+index 0000000..7ad301a
 --- /dev/null
 +++ fastfetch-workdir/src/detection/cpu/cpu_ironclad.c
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,39 @@
 +#include <sys/syscall.h>
++#include <unistd.h>
 +#include "cpu.h"
 +
 +struct cpuinfo {
@@ -176,9 +188,9 @@ index 0000000..04fbfe4
 +};
 +
 +const char* ffDetectCPUImpl(const FFCPUOptions* options, FFCPUResult* cpu_result) {
++	(void)options;  /* unused */
 +	struct cpuinfo cpu;
-+	int ret, errno;
-+    SYSCALL1(SYSCALL_GETCPUINFO, &cpu);
++	syscall(SYS_getcpuinfo, &cpu);
 +
 +#if __i386__ || __x86_64__
 +	ffCPUDetectByCpuid(cpu_result);
@@ -189,39 +201,17 @@ index 0000000..04fbfe4
 +    cpu_result->frequencyMax = max_frequency;
 +#endif
 +
-+	ffStrbufAppendNS(&cpu_result->name, strlen(cpu.model_name), cpu.model_name);
-+	ffStrbufAppendNS(&cpu_result->vendor, strlen(cpu.vendor_name), cpu.vendor_name);
-+	cpu_result->coresOnline = cpu.onln_cores;
++	ffStrbufAppendNS(&cpu_result->name, (uint32_t)strlen(cpu.model_name), cpu.model_name);
++	ffStrbufAppendNS(&cpu_result->vendor, (uint32_t)strlen(cpu.vendor_name), cpu.vendor_name);
++	cpu_result->coresOnline = (uint16_t)cpu.onln_cores;
 +	// TODO: Differentiate between logical and physical
-+	cpu_result->coresLogical = cpu.conf_cores;
-+	cpu_result->coresPhysical = cpu.conf_cores;
++	cpu_result->coresLogical = (uint16_t)cpu.conf_cores;
++	cpu_result->coresPhysical = (uint16_t)cpu.conf_cores;
 +	// TODO: Add support for microarchitecture, packages and temperature
 +	cpu_result->temperature = FF_CPU_TEMP_UNSET;
 +
 +	return NULL;
 +}
-diff --git fastfetch-clean/src/detection/libc/libc_linux.c fastfetch-workdir/src/detection/libc/libc_linux.c
-index 19e8e83..979f1f7 100644
---- fastfetch-clean/src/detection/libc/libc_linux.c
-+++ fastfetch-workdir/src/detection/libc/libc_linux.c
-@@ -7,12 +7,16 @@
- 
- const char* ffDetectLibc(FFLibcResult* result)
- {
--#ifdef __UCLIBC__
-+#if defined(__UCLIBC__)
-     result->name = "uClibc";
-     result->version = FF_STR(__UCLIBC_MAJOR__) "." FF_STR(__UCLIBC_MINOR__) "." FF_STR(__UCLIBC_SUBLEVEL__);
- #elif defined(__GNU_LIBRARY__)
-     result->name = "glibc";
-     result->version = FF_STR(__GLIBC__) "." FF_STR(__GLIBC_MINOR__);
-+#elif defined(__mlibc__)
-+    result->name = "mlibc";
-+    result->version = "Rolling Release";
-+    return NULL;
- #else
-     result->name = "musl";
-     #ifdef FF_MUSL_VERSION
 diff --git fastfetch-clean/src/detection/loadavg/loadavg_sunos.c fastfetch-workdir/src/detection/loadavg/loadavg_sunos.c
 index 6ae4010..700cb32 100644
 --- fastfetch-clean/src/detection/loadavg/loadavg_sunos.c

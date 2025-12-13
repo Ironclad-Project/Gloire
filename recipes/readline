@@ -5,14 +5,14 @@ _version=8.3
 _patch=1
 version=${_version}.${_patch}
 revision=2
-tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-${_version}.tar.gz"
+tarball_url="https://ftp.gnu.org/gnu/readline/readline-${_version}.tar.gz"
 tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 
 _get_patch() {
     TMP_PATCH=$(mktemp)
-    curl -Lo "${TMP_PATCH}" https://ftpmirror.gnu.org/gnu/readline/readline-${_version}-patches/readline$(echo "${_version}" | sed 's/\.//g')-$1
+    curl -Lo "${TMP_PATCH}" https://ftp.gnu.org/gnu/readline/readline-${_version}-patches/readline$(echo "${_version}" | sed 's/\.//g')-$1
     if ! b2sum "${TMP_PATCH}" | grep -q $2; then
         die "b2sum checksum fail for readline patch $1
         expected $2

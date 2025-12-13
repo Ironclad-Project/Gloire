@@ -1,20 +1,15 @@
 #! /bin/sh
 
-name=gcc
+name=bootstrap-gcc
 from_source=gcc-host
-clean_workdirs=no
-revision=2
+revision=1
 imagedeps="build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"
-deps="glibc"
-
-. "${base_dir}"/build-support/gcc-ada-helpers
 
 configure() {
-    ada_symlink_gnat
-
     cp -rp "${source_dir}"/. ./
+
     mkdir -p build && cd build
 
         CFLAGS="$HOST_CFLAGS" \
@@ -27,44 +22,44 @@ configure() {
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot_dir}" \
         --with-glibc-version=2.42 \
-        --enable-__cxa_atexit \
-        --enable-cet=auto \
+        --with-newlib \
+        --without-headers \
         --enable-checking=release \
-        --enable-clocale=gnu \
         --enable-default-pie \
         --enable-default-ssp \
         --enable-gnu-indirect-function \
         --enable-gnu-unique-object \
-        --enable-libstdcxx-backtrace \
         --enable-link-serialization=1 \
         --enable-linker-build-id \
-        --enable-languages=c,c++,lto,ada \
+        --enable-languages=c,c++,lto \
         --enable-lto \
         --disable-multilib \
-        --enable-plugin \
-        --enable-shared \
-        --enable-host-shared \
-        --enable-threads=posix \
-        --disable-libssp \
         --disable-libstdcxx-pch \
-        --disable-werror
+        --disable-werror \
+        --disable-libatomic \
+        --disable-libgomp \
+        --disable-libquadmath \
+        --disable-libssp \
+        --disable-libstdcxx \
+        --disable-libvtv \
+        --disable-multilib \
+        --disable-nls \
+        --disable-shared \
+        --disable-threads
 }
 
 build() {
-    ada_symlink_gnat
-
     cd build
+
     make -j${parallelism} all-gcc
-    make -j${parallelism} -C gcc cross-gnattools ada.all.cross
+    make -j${parallelism} all-target-libgcc
 }
 
 package() {
-    ada_symlink_gnat
-
     cd build
-    DESTDIR="${dest_dir}" make install-gcc
 
-    ln -s ${OS_TRIPLET}-gnatbind "${dest_dir}${prefix}"/bin/${OS_TRIPLET}-gnatbind-15
+    DESTDIR="${dest_dir}" make install-gcc
+    DESTDIR="${dest_dir}" make install-target-libgcc
 
         strip_command=strip \
     post_package_strip

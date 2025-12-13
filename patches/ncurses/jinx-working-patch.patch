@@ -80,7 +80,7 @@ index 4e2c27c..ea4f23d 100755
  		fi
  		;;
 -	(linux*|gnu*|k*bsd*-gnu|freebsd*)
-+	(linux*|gnu*|k*bsd*-gnu|freebsd*|*mlibc)
++	(linux*|gnu*|k*bsd*-gnu|freebsd*|ironclad*)
  		LD_RPATH_OPT="-Wl,-rpath,"
  		;;
  	(openbsd[2-9].*|mirbsd*)
@@ -89,7 +89,7 @@ index 4e2c27c..ea4f23d 100755
  		cf_cv_rm_so_locs=yes
  		;;
 -	(linux*|gnu*|k*bsd*-gnu)
-+	(linux*|gnu*|k*bsd*-gnu|*mlibc)
++	(linux*|gnu*|k*bsd*-gnu|ironclad*)
  		if test "$DFT_LWR_MODEL" = "shared" && test -n "$LD_RPATH_OPT" ; then
  			LOCAL_LDFLAGS="${LD_RPATH_OPT}\$(LOCAL_LIBDIR)"
  			LOCAL_LDFLAGS2="$LOCAL_LDFLAGS"
@@ -109,7 +109,7 @@ index 4e2c27c..ea4f23d 100755
  
  case $host_os in
 -(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|linux*musl|openbsd*|darwin*)
-+(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|linux*musl|openbsd*|darwin*|*mlibc)
++(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|linux*musl|openbsd*|darwin*|ironclad*)
  	want_xterm_kbs=DEL
  	;;
  (*)
@@ -118,28 +118,10 @@ index 4e2c27c..ea4f23d 100755
  	cf_XOPEN_SOURCE=
  	;;
 -(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
-+(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|*mlibc)
++(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|ironclad*)
  
  cf_gnu_xopen_source=$cf_XOPEN_SOURCE
  
-@@ -10806,6 +10810,8 @@ main (void)
- 		return 0;
- 	#elif __NEWLIB__ > 0 && __NEWLIB_MINOR__ >= 0
- 		return 0;
-+	#elif defined(__mlibc__)
-+		return 0;
- 	#else
- 	#	error not GNU C library
- 	#endif
-@@ -10865,6 +10871,8 @@ main (void)
- 				return 0;
- 			#elif (__NEWLIB__ == 2 && __NEWLIB_MINOR__ >= 4) || (__GLIBC__ > 3)
- 				return 0;
-+			#elif defined(__mlibc__)
-+				return 0;
- 			#else
- 			#	error GNU C library __GLIBC__.__GLIBC_MINOR__ is too old
- 			#endif
 diff --git ncurses-clean/form/Makefile.in ncurses-workdir/form/Makefile.in
 index 753e42f..c1b1427 100644
 --- ncurses-clean/form/Makefile.in

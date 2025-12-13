@@ -1,0 +1,64 @@
+diff --git gcon-clean/src/main.c gcon-workdir/src/main.c
+index 8f5dc7f..d691a3e 100644
+--- gcon-clean/src/main.c
++++ gcon-workdir/src/main.c
+@@ -34,6 +34,7 @@
+ #include <stdnoreturn.h>
+ #include <pty.h>
+ #include <poll.h>
++#include <errno.h>
+ 
+ static char *const start_path = "/usr/bin/login";
+ static char *const args[] = {start_path, NULL};
+@@ -183,7 +184,12 @@ static void add_to_buf_char(struct termios *termios, char c, bool echo) {
+                 }
+                 kbd_buffer[kbd_buffer_i++] = c;
+                 if (echo && (termios->c_lflag & ECHO)) {
+-                    locked_term_write(current_tty, "\n", 1);
++                    /* Echo newline - apply ONLCR if set (CR+LF instead of just LF) */
++                    if ((termios->c_oflag & (OPOST | ONLCR)) == (OPOST | ONLCR)) {
++                        locked_term_write(current_tty, "\r\n", 2);
++                    } else {
++                        locked_term_write(current_tty, "\n", 1);
++                    }
+                 }
+                 write(ttys[current_tty].master_pty, kbd_buffer, kbd_buffer_i);
+                 kbd_buffer_i = 0;
+@@ -366,7 +372,7 @@ static void kb_input_thread(void) {
+                 if (capslock_active == false && shift_active == false) {
+                     c = convtab_nomod[input_bytes[i]];
+                 }
+-                    if (capslock_active == false && shift_active == true) {
++                if (capslock_active == false && shift_active == true) {
+                     c = convtab_shift[input_bytes[i]];
+                 }
+                 if (capslock_active == true && shift_active == false) {
+@@ -440,7 +446,7 @@ int main(void) {
+         fb,
+         0
+     );
+-    if (mem_window == NULL) {
++    if (mem_window == MAP_FAILED) {
+         perror("Could not mmap framebuffer");
+         return 1;
+     }
+@@ -485,7 +491,6 @@ int main(void) {
+     }
+ 
+     do_tty_switch(0);
+-
+     // Poll on the keyboard, and the master ttys input, and act on the changes.
+     int npolled = TTY_COUNT;
+     int start = 0;
+@@ -511,7 +516,11 @@ int main(void) {
+     for (;;) {
+         int polled_count = poll(polled, npolled, -1);
+         if (polled_count == -1) {
++            if (errno == EINTR) {
++                continue;  // Retry on interrupt
++            }
+             perror("Failed to poll");
++            continue;
+         }
+ 
+         for (int i = 0; i < npolled; i++) {

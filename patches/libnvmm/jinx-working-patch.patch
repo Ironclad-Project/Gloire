@@ -1,0 +1,194 @@
+diff --git libnvmm-clean/src/nvmm_ironclad.c libnvmm-workdir/src/nvmm_ironclad.c
+index 537ee4a..ef78347 100644
+--- libnvmm-clean/src/nvmm_ironclad.c
++++ libnvmm-workdir/src/nvmm_ironclad.c
+@@ -1,8 +1,12 @@
++/* libnvmm Ironclad backend - glibc version
++   Uses glibc's syscall() interface for Ironclad-specific NVMM syscalls.  */
++
+ #include <stdint.h>
+ #include <stddef.h>
+ #include <nvmm.h>
+ #include <errno.h>
+ #include <sys/syscall.h>
++#include <unistd.h>
+ 
+ int nvmm_init(void) {
+     return 0;
+@@ -13,131 +17,112 @@ int nvmm_root_init(void) {
+ }
+ 
+ int nvmm_capability(struct nvmm_capability *caps) {
+-    int ret;
+-    SYSCALL1(SYSCALL_NVMM_CAPABILITY, caps);
+-    return ret;
++    long ret = syscall(SYS_nvmm_capability, caps);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_machine_create(struct nvmm_machine *machine) {
+-    int ret;
+-    SYSCALL1(SYSCALL_NVMM_MACHINE_CREATE, machine);
+-    return ret;
++    long ret = syscall(SYS_nvmm_machine_create, machine);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_machine_destroy(struct nvmm_machine *machine) {
+-    int ret;
+-    SYSCALL1(SYSCALL_NVMM_MACHINE_DEL, machine);
+-    return ret;
++    long ret = syscall(SYS_nvmm_machine_del, machine);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_machine_configure(struct nvmm_machine *machine, uint64_t op, void *arg) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_MACHINE_CONF, machine, op, arg);
+-    return ret;
++    long ret = syscall(SYS_nvmm_machine_conf, machine, op, arg);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_create(struct nvmm_machine *machine, nvmm_cpuid_t cpuid, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_VCPU_CREATE, machine, cpuid, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_create, machine, cpuid, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_destroy(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_VCPU_DESTROY, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_destroy, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_configure(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op, void *arg) {
+-    int ret;
+-    SYSCALL4(SYSCALL_NVMM_VCPU_CONF, machine, cpu, op, arg);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_conf, machine, cpu, op, arg);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_setstate(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_VCPU_SETSTATE, machine, cpu, op);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_setstate, machine, cpu, op);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_getstate(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, uint64_t op) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_VCPU_GETSTATE, machine, cpu, op);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_getstate, machine, cpu, op);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_inject(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_VCPU_INJECT, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_inject, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_run(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_VCPU_RUN, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_run, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_gpa_map(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size, int prot) {
+-    int ret;
+-    SYSCALL5(SYSCALL_NVMM_GPA_MAP, machine, hva, gpa, size, prot);
+-    return ret;
++    long ret = syscall(SYS_nvmm_gpa_map, machine, hva, gpa, size, prot);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_gpa_unmap(struct nvmm_machine *machine, uintptr_t hva, gpaddr_t gpa, size_t size) {
+-    int ret;
+-    SYSCALL4(SYSCALL_NVMM_GPA_UNMAP, machine, hva, gpa, size);
+-    return ret;
++    long ret = syscall(SYS_nvmm_gpa_unmap, machine, hva, gpa, size);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_hva_map(struct nvmm_machine *machine, uintptr_t hva, size_t size) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_HVA_MAP, machine, hva, size);
+-    return ret;
++    long ret = syscall(SYS_nvmm_hva_map, machine, hva, size);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_hva_unmap(struct nvmm_machine *machine, uintptr_t hva, size_t size) {
+-    int ret;
+-    SYSCALL3(SYSCALL_NVMM_HVA_UNMAP, machine, hva, size);
+-    return ret;
++    long ret = syscall(SYS_nvmm_hva_unmap, machine, hva, size);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_gva_to_gpa(struct nvmm_machine *machine, struct nvmm_vcpu *cpu, gvaddr_t gva, gpaddr_t *gpa, nvmm_prot_t *prot) {
+-    int ret;
+-    SYSCALL5(SYSCALL_NVMM_GVA2GPA, machine, cpu, gva, gpa, prot);
+-    return ret;
++    long ret = syscall(SYS_nvmm_gva2gpa, machine, cpu, gva, gpa, prot);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_gpa_to_hva(struct nvmm_machine *machine, gpaddr_t gpa, uintptr_t *hva, nvmm_prot_t *prot) {
+-    int ret;
+-    SYSCALL4(SYSCALL_NVMM_GPA2HVA, machine, gpa, hva, prot);
+-    return ret;
++    long ret = syscall(SYS_nvmm_gpa2hva, machine, gpa, hva, prot);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_assist_io(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_ASSIST_IO, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_assist_io, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_assist_mem(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_ASSIST_IO, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_assist_mem, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+-int nvmm_ctl(int, void *, size_t) {
++int nvmm_ctl(int op __attribute__((unused)),
++             void *arg __attribute__((unused)),
++             size_t len __attribute__((unused))) {
+     return 0;
+ }
+ 
+ int nvmm_vcpu_dump(struct nvmm_machine *machine, struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL2(SYSCALL_NVMM_VCPU_DUMP, machine, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_dump, machine, cpu);
++    return (ret == -1) ? -1 : 0;
+ }
+ 
+ int nvmm_vcpu_stop(struct nvmm_vcpu *cpu) {
+-    int ret;
+-    SYSCALL1(SYSCALL_NVMM_VCPU_STOP, cpu);
+-    return ret;
++    long ret = syscall(SYS_nvmm_vcpu_stop, cpu);
++    return (ret == -1) ? -1 : 0;
+ }

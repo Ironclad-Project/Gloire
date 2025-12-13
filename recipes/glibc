@@ -1,0 +1,43 @@
+#! /bin/sh
+
+name=glibc
+version=2.42
+revision=1
+tarball_url="https://ftp.gnu.org/gnu/glibc/glibc-${version}.tar.xz"
+tarball_blake2b="6ffabfe7942034a5a4fb5097679cb47bc3431eb2a3864af07cea0cb6aa5db63fbaf6f026b3c9299e00268058a6762eb21e92499f012d552ed87d65c7ffbd0bbe"
+hostdeps="bootstrap-gcc pkg-config"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    echo "slibdir=${prefix}/lib" >> configparms
+    echo "rtlddir=${prefix}/lib" >> configparms
+    echo "sbindir=${prefix}/bin" >> configparms
+    echo "rootsbindir=${prefix}/bin" >> configparms
+
+    autotools_configure \
+        --with-headers=${sysroot}${prefix}/include \
+        --enable-bind-now \
+        --enable-cet \
+        --enable-fortify-source \
+        --enable-stack-protector=strong \
+        --disable-nscd \
+        --disable-profile \
+        --disable-timezone-tools \
+        --disable-werror
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    # Note: Locale installation is skipped during cross-compilation because
+    # localedef is built for the target (Ironclad) and cannot run on the host.
+    # Locales can be generated on the target system after booting.
+    # DESTDIR="${dest_dir}" make localedata/install-locales -j${parallelism}
+}

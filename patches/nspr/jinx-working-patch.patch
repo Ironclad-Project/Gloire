@@ -1,132 +1,5 @@
-diff --git nspr-clean/nspr/config/nsinstall.c nspr-workdir/nspr/config/nsinstall.c
-index bba9297..0524bf1 100644
---- nspr-clean/nspr/config/nsinstall.c
-+++ nspr-workdir/nspr/config/nsinstall.c
-@@ -38,7 +38,7 @@
- #  define GETCWD_CAN_MALLOC
- #endif
- 
--#if defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)
-+#if defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)
- #  include <getopt.h>
- #endif
- 
-diff --git nspr-clean/nspr/configure nspr-workdir/nspr/configure
-index d4b1645..bd0eab5 100755
---- nspr-clean/nspr/configure
-+++ nspr-workdir/nspr/configure
-@@ -7326,7 +7326,7 @@ tools are selected during the Xcode/Developer Tools installation." "$LINENO" 5
-     PR_MD_CSRCS=freebsd.c
-     ;;
- 
--*-linux*|*-gnu*|*-k*bsd*-gnu|*-android*|*-linuxandroid*)
-+*-linux*|*-gnu*|*-k*bsd*-gnu|*-android*|*-linuxandroid*|*-mlibc)
-     if test -z "$USE_NSPR_THREADS"; then
-         USE_PTHREADS=1
-         IMPL_STRATEGY=_PTH
-diff --git nspr-clean/nspr/pr/include/md/_pth.h nspr-workdir/nspr/pr/include/md/_pth.h
-index 7bcea96..5fd9536 100644
---- nspr-clean/nspr/pr/include/md/_pth.h
-+++ nspr-workdir/nspr/pr/include/md/_pth.h
-@@ -65,7 +65,7 @@
-     || defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
-     || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
-     || defined(NTO) || defined(DARWIN) \
--    || defined(RISCOS)
-+    || defined(RISCOS) || defined(__mlibc__)
- #define _PT_PTHREAD_INVALIDATE_THR_HANDLE(t)  (t) = 0
- #define _PT_PTHREAD_THR_HANDLE_IS_INVALID(t)  (t) == 0
- #define _PT_PTHREAD_COPY_THR_HANDLE(st, dt)   (dt) = (st)
-@@ -91,7 +91,7 @@
- #if (defined(AIX) && !defined(AIX4_3_PLUS)) \
-     || defined(LINUX) || defined(__GNU__)|| defined(__GLIBC__) \
-     || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
--    || defined(DARWIN)
-+    || defined(DARWIN) || defined(__mlibc__)
- #define PT_NO_SIGTIMEDWAIT
- #endif
- 
-@@ -104,7 +104,7 @@
- #define PT_PRIO_MIN            DEFAULT_PRIO
- #define PT_PRIO_MAX            DEFAULT_PRIO
- #elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
--    || defined(FREEBSD)
-+    || defined(FREEBSD) || defined(__mlibc__)
- #define PT_PRIO_MIN            sched_get_priority_min(SCHED_OTHER)
- #define PT_PRIO_MAX            sched_get_priority_max(SCHED_OTHER)
- #elif defined(NTO)
-@@ -148,7 +148,7 @@ extern int (*_PT_aix_yield_fcn)();
-     || defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) \
-     || defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) \
-     || defined(NTO) || defined(DARWIN) \
--    || defined(RISCOS)
-+    || defined(RISCOS) || defined(__mlibc__)
- #define _PT_PTHREAD_YIELD()             sched_yield()
- #else
- #error "Need to define _PT_PTHREAD_YIELD for this platform"
-diff --git nspr-clean/nspr/pr/include/md/_unixos.h nspr-workdir/nspr/pr/include/md/_unixos.h
-index 7d444cd..e21ac41 100644
---- nspr-clean/nspr/pr/include/md/_unixos.h
-+++ nspr-workdir/nspr/pr/include/md/_unixos.h
-@@ -15,7 +15,7 @@
-  * not be redefined.
-  */
- #if !defined(LINUX) && !defined(__GNU__) && !defined(__GLIBC__) \
--    && !defined(DARWIN)
-+    && !defined(DARWIN) && !defined(__mlibc__)
- #ifndef FD_SETSIZE
- #define FD_SETSIZE  4096
- #endif
-diff --git nspr-clean/nspr/pr/include/md/prosdep.h nspr-workdir/nspr/pr/include/md/prosdep.h
-index 0eeb48d..91f1c65 100644
---- nspr-clean/nspr/pr/include/md/prosdep.h
-+++ nspr-workdir/nspr/pr/include/md/prosdep.h
-@@ -40,7 +40,7 @@ PR_BEGIN_EXTERN_C
- #elif defined(OPENBSD)
- #include "md/_openbsd.h"
- 
--#elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)
-+#elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)
- #include "md/_linux.h"
- 
- #elif defined(DARWIN)
-diff --git nspr-clean/nspr/pr/src/md/unix/unix.c nspr-workdir/nspr/pr/src/md/unix/unix.c
-index be2feb4..e7cdff8 100644
---- nspr-clean/nspr/pr/src/md/unix/unix.c
-+++ nspr-workdir/nspr/pr/src/md/unix/unix.c
-@@ -33,7 +33,7 @@
-  * Make sure _PRSockLen_t is 32-bit, because we will cast a PRUint32* or
-  * PRInt32* pointer to a _PRSockLen_t* pointer.
-  */
--#if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2)
-+#if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__mlibc__)
- #  define _PRSockLen_t socklen_t
- #elif defined(SOLARIS) || defined(AIX4_1) || \
-     defined(LINUX) || defined(DARWIN) || defined(QNX)
-diff --git nspr-clean/nspr/pr/src/md/unix/uxproces.c nspr-workdir/nspr/pr/src/md/unix/uxproces.c
-index 1ea075f..66676f4 100644
---- nspr-clean/nspr/pr/src/md/unix/uxproces.c
-+++ nspr-workdir/nspr/pr/src/md/unix/uxproces.c
-@@ -58,7 +58,7 @@ typedef struct pr_PidRecord {
-  * LinuxThreads are actually a kind of processes
-  * that can share the virtual address space and file descriptors.
-  */
--#if ((defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)) && \
-+#if ((defined(LINUX) || defined(__GNU__) || defined(__GLIBC__) || defined(__mlibc__)) && \
-      defined(_PR_PTHREADS))
- #  define _PR_SHARE_CLONES
- #endif
-@@ -74,7 +74,7 @@ typedef struct pr_PidRecord {
- 
- #if defined(_PR_GLOBAL_THREADS_ONLY) ||                               \
-     (defined(_PR_PTHREADS) && !defined(LINUX) && !defined(__GNU__) && \
--     !defined(__GLIBC__))
-+     !defined(__GLIBC__) && !defined(__mlibc__))
- #  define _PR_NATIVE_THREADS
- #endif
- 
 diff --git nspr-clean/nspr/pr/src/md/unix/uxrng.c nspr-workdir/nspr/pr/src/md/unix/uxrng.c
-index 7c9cdb6..ea2c04c 100644
+index 7c9cdb6..fb1eb1d 100644
 --- nspr-clean/nspr/pr/src/md/unix/uxrng.c
 +++ nspr-workdir/nspr/pr/src/md/unix/uxrng.c
 @@ -27,7 +27,7 @@ static size_t GetHighResClock(void* buf, size_t maxbytes) { return 0; }
@@ -134,12 +7,12 @@ index 7c9cdb6..ea2c04c 100644
  #elif (defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD_kernel__) || \
         defined(NETBSD) || defined(__NetBSD_kernel__) || defined(OPENBSD) || \
 -       defined(__GNU__))
-+       defined(__GNU__) || defined(__mlibc__))
++       defined(__GNU__) || defined(__ironclad__))
  #  include <sys/types.h>
  #  include <sys/stat.h>
  #  include <fcntl.h>
 diff --git nspr-clean/nspr/pr/src/pthreads/ptio.c nspr-workdir/nspr/pr/src/pthreads/ptio.c
-index 1baba7c..7778781 100644
+index 1baba7c..c736923 100644
 --- nspr-clean/nspr/pr/src/pthreads/ptio.c
 +++ nspr-workdir/nspr/pr/src/pthreads/ptio.c
 @@ -143,7 +143,7 @@ static ssize_t (*pt_aix_sendfile_fptr)() = NULL;
@@ -151,24 +24,6 @@ index 1baba7c..7778781 100644
  #    include <sys/sendfile.h>
  #  endif
  
-@@ -182,7 +182,7 @@ static PRBool _pr_ipv6_v6only_on_by_default;
-       defined(HPUX10_30) || defined(HPUX11) || defined(LINUX) ||    \
-       defined(__GNU__) || defined(__GLIBC__) || defined(FREEBSD) || \
-       defined(NETBSD) || defined(OPENBSD) || defined(NTO) ||        \
--      defined(DARWIN) || defined(RISCOS)
-+      defined(DARWIN) || defined(RISCOS) || defined(__mlibc__)
- #    define _PRSelectFdSetArg_t fd_set*
- #  else
- #    error "Cannot determine architecture"
-@@ -265,7 +265,7 @@ static PRBool IsValidNetAddrLen(const PRNetAddr* addr, PRInt32 addr_len) {
-  * defines this type as socklen_t.  It is size_t or int on
-  * most current systems.
-  */
--#  if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2)
-+#  if defined(HAVE_SOCKLEN_T) || (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__mlibc__)
- typedef socklen_t pt_SockLen;
- #  elif (defined(AIX) && !defined(AIX4_1))
- typedef PRSize pt_SockLen;
 @@ -910,6 +910,11 @@ static PRBool pt_solaris_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
  
  #  ifdef LINUX
@@ -203,21 +58,3 @@ index 1baba7c..7778781 100644
      } while (rv == -1 && (syserrno = errno) == EINTR);
      if (rv == -1) {
        if (syserrno != EAGAIN && syserrno != EWOULDBLOCK) {
-@@ -3105,7 +3116,7 @@ static PRIOMethods _pr_socketpollfd_methods = {
- #  if defined(SOLARIS) || defined(LINUX) ||     \
-       defined(__GNU__) || defined(__GLIBC__) || defined(AIX) ||  \
-       defined(FREEBSD) || defined(NETBSD) || defined(OPENBSD) || \
--      defined(NTO) || defined(DARWIN) || defined(RISCOS)
-+      defined(NTO) || defined(DARWIN) || defined(RISCOS) || defined(__mlibc__)
- #    define _PR_FCNTL_FLAGS O_NONBLOCK
- #  else
- #    error "Can't determine architecture"
-@@ -4303,7 +4314,7 @@ PR_IMPLEMENT(PRInt32) PR_FD_NISSET(PRInt32 fd, PR_fd_set* set) {
- #  include <sys/types.h>
- #  include <sys/time.h>
- #  if !defined(LINUX) && !defined(__GNU__) && \
--      !defined(__GLIBC__)
-+      !defined(__GLIBC__) && !defined(__mlibc__)
- #    include <sys/select.h>
- #  endif
- 

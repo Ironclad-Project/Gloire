@@ -3,7 +3,7 @@
 name=libunistring
 version=1.4.1
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/libunistring/libunistring-${version}.tar.xz"
+tarball_url="https://ftp.gnu.org/gnu/libunistring/libunistring-${version}.tar.xz"
 tarball_blake2b="8fb25f3f23b1b8efa47b6f7f2d3025950b18140a503c1a0e229ae7f57f8c997533f63ba2d2fddb343356366368304dae4e3dc23c589c35dcf9c437c01e9c3657"
 hostdeps="gcc pkg-config"
 deps="core-libs"

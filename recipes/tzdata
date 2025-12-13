@@ -7,7 +7,7 @@ tarball_url="https://data.iana.org/time-zones/releases/tzdata${version}.tar.gz"
 tarball_blake2b="07421e756cd33f003f1173c320a2e454f767a2ba299b76b54e34dc5cf1c126b00ab3186bc61d4989201a83cb8b3e4c005c0bc080fb39a1e48ff9555d50c84f1d"
 imagedeps="tzdata"
 hostdeps="gcc binutils"
-deps="mlibc libgcc libstdc++ libatomic libintl libiconv"
+deps="glibc libgcc libstdc++ libatomic"
 
 early_prepare() {
     curl -Lo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
@@ -27,8 +27,7 @@ build() {
         CC="$OS_TRIPLET-gcc" \
         AR="$OS_TRIPLET-ar" \
         CFLAGS="$TARGET_CFLAGS" \
-        LDFLAGS="$TARGET_LDFLAGS" \
-        LDLIBS="-lintl"
+        LDFLAGS="$TARGET_LDFLAGS"
 }
 
 package() {

@@ -3,7 +3,7 @@
 name=binutils
 version=2.45.1
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
+tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="1ccab38659ec47f9100b61322627345fe79ebd04ed0b1e872c988edded4d292d7c9ac33d9f6ea47bf265ec823dfba60da0e84374900c15ec89e3aa9280ac020c"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"

@@ -37,14 +37,6 @@ diff --git st-clean/st.c st-workdir/st.c
 index 8e57991..7705bd4 100644
 --- st-clean/st.c
 +++ st-workdir/st.c
-@@ -1,4 +1,7 @@
- /* See LICENSE for license details. */
-+
-+#define _DEFAULT_SOURCE
-+
- #include <ctype.h>
- #include <errno.h>
- #include <fcntl.h>
 @@ -16,17 +19,12 @@
  #include <termios.h>
  #include <unistd.h>

@@ -3,7 +3,7 @@
 name=gcc
 version=15.2.0
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
+tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="e270320978ca690e6e8f5ef06414dc13caf561f16403a3783c76fbf3dcee57e755a2d5bba922bf7fcae0bb6120443755d819b003791ae823d54589dd799804de"
 hostdeps="gcc pkg-config"
 deps="core-libs binutils zlib gmp mpfr mpc gettext"
@@ -28,15 +28,31 @@ configure() {
         --target=${OS_TRIPLET} \
         --with-sysroot=/ \
         --with-build-sysroot=${sysroot_dir} \
+        --with-glibc-version=2.42 \
+        --enable-__cxa_atexit \
+        --enable-cet=auto \
+        --enable-checking=release \
+        --enable-clocale=gnu \
         --with-linker-hash-style=gnu \
         --enable-linker-build-id \
-        --enable-languages=c,c++,fortran,lto \
         --enable-default-pie \
         --enable-default-ssp \
-        --enable-initfini-array \
+        --enable-gnu-indirect-function \
+        --enable-gnu-unique-object \
+        --enable-libstdcxx-backtrace \
+        --enable-link-serialization=1 \
+        --enable-linker-build-id \
+        --enable-languages=c,c++,fortran,lto \
+        --enable-lto \
         --disable-multilib \
-        --with-system-zlib \
-        --enable-host-shared
+        --enable-plugin \
+        --enable-shared \
+        --enable-host-shared \
+        --enable-threads=posix \
+        --disable-libssp \
+        --disable-libstdcxx-pch \
+        --disable-werror \
+        --with-system-zlib
 }
 
 build() {

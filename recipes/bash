@@ -5,7 +5,7 @@ _version=5.3
 _patch=8
 version=${_version}.${_patch}
 revision=1
-tarball_url="https://ftpmirror.gnu.org/gnu/bash/bash-${_version}.tar.gz"
+tarball_url="https://ftp.gnu.org/gnu/bash/bash-${_version}.tar.gz"
 tarball_blake2b="82d1b54322bbd1e8c2a93380f1b2888a42a1d7186e504f41cee705a0fdd41463d8f20baa1755051e1396192f8ebd089524767d933a9e0b5fb76f2588601539bb"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
@@ -13,7 +13,7 @@ deps="core-libs ncurses readline"
 
 _get_patch() {
     TMP_PATCH=$(mktemp)
-    curl -Lo "${TMP_PATCH}" https://ftpmirror.gnu.org/gnu/bash/bash-${_version}-patches/bash$(echo "${_version}" | sed 's/\.//g')-$1
+    curl -Lo "${TMP_PATCH}" https://ftp.gnu.org/gnu/bash/bash-${_version}-patches/bash$(echo "${_version}" | sed 's/\.//g')-$1
     if ! b2sum "${TMP_PATCH}" | grep -q $2; then
         die "b2sum checksum fail for bash patch $1
         expected $2
@@ -50,7 +50,7 @@ configure() {
         --with-curses \
         --enable-readline \
         --without-bash-malloc \
-        --with-installed-readline="${sysroot}${prefix}/lib"
+        --with-installed-readline
 }
 
 build() {

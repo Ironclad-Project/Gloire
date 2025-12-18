@@ -6776,10 +6776,10 @@ index 0000000..f53b963
 +weak_alias (__getdents64, getdents64)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c
 new file mode 100644
-index 0000000..54c5392
+index 0000000..1931fb7
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,13 @@
 +/* Ironclad does not support getdomainname.  This stub returns ENOSYS
 +   without issuing any syscall to the kernel.  */
 +
@@ -6793,7 +6793,6 @@ index 0000000..54c5392
 +  return -1;
 +}
 +libc_hidden_def (getdomainname)
-+stub_warning (getdomainname)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getdtsz.c glibc-workdir/sysdeps/unix/sysv/ironclad/getdtsz.c
 new file mode 100644
 index 0000000..41deb99
@@ -11377,10 +11376,10 @@ index 0000000..6972e1d
 +weak_alias (__sbrk, sbrk)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c
 new file mode 100644
-index 0000000..6b08420
+index 0000000..0bc0e78
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,14 @@
 +/* Ironclad does not support sched_getparam.  This stub returns ENOSYS
 +   without issuing any syscall to the kernel.  */
 +
@@ -11395,7 +11394,6 @@ index 0000000..6b08420
 +}
 +libc_hidden_def (__sched_getparam)
 +weak_alias (__sched_getparam, sched_getparam)
-+stub_warning (sched_getparam)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_gets.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_gets.c
 new file mode 100644
 index 0000000..f22a429
@@ -11446,10 +11444,10 @@ index 0000000..c727ce1
 +weak_alias (__sched_get_priority_min, sched_get_priority_min)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c
 new file mode 100644
-index 0000000..640edf8
+index 0000000..91088d0
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,14 @@
 +/* Ironclad does not support sched_setparam.  This stub returns ENOSYS
 +   without issuing any syscall to the kernel.  */
 +
@@ -11464,7 +11462,6 @@ index 0000000..640edf8
 +}
 +libc_hidden_def (__sched_setparam)
 +weak_alias (__sched_setparam, sched_setparam)
-+stub_warning (sched_setparam)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_sets.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_sets.c
 new file mode 100644
 index 0000000..bcbcf44

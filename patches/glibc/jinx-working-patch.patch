@@ -416,6 +416,78 @@ index 83f6c87..3001d7d 100644
  extra-libs-others = $(extra-libs)
  
  # Helper objects for some tests.
+diff --git glibc-clean/nptl/allocatestack.c glibc-workdir/nptl/allocatestack.c
+index 800ca89..19456b9 100644
+--- glibc-clean/nptl/allocatestack.c
++++ glibc-workdir/nptl/allocatestack.c
+@@ -200,16 +200,17 @@ setup_stack_prot (char *mem, size_t size, struct pthread *pd,
+   char *guard = guard_position (mem, size, guardsize, pd, pagesize_m1);
+   if (atomic_load_relaxed (&allocate_stack_mode) == ALLOCATE_GUARD_MADV_GUARD)
+     {
++#ifdef MADV_GUARD_INSTALL
+       if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
+ 	{
+ 	  pd->stack_mode = ALLOCATE_GUARD_MADV_GUARD;
+ 	  return true;
+ 	}
+-
+-      /* If madvise fails it means the kernel does not support the guard
+-	 advise (we assume that the syscall is available, guard is page-aligned
+-	 and length is non negative).  The stack has already the expected
+-	 protection flags, so it just need to PROT_NONE the guard area.  */
++#endif
++      /* If madvise fails (or MADV_GUARD_INSTALL is not available) it means
++	 the kernel does not support the guard advise.  The stack has already
++	 the expected protection flags, so it just needs to PROT_NONE the
++	 guard area.  */
+       atomic_store_relaxed (&allocate_stack_mode, ALLOCATE_GUARD_PROT_NONE);
+       if (__mprotect (guard, guardsize, PROT_NONE) != 0)
+ 	return false;
+@@ -259,9 +260,12 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
+   if (guardsize > pd->guardsize)
+     {
+       char *guard = guard_position (mem, size, guardsize, pd, pagesize_m1);
++#ifdef MADV_GUARD_INSTALL
+       if (pd->stack_mode == ALLOCATE_GUARD_MADV_GUARD)
+ 	return __madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0;
+-      else if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
++      else
++#endif
++      if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
+ 	return __mprotect (guard, guardsize, PROT_NONE) == 0;
+     }
+   /* The current guard area is larger than the required one.  For
+@@ -282,6 +286,7 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
+   else if (pd->guardsize > guardsize)
+     {
+       size_t slacksize = pd->guardsize - guardsize;
++#ifdef MADV_GUARD_REMOVE
+       if (pd->stack_mode == ALLOCATE_GUARD_MADV_GUARD)
+ 	{
+ 	  void *slack =
+@@ -292,7 +297,9 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
+ #endif
+ 	  return __madvise (slack, slacksize, MADV_GUARD_REMOVE) == 0;
+ 	}
+-      else if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
++      else
++#endif
++      if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
+ 	{
+ 	  const int prot = stack_prot ();
+ #if _STACK_GROWS_DOWN
+@@ -495,9 +502,11 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
+ 
+ 	  /* Do madvise in case the tunable glibc.pthread.stack_hugetlb is
+ 	     set to 0, disabling hugetlb.  */
++#ifdef MADV_NOHUGEPAGE
+ 	  if (__glibc_unlikely (__nptl_stack_hugetlb == 0)
+ 	      && __madvise (mem, size, MADV_NOHUGEPAGE) != 0)
+ 	    return errno;
++#endif
+ 
+ 	  /* SIZE is guaranteed to be greater than zero.
+ 	     So we can never get a null pointer back from mmap.  */
 diff --git glibc-clean/nptl/descr.h glibc-workdir/nptl/descr.h
 index ada6867..4511659 100644
 --- glibc-clean/nptl/descr.h
@@ -1093,11 +1165,14 @@ index 0000000..5c668d2
 +weak_alias (__access, access)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/arch-fd_to_filename.h glibc-workdir/sysdeps/unix/sysv/ironclad/arch-fd_to_filename.h
 new file mode 100644
-index 0000000..5b656d6
+index 0000000..85521d1
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/arch-fd_to_filename.h
-@@ -0,0 +1 @@
-+#define FD_TO_FILENAME_PREFIX "/proc/self/fd/"
+@@ -0,0 +1,4 @@
++/* Ironclad does not have /proc or /dev/fd.  This path is intentionally
++   invalid so that operations like freopen(NULL, mode, stream) fail with
++   ENOENT rather than appearing to work with a nonexistent procfs.  */
++#define FD_TO_FILENAME_PREFIX "/UNSUPPORTED/fd/"
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/arch-fork.h glibc-workdir/sysdeps/unix/sysv/ironclad/arch-fork.h
 new file mode 100644
 index 0000000..8d91ef4
@@ -1414,10 +1489,10 @@ index 0000000..889c63f
 +#endif
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/errno.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/errno.h
 new file mode 100644
-index 0000000..d8b27a2
+index 0000000..084c46b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/errno.h
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,134 @@
 +#ifndef _BITS_ERRNO_H
 +#define _BITS_ERRNO_H 1
 +
@@ -1548,13 +1623,16 @@ index 0000000..d8b27a2
 +#define EBADRQC 1116
 +#define EPROGMISMATCH 1117
 +
++/* Note: mlibc defines EIEIO=1524152434 as a sentinel value, but including it
++   here would cause glibc's errlist array to become enormous.  Not defined.  */
++
 +#endif /* _BITS_ERRNO_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h
 new file mode 100644
-index 0000000..276956a
+index 0000000..5c1a740
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h
-@@ -0,0 +1,179 @@
+@@ -0,0 +1,156 @@
 +#ifndef _FCNTL_H
 +# error "Never include <bits/fcntl.h> directly; use <fcntl.h> instead."
 +#endif
@@ -1595,7 +1673,7 @@ index 0000000..276956a
 +
 +#define O_NDELAY	O_NONBLOCK
 +
-+/* Fcntl commands.  */
++/* Fcntl commands (matching mlibc abis/ironclad/fcntl.h).  */
 +#define F_DUPFD		1
 +#define F_DUPFD_CLOEXEC	2
 +#define F_GETFD		3
@@ -1608,8 +1686,11 @@ index 0000000..276956a
 +#define F_SETLK		10
 +#define F_SETLKW	11
 +#define F_DUPFD_CLOFORK	12	/* Ironclad-specific.  */
-+#define F_GETOWN	13
-+#define F_SETOWN	14
++/* Note: mlibc defines F_GETOWN=10, F_SETOWN=11 which conflict with F_SETLK/F_SETLKW.
++   These are marked as "stubbed" in mlibc and likely not implemented in the kernel.
++   We match mlibc's values for ABI compatibility.  */
++#define F_GETOWN	10
++#define F_SETOWN	11
 +#define F_GETLK64	F_GETLK
 +#define F_SETLK64	F_SETLK
 +#define F_SETLKW64	F_SETLKW
@@ -1639,21 +1720,16 @@ index 0000000..276956a
 +
 +/* AT_* flags for Ironclad - these have different values than Linux!
 +   Defining them here before io/fcntl.h ensures the correct values are used.
-+   io/fcntl.h wraps its definitions in #ifndef guards.  */
++   io/fcntl.h wraps its definitions in #ifndef guards.
++   Only constants defined in mlibc abis/ironclad/fcntl.h are included.  */
 +#ifdef __USE_ATFILE
-+# define AT_FDCWD		(-100)	/* Same as Linux.  */
++# define AT_FDCWD		(-100)
 +# define AT_SYMLINK_NOFOLLOW	2	/* Do not follow symbolic links.  */
 +# define AT_REMOVEDIR		500	/* Remove directory instead of file.  */
 +# define AT_SYMLINK_FOLLOW	0	/* Follow symbolic links.  */
 +# define AT_EACCESS		512	/* Test access for effective IDs.  */
 +# ifdef __USE_GNU
 +#  define AT_EMPTY_PATH		1	/* Allow empty relative pathname.  */
-+#  define AT_NO_AUTOMOUNT	0x800	/* Suppress terminal automount.  */
-+#  define AT_STATX_SYNC_TYPE	0x6000
-+#  define AT_STATX_SYNC_AS_STAT	0x0000
-+#  define AT_STATX_FORCE_SYNC	0x2000
-+#  define AT_STATX_DONT_SYNC	0x4000
-+#  define AT_RECURSIVE		0x8000	/* Apply to the entire subtree.  */
 +# endif
 +#endif
 +
@@ -1698,40 +1774,19 @@ index 0000000..276956a
 +#define O_FSYNC		O_SYNC
 +
 +#ifdef __USE_GNU
-+/* Flags for SYNC_FILE_RANGE.  */
-+# define SYNC_FILE_RANGE_WAIT_BEFORE	1
-+# define SYNC_FILE_RANGE_WRITE		2
-+# define SYNC_FILE_RANGE_WAIT_AFTER	4
-+# define SYNC_FILE_RANGE_WRITE_AND_WAIT	(SYNC_FILE_RANGE_WRITE		\
-+					 | SYNC_FILE_RANGE_WAIT_BEFORE	\
-+					 | SYNC_FILE_RANGE_WAIT_AFTER)
-+
-+/* Ironclad does not support splice/vmsplice, so SPLICE_F_* flags are not defined.  */
-+
-+/* Types of seals.  */
-+# define F_SEAL_SEAL	0x0001	/* Prevent further seals from being set.  */
++/* Types of seals (matching mlibc abis/ironclad/fcntl.h).  */
 +# define F_SEAL_SHRINK	0x0002	/* Prevent file from shrinking.  */
 +# define F_SEAL_GROW	0x0004	/* Prevent file from growing.  */
 +# define F_SEAL_WRITE	0x0008	/* Prevent writes.  */
-+# define F_SEAL_FUTURE_WRITE	0x0010	/* Prevent future writes.  */
-+# define F_SEAL_EXEC	0x0020	/* Prevent chmod modifying exec bits. */
++# define F_SEAL_SEAL	0x0010	/* Prevent further seals from being set.  */
 +
-+/* File handle structure.  */
-+struct file_handle
-+{
-+  unsigned int handle_bytes;
-+  int handle_type;
-+  /* File identifier.  */
-+  unsigned char f_handle[0];
-+};
-+
-+/* Maximum handle size (for now).  */
-+# define MAX_HANDLE_SZ	128
++/* Seal fcntl commands (from mlibc).  */
++# define F_ADD_SEALS	1033	/* Add seals to file.  */
++# define F_GET_SEALS	1034	/* Get seals of file.  */
 +#endif
 +
-+/* Ironclad does not support fallocate - no declaration provided.
-+   This allows vte and other programs to detect the missing function
-+   at configure time and use fallback code paths.  */
++/* Note: SYNC_FILE_RANGE_*, SPLICE_F_*, file_handle, MAX_HANDLE_SZ are not
++   defined because Ironclad/mlibc does not support them.  */
 +
 +#endif /* _BITS_FCNTL_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ioctls.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ioctls.h
@@ -2080,10 +2135,10 @@ index 0000000..f3848b2
 +#endif /* _BITS_LOCAL_LIM_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/mman.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/mman.h
 new file mode 100644
-index 0000000..a943c9a
+index 0000000..bb08ce7
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/mman.h
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,52 @@
 +#ifndef _SYS_MMAN_H
 +# error "Never include <bits/mman.h> directly; use <sys/mman.h> instead."
 +#endif
@@ -2118,48 +2173,22 @@ index 0000000..a943c9a
 +#define MCL_CURRENT	0x01	/* Lock all current mappings.  */
 +#define MCL_FUTURE	0x02	/* Lock all future mappings.  */
 +
-+/* POSIX madvise constants.  */
++/* POSIX madvise constants (matching mlibc).  */
 +#define POSIX_MADV_NORMAL	1
 +#define POSIX_MADV_SEQUENTIAL	2
 +#define POSIX_MADV_RANDOM	3
 +#define POSIX_MADV_DONTNEED	4
 +#define POSIX_MADV_WILLNEED	5
 +
-+/* Flags for madvise, which is emulated on top of POSIX */
-+#define MADV_NORMAL	0	/* No further special treatment.  */
-+#define MADV_RANDOM	1	/* Expect random page references.  */
-+#define MADV_SEQUENTIAL	2	/* Expect sequential page references.  */
-+#define MADV_WILLNEED	3	/* Will need these pages.  */
-+#define MADV_DONTNEED	4	/* Don't need these pages.  */
-+#define MADV_FREE	8	/* Free pages only if memory pressure.  */
-+#define MADV_REMOVE	9	/* Remove these pages.  */
-+#define MADV_DONTFORK	10	/* Don't inherit across fork.  */
-+#define MADV_DOFORK	11	/* Do inherit across fork.  */
-+#define MADV_MERGEABLE	12	/* KSM may merge identical pages.  */
-+#define MADV_UNMERGEABLE 13	/* KSM may not merge.  */
-+#define MADV_HUGEPAGE	14	/* Worth backing with hugepages.  */
-+#define MADV_NOHUGEPAGE	15	/* Not worth backing with hugepages.  */
-+#define MADV_DONTDUMP	16	/* Exclude from core dump.  */
-+#define MADV_DODUMP	17	/* Clear DONTDUMP flag.  */
-+#define MADV_WIPEONFORK	18	/* Zero memory on fork.  */
-+#define MADV_KEEPONFORK	19	/* Undo WIPEONFORK.  */
-+#define MADV_COLD	20	/* Deactivate these pages.  */
-+#define MADV_PAGEOUT	21	/* Reclaim these pages.  */
-+#define MADV_POPULATE_READ 22	/* Populate (prefault) to read.  */
-+#define MADV_POPULATE_WRITE 23	/* Populate (prefault) to write.  */
-+#define MADV_HWPOISON	24	/* Poison a page.  */
++/* BSD/Linux-style madvise constants - same values as POSIX_MADV_* on Ironclad.  */
++#define MADV_NORMAL	1
++#define MADV_SEQUENTIAL	2
++#define MADV_RANDOM	3
++#define MADV_DONTNEED	4
++#define MADV_WILLNEED	5
 +
-+/* mremap flags.  */
-+#define MREMAP_MAYMOVE	1
-+#define MREMAP_FIXED	2
-+#define MREMAP_DONTUNMAP 4
-+
-+/* mlock2 flags.  */
-+#define MLOCK_ONFAULT	1
-+
-+/* Guard page flags (for stack protection).  */
-+#define MADV_GUARD_INSTALL 102	/* Install guard pages.  */
-+#define MADV_GUARD_REMOVE  103	/* Remove guard pages.  */
++/* Note: MADV_HUGEPAGE, MADV_NOHUGEPAGE, MADV_GUARD_*, MREMAP_*, MLOCK_ONFAULT
++   are not defined - Ironclad does not support them.  */
 +
 +#endif /* _BITS_MMAN_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/param.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/param.h
@@ -2189,10 +2218,10 @@ index 0000000..729cbb1
 +#endif
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/poll.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/poll.h
 new file mode 100644
-index 0000000..3de2f02
+index 0000000..c5e30af
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/poll.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,31 @@
 +#ifndef _SYS_POLL_H
 +# error "Never use <bits/poll.h> directly; include <sys/poll.h> instead."
 +#endif
@@ -2223,10 +2252,7 @@ index 0000000..3de2f02
 +# define POLLRDBAND	0x400		/* Priority data may be read.  */
 +#endif
 +
-+#ifdef __USE_GNU
-+/* Extension: message available.  */
-+# define POLLMSG	0x800
-+#endif
++/* Note: POLLMSG is not defined - not in mlibc/Ironclad.  */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/posix_opt.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/posix_opt.h
 new file mode 100644
 index 0000000..b2bfc53
@@ -2435,10 +2461,10 @@ index 0000000..fac9f2d
 +#define PTHREAD_STACK_MIN	16384
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/resource.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/resource.h
 new file mode 100644
-index 0000000..8b3b3dc
+index 0000000..8da4e6b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/resource.h
-@@ -0,0 +1,119 @@
+@@ -0,0 +1,141 @@
 +#ifndef _SYS_RESOURCE_H
 +# error "Never use <bits/resource.h> directly; include <sys/resource.h> instead."
 +#endif
@@ -2449,7 +2475,7 @@ index 0000000..8b3b3dc
 +   Unlike Linux/generic glibc which uses enum values starting at 0,
 +   Ironclad uses explicit constants starting at 1.  */
 +
-+/* Kinds of resource limit.  */
++/* Kinds of resource limit (matching mlibc abis/ironclad/resource.h).  */
 +enum __rlimit_resource
 +  {
 +    /* Largest core file that can be created, in bytes.  */
@@ -2475,7 +2501,31 @@ index 0000000..8b3b3dc
 +    RLIMIT_AS = 7,
 +#define RLIMIT_AS	7
 +#define RLIMIT_VMEM	RLIMIT_AS
-+    RLIMIT_NLIMITS = 8,
++    /* Maximum bytes of memory that may be locked into RAM.  */
++    RLIMIT_MEMLOCK = 8,
++#define RLIMIT_MEMLOCK	8
++    /* Maximum resident set size.  */
++    RLIMIT_RSS = 9,
++#define RLIMIT_RSS	9
++    /* Maximum number of processes.  */
++    RLIMIT_NPROC = 10,
++#define RLIMIT_NPROC	10
++    /* Maximum number of file locks.  */
++    RLIMIT_LOCKS = 11,
++#define RLIMIT_LOCKS	11
++    /* Maximum number of pending signals.  */
++    RLIMIT_SIGPENDING = 12,
++#define RLIMIT_SIGPENDING	12
++    /* Maximum bytes in POSIX message queues.  */
++    RLIMIT_MSGQUEUE = 13,
++#define RLIMIT_MSGQUEUE	13
++    /* Maximum nice priority allowed to raise to.  */
++    RLIMIT_NICE = 14,
++#define RLIMIT_NICE	14
++    /* Maximum realtime priority allowed.  */
++    RLIMIT_RTPRIO = 15,
++#define RLIMIT_RTPRIO	15
++    RLIMIT_NLIMITS = 16,
 +    RLIM_NLIMITS = RLIMIT_NLIMITS
 +#define RLIMIT_NLIMITS	RLIMIT_NLIMITS
 +#define RLIM_NLIMITS	RLIMIT_NLIMITS
@@ -2553,10 +2603,8 @@ index 0000000..8b3b3dc
 +#define PRIO_PROCESS	1
 +    PRIO_PGRP = 2,		/* WHO is a process group ID.  */
 +#define PRIO_PGRP	2
-+    PRIO_USER = 3,		/* WHO is a user ID.  */
++    PRIO_USER = 3		/* WHO is a user ID.  */
 +#define PRIO_USER	3
-+    PRIO_THREAD = 4		/* WHO is a thread ID.  */
-+#define PRIO_THREAD	4
 +  };
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/sched.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/sched.h
 new file mode 100644
@@ -3239,10 +3287,10 @@ index 0000000..5b60ecd
 +#endif	/* bits/sockaddr.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/socket.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/socket.h
 new file mode 100644
-index 0000000..1e7c1f0
+index 0000000..0e8fc66
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/socket.h
-@@ -0,0 +1,296 @@
+@@ -0,0 +1,292 @@
 +#ifndef __BITS_SOCKET_H
 +#define __BITS_SOCKET_H
 +
@@ -3286,9 +3334,7 @@ index 0000000..1e7c1f0
 +#define PF_ALG		38	/* Algorithm sockets.  */
 +#define PF_MAX		46	/* For now..  */
 +
-+/* Compatibility aliases.  */
-+#define PF_FILE		PF_LOCAL /* Another non-standard name for PF_LOCAL.  */
-+#define PF_ROUTE	PF_NETLINK /* Alias to emulate 4.4BSD.  */
++/* Note: PF_FILE and PF_ROUTE are not defined - not in mlibc/Ironclad.  */
 +
 +/* Address families.  */
 +#define AF_INET		PF_INET
@@ -3310,17 +3356,15 @@ index 0000000..1e7c1f0
 +#define AF_ROSE		PF_ROSE
 +#define AF_TIPC		PF_TIPC
 +#define AF_ALG		PF_ALG
-+#define AF_FILE		PF_FILE
-+#define AF_ROUTE	PF_ROUTE
 +#define AF_MAX		PF_MAX
++/* Note: AF_FILE, AF_ROUTE, PF_FILE, PF_ROUTE not defined - not in mlibc.  */
 +
-+/* Socket level values.  */
++/* Socket level values (matching mlibc).  */
 +#define SOL_SOCKET	1
 +#define SOL_IPV6	41
 +#define SOL_PACKET	263
 +#define SOL_NETLINK	270
-+#define SOL_RAW		255
-+#define SOL_IP		0
++/* Note: SOL_RAW, SOL_IP not defined - not in mlibc/Ironclad.  */
 +
 +/* Socket options - Ironclad values.  */
 +#define SO_ACCEPTCONN	1
@@ -3760,7 +3804,7 @@ index 0000000..855d8ff
 +#define VTIME   10
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_cflag.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_cflag.h
 new file mode 100644
-index 0000000..acdc3e4
+index 0000000..cac7d55
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_cflag.h
 @@ -0,0 +1,23 @@
@@ -3785,7 +3829,7 @@ index 0000000..acdc3e4
 +
 +#ifdef __USE_MISC
 +# define CBAUD   0x100F
-+# define CRTSCTS 020000000000   /* Hardware flow control (RTS/CTS).  */
++/* Note: CRTSCTS is not defined - not in mlibc/Ironclad ABI.  */
 +#endif
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_iflag.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_iflag.h
 new file mode 100644
@@ -3813,10 +3857,10 @@ index 0000000..a06a0a3
 +#define PARMRK  0x0800
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_lflag.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_lflag.h
 new file mode 100644
-index 0000000..e139701
+index 0000000..815e3f2
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_lflag.h
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,18 @@
 +#ifndef _TERMIOS_H
 +# error "Never include <bits/termios-c_lflag.h> directly; use <termios.h> instead."
 +#endif
@@ -3833,19 +3877,14 @@ index 0000000..e139701
 +#define NOFLSH  0x0080
 +#define TOSTOP  0x0100
 +
-+#ifdef __USE_MISC
-+# define ECHOCTL 0x0200
-+# define ECHOPRT 0x0400
-+# define ECHOKE  0x0800
-+# define FLUSHO  0x1000
-+# define PENDIN  0x2000
-+#endif
++/* Note: ECHOCTL, ECHOPRT, ECHOKE, FLUSHO, PENDIN are not defined -
++   not in mlibc/Ironclad ABI.  */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_oflag.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_oflag.h
 new file mode 100644
-index 0000000..60f98ce
+index 0000000..b4c411b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/termios-c_oflag.h
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,42 @@
 +#ifndef _TERMIOS_H
 +# error "Never include <bits/termios-c_oflag.h> directly; use <termios.h> instead."
 +#endif
@@ -3875,9 +3914,7 @@ index 0000000..60f98ce
 +#define TAB1    0x0400
 +#define TAB2    0x0800
 +#define TAB3    0x0C00
-+#ifdef __USE_MISC
-+# define XTABS  TAB3
-+#endif
++/* Note: XTABS is not defined - not in mlibc/Ironclad ABI.  */
 +
 +#define BSDLY   0x1000
 +#define BS0     0x0000
@@ -7577,23 +7614,6 @@ index 0000000..68191ad
 +  *num_ifs = 0;
 +  *ifreqs = NULL;
 +}
-diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/include/asm/prctl.h glibc-workdir/sysdeps/unix/sysv/ironclad/include/asm/prctl.h
-new file mode 100644
-index 0000000..641085b
---- /dev/null
-+++ glibc-workdir/sysdeps/unix/sysv/ironclad/include/asm/prctl.h
-@@ -0,0 +1,11 @@
-+#ifndef _ASM_PRCTL_H
-+#define _ASM_PRCTL_H
-+
-+/* Ironclad uses different values than Linux for arch_prctl.
-+   Based on mlibc's Ironclad implementation.  */
-+#define ARCH_SET_FS	1
-+#define ARCH_GET_FS	2
-+#define ARCH_SET_GS	3
-+#define ARCH_GET_GS	4
-+
-+#endif /* _ASM_PRCTL_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/include/bits/pthread_stack_min-dynamic.h glibc-workdir/sysdeps/unix/sysv/ironclad/include/bits/pthread_stack_min-dynamic.h
 new file mode 100644
 index 0000000..a111f72
@@ -7628,20 +7648,6 @@ index 0000000..85177a6
 +#endif /* _ISOMAC  */
 +
 +#endif /* _SYS_SHM_H  */
-diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/include/sys/syscall.h glibc-workdir/sysdeps/unix/sysv/ironclad/include/sys/syscall.h
-new file mode 100644
-index 0000000..9092e42
---- /dev/null
-+++ glibc-workdir/sysdeps/unix/sysv/ironclad/include/sys/syscall.h
-@@ -0,0 +1,8 @@
-+#ifndef _SYSCALL_H
-+#define _SYSCALL_H
-+
-+/* Include the syscall numbers.
-+   Ironclad uses SYS_* naming convention for syscall numbers.  */
-+#include <arch-syscall.h>
-+
-+#endif /* _SYSCALL_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/internal-signals.h glibc-workdir/sysdeps/unix/sysv/ironclad/internal-signals.h
 new file mode 100644
 index 0000000..3f9a15c
@@ -9124,26 +9130,20 @@ index 0000000..2c73850
 +#endif	/* machine-sp.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/madvise.c glibc-workdir/sysdeps/unix/sysv/ironclad/madvise.c
 new file mode 100644
-index 0000000..f833f82
+index 0000000..61ec9f4
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/madvise.c
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,13 @@
 +#include <sys/mman.h>
 +#include <sysdep.h>
++
++/* On Ironclad, MADV_* and POSIX_MADV_* have the same values,
++   so no translation is needed.  */
 +
 +int
 +__madvise (void *addr, size_t len, int advice)
 +{
-+  int translated_advice = 0;
-+  switch (advice) {
-+    case MADV_NORMAL:     translated_advice = POSIX_MADV_NORMAL;     break;
-+    case MADV_SEQUENTIAL: translated_advice = POSIX_MADV_SEQUENTIAL; break;
-+    case MADV_RANDOM:     translated_advice = POSIX_MADV_RANDOM;     break;
-+    case MADV_DONTNEED:   translated_advice = POSIX_MADV_DONTNEED;   break;
-+    case MADV_WILLNEED:   translated_advice = POSIX_MADV_WILLNEED;   break;
-+    default: return -1;
-+  }
-+  return INLINE_SYSCALL_CALL (madvise, addr, len, translated_advice);
++  return INLINE_SYSCALL_CALL (madvise, addr, len, advice);
 +}
 +libc_hidden_def (__madvise)
 +weak_alias (__madvise, madvise)
@@ -13407,10 +13407,10 @@ index 0000000..8e7b67b
 +#endif /* _SYS_PTRACE_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sys/reboot.h glibc-workdir/sysdeps/unix/sysv/ironclad/sys/reboot.h
 new file mode 100644
-index 0000000..3e5d473
+index 0000000..6be5cd0
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sys/reboot.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +#ifndef _SYS_REBOOT_H
 +#define _SYS_REBOOT_H 1
 +
@@ -13418,13 +13418,14 @@ index 0000000..3e5d473
 +
 +__BEGIN_DECLS
 +
-+/* Ironclad reboot command values (from kernel userland-syscall.ads).  */
-+#define RB_HALT_SYSTEM   1  /* Halt system.  */
-+#define RB_POWER_OFF     2  /* Power off system.  */
-+#define RB_AUTOBOOT      3  /* Reboot system.  */
-+
-+/* Flag for error return behavior.  */
-+#define RB_ERROR_RET     1  /* Return error instead of halting on failure.  */
++/* Ironclad reboot command values (from mlibc abis/ironclad/reboot.h).  */
++#define RB_AUTOBOOT      0x01234567  /* Reboot system.  */
++#define RB_HALT_SYSTEM   0xcdef0123  /* Halt system.  */
++#define RB_POWER_OFF     0x4321fedc  /* Power off system.  */
++#define RB_ENABLE_CAD    0x89abcdef  /* Enable Ctrl-Alt-Del.  */
++#define RB_DISABLE_CAD   0           /* Disable Ctrl-Alt-Del.  */
++#define RB_SW_SUSPEND    0xd000fce2  /* Software suspend.  */
++#define RB_KEXEC         0x45584543  /* Kexec reboot.  */
 +
 +/* Reboot or halt the system.
 +   HOWTO specifies one of the RB_* values above.  */

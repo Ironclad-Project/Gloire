@@ -11160,10 +11160,10 @@ index 0000000..cddbc88
 +}
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/renameat.c glibc-workdir/sysdeps/unix/sysv/ironclad/renameat.c
 new file mode 100644
-index 0000000..3e91119
+index 0000000..c4ff50b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/renameat.c
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,28 @@
 +#include <errno.h>
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -11182,15 +11182,13 @@ index 0000000..3e91119
 +      return -1;
 +    }
 +
-+  /* Ironclad rename syscall technically takes 7 args with flags as the last,
-+     but x86-64 ABI only supports 6 register args.  The flags arg (always 0)
-+     is passed via the stack or ignored.  Use 6 args here.
-+     Compute path lengths first to avoid clobbering later arguments.  */
++  /* Compute path lengths first to avoid clobbering later arguments.  */
 +  size_t old_len = __builtin_strlen (old);
 +  size_t new_len = __builtin_strlen (new);
-+  /* Ironclad syscall is named 'rename' not 'renameat'.  */
++  /* Ironclad syscall is named 'rename' not 'renameat'.
++     Pass flags=0 as the 7th argument.  */
 +  return INLINE_SYSCALL_CALL (rename, olddirfd, old, old_len,
-+			      newdirfd, new, new_len);
++			      newdirfd, new, new_len, 0);
 +}
 +libc_hidden_def (__renameat)
 +weak_alias (__renameat, renameat)
@@ -15363,10 +15361,10 @@ index 0000000..ca662fe
 +libc_hidden_def (__syscall_error)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/sysdep.h glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/sysdep.h
 new file mode 100644
-index 0000000..515458f
+index 0000000..f55cdf6
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/sysdep.h
-@@ -0,0 +1,488 @@
+@@ -0,0 +1,537 @@
 +#ifndef _IRONCLAD_X86_64_SYSDEP_H
 +#define _IRONCLAD_X86_64_SYSDEP_H 1
 +
@@ -15537,6 +15535,8 @@ index 0000000..515458f
 +  INTERNAL_SYSCALL_NCS_5(number, a1, a2, a3, a4, a5)
 +#define __INTERNAL_SYSCALL_NCS_6(number, a1, a2, a3, a4, a5, a6) \
 +  INTERNAL_SYSCALL_NCS_6(number, a1, a2, a3, a4, a5, a6)
++#define __INTERNAL_SYSCALL_NCS_7(number, a1, a2, a3, a4, a5, a6, a7) \
++  INTERNAL_SYSCALL_NCS_7(number, a1, a2, a3, a4, a5, a6, a7)
 +
 +/* 0-2 args: rdx is not used as input, capture it as output for errno.
 +   Return -errno if errno is non-zero, otherwise return result.  */
@@ -15639,6 +15639,24 @@ index 0000000..515458f
 +    : "=a" (resultvar), "=d" (_err)					\
 +    : "0" (number), "D" ((long int) (a1)), "S" ((long int) (a2)),	\
 +      "d" ((long int) (a3)), "r" (_a4), "r" (_a5), "r" (_a6)		\
++    : "memory", "cc", "rcx", "r11");					\
++    _err != 0 ? -(long int)_err : (long int) resultvar;			\
++  })
++
++/* 7 args: r10 is used for arg7 on Ironclad.  */
++#define INTERNAL_SYSCALL_NCS_7(number, a1, a2, a3, a4, a5, a6, a7) \
++  ({									\
++    unsigned long int resultvar;					\
++    unsigned long int _err;						\
++    register long int _a4 asm ("r12") = (long int) (a4);		\
++    register long int _a5 asm ("r8") = (long int) (a5);			\
++    register long int _a6 asm ("r9") = (long int) (a6);			\
++    register long int _a7 asm ("r10") = (long int) (a7);		\
++    asm volatile (							\
++    "syscall\n\t"							\
++    : "=a" (resultvar), "=d" (_err)					\
++    : "0" (number), "D" ((long int) (a1)), "S" ((long int) (a2)),	\
++      "d" ((long int) (a3)), "r" (_a4), "r" (_a5), "r" (_a6), "r" (_a7)	\
 +    : "memory", "cc", "rcx", "r11");					\
 +    _err != 0 ? -(long int)_err : (long int) resultvar;			\
 +  })
@@ -15756,6 +15774,24 @@ index 0000000..515458f
 +    (long int) resultvar;						\
 +  })
 +
++#define INTERNAL_SYSCALL_NCS_ERR_7(number, err, a1, a2, a3, a4, a5, a6, a7) \
++  ({									\
++    unsigned long int resultvar;					\
++    unsigned long int _err;						\
++    register long int _a4 asm ("r12") = (long int) (a4);		\
++    register long int _a5 asm ("r8") = (long int) (a5);			\
++    register long int _a6 asm ("r9") = (long int) (a6);			\
++    register long int _a7 asm ("r10") = (long int) (a7);		\
++    asm volatile (							\
++    "syscall\n\t"							\
++    : "=a" (resultvar), "=d" (_err)					\
++    : "a" (number), "D" ((long int) (a1)), "S" ((long int) (a2)),	\
++      "d" ((long int) (a3)), "r" (_a4), "r" (_a5), "r" (_a6), "r" (_a7)	\
++    : "memory", "cc", "rcx", "r11");					\
++    err = _err;								\
++    (long int) resultvar;						\
++  })
++
 +#undef INTERNAL_SYSCALL
 +#define INTERNAL_SYSCALL(name, nr, args...) \
 +  INTERNAL_SYSCALL_NCS (SYS_##name, nr, args)
@@ -15814,6 +15850,15 @@ index 0000000..515458f
 +  LOAD_REGS_5
 +# define ASM_ARGS_6	ASM_ARGS_5, "r" (_a6)
 +
++/* NOTE: Ironclad uses r10 for 7th argument.  */
++# define LOAD_ARGS_7(a1, a2, a3, a4, a5, a6, a7)	\
++  long int __arg7 = (long int) (a7);			\
++  LOAD_ARGS_6 (a1, a2, a3, a4, a5, a6)
++# define LOAD_REGS_7					\
++  register long int _a7 asm ("r10") = __arg7;		\
++  LOAD_REGS_6
++# define ASM_ARGS_7	ASM_ARGS_6, "r" (_a7)
++
 +/* For C code: INLINE_SYSCALL_CALL macro.  */
 +#define INLINE_SYSCALL_CALL(...) \
 +  __INLINE_SYSCALL_DISP (__INLINE_SYSCALL, __VA_ARGS__)
@@ -15842,6 +15887,8 @@ index 0000000..515458f
 +  INLINE_SYSCALL (name, 5, a1, a2, a3, a4, a5)
 +#define __INLINE_SYSCALL6(name, a1, a2, a3, a4, a5, a6) \
 +  INLINE_SYSCALL (name, 6, a1, a2, a3, a4, a5, a6)
++#define __INLINE_SYSCALL7(name, a1, a2, a3, a4, a5, a6, a7) \
++  INLINE_SYSCALL (name, 7, a1, a2, a3, a4, a5, a6, a7)
 +
 +#endif /* __ASSEMBLER__ */
 +

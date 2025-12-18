@@ -146,7 +146,7 @@ cat << 'EOF' >> "$CONFIG_TEMP"
 /Gloire - Live TTY only
     protocol: ${PROTOCOL}
     path: ${KERNEL_PATH}
-    cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=console-multiuser /sbin/init" noaslr
+    cmdline: init=/bin/env rootuuid=123e4567-e89b-12d3-a456-426614174000  initargs="runlevel=console-multiuser /sbin/init"
 
 /Advanced options for Gloire
 EOF

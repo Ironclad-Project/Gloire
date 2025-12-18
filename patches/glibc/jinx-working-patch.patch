@@ -4684,7 +4684,7 @@ index 0000000..804c089
 +weak_alias (__chdir, chdir)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/check_fds.c glibc-workdir/sysdeps/unix/sysv/ironclad/check_fds.c
 new file mode 100644
-index 0000000..3a33431
+index 0000000..bdf1370
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/check_fds.c
 @@ -0,0 +1,73 @@
@@ -4757,9 +4757,9 @@ index 0000000..3a33431
 +     is really paranoid but some people actually are.  If /dev/null
 +     should happen to be a symlink to somewhere else and not the
 +     device commonly known as "/dev/null" we bail out.  */
-+  check_one_fd (STDIN_FILENO, O_WRONLY | O_NOFOLLOW);
-+  check_one_fd (STDOUT_FILENO, O_RDONLY | O_NOFOLLOW);
-+  check_one_fd (STDERR_FILENO, O_RDONLY | O_NOFOLLOW);
++  check_one_fd (STDIN_FILENO, O_RDONLY | O_NOFOLLOW);
++  check_one_fd (STDOUT_FILENO, O_WRONLY | O_NOFOLLOW);
++  check_one_fd (STDERR_FILENO, O_WRONLY | O_NOFOLLOW);
 +}
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/chmod.c glibc-workdir/sysdeps/unix/sysv/ironclad/chmod.c
 new file mode 100644

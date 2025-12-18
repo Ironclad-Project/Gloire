@@ -807,10 +807,10 @@ index 0000000..4d73196
 +unix/inet
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile
 new file mode 100644
-index 0000000..0ad5689
+index 0000000..9d16290
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,115 @@
 +# Makefile for Ironclad-specific glibc code.
 +
 +# Disable syscalls.list mechanism entirely for Ironclad.
@@ -873,6 +873,7 @@ index 0000000..0ad5689
 +  linux/fb.h \
 +  sys/mac.h \
 +  sys/mount.h \
++  sys/prctl.h \
 +  sys/ptrace.h \
 +  sys/reboot.h \
 +  sys/syscall.h \

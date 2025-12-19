@@ -5,7 +5,7 @@ JINX_DEBIAN_SNAPSHOT=20251202T083052Z
 JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext groff m4 make meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
 JINX_CMAKE_PLATFORM=build-support/Ironclad.cmake
 
-HOST_CFLAGS="-O2 -pipe -fstack-clash-protection -Wp,-D_FORTIFY_SOURCE=2"
+HOST_CFLAGS="-O2 -pipe -fstack-clash-protection -Wp,-D_FORTIFY_SOURCE=3"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
 HOST_LDFLAGS="-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now"
 

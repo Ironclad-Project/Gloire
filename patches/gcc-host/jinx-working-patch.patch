@@ -49,13 +49,12 @@ new file mode 100644
 index 0000000..eada791
 --- /dev/null
 +++ gcc-host-workdir/gcc/config/ironclad-gnu.h
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,15 @@
 +
 +#define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
 +  do						\
 +    {						\
 +	builtin_define ("__ironclad__");	\
-+	builtin_define ("__GLIBC__");		\
 +	builtin_define_std ("unix");		\
 +	builtin_assert ("system=unix");		\
 +	builtin_assert ("system=posix");	\

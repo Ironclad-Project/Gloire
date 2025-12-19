@@ -928,46 +928,28 @@ index 0000000..9d16290
 +
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/Versions glibc-workdir/sysdeps/unix/sysv/ironclad/Versions
 new file mode 100644
-index 0000000..23b187c
+index 0000000..0197936
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/Versions
-@@ -0,0 +1,51 @@
-+# Version definitions for Ironclad-specific symbols.
-+
+@@ -0,0 +1,33 @@
 +libc {
-+  GLIBC_2.2.5 {
-+    # Thread-safe errno location function - must be exported for programs to use.
++  GLIBC_2.42 {
++    # Thread-safe errno - only versioned in Linux/Hurd sysdeps.
 +    __errno_location;
 +    __h_errno_location;
 +
-+    # stat64 family - required for programs compiled with _FILE_OFFSET_BITS=64.
-+    stat64;
-+    lstat64;
-+    fstat64;
-+    fstatat64;
-+    __stat64;
-+    __lstat64;
-+    __fstat64;
-+    __fstatat64;
-+
-+    # Process tracing.
-+    ptrace;
-+
-+    # System reboot/power control.
-+    reboot;
-+
-+    # Filesystem mounting/unmounting.
-+    mount;
++    # Filesystem operations - only versioned in Linux sysdeps.
 +    umount;
-+    umount2;
-+  }
-+  GLIBC_2.30 {
-+    # Thread/process identification.
++    fallocate;
++    fallocate64;
++
++    # Process/thread operations - only versioned in Linux sysdeps.
 +    getdents64;
 +    gettid;
 +    tgkill;
-+  }
-+  GLIBC_2.42 {
++    prctl;
++    getrandom;
++
 +    # Ironclad MAC (Mandatory Access Control) API.
 +    get_mac_capabilities;
 +    set_mac_capabilities;
@@ -975,7 +957,7 @@ index 0000000..23b187c
 +    set_mac_enforcement;
 +  }
 +  GLIBC_PRIVATE {
-+    # Functions used in other libraries (NSS, etc.).
++    # Internal functions used by other parts of glibc.
 +    __open_nocancel;
 +    __read_nocancel;
 +    __pread64_nocancel;

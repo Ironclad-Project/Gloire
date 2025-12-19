@@ -34,7 +34,7 @@ index ee2dd15..24e88da 100644
   * Commands used by the non-CUSE TPMs
   *
 diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
-index 8c73867..f48f8ed 100644
+index 827ffa7..12698eb 100644
 --- qemu-clean/block/file-posix.c
 +++ qemu-workdir/block/file-posix.c
 @@ -125,6 +125,8 @@
@@ -46,6 +46,20 @@ index 8c73867..f48f8ed 100644
  /* Approximate O_DIRECT with O_DSYNC if O_DIRECT isn't available */
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
+diff --git qemu-clean/chardev/char-serial.c qemu-workdir/chardev/char-serial.c
+index 0a68b4b..a429e8f 100644
+--- qemu-clean/chardev/char-serial.c
++++ qemu-workdir/chardev/char-serial.c
+@@ -34,6 +34,9 @@
+ #else
+ #include <sys/ioctl.h>
+ #include <termios.h>
++#ifndef CRTSCTS
++#define CRTSCTS 0
++#endif
+ #include "chardev/char-fd.h"
+ #endif
+ 
 diff --git qemu-clean/configure qemu-workdir/configure
 index 274a778..db8b00f 100755
 --- qemu-clean/configure
@@ -80,7 +94,7 @@ index d63228e..62c57e1 100644
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
 diff --git qemu-clean/meson.build qemu-workdir/meson.build
-index 50c774a..ccfc242 100644
+index b7db736..3f753a5 100644
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
 @@ -903,7 +903,7 @@ if get_option('hvf').allowed()
@@ -92,7 +106,7 @@ index 50c774a..ccfc242 100644
    nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
    if nvmm.found()
      accelerators += 'CONFIG_NVMM'
-@@ -2561,6 +2561,7 @@ config_host_data.set('CONFIG_PASST', enable_passt)
+@@ -2562,6 +2562,7 @@ config_host_data.set('CONFIG_PASST', enable_passt)
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')
@@ -136,10 +150,10 @@ index 0307ffb..1cde105 100644
 -  description: 'Flat Device Tree manipulation',
 -)
 diff --git qemu-clean/target/i386/nvmm/nvmm-all.c qemu-workdir/target/i386/nvmm/nvmm-all.c
-index 92e3b8b..f6bf95e 100644
+index 533a0e9..094e720 100644
 --- qemu-clean/target/i386/nvmm/nvmm-all.c
 +++ qemu-workdir/target/i386/nvmm/nvmm-all.c
-@@ -984,7 +984,7 @@ nvmm_init_vcpu(CPUState *cpu)
+@@ -985,7 +985,7 @@ nvmm_init_vcpu(CPUState *cpu)
          }
      }
  

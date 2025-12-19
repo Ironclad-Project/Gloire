@@ -807,10 +807,10 @@ index 0000000..4d73196
 +unix/inet
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile
 new file mode 100644
-index 0000000..9d16290
+index 0000000..0ad5689
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/Makefile
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,114 @@
 +# Makefile for Ironclad-specific glibc code.
 +
 +# Disable syscalls.list mechanism entirely for Ironclad.
@@ -873,7 +873,6 @@ index 0000000..9d16290
 +  linux/fb.h \
 +  sys/mac.h \
 +  sys/mount.h \
-+  sys/prctl.h \
 +  sys/ptrace.h \
 +  sys/reboot.h \
 +  sys/syscall.h \
@@ -928,10 +927,10 @@ index 0000000..9d16290
 +
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/Versions glibc-workdir/sysdeps/unix/sysv/ironclad/Versions
 new file mode 100644
-index 0000000..0197936
+index 0000000..29442e6
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/Versions
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,32 @@
 +libc {
 +  GLIBC_2.42 {
 +    # Thread-safe errno - only versioned in Linux/Hurd sysdeps.
@@ -947,7 +946,6 @@ index 0000000..0197936
 +    getdents64;
 +    gettid;
 +    tgkill;
-+    prctl;
 +    getrandom;
 +
 +    # Ironclad MAC (Mandatory Access Control) API.
@@ -10271,7 +10269,7 @@ index 0000000..cba8081
 +libc_hidden_def (ppoll)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/prctl.c glibc-workdir/sysdeps/unix/sysv/ironclad/prctl.c
 new file mode 100644
-index 0000000..d03c85f
+index 0000000..f5de1a9
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/prctl.c
 @@ -0,0 +1,16 @@
@@ -10280,8 +10278,9 @@ index 0000000..d03c85f
 +#include <sys/prctl.h>
 +#include <sysdep.h>
 +
-+/* Ironclad does not support general prctl syscall.
-+   arch_prctl is handled separately for TLS setup.  */
++/* Ironclad does not support prctl syscall.
++   This internal stub exists only for glibc internal use (e.g., pthread names).
++   The prctl function is not exported to userland.  */
 +int
 +__prctl (int option, ...)
 +{
@@ -10290,7 +10289,6 @@ index 0000000..d03c85f
 +  return -1;
 +}
 +libc_hidden_def (__prctl)
-+weak_alias (__prctl, prctl)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/pread.c glibc-workdir/sysdeps/unix/sysv/ironclad/pread.c
 new file mode 100644
 index 0000000..333e684
@@ -13315,30 +13313,19 @@ index 0000000..829babc
 +#endif /* _SYS_MOUNT_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sys/prctl.h glibc-workdir/sysdeps/unix/sysv/ironclad/sys/prctl.h
 new file mode 100644
-index 0000000..a6401e6
+index 0000000..f02b038
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sys/prctl.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,11 @@
 +#ifndef _SYS_PRCTL_H
 +#define _SYS_PRCTL_H	1
 +
-+#include <features.h>
++/* Ironclad does not support prctl.  This header is not installed to userland.
++   It exists only for glibc internal use (pthread name functions).  */
 +
-+/* Ironclad does not support prctl - syscall returns ENOSYS.
-+   These minimal constants are provided for source compatibility only.
-+   Software should have fallback paths when prctl fails.  */
-+
-+/* Thread name operations - commonly used by pthread implementations.  */
++/* Thread name operations - used by glibc's pthread_{get,set}name_np.  */
 +#define PR_SET_NAME		15
 +#define PR_GET_NAME		16
-+
-+__BEGIN_DECLS
-+
-+/* Control process execution.
-+   Note: Returns ENOSYS on Ironclad - not supported.  */
-+extern int prctl (int __option, ...) __THROW;
-+
-+__END_DECLS
 +
 +#endif  /* sys/prctl.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sys/ptrace.h glibc-workdir/sysdeps/unix/sysv/ironclad/sys/ptrace.h

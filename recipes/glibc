@@ -12,6 +12,10 @@ prepare() {
 }
 
 configure() {
+    # glibc handles fortify internally via --enable-fortify-source.
+    # Remove any -D_FORTIFY_SOURCE from TARGET_CFLAGS to avoid conflicts.
+    TARGET_CFLAGS="${TARGET_CFLAGS//-Wp,-D_FORTIFY_SOURCE=?/}"
+
     echo "slibdir=${prefix}/lib" >> configparms
     echo "rtlddir=${prefix}/lib" >> configparms
     echo "sbindir=${prefix}/bin" >> configparms

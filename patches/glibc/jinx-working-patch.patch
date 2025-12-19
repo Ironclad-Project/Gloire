@@ -3141,7 +3141,7 @@ index 0000000..85e6acc
 +#endif
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/signum-arch.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/signum-arch.h
 new file mode 100644
-index 0000000..91fcd91
+index 0000000..7fa86b5
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/signum-arch.h
 @@ -0,0 +1,92 @@
@@ -3165,8 +3165,8 @@ index 0000000..91fcd91
 +#undef SIG_DFL
 +#undef SIG_IGN
 +#define SIG_ERR	((__sighandler_t) -1)	/* Error return.  */
-+#define SIG_DFL	((__sighandler_t) -2)	/* Default action.  */
-+#define SIG_IGN	((__sighandler_t) -3)	/* Ignore signal.  */
++#define SIG_IGN	((__sighandler_t) -2)	/* Ignore signal.  */
++#define SIG_DFL	((__sighandler_t) -3)	/* Default action.  */
 +
 +#undef SIGHUP
 +#undef SIGINT
@@ -3584,6 +3584,30 @@ index 0000000..d6255b0
 +#define SOCK_NONBLOCK (1 << 15)
 +#define SOCK_CLOEXEC  (1 << 16)
 +#define SOCK_CLOFORK  (1 << 17)
+diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ss_flags.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ss_flags.h
+new file mode 100644
+index 0000000..be8f34c
+--- /dev/null
++++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ss_flags.h
+@@ -0,0 +1,18 @@
++#ifndef _BITS_SS_FLAGS_H
++#define _BITS_SS_FLAGS_H 1
++
++#if !defined _SIGNAL_H && !defined _SYS_UCONTEXT_H
++# error "Never include this file directly.  Use <signal.h> instead"
++#endif
++
++/* Ironclad-specific values for ss_flags.
++   See Ironclad kernel source: userland-syscall.ads lines 1303-1304.  */
++enum
++{
++  SS_ONSTACK = 1,
++#define SS_ONSTACK	SS_ONSTACK
++  SS_DISABLE = 2
++#define SS_DISABLE	SS_DISABLE
++};
++
++#endif /* bits/ss_flags.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/stat.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/stat.h
 new file mode 100644
 index 0000000..7d44ab3

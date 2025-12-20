@@ -14938,12 +14938,11 @@ index 0000000..d882d52
 +ld=ld-ironclad-x86-64.so.2
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/Implies glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/Implies
 new file mode 100644
-index 0000000..a1a5f45
+index 0000000..caeca17
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/Implies
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,3 @@
 +# x86_64-specific Ironclad sysdeps includes
-+unix/sysv/ironclad
 +x86_64/nptl
 +x86/nptl
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/Versions glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/Versions

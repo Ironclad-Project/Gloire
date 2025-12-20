@@ -9248,10 +9248,10 @@ index 0000000..6debc59
 +libc_hidden_def (__mmap)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c
 new file mode 100644
-index 0000000..27a6186
+index 0000000..c3d8afc
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,150 @@
 +/* Ironclad does not support file-backed mmap for regular files.  When mmap
 +   is called with a file descriptor (non-anonymous mapping), we:
 +   1. First try kernel mmap directly - this works for device files
@@ -9301,11 +9301,10 @@ index 0000000..27a6186
 +     fallback write()-based I/O path.  */
 +  if (fd >= 0 && !(flags & MAP_ANONYMOUS))
 +    {
-+      /* First, try passing directly to the kernel - this works for devices. */
-+      int clean_flags = flags & (MAP_PRIVATE | MAP_SHARED | MAP_FIXED |
-+				 MAP_ANONYMOUS | MAP_NORESERVE);
++      /* Try passing directly to the kernel - this works for devices.
++         Pass flags directly like mlibc does - don't strip them.  */
 +      result = (void *) INTERNAL_SYSCALL_NCS_ERR (SYS_mmap, sc_err, 6,
-+						  addr, len, prot, clean_flags,
++						  addr, len, prot, flags,
 +						  fd, offset);
 +      if (sc_err == 0)
 +	return result;
@@ -9383,12 +9382,9 @@ index 0000000..27a6186
 +    }
 +
 +  /* Anonymous mapping or other case - pass through to kernel.
-+     Strip flags that Ironclad might not understand.  */
-+  int clean_flags = flags & (MAP_PRIVATE | MAP_SHARED | MAP_FIXED |
-+			     MAP_ANONYMOUS | MAP_NORESERVE);
-+
++     Pass flags directly like mlibc does.  */
 +  result = (void *) INTERNAL_SYSCALL_NCS_ERR (SYS_mmap, sc_err, 6,
-+					      addr, len, prot, clean_flags,
++					      addr, len, prot, flags,
 +					      (flags & MAP_ANONYMOUS) ? 0 : fd,
 +					      offset);
 +

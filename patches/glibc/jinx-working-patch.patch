@@ -15261,10 +15261,10 @@ index 0000000..1becfbf
 +PSEUDO_END (syscall)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/syscall_cancel.S glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/syscall_cancel.S
 new file mode 100644
-index 0000000..7f10086
+index 0000000..be0c084
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/syscall_cancel.S
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,68 @@
 +#include <sysdep.h>
 +#include <descr-const.h>
 +
@@ -15316,6 +15316,14 @@ index 0000000..7f10086
 +	mov    24(%rsp),%r9	/* arg6 -> r9 (adjusted for push).  */
 +	syscall
 +
++	/* Ironclad returns the error code in rdx (0 on success, errno on error).
++	   To maintain compatibility with glibc's error handling (which expects
++	   Linux-style -errno returns), we return -rdx when rdx is non-zero.  */
++	testq  %rdx,%rdx
++	jz     1f
++	negq   %rdx
++	movq   %rdx,%rax
++1:
 +	/* Restore r12.  */
 +	popq   %r12
 +	cfi_adjust_cfa_offset(-8)

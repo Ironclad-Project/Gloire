@@ -266,6 +266,19 @@ index 0cce828..fd9a62f 100644
    if (result < 0)
      return EOF;
  
+diff --git glibc-clean/libio/iolibio.h glibc-workdir/libio/iolibio.h
+index 9561833..b09835a 100644
+--- glibc-clean/libio/iolibio.h
++++ glibc-workdir/libio/iolibio.h
+@@ -57,7 +57,7 @@ extern int _IO_vsscanf (const char *, const char *, __gnuc_va_list) __THROW;
+   (_IO_seekoff_unlocked (__fp, __offset, __whence, _IOS_INPUT|_IOS_OUTPUT) \
+    == _IO_pos_BAD ? EOF : 0)
+ #define _IO_rewind(FILE) \
+-  (void) _IO_seekoff_unlocked (FILE, 0, 0, _IOS_INPUT|_IOS_OUTPUT)
++  (void) _IO_seekoff_unlocked (FILE, 0, SEEK_SET, _IOS_INPUT|_IOS_OUTPUT)
+ #define _IO_freopen(FILENAME, MODE, FP) \
+   (_IO_file_close_it (FP), \
+    _IO_file_fopen (FP, FILENAME, MODE, 1))
 diff --git glibc-clean/libio/libioP.h glibc-workdir/libio/libioP.h
 index 1e3d28b..28f37aa 100644
 --- glibc-clean/libio/libioP.h

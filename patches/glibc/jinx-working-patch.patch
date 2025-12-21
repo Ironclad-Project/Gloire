@@ -1268,10 +1268,10 @@ index 0000000..979a8b9
 +#endif /* _ASM_IOCTL_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/asm/ioctls.h glibc-workdir/sysdeps/unix/sysv/ironclad/asm/ioctls.h
 new file mode 100644
-index 0000000..84ad9a8
+index 0000000..985e9c2
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/asm/ioctls.h
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,101 @@
 +#ifndef _ASM_IOCTLS_H
 +#define _ASM_IOCTLS_H
 +
@@ -1322,7 +1322,7 @@ index 0000000..84ad9a8
 +#define TIOCCONS                 0x541D
 +#define TIOCGSERIAL              0x541E
 +#define TIOCSSERIAL              0x541F
-+#define TIOCPKT                  0x5420
++/* TIOCPKT (0x5420) - NOT SUPPORTED by Ironclad. */
 +#define FIONBIO                  0x5421
 +#define TIOCNOTTY                0x5422
 +#define TIOCSETD                 0x5423
@@ -1366,16 +1366,6 @@ index 0000000..84ad9a8
 +#define TIOCSERSETMULTI          0x545B
 +#define TIOCMIWAIT               0x545C
 +#define TIOCGICOUNT              0x545D
-+
-+/* TIOCPKT bits */
-+#define TIOCPKT_DATA             0
-+#define TIOCPKT_FLUSHREAD        1
-+#define TIOCPKT_FLUSHWRITE       2
-+#define TIOCPKT_STOP             4
-+#define TIOCPKT_START            8
-+#define TIOCPKT_NOSTOP           16
-+#define TIOCPKT_DOSTOP           32
-+#define TIOCPKT_IOCTL            64
 +
 +#define TIOCSER_TEMT             0x01
 +
@@ -1785,10 +1775,10 @@ index 0000000..5c1a740
 +#endif /* _BITS_FCNTL_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ioctls.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ioctls.h
 new file mode 100644
-index 0000000..696825e
+index 0000000..3a405fc
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ioctls.h
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,168 @@
 +#ifndef _SYS_IOCTL_H
 +# error "Never use <bits/ioctls.h> directly; include <sys/ioctl.h> instead."
 +#endif
@@ -1832,16 +1822,8 @@ index 0000000..696825e
 +#define TIOCCONS	0x541D
 +#define TIOCGSERIAL	0x541E
 +#define TIOCSSERIAL	0x541F
-+#define TIOCPKT		0x5420
-+/* TIOCPKT mode bits (for packet mode PTY master).  */
-+#define TIOCPKT_DATA		0
-+#define TIOCPKT_FLUSHREAD	1
-+#define TIOCPKT_FLUSHWRITE	2
-+#define TIOCPKT_STOP		4
-+#define TIOCPKT_START		8
-+#define TIOCPKT_NOSTOP		16
-+#define TIOCPKT_DOSTOP		32
-+#define TIOCPKT_IOCTL		64
++/* TIOCPKT (0x5420) - NOT SUPPORTED by Ironclad.
++   Intentionally undefined so VTE uses normal (non-packet) PTY read path.  */
 +#define FIONBIO		0x5421
 +#define TIOCNOTTY	0x5422
 +#define TIOCSETD	0x5423
@@ -7239,10 +7221,10 @@ index 0000000..33433e3
 +/* Ironclad is 64-bit only - getrlimit is provided by getrlimit64.c via strong_alias.  */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getrlimit64.c glibc-workdir/sysdeps/unix/sysv/ironclad/getrlimit64.c
 new file mode 100644
-index 0000000..36e7227
+index 0000000..40c6f72
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/getrlimit64.c
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,53 @@
 +#include <errno.h>
 +#include <sys/types.h>
 +#include <sysdep.h>
@@ -7258,13 +7240,34 @@ index 0000000..36e7227
 +#undef getrlimit
 +#undef __getrlimit
 +
++/* Default file descriptor limit when kernel returns unlimited.
++   Ironclad's default RLIMIT_NOFILE is Unsigned_64'Last (unlimited),
++   which breaks applications that iterate over fds without checking
++   for RLIM_INFINITY (e.g., GLib's fdwalk when /proc is unavailable).  */
++#define IRONCLAD_DEFAULT_NOFILE 1024
++
 +/* Put the soft and hard limits for RESOURCE in *RLIMITS.
 +   Returns 0 if successful, -1 if not (and sets errno).  */
 +int
 +__getrlimit64 (enum __rlimit_resource resource, struct rlimit64 *rlimits)
 +{
 +  /* Ironclad rlimit: resource, new_limit (NULL for get), old_limit.  */
-+  return INLINE_SYSCALL_CALL (rlimit, resource, NULL, rlimits);
++  int ret = INLINE_SYSCALL_CALL (rlimit, resource, NULL, rlimits);
++
++  /* For RLIMIT_NOFILE, clamp unlimited values to a sane default.
++     Many applications (GLib, etc.) iterate fds based on this limit
++     without checking for RLIM_INFINITY, causing hangs or ENFILE errors.  */
++  if (ret == 0 && resource == RLIMIT_NOFILE)
++    {
++      if (rlimits->rlim_cur == RLIM64_INFINITY
++	  || rlimits->rlim_cur > IRONCLAD_DEFAULT_NOFILE)
++	rlimits->rlim_cur = IRONCLAD_DEFAULT_NOFILE;
++      if (rlimits->rlim_max == RLIM64_INFINITY
++	  || rlimits->rlim_max > IRONCLAD_DEFAULT_NOFILE)
++	rlimits->rlim_max = IRONCLAD_DEFAULT_NOFILE;
++    }
++
++  return ret;
 +}
 +libc_hidden_def (__getrlimit64)
 +
@@ -7583,6 +7586,22 @@ index 0000000..5af5d9b
 +libc_hidden_def (__glob64)
 +versioned_symbol (libc, __glob64, glob64, GLIBC_2_27);
 +libc_hidden_ver (__glob64, glob64)
+diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/grantpt.c glibc-workdir/sysdeps/unix/sysv/ironclad/grantpt.c
+new file mode 100644
+index 0000000..3e68ae4
+--- /dev/null
++++ glibc-workdir/sysdeps/unix/sysv/ironclad/grantpt.c
+@@ -0,0 +1,10 @@
++#include <stdlib.h>
++
++/* Ironclad does not use permissions-based PTY access control.
++   grantpt is a no-op that always succeeds.  */
++int
++grantpt (int fd __attribute__ ((unused)))
++{
++  return 0;
++}
++libc_hidden_def (grantpt)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/ifaddrs.c glibc-workdir/sysdeps/unix/sysv/ironclad/ifaddrs.c
 new file mode 100644
 index 0000000..d1c1473
@@ -7871,13 +7890,15 @@ index 0000000..9e59366
 +#endif /* _INTERNAL_SIGSET_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c
 new file mode 100644
-index 0000000..af789f9
+index 0000000..8403776
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,30 @@
 +#include <stdarg.h>
 +#include <sys/ioctl.h>
 +#include <sysdep.h>
++
++/* Pass everything through to the kernel like mlibc does.  */
 +
 +int
 +__ioctl (int fd, unsigned long int request, ...)
@@ -10069,10 +10090,10 @@ index 0000000..3c04ee4
 +}
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/openpty.c glibc-workdir/sysdeps/unix/sysv/ironclad/openpty.c
 new file mode 100644
-index 0000000..aa8bd1b
+index 0000000..01469c5
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/openpty.c
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,83 @@
 +/* Ironclad has a single openpty syscall that returns both master and
 +   slave file descriptors.  This is simpler than the POSIX approach
 +   of posix_openpt + grantpt + unlockpt + ptsname + open.  */
@@ -10113,6 +10134,8 @@ index 0000000..aa8bd1b
 +      default_termios.c_cc[VERASE] = 127;        /* Delete */
 +      default_termios.c_cc[VEOF] = 'D' - '@';    /* Ctrl-D */
 +      default_termios.c_cc[VSUSP] = 'Z' - '@';   /* Ctrl-Z */
++      default_termios.c_ibaud = 38400;
++      default_termios.c_obaud = 38400;
 +      __tcsetattr (*pptmx, TCSANOW, &default_termios);
 +    }
 +  else
@@ -11110,10 +11133,10 @@ index 0000000..1bcbf19
 +weak_alias (__libc_recvfrom, __recvfrom)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/recvmsg.c glibc-workdir/sysdeps/unix/sysv/ironclad/recvmsg.c
 new file mode 100644
-index 0000000..07a0ee3
+index 0000000..93e8ef9
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/recvmsg.c
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,45 @@
 +#include <errno.h>
 +#include <sys/socket.h>
 +#include <sysdep-cancel.h>
@@ -11126,13 +11149,15 @@ index 0000000..07a0ee3
 +{
 +  ssize_t total = 0;
 +
-+  /* Receive control message if buffer is provided.  */
++  /* Receive control message if buffer is provided.
++     Note: Ironclad's recvsockctl may return an error if no credentials are
++     available (e.g., SO_PASSCRED not set).  We ignore errors here to match
++     mlibc behavior - the control data simply won't be filled in.  */
 +  if (msg->msg_control != NULL && msg->msg_controllen > 0)
 +    {
-+      int ret = INLINE_SYSCALL_CALL (recvsockctl, fd, msg->msg_control,
-+                                     msg->msg_controllen);
-+      if (ret < 0)
-+        return -1;
++      INLINE_SYSCALL_CALL (recvsockctl, fd, msg->msg_control,
++                           msg->msg_controllen);
++      /* Ignore errors - no control data is not fatal.  */
 +    }
 +
 +  /* Receive into each iovec buffer using recvfrom.  */

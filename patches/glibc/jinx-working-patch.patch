@@ -4929,10 +4929,10 @@ index 0000000..c07edee
 +weak_alias (__clock_settime, clock_settime)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/clone-internal.c glibc-workdir/sysdeps/unix/sysv/ironclad/clone-internal.c
 new file mode 100644
-index 0000000..3e20d84
+index 0000000..ce31f39
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/clone-internal.c
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,58 @@
 +#include <sysdep.h>
 +#include <stddef.h>
 +#include <errno.h>
@@ -4963,6 +4963,14 @@ index 0000000..3e20d84
 +		 cast_to_pointer (cl_args->parent_tid),
 +		 cast_to_pointer (cl_args->tls),
 +		 cast_to_pointer (cl_args->child_tid));
++
++  /* Ironclad's create_thread syscall returns the new thread's TID in the
++     return value (rax), unlike Linux which writes it to *parent_tid via
++     CLONE_PARENT_SETTID.  We need to manually store the TID so that
++     pd->tid is properly initialized for the new thread.  */
++  if (ret > 0 && cl_args->parent_tid != 0)
++    *(pid_t *) cast_to_pointer (cl_args->parent_tid) = ret;
++
 +  return ret;
 +}
 +

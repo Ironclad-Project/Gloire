@@ -11,3 +11,46 @@ index a2045e5..f6c9e32 100644
  )
  
  lib_sources = [
+diff --git dconf-clean/shm/dconf-shm.c dconf-workdir/shm/dconf-shm.c
+index dbde759..2fe9410 100644
+--- dconf-clean/shm/dconf-shm.c
++++ dconf-workdir/shm/dconf-shm.c
+@@ -49,6 +49,11 @@ dconf_shm_close (guint8 *shm)
+ guint8 *
+ dconf_shm_open (const gchar *name)
+ {
++  /* Ironclad: file mmap not supported, return NULL.
++   * dconf handles this gracefully - clients re-read the database. */
++  (void)name;
++  return NULL;
++#if 0
+   const gchar *shmdir;
+   gchar *filename;
+   void *memory;
+@@ -98,6 +103,7 @@ dconf_shm_open (const gchar *name)
+   close (fd);
+ 
+   return memory;
++#endif
+ }
+ 
+ void
+@@ -127,6 +133,10 @@ dconf_shm_flag (const gchar *name)
+        */
+       if (dconf_shm_pwrite (fd, "", 1, 1) == 1)
+         {
++          /* Ironclad: file mmap not supported, use pwrite() instead. */
++          guint8 flag = 1;
++          dconf_shm_pwrite (fd, &flag, 1, 0);
++#if 0
+           guint8 *shm;
+ 
+           /* It would have been easier for us to do write(fd, "\1", 1);
+@@ -144,6 +154,7 @@ dconf_shm_flag (const gchar *name)
+           *shm = 1;
+ 
+           munmap (shm, 1);
++#endif
+         }
+ 
+       close (fd);

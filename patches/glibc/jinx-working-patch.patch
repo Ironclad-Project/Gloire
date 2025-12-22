@@ -7152,10 +7152,10 @@ index 0000000..802f5d8
 +#endif
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getrandom.c glibc-workdir/sysdeps/unix/sysv/ironclad/getrandom.c
 new file mode 100644
-index 0000000..f22f305
+index 0000000..afcfe34
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/getrandom.c
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,61 @@
 +#include <sys/random.h>
 +#include <errno.h>
 +#include <unistd.h>
@@ -7190,9 +7190,14 @@ index 0000000..f22f305
 +__getrandom_nocancel (void *buffer, size_t length, unsigned int flags)
 +{
 +  /* Ironclad uses getentropy syscall (2 args) instead of getrandom (3 args).
-+     Flags are ignored since getentropy doesn't support them.  */
++     Flags are ignored since getentropy doesn't support them.
++     Ironclad's getentropy returns 0 on success, but glibc expects the
++     number of bytes read (like Linux's getrandom).  */
 +  (void) flags;
-+  return INLINE_SYSCALL_CALL (getentropy, buffer, length);
++  int ret = INLINE_SYSCALL_CALL (getentropy, buffer, length);
++  if (ret == 0)
++    return length;
++  return ret;
 +}
 +
 +/* Write up to LENGTH bytes of randomness starting at BUFFER.

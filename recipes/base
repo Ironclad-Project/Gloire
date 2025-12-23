@@ -3,6 +3,6 @@
 name=base
 skip_pkg_check=yes
 version=0.0
-revision=8
+revision=9
 deps="base-files bash bzip2 coreutils epoch findutils gawk gcon gmp grep gzip
-ironclad mpc mpfr tzdata util-ironclad xz xbps pciutils"
+ironclad tzdata util-ironclad xz xbps pciutils sed"

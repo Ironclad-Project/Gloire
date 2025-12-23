@@ -11447,7 +11447,7 @@ index 0000000..0bc0e78
 +weak_alias (__sched_getparam, sched_getparam)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_gets.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_gets.c
 new file mode 100644
-index 0000000..f22a429
+index 0000000..579ec6c
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_gets.c
 @@ -0,0 +1,10 @@
@@ -11457,13 +11457,13 @@ index 0000000..f22a429
 +int
 +__sched_getscheduler (pid_t pid)
 +{
-+  return INLINE_SYSCALL_CALL (get_scheduler, pid);
++  return INLINE_SYSCALL_CALL (sched_getscheduler, pid);
 +}
 +libc_hidden_def (__sched_getscheduler)
 +weak_alias (__sched_getscheduler, sched_getscheduler)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primax.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primax.c
 new file mode 100644
-index 0000000..767c4d1
+index 0000000..c8e8e3a
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primax.c
 @@ -0,0 +1,10 @@
@@ -11473,13 +11473,13 @@ index 0000000..767c4d1
 +int
 +__sched_get_priority_max (int algorithm)
 +{
-+  return INLINE_SYSCALL_CALL (get_max_prio, algorithm);
++  return INLINE_SYSCALL_CALL (get_priority_limits, algorithm, 1);
 +}
 +libc_hidden_def (__sched_get_priority_max)
 +weak_alias (__sched_get_priority_max, sched_get_priority_max)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primin.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primin.c
 new file mode 100644
-index 0000000..c727ce1
+index 0000000..e53abe3
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_primin.c
 @@ -0,0 +1,10 @@
@@ -11489,7 +11489,7 @@ index 0000000..c727ce1
 +int
 +__sched_get_priority_min (int algorithm)
 +{
-+  return INLINE_SYSCALL_CALL (get_min_prio, algorithm);
++  return INLINE_SYSCALL_CALL (get_priority_limits, algorithm, 0);
 +}
 +libc_hidden_def (__sched_get_priority_min)
 +weak_alias (__sched_get_priority_min, sched_get_priority_min)
@@ -11515,7 +11515,7 @@ index 0000000..91088d0
 +weak_alias (__sched_setparam, sched_setparam)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_sets.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_sets.c
 new file mode 100644
-index 0000000..bcbcf44
+index 0000000..198dd9b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_sets.c
 @@ -0,0 +1,10 @@
@@ -11525,7 +11525,7 @@ index 0000000..bcbcf44
 +int
 +__sched_setscheduler (pid_t pid, int policy, const struct sched_param *param)
 +{
-+  return INLINE_SYSCALL_CALL (set_scheduler, pid, policy, param);
++  return INLINE_SYSCALL_CALL (sched_setscheduler, pid, policy, param);
 +}
 +libc_hidden_def (__sched_setscheduler)
 +weak_alias (__sched_setscheduler, sched_setscheduler)
@@ -14798,10 +14798,10 @@ index 0000000..d03d0d3
 +weak_alias (__writev, writev)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/64/arch-syscall.h glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/64/arch-syscall.h
 new file mode 100644
-index 0000000..2bcbfc9
+index 0000000..2bd3cea
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/64/arch-syscall.h
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,159 @@
 +#ifndef _ARCH_SYSCALL_H
 +#define _ARCH_SYSCALL_H
 +
@@ -14830,14 +14830,14 @@ index 0000000..2bcbfc9
 +#define SYS_chdir                    19
 +#define SYS_ioctl                    20
 +#define SYS_sched_yield              21
-+#define SYS_get_min_prio             22
++#define SYS_get_priority_limits      22
 +#define SYS_pipe                     23
 +#define SYS_getuid                   24
 +#define SYS_rename                   25
 +#define SYS_listprocs                26
 +#define SYS_getsid                   27
 +#define SYS_gettid                   28
-+#define SYS_get_max_prio             29
++/* 29 is unused */
 +#define SYS_fcntl                    30
 +#define SYS_exit_thread              31
 +#define SYS_getentropy               32
@@ -14885,8 +14885,8 @@ index 0000000..2bcbfc9
 +#define SYS_sendto                   74
 +#define SYS_config_netinter          75
 +#define SYS_utimes                   76
-+#define SYS_get_scheduler            77
-+#define SYS_set_scheduler            78
++#define SYS_sched_getscheduler       77
++#define SYS_sched_setscheduler       78
 +#define SYS_sigprocmask              79
 +#define SYS_sigaction                80
 +#define SYS_send_signal              81
@@ -14956,9 +14956,6 @@ index 0000000..2bcbfc9
 +/* Thread exit - Linux exit_group terminates all threads, Ironclad
 +   exit_thread terminates just the current thread (correct for pthread).  */
 +#define SYS_exit_group              SYS_exit_thread
-+
-+/* Scheduler syscall used by nptl/pthread_create.c */
-+#define SYS_sched_setscheduler      SYS_set_scheduler
 +
 +/* __NR_* alias for tls.h which uses __NR_arch_prctl directly in inline asm.  */
 +#define __NR_arch_prctl             SYS_arch_prctl

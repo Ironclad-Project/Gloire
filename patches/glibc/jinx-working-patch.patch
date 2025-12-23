@@ -11427,21 +11427,25 @@ index 0000000..6972e1d
 +weak_alias (__sbrk, sbrk)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c
 new file mode 100644
-index 0000000..0bc0e78
+index 0000000..0186234
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_getp.c
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,18 @@
 +/* Ironclad does not support sched_getparam.  This stub returns ENOSYS
 +   without issuing any syscall to the kernel.  */
 +
-+#include <errno.h>
 +#include <sched.h>
++#include <sysdep.h>
 +
 +int
 +__sched_getparam (pid_t pid, struct sched_param *param)
 +{
-+  __set_errno (ENOSYS);
-+  return -1;
++  int ret = INLINE_SYSCALL_CALL (sched_getscheduler, pid, param);
++  if (ret) {
++    return 0;
++  } else {
++    return -1;
++  }
 +}
 +libc_hidden_def (__sched_getparam)
 +weak_alias (__sched_getparam, sched_getparam)
@@ -11495,21 +11499,26 @@ index 0000000..e53abe3
 +weak_alias (__sched_get_priority_min, sched_get_priority_min)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c
 new file mode 100644
-index 0000000..91088d0
+index 0000000..1b5776e
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/sched_setp.c
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,19 @@
 +/* Ironclad does not support sched_setparam.  This stub returns ENOSYS
 +   without issuing any syscall to the kernel.  */
 +
-+#include <errno.h>
 +#include <sched.h>
++#include <sysdep.h>
 +
 +int
 +__sched_setparam (pid_t pid, const struct sched_param *param)
 +{
-+  __set_errno (ENOSYS);
-+  return -1;
++  struct sched_param old_param;
++  int policy = INLINE_SYSCALL_CALL (sched_getscheduler, pid, &old_param);
++  if (policy < 0) {
++    return -1;
++  }
++
++  return INLINE_SYSCALL_CALL (sched_setscheduler, pid, policy, param);
 +}
 +libc_hidden_def (__sched_setparam)
 +weak_alias (__sched_setparam, sched_setparam)

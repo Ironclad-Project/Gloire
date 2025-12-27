@@ -9183,10 +9183,10 @@ index 0000000..6debc59
 +libc_hidden_def (__mmap)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c
 new file mode 100644
-index 0000000..c3d8afc
+index 0000000..4474b69
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/mmap64.c
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,25 @@
 +/* Ironclad does not support file-backed mmap for regular files.  When mmap
 +   is called with a file descriptor (non-anonymous mapping), we:
 +   1. First try kernel mmap directly - this works for device files
@@ -9201,135 +9201,10 @@ index 0000000..c3d8afc
 +#include <sys/mman.h>
 +#include <sysdep.h>
 +
-+/* Ironclad read syscall has 5 args: (fd, buf, count, offset, flag)
-+   flag=0 for normal read, flag=1 for pread behavior.  */
-+static ssize_t
-+mmap_pread (int fd, void *buf, size_t count, off64_t offset)
-+{
-+  unsigned long int sc_err;
-+  ssize_t ret;
-+
-+  /* Use Ironclad's read syscall with flag=1 for pread behavior.  */
-+  ret = INTERNAL_SYSCALL_NCS_ERR (SYS_read, sc_err, 5,
-+				  fd, buf, count, offset, 1);
-+  if (sc_err != 0)
-+    return -(long)sc_err;  /* Return negative errno on error.  */
-+  return ret;
-+}
-+
 +void *
 +__mmap64 (void *addr, size_t len, int prot, int flags, int fd, off64_t offset)
 +{
-+  unsigned long int sc_err;
-+  void *result;
-+
-+  /* Check if this is a file-backed mapping request (not anonymous).
-+     Ironclad doesn't support file-backed mmap for regular files, but it
-+     DOES support mmap for device files (framebuffer, etc.).
-+
-+     Strategy: Try the kernel mmap first. If it succeeds (device file),
-+     great. If it fails, fall back to emulation (regular file).
-+
-+     IMPORTANT: For MAP_SHARED with write permissions on regular files,
-+     we MUST fail because our emulation is read-only - writes would be
-+     lost on munmap. This forces programs like BFD/binutils to use their
-+     fallback write()-based I/O path.  */
-+  if (fd >= 0 && !(flags & MAP_ANONYMOUS))
-+    {
-+      /* Try passing directly to the kernel - this works for devices.
-+         Pass flags directly like mlibc does - don't strip them.  */
-+      result = (void *) INTERNAL_SYSCALL_NCS_ERR (SYS_mmap, sc_err, 6,
-+						  addr, len, prot, flags,
-+						  fd, offset);
-+      if (sc_err == 0)
-+	return result;
-+
-+      /* Kernel mmap failed - this is a regular file mapping.
-+         Ironclad doesn't support this natively.
-+
-+         For MAP_SHARED with write permissions, we cannot safely emulate
-+         because writes would not be persisted to the file. Return an error
-+         to force the caller to use write()-based I/O instead.  */
-+      if ((flags & MAP_SHARED) && (prot & PROT_WRITE))
-+	{
-+	  __set_errno (ENOTSUP);
-+	  return MAP_FAILED;
-+	}
-+
-+      /* For read-only or MAP_PRIVATE mappings, we can emulate by:
-+         1. Allocating anonymous memory with READ|WRITE to copy data in
-+         2. Reading the file contents
-+         3. Trying to mprotect to the requested permissions  */
-+      int anon_flags = MAP_ANONYMOUS | MAP_PRIVATE;
-+      if (flags & MAP_FIXED)
-+	anon_flags |= MAP_FIXED;
-+
-+      /* Allocate with READ|WRITE to allow copying data in.  */
-+      result = (void *) INTERNAL_SYSCALL_NCS_ERR (SYS_mmap, sc_err, 6,
-+						  addr, len,
-+						  PROT_READ | PROT_WRITE,
-+						  anon_flags, 0, 0);
-+
-+      if (sc_err != 0)
-+	{
-+	  __set_errno (sc_err);
-+	  return MAP_FAILED;
-+	}
-+
-+      /* Read the file contents into the allocated memory.  */
-+      if (len > 0)
-+	{
-+	  size_t total_read = 0;
-+	  char *buf = (char *) result;
-+
-+	  while (total_read < len)
-+	    {
-+	      ssize_t nread = mmap_pread (fd, buf + total_read,
-+					  len - total_read,
-+					  offset + total_read);
-+	      if (nread < 0)
-+		{
-+		  /* Read failed, unmap the memory and return error.  */
-+		  INTERNAL_SYSCALL_NCS_ERR (SYS_munmap, sc_err, 2, result, len);
-+		  __set_errno (-nread);
-+		  return MAP_FAILED;
-+		}
-+	      if (nread == 0)
-+		{
-+		  /* End of file - zero the rest.  */
-+		  memset (buf + total_read, 0, len - total_read);
-+		  break;
-+		}
-+	      total_read += nread;
-+	    }
-+	}
-+
-+      /* Try to set the requested protection.  This may fail on Ironclad
-+         if W^X enforcement prevents transitioning from WRITE to EXEC.
-+         If mprotect fails, we continue anyway - caller may handle it.  */
-+      if (prot != (PROT_READ | PROT_WRITE))
-+	{
-+	  __mprotect (result, len, prot);
-+	  /* Ignore mprotect errors - W^X may prevent this.  */
-+	}
-+
-+      return result;
-+    }
-+
-+  /* Anonymous mapping or other case - pass through to kernel.
-+     Pass flags directly like mlibc does.  */
-+  result = (void *) INTERNAL_SYSCALL_NCS_ERR (SYS_mmap, sc_err, 6,
-+					      addr, len, prot, flags,
-+					      (flags & MAP_ANONYMOUS) ? 0 : fd,
-+					      offset);
-+
-+  if (sc_err != 0)
-+    {
-+      __set_errno (sc_err);
-+      return MAP_FAILED;
-+    }
-+
-+  return result;
++  return (void *) INLINE_SYSCALL_CALL (mmap, addr, len, prot, flags, fd, offset);
 +}
 +
 +weak_alias (__mmap64, mmap64)

@@ -46,7 +46,7 @@ index 0000000..b3385f4
 +MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-ironclad-gnux32)
 diff --git gcc-host-workdir/gcc/config/ironclad-gnu.h gcc-host-workdir/gcc/config/ironclad-gnu.h
 new file mode 100644
-index 0000000..eada791
+index 0000000..fa37434
 --- /dev/null
 +++ gcc-host-workdir/gcc/config/ironclad-gnu.h
 @@ -0,0 +1,15 @@
@@ -65,17 +65,18 @@ index 0000000..eada791
 +#define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
 +#define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64
 +#define GNU_USER_DYNAMIC_LINKERX32     GLIBC_DYNAMIC_LINKERX32
-diff --git gcc-host-workdir/gcc/config/riscv/ironclad.h gcc-host-workdir/gcc/config/riscv/ironclad.h
+diff --git gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h
 new file mode 100644
-index 0000000..cb889e8
+index 0000000..2a6d09e
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/riscv/ironclad.h
-@@ -0,0 +1,45 @@
-+#undef TARGET_IRONCLAD
-+#define TARGET_IRONCLAD 1
++++ gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h
+@@ -0,0 +1,28 @@
++#define TARGET_OS_CPP_BUILTINS()	\
++  do {					\
++    GNU_USER_TARGET_OS_CPP_BUILTINS();	\
++  } while (0)
 +
-+#undef LIB_SPEC
-+#define LIB_SPEC "-lc"
++#define GLIBC_DYNAMIC_LINKER "/lib/ld-ironclad-riscv64.so.2"
 +
 +#define LD_EMUL_SUFFIX \
 +  "%{mabi=lp64d:}" \
@@ -85,37 +86,29 @@ index 0000000..cb889e8
 +  "%{mabi=ilp32f:_ilp32f}" \
 +  "%{mabi=ilp32:_ilp32}"
 +
-+#define GNU_USER_LINK_EMULATION "elf64lriscv"
-+#define GNU_USER_DYNAMIC_LINKER "/usr/lib/ld-ironclad-riscv64.so.1"
++#define LINK_SPEC \
++  "-melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " " \
++  "%{mno-relax:--no-relax} " \
++  "%{mbig-endian:-EB} " \
++  "%{mlittle-endian:-EL} " \
++  "%{shared} " \
++  "%{!shared: " \
++    "%{!static: " \
++      "%{!static-pie: " \
++        "%{rdynamic:-export-dynamic} " \
++        "-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} " \
++    "%{static:-static} " \
++    "%{static-pie:-static -pie --no-dynamic-linker -z text}}"
+diff --git gcc-host-workdir/gcc/config/riscv/t-ironclad gcc-host-workdir/gcc/config/riscv/t-ironclad
+new file mode 100644
+index 0000000..9ca91e1
+--- /dev/null
++++ gcc-host-workdir/gcc/config/riscv/t-ironclad
+@@ -0,0 +1,4 @@
++# Ironclad uses /lib for all libraries (no /lib64).
 +
-+#define LINK_SPEC "\
-+-melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " \
-+%{mno-relax:--no-relax} \
-+%{mbig-endian:-EB} \
-+%{mlittle-endian:-EL} \
-+%{shared} \
-+  %{!shared: \
-+    %{!static: \
-+      %{!static-pie: \
-+	%{rdynamic:-export-dynamic} \
-+	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
-+    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
-+
-+#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared: %{static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s}} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
-+
-+#undef ENDFILE_SPEC
-+#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
-+
-+#undef TARGET_OS_CPP_BUILTINS
-+#define TARGET_OS_CPP_BUILTINS()         \
-+  do {                                   \
-+    builtin_define ("__ironclad__");     \
-+    builtin_define ("__unix__");         \
-+    builtin_assert ("system=ironclad");  \
-+    builtin_assert ("system=unix");      \
-+    builtin_assert ("system=posix");     \
-+  } while (0);
++MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib,$(MULTILIB_DIRNAMES))
++MULTIARCH_DIRNAME := $(call if_multiarch,riscv64-ironclad-gnu)
 diff --git gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
 index 7c80a0b..8fac7e4 100644
 --- gcc-host-clean/gcc/config.build
@@ -130,7 +123,7 @@ index 7c80a0b..8fac7e4 100644
  
  # System-specific settings.
 diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
-index 087aaa7..2461e7c 100644
+index 087aaa7..e60ba73 100644
 --- gcc-host-clean/gcc/config.gcc
 +++ gcc-host-workdir/gcc/config.gcc
 @@ -885,7 +885,7 @@ case ${target} in
@@ -198,7 +191,22 @@ index 087aaa7..2461e7c 100644
  	x86_64-*-kfreebsd*-gnu)
  		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
  		;;
-@@ -3670,7 +3678,7 @@ esac
+@@ -2540,6 +2548,14 @@ riscv*-*-linux*)
+ 	gcc_cv_initfini_array=yes
+ 	with_tls=${with_tls:-trad}
+ 	;;
++riscv*-*-ironclad*-gnu)
++	tm_file="elfos.h gnu-user.h glibc-stdint.h ${tm_file} ironclad-gnu.h riscv/ironclad-gnu.h"
++	tmake_file="${tmake_file} riscv/t-riscv riscv/t-ironclad"
++	gnu_ld=yes
++	gas=yes
++	gcc_cv_initfini_array=yes
++	with_tls=${with_tls:-trad}
++	;;
+ riscv*-*-elf* | riscv*-*-rtems*)
+ 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
+ 	case ${target} in
+@@ -3670,7 +3686,7 @@ esac
  case ${target} in
  *-*-linux*android*|*-*-linux*uclibc*|*-*-linux*musl*)
          ;;
@@ -207,7 +215,7 @@ index 087aaa7..2461e7c 100644
          ;;
  *-*-linux* | *-*-gnu*)
  	case ${target} in
-@@ -6106,6 +6114,9 @@ case ${target} in
+@@ -6106,6 +6122,9 @@ case ${target} in
  	visium-*-*)
  		target_cpu_default2="TARGET_CPU_$with_cpu"
  		;;
@@ -270,7 +278,7 @@ index bb07e46..821fe80 100644
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
 diff --git gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
-index 6a88ee5..543c21e 100644
+index 6a88ee5..7f383b4 100644
 --- gcc-host-clean/libgcc/config.host
 +++ gcc-host-workdir/libgcc/config.host
 @@ -310,7 +310,7 @@ case ${host} in
@@ -291,6 +299,17 @@ index 6a88ee5..543c21e 100644
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
  	tm_file="${tm_file} i386/elf-lib.h"
+@@ -1354,6 +1354,10 @@ riscv*-*-linux*)
+ 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
+ 	md_unwind_header=riscv/linux-unwind.h
+ 	;;
++riscv*-*-ironclad*-gnu)
++	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
++	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
++	;;
+ riscv*-*-freebsd*)
+ 	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
+ 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 diff --git gcc-host-clean/libstdc++-v3/configure.host gcc-host-workdir/libstdc++-v3/configure.host
 index 253e5a9..0d620f6 100644
 --- gcc-host-clean/libstdc++-v3/configure.host

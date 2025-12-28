@@ -1,8 +1,8 @@
 diff --git openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
-index f815a09..820fa24 100644
+index 7e93968..4de7b1f 100644
 --- openssl-clean/Configurations/10-main.conf
 +++ openssl-workdir/Configurations/10-main.conf
-@@ -925,6 +925,49 @@ my %targets = (
+@@ -1010,6 +1010,51 @@ my %targets = (
          ranlib           => "true",
      },
  
@@ -15,7 +15,8 @@ index f815a09..820fa24 100644
 +        CXXFLAGS         => picker(default   => "-Wall",
 +                         debug       => "-O0 -g",
 +                         release     => "-O3"),
-+        cxxflags         => add("-std=c++11"),
++        cflags           => threads("-pthread"),
++        cxxflags         => combine("-std=c++11", threads("-pthread")),
 +        lib_cppflags     => combine("-DOPENSSL_USE_NODELETE", "-DL_ENDIAN"),
 +        bn_ops           => "SIXTY_FOUR_BIT_LONG RC4_CHAR",
 +        thread_scheme    => "pthreads",
@@ -29,7 +30,8 @@ index f815a09..820fa24 100644
 +    # These break the usual configuration naming convention but it's more
 +    # convenient for us, since it matches the target triples
 +    "x86_64-ironclad-gnu" => {
-+        inherit_from     => [ "ironclad-generic64", asm("x86_64_asm") ],
++        inherit_from     => [ "ironclad-generic64" ],
++        asm_arch         => 'x86_64',
 +        perlasm_scheme   => "elf",
 +
 +        # Configure doesn't want to play nice and passes "--cross-compile-suffix"
@@ -39,42 +41,16 @@ index f815a09..820fa24 100644
 +
 +    },
 +    "riscv64-ironclad-gnu" => {
-+        inherit_from     => [ "ironclad-generic64", asm("riscv64_asm") ],
++        inherit_from     => [ "ironclad-generic64" ],
++        asm_arch         => 'riscv64',
 +        perlasm_scheme   => "elf",
 +
 +        # Configure doesn't want to play nice and passes "--cross-compile-suffix"
 +        # on to the GCC invocation
 +        CC               => "riscv64-ironclad-gnu-gcc",
 +        CXX              => "riscv64-ironclad-gnu-g++",
-+
 +    },
 +
  #### *BSD
      "BSD-generic32" => {
          # As for thread cflag. Idea is to maintain "collective" set of
-diff --git openssl-clean/Configure openssl-workdir/Configure
-index 78cc15d..2d3fb3e 100755
---- openssl-clean/Configure
-+++ openssl-workdir/Configure
-@@ -1549,20 +1549,7 @@ unless ($disabled{"crypto-mdebug-backtrace"})
- unless ($disabled{afalgeng}) {
-     $config{afalgeng}="";
-     if (grep { $_ eq 'afalgeng' } @{$target{enable}}) {
--        my $minver = 4*10000 + 1*100 + 0;
--        if ($config{CROSS_COMPILE} eq "") {
--            my $verstr = `uname -r`;
--            my ($ma, $mi1, $mi2) = split("\\.", $verstr);
--            ($mi2) = $mi2 =~ /(\d+)/;
--            my $ver = $ma*10000 + $mi1*100 + $mi2;
--            if ($ver < $minver) {
--                disable('too-old-kernel', 'afalgeng');
--            } else {
--                push @{$config{engdirs}}, "afalg";
--            }
--        } else {
--            disable('cross-compiling', 'afalgeng');
--        }
-+        push @{$config{engdirs}}, "afalg";
-     } else {
-         disable('not-linux', 'afalgeng');
-     }

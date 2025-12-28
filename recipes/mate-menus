@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mate-menus
-version=1.28.0
+version=1.28.1
 revision=1
 tarball_url="https://github.com/mate-desktop/mate-menus/releases/download/v${version}/mate-menus-${version}.tar.xz"
-tarball_blake2b="3ed5b8b2f7973c4272714ee528766a4a8afbc5444804c6c750484e7ba0271c0916a37e71ac6ae6ff2d6e89dd5a7bd751bc5826c7e760ead32634d95ae1f6813e"
+tarball_blake2b="c2be19304cd88bf6da88f5cd65ed463b8d9fdf6d4064a802b8a65c736642293f367ebe9d3cf7306d14cd34c827c08bae11348e847ece4e05a981f75797b16e87"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2"
 

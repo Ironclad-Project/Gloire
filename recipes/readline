@@ -2,9 +2,9 @@
 
 name=readline
 _version=8.3
-_patch=1
+_patch=3
 version=${_version}.${_patch}
-revision=2
+revision=1
 tarball_url="https://ftp.gnu.org/gnu/readline/readline-${_version}.tar.gz"
 tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
 hostdeps="gcc pkg-config"
@@ -23,6 +23,8 @@ _get_patch() {
 
 early_prepare() {
     _get_patch 001 b0953458a18b8b06b0086567abd3c9ca3efceb5e4c38271e62137e126c106b938945d956394de0e955ecea5d48f8b261a4f2f3db2ee1d2cbc3b4cfdcf213ca46
+    _get_patch 002 bb07c3e1663b36988e59721d8e8054022726f6adc2160cbb1fe30bcb5fe96d70fc38980a84c05a0518b9916975ffa1c4c97542fc9c82845736c6f6d03ca60229
+    _get_patch 003 39f48eefef1840460aa418a070813dd284893e74dddad5fb44230498a7991148e9681be89b30e98fe805a67b3093360c883a16a26a7f103548f36c899f9359da
 }
 
 prepare() {

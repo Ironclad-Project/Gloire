@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=git
-version=2.45.2
+version=2.52.0
 revision=1
 tarball_url="https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz"
-tarball_blake2b="477acc786c26e0b04843ad6d07333607b2274d587263d72c6d036cade725e6f62f8c773903f401c799de71527d0473589afc507eec02f445e0c148dd7cbf407c"
+tarball_blake2b="f228174814b1048f12543a6a20f771017991f9a23778f12fc32020b38837990eb19bc69e891078692ac4ad4ae1cb2e0e77400760964e09c491046e4ed8b16f96"
 imagedeps="build-essential libcurl4-gnutls-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs python zlib curl openssl openssh"
@@ -21,7 +21,7 @@ configure() {
         ac_cv_fread_reads_directories=no \
         ac_cv_snprintf_returns_bogus=no \
     autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17" \
+        CFLAGS="$TARGET_CFLAGS" \
         --with-gitconfig=/etc/gitconfig \
         --with-python=python3
 }

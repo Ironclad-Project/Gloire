@@ -34,15 +34,15 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="3"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 XBPS_VERSION=0.60.6
 XBPS_SHA256SUM=f51d528fa680873914aa8367707726dd777fccc6e5c95cfad90fdb3562375c04
 
-debootstrap_version=1.0.141
-debootstrap_sha256sum=1066dd75b337156cdc4ebace2ad38f68fdff56fb8b7d20a1a4eb9739afe55c12
+debootstrap_version=1.0.142
+debootstrap_sha256sum=19729f8e48a56f1e1ecfe7eba4e5f1a8b0a0d1ceee76e157d6d1587019237e33
 
 die() {
     echo "$1" 1>&2

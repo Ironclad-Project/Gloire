@@ -2,7 +2,7 @@
 
 name=bash
 _version=5.3
-_patch=8
+_patch=9
 version=${_version}.${_patch}
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/bash/bash-${_version}.tar.gz"
@@ -31,6 +31,7 @@ early_prepare() {
     _get_patch 006 92e1cac8784c463f143a1bbad088cb6a4451ef5d864f04205831ffe8835b3d5723e4bfc3ca864a77074afcdb14f627c728f796cb85c050c21916c16d1f990f18
     _get_patch 007 5939ba2b3e0dbd83ecb51b47e71f35e32e7647fad1bedf0f00b73cc279b91de977b1cae7314b87483f62cbc0888a739b39528f0ca882a26bc81cc9b9898336e3
     _get_patch 008 7ebe5ac77d3697da01ad7beb88a8fdaeac3ac2fb671cc5151ce10428044b4f5fd7ea13e35c91eef1a7d6027f9053a57a27864d5f6a935d48d6cd2be6a9239233
+    _get_patch 009 09ddf6b605d409142a4107bd52c8b48a91a225d65b867b5074c8b5359d0b1012d2f50e54d1d5636b3413431cf4840d6bd34f9c84f062f3ead96eeaf912127532
 }
 
 prepare() {

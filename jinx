@@ -34,12 +34,12 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="2"
+jinx_minor_ver="3"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-XBPS_VERSION=213c8290ceca38264d2907d6d01f91775951bd14
-XBPS_SHA256SUM=6c4420c86212be203cdbc061ab2e53255f6407e15b7aee307eac2a8f370eb3c4
+XBPS_VERSION=0.60.6
+XBPS_SHA256SUM=f51d528fa680873914aa8367707726dd777fccc6e5c95cfad90fdb3562375c04
 
 debootstrap_version=1.0.141
 debootstrap_sha256sum=1066dd75b337156cdc4ebace2ad38f68fdff56fb8b7d20a1a4eb9739afe55c12
@@ -516,7 +516,7 @@ run_in_container1() {
 
         mount --bind '${apt_cache}' '${run_in_cont1_root}/var/cache/apt/archives'
 
-        env -i PATH="${PATH}" chroot '${run_in_cont1_root}' /bin/sh -c '
+        env -i PATH='${PATH}' chroot '${run_in_cont1_root}' /bin/sh -c '
             set -e
 
             LD_PRELOAD=/nochown.so \
@@ -678,7 +678,7 @@ run_in_container() {
         ${shadow_git_dir_base}
         ${shadow_git_dir_build}
 
-        env -i PATH="${PATH}" chroot '${imgroot}' /bin/sh -c '
+        env -i PATH='${PATH}' chroot '${imgroot}' /bin/sh -c '
             set -e
 
             cd /build_dir
@@ -1748,7 +1748,7 @@ reinit_container() {
     cd xbps-${XBPS_VERSION}
 
     # XXX: xbps upstream forgot to bump version string
-    sed "s/0\.60/0.60.5/g" configure >configure.sed
+    sed "s/0\.60/0.60.6/g" configure >configure.sed
     mv configure.sed configure
     sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
     mv configure.sed configure

@@ -2,12 +2,12 @@
 
 name=lynx
 version=2.9.2
-revision=2
+revision=3
 tarball_url="https://invisible-mirror.net/archives/lynx/tarballs/lynx${version}.tar.bz2"
 tarball_blake2b="875ac952e956071b1dfeb61fb5848a8a6435931d3ca1fbeef00e95e14d8510641b0b81683c7e2097c13c6cd6431e8b4243c47c5f983829af1a63140673794c23"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs ncurses"
+deps="core-libs brotli bzip2 libidn2 ncurses ca-certificates openssl zlib"
 
 prepare() {
     autotools_recursive_regen
@@ -15,7 +15,8 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --with-screen=ncursesw
+        --with-screen=ncursesw \
+        --with-ssl="${sysroot_dir}"/usr
 }
 
 build() {

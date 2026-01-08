@@ -2016,7 +2016,7 @@ index 0000000..b59d449
 +#endif /* bits/ipctypes.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 new file mode 100644
-index 0000000..04eadbe
+index 0000000..0db211b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 @@ -0,0 +1,155 @@
@@ -2055,7 +2055,7 @@ index 0000000..04eadbe
 +#define SYS_listprocs                26
 +#define SYS_getsid                   27
 +#define SYS_gettid                   28
-+/* 29 is unused */
++#define SYS_setdomainname            29
 +#define SYS_fcntl                    30
 +#define SYS_exit_thread              31
 +#define SYS_getentropy               32
@@ -6945,23 +6945,52 @@ index 0000000..f53b963
 +weak_alias (__getdents64, getdents64)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c
 new file mode 100644
-index 0000000..1931fb7
+index 0000000..cf20f44
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/getdomainname.c
-@@ -0,0 +1,13 @@
-+/* Ironclad does not support getdomainname.  This stub returns ENOSYS
-+   without issuing any syscall to the kernel.  */
-+
+@@ -0,0 +1,42 @@
 +#include <errno.h>
++#include <string.h>
 +#include <unistd.h>
++#include <sys/utsname.h>
++
++/* Ironclad doesn't have a getdomainname syscall.
++   Implement it via uname(), like mlibc does.  */
 +
 +int
-+getdomainname (char *name, size_t len)
++__getdomainname (char *name, size_t len)
 +{
-+  __set_errno (ENOSYS);
-+  return -1;
++  struct utsname buf;
++
++  if (name == NULL)
++    {
++      __set_errno (EINVAL);
++      return -1;
++    }
++
++  if (__uname (&buf) < 0)
++    return -1;
++
++  size_t nodename_len = strlen (buf.domainname);
++
++  if (nodename_len >= len)
++    {
++      /* POSIX says truncate and don't null-terminate if too long.
++         Some implementations return ENAMETOOLONG, but truncation
++         is more compatible.  */
++      memcpy (name, buf.domainname, len);
++      /* If len > 0, ensure null termination for safety.  */
++      if (len > 0)
++        name[len - 1] = '\0';
++    }
++  else
++    {
++      memcpy (name, buf.domainname, nodename_len + 1);
++    }
++
++  return 0;
 +}
-+libc_hidden_def (getdomainname)
++weak_alias (__getdomainname, getdomainname)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/getdtsz.c glibc-workdir/sysdeps/unix/sysv/ironclad/getdtsz.c
 new file mode 100644
 index 0000000..41deb99
@@ -12765,6 +12794,20 @@ index 0000000..a5e5bbd
 +}
 +weak_alias (__libc_sendto, sendto)
 +weak_alias (__libc_sendto, __sendto)
+diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/setdomainname.c glibc-workdir/sysdeps/unix/sysv/ironclad/setdomainname.c
+new file mode 100644
+index 0000000..cadba43
+--- /dev/null
++++ glibc-workdir/sysdeps/unix/sysv/ironclad/setdomainname.c
+@@ -0,0 +1,8 @@
++#include <unistd.h>
++#include <sysdep.h>
++
++int
++setdomainname (const char *name, size_t len)
++{
++  return INLINE_SYSCALL_CALL (setdomainname, name, len);
++}
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/setegid.c glibc-workdir/sysdeps/unix/sysv/ironclad/setegid.c
 new file mode 100644
 index 0000000..c71f347

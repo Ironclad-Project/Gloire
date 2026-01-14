@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libraw
-version=0.21.5
+version=0.22.0
 revision=1
 tarball_url="https://www.libraw.org/data/LibRaw-${version}.tar.gz"
-tarball_blake2b="ea022dfe8404315d493f64f2dcc612dd62d94d327c60fa242fd69af1aabd46320fa275b4c0a2c582ef2efb0a9b1ca5d0fba7ba0eb5849b3a5e96f9e52650ea3f"
+tarball_blake2b="2063d4f89a1cd065bc4734ab99257f1b3e3b72e1d8c0ea7736dd703315e55f22a00ab336fa1455a9f694c4c1cbc78f7cd22a81d1e9ce9c07c1cd5c976de3f940"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

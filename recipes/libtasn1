@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libtasn1
-version=4.20.0
+version=4.21.0
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/libtasn1/libtasn1-${version}.tar.gz"
-tarball_blake2b="3219b48e691abd7f6f4e32164ab708bc7c29832a2a7669aa03751d4a519dffb78d5a5f94530a3f35cd6516b39400da9e634d7f46245ab934465c305a1d387561"
+tarball_blake2b="0dc478a6be6cbfb26264f1d92361f02f384ee01d54ee3822805d660f9eeef65e37562e8daea3c2b21adb8033296a1eea8d33ab0dae37e6c2b42644c03fcdb7ac"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

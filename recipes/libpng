@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libpng
-version=1.6.53
+version=1.6.54
 revision=1
-git_url="https://github.com/pnggroup/libpng.git"
-commit=4e3f57d50f552841550a36eabbb3fbcecacb7750
+tarball_url="https://prdownloads.sourceforge.net/libpng/libpng-${version}.tar.xz"
+tarball_blake2b="a91ebb8396d9a5de10d642cc8891d594dacd480248fdb73859f8317fc6cbadf0f542acf446955f2e78e8655439464bbad600993491e3e97474a91c65d703fef7"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 

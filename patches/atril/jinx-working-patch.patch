@@ -1,18 +1,7 @@
 diff --git atril-clean/backend/comics/meson.build atril-workdir/backend/comics/meson.build
-index abc2fdc..d67a51b 100644
+index a990388..9733285 100644
 --- atril-clean/backend/comics/meson.build
 +++ atril-workdir/backend/comics/meson.build
-@@ -2,8 +2,8 @@ backend_desktop_conf = configuration_data()
- backend_desktop_conf.set('COMICS_MIME_TYPES', comic_mimetypes)
- 
- backend_desktop = configure_file(
--    input: 'comicsdocument.atril-backend.in',
--    output: 'comicsdocument.atril-backend',
-+    input: 'comicsdocument.atril-backend.desktop.in',
-+    output: 'comicsdocument.atril-backend.desktop',
-     configuration: backend_desktop_conf,
-     install: true,
-     install_dir: backendsdir,
 @@ -34,16 +34,3 @@ shared_module(
  
  
@@ -30,18 +19,15 @@ index abc2fdc..d67a51b 100644
 -  include_directories: include_dirs,
 -  dependencies: comics_deps,
 -)
-diff --git atril-clean/backend/pixbuf/meson.build atril-workdir/backend/pixbuf/meson.build
-index 68afb36..aba94fd 100644
---- atril-clean/backend/pixbuf/meson.build
-+++ atril-workdir/backend/pixbuf/meson.build
-@@ -21,8 +21,8 @@ shared_module(
- )
- 
- i18n.merge_file(
--  input: 'pixbuf.atril-backend.desktop.in',
--  output: 'pixbuf.atril-backend',
-+  input: 'pixbufdocument.atril-backend.desktop.in',
-+  output: 'pixbufdocument.atril-backend',
-   type: 'desktop',
-   po_dir: po_dir,
-   install: true,
+diff --git atril-clean/meson.build atril-workdir/meson.build
+index 8a02b91..5988610 100644
+--- atril-clean/meson.build
++++ atril-workdir/meson.build
+@@ -348,7 +348,6 @@ summary = [
+   'desktopdir = @0@'.format(desktopdir),
+   'schema_dir = @0@'.format(schema_dir),
+   'ENABLE_DBUS = @0@'.format(get_option('enable_dbus')),
+-  'MathJax directory = @0@'.format(mathjax_directory),
+   '',
+   'Backends enabled:',
+ ]

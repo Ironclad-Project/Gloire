@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=atril
-version=1.28.2
-revision=3
+version=1.28.3
+revision=1
 git_url="https://github.com/mate-desktop/atril.git"
-commit=6e116cd028790a0123db5b9e6be7ae9bc03c33c3
+commit=64bcc359e333135e72af2cc410373d8523b73c09
 imagedeps="libglib2.0-dev-bin itstool libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core poppler glib2 libxml2 mate-desktop zlib gdk-pixbuf gtk3 libice libsm libx11 cairo pango caja libtiff libarchive"
@@ -18,16 +18,16 @@ early_prepare() {
 
 configure() {
     meson_configure \
-        -Dcomics=true \
-        -Ddjvu=false \
-        -Ddvi=false \
-        -Dt1lib=false \
-        -Depub=false \
-        -Dpdf=true \
-        -Dpixbuf=true \
-        -Dps=false \
-        -Dtiff=true \
-        -Dxps=false \
+        -Dcomics=enabled \
+        -Ddjvu=disabled \
+        -Ddvi=disabled \
+        -Dt1lib=disabled \
+        -Depub=disabled \
+        -Dpdf=enabled \
+        -Dpixbuf=enabled \
+        -Dps=disabled \
+        -Dtiff=enabled \
+        -Dxps=disabled \
         -Dkeyring=false \
         -Dpreviewer=true \
         -Dthumbnailer=true \

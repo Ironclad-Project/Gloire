@@ -1,16 +1,18 @@
 #! /bin/sh
 
 name=sdl3
-version=3.2.28
+version=3.4.0
 revision=1
 tarball_url="https://github.com/libsdl-org/SDL/releases/download/release-${version}/SDL3-${version}.tar.gz"
-tarball_blake2b="076af30a92bf866532afdd045f7b9efeb35a20225217d9597e0413bbc2c4b02eef97aa763ba57f534b7c651b6d3eeb835a0847d601780e19686e5ad256ecfc8b"
+tarball_blake2b="4f878b13cdc139b643e04ee278d7d83aadbb6bf8aba5babc9622a8d1ea233452982232001c5d4cb72f0e8ec20f3d797f9cd07d1531829412a6dacde2146a2447"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxext libxcursor libxi libxfixes libxkbcommon libxrandr libxrender libxxf86vm mesa"
 
 configure() {
     cmake_configure \
         -DSDL_ALTIVEC=OFF \
+        -DSDL_X11_XSCRNSAVER=OFF \
+        -DSDL_X11_XTEST=OFF \
         -DSDL_DISKAUDIO=OFF \
         -DSDL_OPENGL=ON \
         -DSDL_OPENGLES=ON \

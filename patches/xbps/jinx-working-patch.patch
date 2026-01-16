@@ -142,19 +142,6 @@ index 0000000..8e0781d
 +	<string>rsa</string>
 +</dict>
 +</plist>
-diff --git xbps-clean/data/Makefile xbps-workdir/data/Makefile
-index 25a439e..57ca738 100644
---- xbps-clean/data/Makefile
-+++ xbps-workdir/data/Makefile
-@@ -18,7 +18,7 @@ install:
- 	install -d $(DESTDIR)$(PKGCONFIGDIR)
- 	install -m644 $(PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
- 	install -d $(DESTDIR)/$(DBDIR)/keys
--	install -m644 *.plist $(DESTDIR)/$(DBDIR)/keys
-+	-install -m644 *.plist $(DESTDIR)/$(DBDIR)/keys
- 	install -d $(DESTDIR)/$(SHAREDIR)/xbps.d
- 	install -m644 repod-main.conf $(DESTDIR)/$(SHAREDIR)/xbps.d/00-repository-main.conf
- 	install -m644 xbps.conf $(DESTDIR)/$(SHAREDIR)/xbps.d/xbps.conf
 diff --git xbps-clean/data/repod-main.conf xbps-workdir/data/repod-main.conf
 index e1c99f1..a636ec4 100644
 --- xbps-clean/data/repod-main.conf

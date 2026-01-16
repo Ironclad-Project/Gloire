@@ -23,10 +23,10 @@ index 70f3013..458bec4 100755
  
 diff --git xf86-input-mouse-workdir/src/ironclad_mouse.c xf86-input-mouse-workdir/src/ironclad_mouse.c
 new file mode 100644
-index 0000000..b83cad1
+index 0000000..f982f8c
 --- /dev/null
 +++ xf86-input-mouse-workdir/src/ironclad_mouse.c
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,122 @@
 +#ifdef HAVE_XORG_CONFIG_H
 +#include <xorg-config.h>
 +#endif
@@ -99,11 +99,18 @@ index 0000000..b83cad1
 +    return true;
 +}
 +
-+#define DEVPATH "/dev/ps2mouse"
++#define USB_DEV "/dev/usbmouse1"
++#define PS2_DEV "/dev/ps2mouse"
 +
-+static const char *getdevice(InputInfoPtr pInfo, const char *proto, int flag){
-+    pInfo->options = xf86AddNewOption(pInfo->options, "Device", DEVPATH);
-+    return DEVPATH;
++static const char *getdevice(InputInfoPtr pInfo, const char *proto, int flag) {
++    struct stat buf;
++    if (!stat(USB_DEV, &buf)) {
++       pInfo->options = xf86AddNewOption(pInfo->options, "Device", USB_DEV);
++       return USB_DEV;
++    } else {
++        pInfo->options = xf86AddNewOption(pInfo->options, "Device", PS2_DEV);
++        return PS2_DEV;
++    }
 +}
 +
 +static int interfacesupport() {

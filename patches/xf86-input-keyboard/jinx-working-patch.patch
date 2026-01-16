@@ -132,10 +132,10 @@ index 6daf679..9a63513 100644
  	-rm -f ./$(DEPDIR)/sun_kbdMap.Plo
 diff --git xf86-input-keyboard-workdir/src/ironclad_kbd.c xf86-input-keyboard-workdir/src/ironclad_kbd.c
 new file mode 100644
-index 0000000..3f20d5c
+index 0000000..5a05cf1
 --- /dev/null
 +++ xf86-input-keyboard-workdir/src/ironclad_kbd.c
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,116 @@
 +#ifdef HAVE_CONFIG_H
 +#include <config.h>
 +#endif
@@ -205,12 +205,20 @@ index 0000000..3f20d5c
 +    }
 +}
 +
++#define USB_DEV "/dev/usbkeyboard1"
++#define PS2_DEV "/dev/ps2keyboard"
++
 +static Bool OpenKeyboard(InputInfoPtr pInfo) {
-+    char *kbdPath = xf86SetStrOption(pInfo->options, "Device", "/dev/ps2keyboard");
++    char *kbdPath;
++    struct stat buf;
++    if (!stat(USB_DEV, &buf)) {
++        kbdPath = xf86SetStrOption(pInfo->options, "Device", USB_DEV);
++    } else {
++        kbdPath = xf86SetStrOption(pInfo->options, "Device", PS2_DEV);
++    }
++
 +    Bool ret;
-+
 +    pInfo->fd = open(kbdPath, O_RDONLY | O_NONBLOCK);
-+
 +    if (pInfo->fd == -1) {
 +        xf86Msg(X_ERROR, "%s: cannot open \"%s\"\n", pInfo->name, kbdPath);
 +        ret = FALSE;

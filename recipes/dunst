@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=dunst
+version=1.13.0
+revision=1
+git_url="https://github.com/dunst-project/dunst.git"
+commit=628779f84e6685db6d58d13e1add910878e7d84c
+hostdeps="gcc pkg-config"
+deps="core-libs libx11 libxt libxext libxmu libxrender libxi libxcb dbus pango gdk-pixbuf libxscrnsaver libxinerama libnotify"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

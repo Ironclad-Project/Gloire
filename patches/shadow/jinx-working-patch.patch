@@ -1,0 +1,22 @@
+diff --git shadow-clean/lib/chowntty.c shadow-workdir/lib/chowntty.c
+index 1f99d2d..d2d7808 100644
+--- shadow-clean/lib/chowntty.c
++++ shadow-workdir/lib/chowntty.c
+@@ -50,7 +50,7 @@ void chown_tty (const struct passwd *info)
+ 	 * the group as determined above.
+ 	 */
+ 
+-	if (   (fchown (STDIN_FILENO, info->pw_uid, gid) != 0)
++	/*if (   (fchown (STDIN_FILENO, info->pw_uid, gid) != 0)
+ 	    || (fchmod (STDIN_FILENO, getdef_num ("TTYPERM", 0600)) != 0)) {
+ 		int err = errno;
+ 		FILE *shadow_logfd = log_get_logfd();
+@@ -65,7 +65,7 @@ void chown_tty (const struct passwd *info)
+ 			closelog ();
+ 			exit (EXIT_FAILURE);
+ 		}
+-	}
++	}*/
+ #ifdef __linux__
+ 	/*
+ 	 * Please don't add code to chown /dev/vcs* to the user logging in -

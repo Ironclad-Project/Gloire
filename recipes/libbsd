@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=libbsd
+version=0.12.2
+revision=1
+tarball_url="https://libbsd.freedesktop.org/releases/libbsd-${version}.tar.xz"
+tarball_blake2b="23a7ebce8e9426be9fc21f90fb957925095d8a4d244434ea07347c9fba4931485c8bb0b20ea84ab7da718d7ceba3bcca20a96f365063813309b82bd351ab223e"
+hostdeps="gcc pkg-config"
+deps="core-libs libmd"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=libmd
+version=1.1.0
+revision=1
+tarball_url="https://archive.hadrons.org/software/libmd/libmd-${version}.tar.xz"
+tarball_blake2b="a4dc72be4a46609d41453b19ba3110043e74fd0810d59f872e11151dbe87b0bdab203ef72c9d19255db32493b229bc0d33549e787979a42db08c838a810e1cdc"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

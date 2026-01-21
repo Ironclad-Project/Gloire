@@ -3,9 +3,9 @@
 name=gcon
 skip_pkg_check=yes
 version=0.0git
-revision=12
+revision=13
 git_url="https://codeberg.org/Ironclad/gcon.git"
-commit=069e3725b95cdcc753c4223ef1799ac59f928947
+commit=50dfab822c8101d530a5e08c42e0c8b13365b906
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

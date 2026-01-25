@@ -2,7 +2,7 @@
 
 name=glibc
 version=2.42
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/glibc/glibc-${version}.tar.xz"
 tarball_blake2b="6ffabfe7942034a5a4fb5097679cb47bc3431eb2a3864af07cea0cb6aa5db63fbaf6f026b3c9299e00268058a6762eb21e92499f012d552ed87d65c7ffbd0bbe"
 hostdeps="bootstrap-gcc pkg-config"
@@ -40,8 +40,14 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
-    # Note: Locale installation is skipped during cross-compilation because
-    # localedef is built for the target (Ironclad) and cannot run on the host.
-    # Locales can be generated on the target system after booting.
-    # DESTDIR="${dest_dir}" make localedata/install-locales -j${parallelism}
+    # Generate locales using the host's localedef.
+    # IMPORTANT: Host glibc version must match target glibc version (2.42).
+    # The Makefile expects locales/ and charmaps/ to be accessible from localedata/,
+    # and ../intl/locale.alias to exist. Create symlinks from build to source.
+    ln -sf "${source_dir}/localedata/locales" localedata/locales
+    ln -sf "${source_dir}/localedata/charmaps" localedata/charmaps
+    ln -sf "${source_dir}/intl/locale.alias" intl/locale.alias
+
+    DESTDIR="${dest_dir}" make localedata/install-locales -j${parallelism} \
+        LOCALEDEF="I18NPATH=. LC_ALL=C /usr/bin/localedef"
 }

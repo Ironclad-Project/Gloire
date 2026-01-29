@@ -1,27 +1,23 @@
 #! /bin/sh
 
 name=libxxf86vm
-version=1.1.6
+version=1.1.7
 revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXxf86vm-${version}.tar.gz"
-tarball_blake2b="403425049f78ecf8eeddd01797ea21d51853a0165d9d8ca9513b05d85b61d7cbddac91290fba054d1cca08f43b165efd2e441cf4ff3b4b7e9e5fe59a6daf7d3e"
+tarball_blake2b="15fe81eb71deddf5d688ce452e447abcfeee6eac09452249a23a8e69186dd5efe25f26a4c7b5954ca2f26a48e92eb9d7726d1bb8744021ab4dd0c6ceb7ffe8af"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libxext"
 
-prepare() {
-    autotools_recursive_regen
-}
-
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

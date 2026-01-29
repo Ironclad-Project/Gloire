@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=meson
-version=1.10.0
+version=1.10.1
 revision=1
 tarball_url="https://github.com/mesonbuild/meson/releases/download/${version}/meson-${version}.tar.gz"
-tarball_blake2b="5344f3e6990618d226038a34b99c2f0d56fd539c17fed8fa51aef6e5389566436040cb223bd8b53709e1552d0d59fde5e77349ecc61540ff2572d6bd74045466"
+tarball_blake2b="0d99736cdc1b3576026bce775a15c805c8178e2b21615829e028a05f5265cb5c72bd04a9ac5a45a9cf247d54f37f25a98f094efb5e1addb78e9a6ff863629642"
 imagedeps="python3-build python3-installer"
 hostdeps="pkg-config"
 deps="core-libs python ninja"

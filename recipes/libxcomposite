@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libxcomposite
-version=0.4.6
+version=0.4.7
 revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXcomposite-${version}.tar.gz"
-tarball_blake2b="1ee04b1279b5274083dd2f46a763abccf6c2aaecc5cf13b1c4ca712b3ea562e9c2fce7c5b5685a93187ab5747ca549305b0cae1581a29815a1db516f292bf501"
+tarball_blake2b="bc9c4dec74000b353e9763c2b7ed04d3ebd95a0bbf48564f1366f714b7a5b191784a91fa6b90579d6c3907a7142e50af52231f2ced3644139cbc171ba242cec8"
 hostdeps="gcc pkg-config"
 deps="core-libs libxfixes xorg-proto"
 

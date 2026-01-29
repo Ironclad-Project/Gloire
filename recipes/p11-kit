@@ -1,12 +1,12 @@
 #! /bin/sh
 
 name=p11-kit
-version=0.25.10
+version=0.26.1
 revision=1
-git_url="https://github.com/p11-glue/p11-kit.git"
-commit=90dba4ded391c6232a78ee14db0da76efda7b1c3
+tarball_url="https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz"
+tarball_blake2b="0d99736cdc1b3576026bce775a15c805c8178e2b21615829e028a05f5265cb5c72bd04a9ac5a45a9cf247d54f37f25a98f094efb5e1addb78e9a6ff863629642"
 hostdeps="gcc pkg-config"
-deps="core-libs libffi libtasn1"
+deps="core-libs libffi libtasn1 bash-completion"
 
 early_prepare() {
     git submodule update --init --recursive

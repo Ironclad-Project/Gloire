@@ -1,27 +1,23 @@
 #! /bin/sh
 
 name=libxinerama
-version=1.1.5
+version=1.1.6
 revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXinerama-${version}.tar.gz"
-tarball_blake2b="ac24af05ae483e7f8476cb5fdf901ae80c592a766387e9f662ceeae5906a55e8529b35fcd01b6893289007e30788fd9e3a507af95870acfa6b25b25b159024a5"
+tarball_blake2b="0bcfe78eaf4e377756c0c217835d103e9cf173716329c580cbae1124be332ec936cac1017c5d4a22521b3faacfec4fef2cc5d2700e13875736aaf00b3545ba53"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxext xorg-util-macros xorg-proto"
 
-prepare() {
-    autotools_recursive_regen
-}
-
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

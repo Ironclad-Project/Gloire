@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=openssl
-version=3.6.0
+version=3.6.1
 revision=1
 tarball_url="https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
-tarball_blake2b="4a0150aa9a78581e74119b338848458249630c94a43589a5b311d41c669b817b043007ddd13b3fb81233da10af3ccd455f3fbf3b09cf45016c475a8e2044e965"
+tarball_blake2b="da949967d40ca9e17baf1bedded5080e37bce2dfc187f2a46f80ec01e708f9d550d055ef8557812135c4a1081b8f3477c5d4dbe46e0f39a9b696a7dbdc6b769a"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libxpm
-version=3.5.17
+version=3.5.18
 revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXpm-${version}.tar.gz"
-tarball_blake2b="0acc342fb0aebad04a2d68f60106ad8f52910b2ca65d402bfda09e5914ab92b2b2b9d57680bbb6c6f1c8767971e9cffc1315337f6645fb61940a9cb5ccdf80c0"
+tarball_blake2b="4391f06d8541249a3dc482c63f7577a4b668c46de446a4d717b77dd1560a0f9a042f909c010d7928dfb62ac5c8813657b6633006f2075a6c27e76693299ab9ca"
 hostdeps="gcc pkg-config"
 deps="core-libs libxext libxt"
 

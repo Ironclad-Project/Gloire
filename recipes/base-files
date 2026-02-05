@@ -3,7 +3,7 @@
 name=base-files
 skip_pkg_check=yes
 version=0.0
-revision=17
+revision=18
 source_dir="base-files"
 
 package() {

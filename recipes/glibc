@@ -2,7 +2,7 @@
 
 name=glibc
 version=2.42
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/glibc/glibc-${version}.tar.xz"
 tarball_blake2b="6ffabfe7942034a5a4fb5097679cb47bc3431eb2a3864af07cea0cb6aa5db63fbaf6f026b3c9299e00268058a6762eb21e92499f012d552ed87d65c7ffbd0bbe"
 hostdeps="bootstrap-gcc pkg-config"

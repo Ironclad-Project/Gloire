@@ -2016,7 +2016,7 @@ index 0000000..b59d449
 +#endif /* bits/ipctypes.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 new file mode 100644
-index 0000000..0db211b
+index 0000000..744b07b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 @@ -0,0 +1,155 @@
@@ -2046,7 +2046,7 @@ index 0000000..0db211b
 +#define SYS_stat                     17
 +#define SYS_pivot_root               18
 +#define SYS_chdir                    19
-+#define SYS_ioctl                    20
++#define SYS_devctl                   20
 +#define SYS_sched_yield              21
 +#define SYS_get_priority_limits      22
 +#define SYS_pipe                     23
@@ -8086,10 +8086,10 @@ index 0000000..9e59366
 +#endif /* _INTERNAL_SIGSET_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c
 new file mode 100644
-index 0000000..8403776
+index 0000000..787d70c
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/ioctl.c
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,27 @@
 +#include <stdarg.h>
 +#include <sys/ioctl.h>
 +#include <sysdep.h>
@@ -8104,19 +8104,16 @@ index 0000000..8403776
 +  void *arg = va_arg (args, void *);
 +  va_end (args);
 +
-+  /* Ironclad ioctl does not support NULL pointer arguments.
-+     If the caller passes NULL, substitute a pointer to a dummy variable.  */
-+  int dummy = 0;
-+  if (arg == NULL)
-+    arg = &dummy;
-+
-+  int r = INTERNAL_SYSCALL_CALL (ioctl, fd, request, arg);
++  // Use Ironclad's devctl using the legacy compat features.
++  int status;
++  int r = INTERNAL_SYSCALL_CALL (devctl, fd, request, arg, 0, &status);
 +  if (__glibc_unlikely (INTERNAL_SYSCALL_ERROR_P (r)))
 +    {
 +      __set_errno (-r);
 +      return -1;
 +    }
-+  return r;
++
++  return status ? status : r;
 +}
 +libc_hidden_def (__ioctl)
 +weak_alias (__ioctl, ioctl)
@@ -13255,6 +13252,40 @@ index 0000000..170b8d7
 +  memset (set, 0, sizeof (*set));
 +  return 0;
 +}
+diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sigprocmask.c glibc-workdir/sysdeps/unix/sysv/ironclad/sigprocmask.c
+new file mode 100644
+index 0000000..765754a
+--- /dev/null
++++ glibc-workdir/sysdeps/unix/sysv/ironclad/sigprocmask.c
+@@ -0,0 +1,28 @@
++/* Copyright (C) 1997-2025 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <signal.h>
++#include <sysdep.h>
++
++/* Get and/or change the set of blocked signals.  */
++int
++__sigprocmask (int how, const sigset_t *set, sigset_t *oset)
++{
++  return INLINE_SYSCALL_CALL (sigprocmask, how, set, oset);
++}
++libc_hidden_def (__sigprocmask)
++weak_alias (__sigprocmask, sigprocmask)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/sigset-cvt-mask.h glibc-workdir/sysdeps/unix/sysv/ironclad/sigset-cvt-mask.h
 new file mode 100644
 index 0000000..81b6849
@@ -14863,7 +14894,7 @@ index 0000000..e0633b2
 +#endif /* _SYSDEP_IRONCLAD_H  */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/tcdrain.c glibc-workdir/sysdeps/unix/sysv/ironclad/tcdrain.c
 new file mode 100644
-index 0000000..0124fde
+index 0000000..e5d413b
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/tcdrain.c
 @@ -0,0 +1,15 @@
@@ -14879,7 +14910,7 @@ index 0000000..0124fde
 +__tcdrain (int fd)
 +{
 +  /* TCSBRK with arg 1 is defined to wait for output to drain.  */
-+  return SYSCALL_CANCEL (ioctl, fd, TCSBRK, 1);
++  return ioctl (fd, TCSBRK, 1);
 +}
 +weak_alias (__tcdrain, tcdrain)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/tcflow.c glibc-workdir/sysdeps/unix/sysv/ironclad/tcflow.c

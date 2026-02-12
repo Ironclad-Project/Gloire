@@ -1614,10 +1614,10 @@ index 0000000..084c46b
 +#endif /* _BITS_ERRNO_H */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h
 new file mode 100644
-index 0000000..5c1a740
+index 0000000..707b1c0
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/fcntl.h
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,160 @@
 +#ifndef _FCNTL_H
 +# error "Never include <bits/fcntl.h> directly; use <fcntl.h> instead."
 +#endif
@@ -1636,7 +1636,7 @@ index 0000000..5c1a740
 +#define O_CLOEXEC	(1 << 3)
 +#define O_NOFOLLOW	(1 << 4)
 +#define O_NONBLOCK	(1 << 5)
-+#define O_CLOFORK	(1 << 6)	/* Ironclad-specific: close on fork.  */
++#define O_CLOFORK	(1 << 6)
 +
 +/* Flags emulated by userland.  */
 +#define O_CREAT		(1 << 7)
@@ -1670,7 +1670,11 @@ index 0000000..5c1a740
 +#define F_GETLK		9
 +#define F_SETLK		10
 +#define F_SETLKW	11
-+#define F_DUPFD_CLOFORK	12	/* Ironclad-specific.  */
++#define F_DUPFD_CLOFORK	12
++#define F_OFD_SETLK 13
++#define F_OFD_SETLKW 14
++#define F_OFD_GETLK 15
++
 +/* Note: mlibc defines F_GETOWN=10, F_SETOWN=11 which conflict with F_SETLK/F_SETLKW.
 +   These are marked as "stubbed" in mlibc and likely not implemented in the kernel.
 +   We match mlibc's values for ABI compatibility.  */
@@ -5955,10 +5959,10 @@ index 0000000..d4b9351
 +weak_alias (__dup, dup)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/dup2.c glibc-workdir/sysdeps/unix/sysv/ironclad/dup2.c
 new file mode 100644
-index 0000000..6f2cf5f
+index 0000000..4116f5a
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/dup2.c
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,27 @@
 +/* Ironclad does not have a native dup2 syscall.  We implement it using
 +   close() followed by fcntl(F_DUPFD).  This is the POSIX-compliant
 +   approach and works because F_DUPFD returns the lowest available fd
@@ -5973,41 +5977,25 @@ index 0000000..6f2cf5f
 +int
 +__dup2 (int fd, int fd2)
 +{
-+  int save;
-+
-+  if (fd2 < 0)
-+    {
-+      __set_errno (EBADF);
-+      return -1;
-+    }
-+
-+  /* Check if FD is valid by trying to get the file status flags.  */
-+  if (__fcntl (fd, F_GETFL) < 0)
-+    return -1;
-+
-+  /* Degenerate case: fd == fd2.  */
 +  if (fd == fd2)
 +    return fd2;
 +
-+  /* Close fd2.  This is not atomic, but it's the best we can do
-+     without a native dup2 syscall.  Ignore errors from close since
-+     fd2 might not be open.  */
-+  save = errno;
-+  (void) __close (fd2);
-+  __set_errno (save);
++  int ret = __close(fd2);
++  if (ret && (errno != EBADF)) {
++      __set_errno (EBADF);
++      return -1;
++  }
 +
-+  /* Duplicate fd to the lowest available fd >= fd2.  Since we just
-+     closed fd2, this should return fd2.  */
-+  return __fcntl (fd, F_DUPFD, fd2);
++   return __fcntl (fd, F_DUPFD, fd2);
 +}
 +libc_hidden_def (__dup2)
 +weak_alias (__dup2, dup2)
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/dup3.c glibc-workdir/sysdeps/unix/sysv/ironclad/dup3.c
 new file mode 100644
-index 0000000..e25d6be
+index 0000000..6c80fb0
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/dup3.c
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,32 @@
 +/* Ironclad does not have a native dup3 syscall.  We implement it using
 +   close() followed by fcntl(F_DUPFD or F_DUPFD_CLOEXEC).  */
 +
@@ -6021,46 +6009,22 @@ index 0000000..e25d6be
 +int
 +__dup3 (int fd, int fd2, int flags)
 +{
-+  int save;
-+  int fcntl_cmd;
++  int ret = __dup2(fd, fd2);
 +
-+  if (fd2 < 0)
-+    {
-+      __set_errno (EBADF);
-+      return -1;
-+    }
++  if (ret >= 0) {
++  		int fcntl_flags = 0;
++		if (flags & O_CLOEXEC) {
++			fcntl_flags |= FD_CLOEXEC;
++		}
++		if (flags & O_CLOFORK) {
++			fcntl_flags |= FD_CLOFORK;
++		}
++      if (__fcntl(ret, F_SETFD, fcntl_flags)) {
++         return -1;
++      }
++  }
 +
-+  /* dup3 with fd == fd2 is required to fail with EINVAL.  */
-+  if (fd == fd2)
-+    {
-+      __set_errno (EINVAL);
-+      return -1;
-+    }
-+
-+  /* Only O_CLOEXEC is supported as a flag.  */
-+  if (flags & ~O_CLOEXEC)
-+    {
-+      __set_errno (EINVAL);
-+      return -1;
-+    }
-+
-+  /* Check if FD is valid by trying to get the file status flags.  */
-+  if (__fcntl (fd, F_GETFL) < 0)
-+    return -1;
-+
-+  /* Choose F_DUPFD_CLOEXEC if O_CLOEXEC is requested.  */
-+  fcntl_cmd = (flags & O_CLOEXEC) ? F_DUPFD_CLOEXEC : F_DUPFD;
-+
-+  /* Close fd2.  This is not atomic, but it's the best we can do
-+     without a native dup3 syscall.  Ignore errors from close since
-+     fd2 might not be open.  */
-+  save = errno;
-+  (void) __close (fd2);
-+  __set_errno (save);
-+
-+  /* Duplicate fd to the lowest available fd >= fd2.  Since we just
-+     closed fd2, this should return fd2.  */
-+  return __fcntl (fd, fcntl_cmd, fd2);
++  return ret;
 +}
 +libc_hidden_def (__dup3)
 +weak_alias (__dup3, dup3)
@@ -9605,10 +9569,10 @@ index 0000000..6dd4b45
 +/* Ironclad is 64-bit only - openat is provided by openat64.c via strong_alias.  */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/openat64.c glibc-workdir/sysdeps/unix/sysv/ironclad/openat64.c
 new file mode 100644
-index 0000000..0df7c6c
+index 0000000..249a7bb
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/openat64.c
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,92 @@
 +#include <fcntl.h>
 +#include <stdarg.h>
 +#include <errno.h>
@@ -9636,7 +9600,7 @@ index 0000000..0df7c6c
 +
 +  /* Check clashing flags: O_CREAT without write access.
 +     (Following mlibc behavior.)  */
-+  if ((oflag & O_CREAT) && ((oflag & O_WRONLY) == 0) && ((oflag & O_RDWR) == 0))
++  if ((oflag & O_CREAT) && (oflag & O_RDONLY) && !(oflag & O_WRONLY))
 +    {
 +      __set_errno (EISDIR);
 +      return -1;
@@ -9672,9 +9636,21 @@ index 0000000..0df7c6c
 +
 +  /* Handle O_TRUNC: truncate file after opening.
 +     Ironclad syscall is named 'truncate' not 'ftruncate64'.  */
-+  if (ret >= 0 && (oflag & O_TRUNC))
++  if (ret >= 0)
 +    {
-+      INLINE_SYSCALL_CALL (truncate, ret, 0);
++      if (oflag & O_TRUNC) {
++         INLINE_SYSCALL_CALL (truncate, ret, 0);
++      }
++
++      if (oflag & O_DIRECTORY) {
++			struct stat st;
++			fstat(ret, &st);
++			if (!S_ISDIR (st.st_mode)) {
++				INTERNAL_SYSCALL_CALL (close, ret);
++            __set_errno (ENOTDIR);
++            return -1;
++			}
++      }
 +    }
 +
 +  return ret;

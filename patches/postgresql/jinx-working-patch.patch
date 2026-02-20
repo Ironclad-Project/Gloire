@@ -1,0 +1,41 @@
+diff --git postgresql-clean/meson.build postgresql-workdir/meson.build
+index aad550e..3d0d713 100644
+--- postgresql-clean/meson.build
++++ postgresql-workdir/meson.build
+@@ -245,6 +245,10 @@ elif host_system == 'linux'
+   sema_kind = 'unnamed_posix'
+   cppflags += '-D_GNU_SOURCE'
+ 
++elif host_system == 'ironclad'
++  sema_kind = 'unnamed_posix'
++  cppflags += '-D_GNU_SOURCE'
++
+ elif host_system == 'netbsd'
+   # We must resolve all dynamic linking in the core server at program start.
+   # Otherwise the postmaster can self-deadlock due to signals interrupting
+diff --git postgresql-workdir/src/include/port/ironclad.h postgresql-workdir/src/include/port/ironclad.h
+new file mode 100644
+index 0000000..c75cba9
+--- /dev/null
++++ postgresql-workdir/src/include/port/ironclad.h
+@@ -0,0 +1,7 @@
++/* src/include/port/ironclad.h */
++
++/*
++ * Set the default wal_sync_method to fdatasync.  Everyone else does the same
++ * so we wont be special about it.
++ */
++#define PLATFORM_DEFAULT_WAL_SYNC_METHOD	WAL_SYNC_METHOD_FDATASYNC
+diff --git postgresql-workdir/src/makefiles/Makefile.ironclad postgresql-workdir/src/makefiles/Makefile.ironclad
+new file mode 100644
+index 0000000..1b12b7a
+--- /dev/null
++++ postgresql-workdir/src/makefiles/Makefile.ironclad
+@@ -0,0 +1,7 @@
++# Use --enable-new-dtags to generate DT_RUNPATH instead of DT_RPATH.
++# This allows LD_LIBRARY_PATH to still work when needed.
++rpath = -Wl,-rpath,'$(rpathdir)',--enable-new-dtags
++
++# Rule for building a shared library from a single .o file
++%.so: %.o
++	$(CC) $(CFLAGS) $< $(LDFLAGS) $(LDFLAGS_SL) -shared -o $@

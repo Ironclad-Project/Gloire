@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=postgresql
+version=18.2
+revision=1
+tarball_url="https://ftp.postgresql.org/pub/source/v${version}/postgresql-${version}.tar.bz2"
+tarball_blake2b="060ef9be485a6c23239408ec955764108c31084042ccc678dbba59fb4a0c6f28d9665bb132d4a0af45c3a33bc668933328a7d955e43e032b1c8f5d6751aea7ff"
+imagedeps="binutils"
+hostdeps="gcc pkg-config"
+deps="core-libs icu readline zlib"
+
+configure() {
+    meson_configure
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

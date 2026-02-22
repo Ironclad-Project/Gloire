@@ -47,6 +47,27 @@ post_package_strip() {
     done
 }
 
+generate_glib_schemas_hook() {
+    cat <<'EOF' >"${dest_dir}"/INSTALL
+#! /bin/sh
+
+export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+
+ACTION="$1"
+
+case "${ACTION}" in
+pre)
+    ;;
+post)
+    glib-compile-schemas /usr/share/glib-2.0/schemas/ >/dev/null
+    ;;
+esac
+
+exit 0
+EOF
+    chmod +x "${dest_dir}"/INSTALL
+}
+
 autotools_configure() {
         CFLAGS="$TARGET_CFLAGS" \
         CXXFLAGS="$TARGET_CXXFLAGS" \

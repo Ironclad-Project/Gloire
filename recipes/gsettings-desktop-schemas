@@ -2,7 +2,7 @@
 
 name=gsettings-desktop-schemas
 version=49.1
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git"
 commit=476d0e766396e1e99b9048fa9d0854482d9da7e0
 imagedeps="libglib2.0-dev"
@@ -29,4 +29,5 @@ package() {
     rm "${dest_dir}${prefix}"/share/glib-2.0/schemas/gschemas.compiled
 
     post_package_strip
+    generate_glib_schemas_hook
 }

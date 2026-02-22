@@ -2,7 +2,7 @@
 
 name=atril
 version=1.28.3
-revision=1
+revision=2
 git_url="https://github.com/mate-desktop/atril.git"
 commit=64bcc359e333135e72af2cc410373d8523b73c09
 imagedeps="libglib2.0-dev-bin itstool libglib2.0-bin"
@@ -44,4 +44,5 @@ package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
+    generate_glib_schemas_hook
 }

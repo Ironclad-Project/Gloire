@@ -3,7 +3,7 @@
 name=glib2
 repology_id=glib
 version=2.86.3
-revision=1
+revision=2
 tarball_url="https://download.gnome.org/sources/glib/2.86/glib-${version}.tar.xz"
 tarball_blake2b="eb98aa210a988cfe9060a8bf9ca594e52016f68ac33ee07e75d8fd2f3af70a2046b9c0af4a50a7a66369030156b48e0baa5041dbdd47b60361cb90b1a1de11eb"
 imagedeps="python3-docutils"
@@ -27,4 +27,5 @@ package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
+    generate_glib_schemas_hook
 }

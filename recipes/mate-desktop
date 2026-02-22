@@ -2,7 +2,7 @@
 
 name=mate-desktop
 version=1.28.2
-revision=1
+revision=2
 tarball_url="https://github.com/mate-desktop/mate-desktop/releases/download/v${version}/mate-desktop-${version}.tar.xz"
 tarball_blake2b="f9a136087d1b4d009c1349ecc15edffbb23dfae2124c985070b294151c7234f098141a2a0380a6dfead48b4cffb2481a18d131f5bc0ef2e50fcf4e98329ded39"
 imagedeps="libglib2.0-dev"
@@ -22,4 +22,5 @@ package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
+    generate_glib_schemas_hook
 }

@@ -3,9 +3,9 @@
 name=libnvmm
 skip_pkg_check=yes
 version=0.0git
-revision=3
+revision=4
 git_url="https://codeberg.org/Ironclad/libnvmm.git"
-commit=78dda65b07a9f758f0b5c023a30e29f24b5503d3
+commit=18da3c125435124df2f33ce115f86aca855cc97c
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

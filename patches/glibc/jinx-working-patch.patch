@@ -2020,7 +2020,7 @@ index 0000000..b59d449
 +#endif /* bits/ipctypes.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 new file mode 100644
-index 0000000..744b07b
+index 0000000..c1034d5
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/ironclad-syscall.h
 @@ -0,0 +1,155 @@
@@ -2085,7 +2085,7 @@ index 0000000..744b07b
 +#define SYS_listen                   52
 +#define SYS_accept                   53
 +#define SYS_rlimit                   54
-+/* 55 is unused */
++#define SYS_sched_rr_interval        55
 +#define SYS_access                   56
 +#define SYS_ppoll                    57
 +#define SYS_geteuid                  58
@@ -2160,12 +2160,12 @@ index 0000000..744b07b
 +#define SYS_nvmm_vcpu_run           127
 +#define SYS_nvmm_gpa_map            128
 +#define SYS_nvmm_gpa_unmap          129
-+#define SYS_nvmm_hva_map            130
-+#define SYS_nvmm_hva_unmap          131
++/* 130 is unused */
++/* 131 is unused */
 +#define SYS_nvmm_gva2gpa            132
-+#define SYS_nvmm_gpa2hva            133
-+#define SYS_nvmm_assist_io          134
-+#define SYS_nvmm_assist_mem         135
++/* 133 is unused */
++/* 134 is unused */
++/* 135 is unused */
 +#define SYS_nvmm_vcpu_dump          136
 +#define SYS_nvmm_vcpu_stop          137
 +#define SYS_setsid                  138

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=file
-version=5.46
-revision=3
+version=5.47
+revision=1
 tarball_url="https://astron.com/pub/file/file-${version}.tar.gz"
-tarball_blake2b="2b1df136f01c253cc490b483c644403da0674692ef97ef9e1239878328cfb8ce2bc418c14626145719c69acab00d56b63b5340a2b56c276c996b1e6ad1bfe9b6"
+tarball_blake2b="52b91ee7868a9b75431e00fca7f7db1362b3d39eb065f52434ea73d9ccd7497f3371f7e0a455644c56df3e6acee247208edc47bf8004fa922dba32786cc3e10c"
 hostdeps="gcc pkg-config file"
 deps="core-libs bzip2 xz zlib zstd"
 

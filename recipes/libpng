@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libpng
-version=1.6.54
+version=1.6.55
 revision=1
 tarball_url="https://prdownloads.sourceforge.net/libpng/libpng-${version}.tar.xz"
-tarball_blake2b="a91ebb8396d9a5de10d642cc8891d594dacd480248fdb73859f8317fc6cbadf0f542acf446955f2e78e8655439464bbad600993491e3e97474a91c65d703fef7"
+tarball_blake2b="2fd88e6e9f4e72edbafbfdd6d8e78522033920a250f8cb37f29ba8e9593cdf006b06f4e73de4e83fc5ddaaa3725362f27f5a16727ae841fd8969b74f28517ec4"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 

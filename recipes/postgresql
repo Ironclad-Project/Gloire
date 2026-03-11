@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=postgresql
-version=18.2
+version=18.3
 revision=1
 tarball_url="https://ftp.postgresql.org/pub/source/v${version}/postgresql-${version}.tar.bz2"
-tarball_blake2b="060ef9be485a6c23239408ec955764108c31084042ccc678dbba59fb4a0c6f28d9665bb132d4a0af45c3a33bc668933328a7d955e43e032b1c8f5d6751aea7ff"
+tarball_blake2b="b5d07158c25b1de80211cfdc9a20924f2249ffc45ca1daee1cc25d813922d39576057c360167da248350aa310d3ad5523eb6ed7b4a2b33215cba9b1eaf56d3f4"
 imagedeps="binutils"
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib"

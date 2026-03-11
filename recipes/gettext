@@ -2,10 +2,10 @@
 
 name=gettext
 repology_srcname=gettext
-version=0.26
+version=1.0
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/gettext/gettext-${version}.tar.xz"
-tarball_blake2b="b182e5fdb9fc46868dc39b512ef300c54c8e77a766f2d2de69289f84966d4205f494b3ecedfb30c6df581947172411ae7eb4ccc0bb1f180b67dd8a83803832a8"
+tarball_blake2b="052bd847c8cdb963437613583256e430b52e27e5ebe29a04df6ac549552ab0f85a1e637b991ebb57e82805fb6d2d23f37c4b70d7f711dc086f57a3a32ba3f00e"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

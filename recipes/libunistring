@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libunistring
-version=1.4.1
+version=1.4.2
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/libunistring/libunistring-${version}.tar.xz"
-tarball_blake2b="8fb25f3f23b1b8efa47b6f7f2d3025950b18140a503c1a0e229ae7f57f8c997533f63ba2d2fddb343356366368304dae4e3dc23c589c35dcf9c437c01e9c3657"
+tarball_blake2b="a03c51d3b1295642f5933e1b129f1b3f81705ef10422a30e6786d36e5788334ee6fbff1d70b31e1a95a65a6869db35f7ce77f6a59555eadf1ee31ecf19d92ccd"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

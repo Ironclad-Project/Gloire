@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=nano
-version=8.7
+version=8.7.1
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/nano/nano-${version}.tar.xz"
-tarball_blake2b="4a7a67f854969960c96d1e3b2c7184f9d9c9fb305a14ff9764a39a8103ca5f5878f9e344b0dc522e27643f93e57582881ea8e664ac9c6eaa99c3b2d9632febdc"
+tarball_blake2b="25c73945c385c6615ad547cad65d6b7edc0098d5310951d09bd91991c93ef09ef2f58a5dec8a00a17c0326a64bce18a1819d2073af94a8afcf43df747843da3b"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses file"
 

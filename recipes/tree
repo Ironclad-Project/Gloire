@@ -2,10 +2,10 @@
 
 name=tree
 repology_id=tree-steve-baker
-version=2.2.1
-revision=2
+version=2.3.1
+revision=1
 tarball_url="https://gitlab.com/OldManProgrammer/unix-tree/-/archive/${version}/unix-tree-${version}.tar.gz"
-tarball_blake2b="7c6bc3249634320aaef8be0c6fd9143faf3c5b6c507c7c3d724efd9e8a8ce8957362665312829c6fdcae7bbc4670b194e45a1f51efc8bb00fcc3237b21ffd058"
+tarball_blake2b="735de5546b8d50fb1fadbff573768632d9bf9cda924f1d82634493a365cec25411d6fcd726aa620d7ac24a7b89c989e2144582daa75542fed6e661670f7b41a9"
 hostdeps="gcc"
 deps="core-libs"
 

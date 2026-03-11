@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=m4
-version=1.4.20
+version=1.4.21
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/m4/m4-${version}.tar.xz"
-tarball_blake2b="d8e6716dd4f35e17b866917f0697f980d7b6fbfa9aa92feb1234fdb49fb62107dc48405036a8ca97db73889d7638b90b69ea005352992b7bf45e8605127b318f"
+tarball_blake2b="047573505e04295ba94e7b3eff6c705d7e7b8ed9e7794a686b04a709acb2f3edaea54eb0e76b7f9ffeb1b3dc48e9e34ad8d7b73633e7a1fca4348b13b4b5cc28"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

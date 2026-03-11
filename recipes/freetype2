@@ -2,10 +2,10 @@
 
 name=freetype2
 repology_id=freetype
-version=2.14.1
+version=2.14.2
 revision=1
 git_url="https://gitlab.freedesktop.org/freetype/freetype.git"
-commit=526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b
+commit=f4205da14867c5387cd6a329b90ee10a6df6eeff
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 libpng brotli zlib"
 

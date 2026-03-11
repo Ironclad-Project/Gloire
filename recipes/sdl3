@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sdl3
-version=3.4.0
+version=3.4.2
 revision=1
 tarball_url="https://github.com/libsdl-org/SDL/releases/download/release-${version}/SDL3-${version}.tar.gz"
-tarball_blake2b="4f878b13cdc139b643e04ee278d7d83aadbb6bf8aba5babc9622a8d1ea233452982232001c5d4cb72f0e8ec20f3d797f9cd07d1531829412a6dacde2146a2447"
+tarball_blake2b="6ff5a46b86cb09fe40f485740a59e72b447b631bd463deff72d7bb41d19738a297d23bc0895b70cfa045038ace7c3f0aefe5f70d4f6bceb5e0769d00a59136e9"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxext libxcursor libxi libxfixes libxkbcommon libxrandr libxrender libxxf86vm mesa"
 

@@ -2,15 +2,15 @@
 
 name=libexpat
 repology_id=expat
-version=2.7.3
-revision=3
-git_url="https://github.com/libexpat/libexpat.git"
-commit=4575e52f83e0d6d7bd24939eab8952bbc7bc358f
+version=2.7.4
+fixed_version=$(echo ${version} | sed 's/\./_/g')
+revision=1
+tarball_url="https://github.com/libexpat/libexpat/releases/download/R_${fixed_version}/expat-${version}.tar.gz"
+tarball_blake2b="e6cf9ad5b87b9d1f6525cb45ff7cae84495f61f386fdf0da9fc83ff7b49ce7217cd4d9611352998fff2b003e6b272ef8210bd1229f1d2a5ef850b7df22f624d5"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
 configure() {
-        cmake_source_dir="${source_dir}/expat" \
     cmake_configure
 }
 

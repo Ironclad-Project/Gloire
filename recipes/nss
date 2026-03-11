@@ -1,11 +1,11 @@
 #! /bin/sh
 
 name=nss
-version=3.120
+version=3.121
 revision=1
 fixed_version=$(echo ${version} | sed 's/\./_/g')
 tarball_url="https://archive.mozilla.org/pub/security/nss/releases/NSS_${fixed_version}_RTM/src/nss-${version}.tar.gz"
-tarball_blake2b="f1bff45d52a1c4580d522e1377c0f5af175b9ae52b5ba8edb4cffe0c42bbb1ba1e0382a493abffb9ca7f7a2ee46d8e6857b036f43cdda6328d432c2dc97572e4"
+tarball_blake2b="972eedd73c46655a561956ac1a38814d96ce81767392532ecf42fe143f6f256a25a640d3b4b4829f4a7553d6d1961fc3e0279e740ca35d54ab6582742788cc31"
 imagedeps="build-essential gcc libnspr4-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs nspr p11-kit sqlite zlib"

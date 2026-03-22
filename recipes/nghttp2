@@ -1,16 +1,12 @@
 #! /bin/sh
 
 name=nghttp2
-version=1.68.0
+version=1.68.1
 revision=1
-git_url="https://github.com/nghttp2/nghttp2.git"
-commit=534b74b72524e962c18c7146470914632ca7eb2d
+tarball_url="https://github.com/nghttp2/nghttp2/releases/download/v${version}/nghttp2-${version}.tar.xz"
+tarball_blake2b="bd5854ebdf58355470018596fd7bab4bb6e23825756fbad08efa4e01dcb4320be939ed676e68689385abf927e6c59da1c1ec85e1812549fc8aabf1a356ca0789"
 hostdeps="gcc pkg-config"
 deps="core-libs brotli jansson libevent libxml2 openssl"
-
-early_prepare() {
-    git submodule update --init --recursive
-}
 
 configure() {
     cmake_configure

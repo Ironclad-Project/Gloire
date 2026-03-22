@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=simdutf
-version=8.1.0
+version=8.2.0
 revision=1
 git_url="https://github.com/simdutf/simdutf.git"
-commit=24a06103ab5cc2235df9b8f07c77e07e440f0e12
+commit=fd476229424b40ae71a58dd5a205795c3d76b5f1
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

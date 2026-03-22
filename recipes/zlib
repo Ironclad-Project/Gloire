@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=zlib
-version=1.3.1
-revision=2
+version=1.3.2
+revision=1
 tarball_url="https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="6d15d8f3c8feaf602043bb6e72316ee721c33ef24e110e3bf03fb12eac9703fd29e352268d202ecd2f18b526b4f1dbd90c8046e01ad8e64ddce3e55ad5db513e"
+tarball_blake2b="21bcccda24d5868b9268e9f7a0fb125ff284cd07f8c708c021dd2702a48852447d4b1bc1e64480cf4d04539ef1ae99225fbde4f63894727a5edcfcd00f21c5e9"
 imagedeps="patchelf"
 hostdeps="gcc pkg-config"
 deps="core-libs"
@@ -23,6 +23,7 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
+
     # Remove static libraries
     rm -rf "${dest_dir}${prefix}"/lib/*.a
 

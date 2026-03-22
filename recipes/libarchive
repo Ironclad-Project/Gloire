@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libarchive
-version=3.8.5
+version=3.8.6
 revision=1
 tarball_url="https://github.com/libarchive/libarchive/releases/download/v${version}/libarchive-${version}.tar.gz"
-tarball_blake2b="fcf7b54d57d0fd7ae31955b99aa46192bdba81136cf54b7c85f9e058c1bc77c0d727b9cce71e57235afc7cc985c62e6a2bf9828476591c05fe5ae128c836a124"
+tarball_blake2b="cd6b89f42ab53815625a87100929aba09a35f233ee7101c28c19dd064183ff7839362054c9ce88a679c0eae81a5ae77897043aec84239a9b74c9eaf67faa47ac"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 libexpat libxml2 xz zlib zstd"
 

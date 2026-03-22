@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=giflib
-version=5.2.2
-revision=2
+version=6.1.2
+revision=1
 tarball_url="https://sourceforge.net/projects/giflib/files/giflib-${version}.tar.gz"
-tarball_blake2b="5729628044f1bd9227856c76f67b673760c7c93860d9131ab0f67d900b8090fa24693ce16555ff65cfd839c6c960630d49a19ee26e03bdc9d2b4626f9efac393"
+tarball_blake2b="3716747d8969a95dd27aade75b266916a6f9f12c0b31b810e9c334d62fa270b22d2db181d925fadd86e0e56e0a057f2517090206fb81df70cdbee2c1fef1d0f9"
 imagedeps="imagemagick"
 hostdeps="gcc pkg-config"
 deps="core-libs"

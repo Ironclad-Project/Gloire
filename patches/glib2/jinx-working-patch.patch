@@ -11,3 +11,18 @@ index 0310a75..dba61e6 100644
  #define G_CREDENTIALS_SUPPORTED 1
  #define G_CREDENTIALS_USE_LINUX_UCRED 1
  #define G_CREDENTIALS_NATIVE_TYPE G_CREDENTIALS_TYPE_LINUX_UCRED
+diff --git glib2-clean/glib/glib-unix.c glib2-workdir/glib/glib-unix.c
+index 24a20df..a769bc9 100644
+--- glib2-clean/glib/glib-unix.c
++++ glib2-workdir/glib/glib-unix.c
+@@ -1006,6 +1006,10 @@ g_unix_fd_query_path (int      fd,
+   g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_NOSYS,
+                "g_unix_fd_query_path() not supported on HURD");
+   return NULL;
++#elif defined (__ironclad__)
++  g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_NOSYS,
++               "g_unix_fd_query_path() not supported on Ironclad");
++  return NULL;
+ #else
+   #error "g_unix_fd_query_path() not supported on this platform"
+ #endif

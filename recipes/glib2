@@ -2,10 +2,10 @@
 
 name=glib2
 repology_id=glib
-version=2.86.4
+version=2.88.0
 revision=1
-tarball_url="https://download.gnome.org/sources/glib/2.86/glib-${version}.tar.xz"
-tarball_blake2b="20dee8c99fdb410d7f9c09366f1688dbc075638fdecd44f67562cc9cc46e34712cd1357d5a4facadd36f3c45fceeb83c7910be4f9c819ad20778339cdfb34452"
+tarball_url="https://download.gnome.org/sources/glib/2.88/glib-${version}.tar.xz"
+tarball_blake2b="b540e0f5490f85b44cfad5d819f4a6fd911addc26fed8b8b49852bd6ec322d7d16136b691452030cf5f590374ea06cf8fdb8c9109d5cbe7b68625379bbd40615"
 imagedeps="python3-docutils"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 libffi zlib"

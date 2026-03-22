@@ -2,11 +2,11 @@
 
 name=libexpat
 repology_id=expat
-version=2.7.4
+version=2.7.5
 fixed_version=$(echo ${version} | sed 's/\./_/g')
 revision=1
 tarball_url="https://github.com/libexpat/libexpat/releases/download/R_${fixed_version}/expat-${version}.tar.gz"
-tarball_blake2b="e6cf9ad5b87b9d1f6525cb45ff7cae84495f61f386fdf0da9fc83ff7b49ce7217cd4d9611352998fff2b003e6b272ef8210bd1229f1d2a5ef850b7df22f624d5"
+tarball_blake2b="0f65d7c165e5dd15fdae6a30ca19408b4a5e24173db7b1f2b29c7db69be4122603f186f00dc95d26b3c7a8d2801208bc915c3b6532f6af28778ee13cadc5970f"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

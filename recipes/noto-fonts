@@ -1,0 +1,17 @@
+#! /bin/sh
+
+name=noto-fonts
+repology_id=fonts:noto
+version=2026.03.01
+revision=1
+git_url="https://github.com/notofonts/notofonts.github.io"
+commit=67b512485069e86f2e06413c46b8394d3358021d
+
+package() {
+    cd "${source_dir}"
+    install -Dm644 fonts/*/hinted/ttf/*.tt[fc] -t "${dest_dir}"/usr/share/fonts/noto
+
+    install -Dm644 "${base_dir}"/build-support/noto-fonts/*.conf -t "${dest_dir}"/usr/share/fontconfig/conf.avail/
+    install -d "${dest_dir}"/usr/share/fontconfig/conf.default
+    ln -rs "${dest_dir}"/usr/share/fontconfig/conf.avail/* "${dest_dir}"/usr/share/fontconfig/conf.default
+}

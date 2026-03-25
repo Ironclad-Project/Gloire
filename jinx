@@ -67,6 +67,7 @@ cmd_help() {
     printf "\n   install            Installs package(s)"
     printf "\n   reinstall          Reinstalls package(s)"
     printf "\n   dry-run            Prints all packages that need to be built in order (space separated)"
+    printf "\n   download           Downloads pre-built package(s) from remote repo"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
     printf "\n\nexample: $0 update '*'\n"
 }
@@ -1597,6 +1598,120 @@ cmd_dry_run() {
     printf '%s\n' ${pending_list} | awk '!seen[$0]++{printf "%s ", $0} END{print ""}'
 }
 
+cmd_download() {
+    if [ -z "${JINX_REPO_URL}" ]; then
+        die "$0: JINX_REPO_URL not set in Jinxfile"
+    fi
+
+    if [ -z "$1" ]; then
+        die "$0: download requires at least one package name"
+    fi
+
+    # Expand package patterns
+    all_packages=""
+    for ppkg in "$@"; do
+        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
+            all_packages="${all_packages} ${pkg}"
+        done
+    done
+
+    # Collect transitive deps using fast dep extraction
+    make_temp
+    pkg_deps_cache="${tmp}"
+    touch "${pkg_deps_cache}"
+
+    for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "*" ')' ); do
+        fast_deps="$(get_deps_fast "${base_dir}/recipes/${pkg}")"
+        printf "%s:%s\n" "${pkg}" "${fast_deps}" >> "${pkg_deps_cache}"
+    done
+
+    make_temp
+    all_deps_cache="${tmp}"
+    touch "${all_deps_cache}"
+
+    collect_all_deps() {
+        pkg="$1"
+        if grep -q "^${pkg}$" "${all_deps_cache}" 2>/dev/null; then
+            return
+        fi
+        printf "%s\n" "${pkg}" >> "${all_deps_cache}"
+        deps="$(grep "^${pkg}:" "${pkg_deps_cache}" | cut -d: -f2-)"
+        for dep in ${deps}; do
+            if [ ! -z "${dep}" ]; then
+                collect_all_deps "${dep}"
+            fi
+        done
+    }
+
+    for pkg in ${all_packages}; do
+        collect_all_deps "${pkg}"
+    done
+
+    # Determine which packages are missing from pkgs/
+    download_list=""
+    for dep in $(cat "${all_deps_cache}"); do
+        include_recipe "${base_dir}"/recipes/"${dep}"
+        if ! [ -z "${from_source}" ]; then
+            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+        fi
+        pkg_filename="${name}-${version}_${revision}.${JINX_ARCH}.xbps"
+        if ! [ -f "${build_dir}/pkgs/${pkg_filename}" ]; then
+            download_list="${download_list} ${pkg_filename}"
+        fi
+    done
+
+    if [ -z "${download_list}" ]; then
+        echo "* all packages already present in pkgs/"
+        return
+    fi
+
+    # Fetch repo index for checksum verification
+    echo "* fetching repository index..."
+    make_temp
+    repodata_path="${tmp}"
+    curl -fL -o "${repodata_path}" "${JINX_REPO_URL}/${JINX_ARCH}-repodata" \
+        || die "$0: failed to fetch repository index from ${JINX_REPO_URL}"
+
+    make_temp
+    index_plist="${tmp}"
+    zstdcat "${repodata_path}" | tar -xOf - index.plist >"${index_plist}"
+
+    # Download each missing package
+    for pkg_file in ${download_list}; do
+        echo "* downloading ${pkg_file}..."
+        make_temp
+        dl_path="${tmp}"
+        curl -fL -o "${dl_path}" "${JINX_REPO_URL}/${pkg_file}" \
+            || die "$0: failed to download ${pkg_file} from ${JINX_REPO_URL}"
+
+        # Verify SHA256 against repodata
+        pkg_name="${pkg_file%%-[0-9]*}"
+        expected_sha256="$(sed -n "/<key>${pkg_name}<\\/key>/,/<key>filename-sha256<\\/key>/{
+            /<key>filename-sha256<\\/key>/{n;s/.*<string>\\(.*\\)<\\/string>.*/\\1/p;}
+        }" "${index_plist}")"
+
+        if ! [ -z "${expected_sha256}" ]; then
+            actual_sha256="$(sha256sum "${dl_path}" | awk '{print $1;}')"
+            if ! [ "${actual_sha256}" = "${expected_sha256}" ]; then
+                die "$0: SHA256 mismatch for ${pkg_file}:
+  expected '${expected_sha256}'
+  got      '${actual_sha256}'"
+            fi
+        fi
+
+        mv "${dl_path}" "${build_dir}/pkgs/${pkg_file}"
+
+        # Re-index this package
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${JINX_ARCH}" \
+        xbps-rindex \
+            -a "${build_dir}/pkgs/${pkg_file}" \
+            -f
+    done
+
+    echo "* download complete"
+}
+
 cmd_regen() {
     for i in "$@"; do
         tracked_subshell 'do_regen "$i"'
@@ -1901,6 +2016,7 @@ unset JINX_MAJOR_VER
 unset JINX_DEBIAN_SNAPSHOT
 unset JINX_BASE_PACKAGES
 unset JINX_CMAKE_PLATFORM
+unset JINX_REPO_URL
 . "${JINX_CONFIG_FILE}"
 
 if [ -z "${JINX_MAJOR_VER}" ]; then
@@ -1995,6 +2111,10 @@ case "$1" in
     dry-run)
         shift 1
         cmd_dry_run "$@"
+        ;;
+    download)
+        shift 1
+        cmd_download "$@"
         ;;
     *)
         die "$0: unknown command: $1"

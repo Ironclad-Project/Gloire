@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=vim
-version=9.2.0204
+version=9.2.0250
 revision=1
 tarball_url="https://github.com/vim/vim/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="d2dd6ba95e0a836e35fe97cd70066dbf076c56b57fdd6e90ba66d30a0245d7861b3aeea911d590923aee06bcd846ad9ab904b56000d31ea5b80b5aec930af3e5"
+tarball_blake2b="6746bfc05e6d03652e7fda6543a888eeb96ec526e66b9212cdf5ce61fb9b43a11411ef9f4f9ca7a40a1dd510fad90b61597843a3204870040735350b95494471"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 

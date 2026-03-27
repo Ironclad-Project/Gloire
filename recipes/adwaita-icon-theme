@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=adwaita-icon-theme
-version=49.0
+version=50.0
 revision=1
-git_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git"
-commit=084370e79b7f02cec50ab70c82da49f64b45f120
+tarball_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/archive/${version}/adwaita-icon-theme-${version}.tar.gz"
+tarball_blake2b="c8fab6b7c8f38f673d3a7a4d281a418b5d54fb5a328a00f64c2ce9a66506c7c8aef4700441e7020fa4e0c2f05f738afc60773f8ed10a0ee0deee5f1f030d5483"
 imagedeps="gtk-update-icon-cache"
 hostdeps="gcc pkg-config"
 deps="core-libs gtk3"

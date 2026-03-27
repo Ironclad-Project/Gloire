@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=mate-terminal
-version=1.28.1
-revision=4
-git_url="https://github.com/mate-desktop/mate-terminal.git"
-commit=8634b87ff36933acf072393486a422670330f7e7
+version=1.28.3
+revision=1
+tarball_url="https://github.com/mate-desktop/mate-terminal/releases/download/v${version}/mate-terminal-${version}.tar.xz"
+tarball_blake2b="8d2b07f950a2cfcaaf84f98896286deac81c20f970e7e082f18f66ed325d9e778fa7888b649b458ceec3c4e53ab304d5988f9fd58697bbdc2b64a61d5ced470b"
 imagedeps="libglib2.0-dev itstool"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core glib2 dconf gdk-pixbuf libice libsm libx11 pango gtk3 vte mate-desktop ttf-liberation"

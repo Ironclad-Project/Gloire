@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=dunst
-version=1.13.1
+version=1.13.2
 revision=1
 git_url="https://github.com/dunst-project/dunst.git"
-commit=da6174d6079ee7bf29f52898ee215d656a69f434
+commit=312ed56fbcdc84823c99f21008467561394a8eb1
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxt libxext libxmu libxrender libxi libxcb dbus pango gdk-pixbuf libxscrnsaver libxinerama libnotify"
 

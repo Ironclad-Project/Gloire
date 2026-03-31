@@ -34,12 +34,12 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="4"
+jinx_minor_ver="5"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-XBPS_VERSION=0.60.6
-XBPS_SHA256SUM=f51d528fa680873914aa8367707726dd777fccc6e5c95cfad90fdb3562375c04
+XBPS_VERSION=0.60.7
+XBPS_SHA256SUM=ec8c2e4d595863b5748c10d9ada1d51ac1da6f910a9d31682acd1a477310c64e
 
 debootstrap_version=1.0.142
 debootstrap_sha256sum=19729f8e48a56f1e1ecfe7eba4e5f1a8b0a0d1ceee76e157d6d1587019237e33
@@ -562,10 +562,15 @@ prepare_container() {
     make_temp -d
     sysroot_dir="${tmp}"
 
+    make_temp
+    tmp_stdout="${tmp}"
+    make_temp
+    tmp_stderr="${tmp}"
     for dep in $(cat "${deps_file}"); do
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-            xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >/dev/null 2>&1
+		xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >"${tmp_stdout}" 2>"${tmp_stderr}" \
+	|| (echo "jinx: xbps-install failed! stdout:" && sed 's/^/\- /' "${tmp_stdout}" && echo jinx: stderr: && sed 's/^/\- /' "${tmp_stderr}" && exit 17)
     done
 
     if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
@@ -1862,9 +1867,6 @@ reinit_container() {
     tar -zxf xbps-${XBPS_VERSION}.tar.gz
     cd xbps-${XBPS_VERSION}
 
-    # XXX: xbps upstream forgot to bump version string
-    sed "s/0\.60/0.60.6/g" configure >configure.sed
-    mv configure.sed configure
     sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
     mv configure.sed configure
     chmod +x configure

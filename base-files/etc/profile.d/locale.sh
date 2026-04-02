@@ -11,8 +11,8 @@ if [ -z "$LANG" ]; then
   fi
 fi
 
-# define default LANG to C.UTF-8 if not already defined
-LANG=${LANG:-C.UTF-8}
+# define default LANG to C if not already defined
+LANG=${LANG:-C}
 
 # export all locale variables when they exist
 export LANG LANGUAGE LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \

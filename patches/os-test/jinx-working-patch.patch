@@ -1,24 +1,9 @@
-diff --git os-test-clean/signal/ppoll-block-raise.c os-test-workdir/signal/ppoll-block-raise.c
-index 2910f69..b935d71 100644
---- os-test-clean/signal/ppoll-block-raise.c
-+++ os-test-workdir/signal/ppoll-block-raise.c
-@@ -25,10 +25,5 @@ int main(void)
- 	int fds[2];
- 	if ( pipe(fds) )
- 		err(1, "pipe");
--	struct pollfd pfd = { .fd = fds[0], .events = POLLIN };
--	int ret = ppoll(&pfd, 1, NULL, &empty);
--	if ( ret < 0 )
--		err(1, "ppoll");
--	printf("ppoll() == %i\n", ret);
- 	return 0;
- }
 diff --git os-test-clean/signal/sigaltstack-exec.c os-test-workdir/signal/sigaltstack-exec.c
 index 81c3eda..4faaa2d 100644
 --- os-test-clean/signal/sigaltstack-exec.c
 +++ os-test-workdir/signal/sigaltstack-exec.c
 @@ -13,26 +13,5 @@ static void handler(int signum)
- 
+
  int main(int argc, char* argv[])
  {
 -	stack_t ss, old_ss;
@@ -49,7 +34,7 @@ index 353ef81..f85e968 100644
 --- os-test-clean/signal/sigaltstack-raise-exec.c
 +++ os-test-workdir/signal/sigaltstack-raise-exec.c
 @@ -13,6 +13,7 @@ static void handler(int signum)
- 
+
  int main(int argc, char* argv[])
  {
 +	return 0;
@@ -61,7 +46,7 @@ index 5884845..f198da2 100644
 --- os-test-clean/signal/sigaltstack-raise.c
 +++ os-test-workdir/signal/sigaltstack-raise.c
 @@ -18,17 +18,5 @@ static void handler(int signum)
- 
+
  int main(void)
  {
 -	stack_t ss;
@@ -78,67 +63,12 @@ index 5884845..f198da2 100644
 -	raise(SIGUSR1);
  	return 0;
  }
-diff --git os-test-clean/udp/connect-recv.c os-test-workdir/udp/connect-recv.c
-index 4b1b696..d013196 100644
---- os-test-clean/udp/connect-recv.c
-+++ os-test-workdir/udp/connect-recv.c
-@@ -5,21 +5,5 @@
- 
- int main(void)
- {
--	int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
--	if ( fd < 0 )
--		err(1, "socket");
--	struct sockaddr_in sin;
--	memset(&sin, 0, sizeof(sin));
--	sin.sin_family = AF_INET;
--	sin.sin_addr.s_addr = htobe32(INADDR_LOOPBACK);
--	sin.sin_port = htobe16(65535);
--	if ( connect(fd, (const struct sockaddr*) &sin, sizeof(sin)) < 0 )
--		err(1, "connect");
--	char x;
--	ssize_t amount = recv(fd, &x, sizeof(x), MSG_DONTWAIT);
--	if ( amount < 0 )
--		err(1, "recv");
--	if ( amount == 0 )
--		puts("EOF");
- 	return 0;
- }
-diff --git os-test-clean/udp/connect-send-error-recv.c os-test-workdir/udp/connect-send-error-recv.c
-index 17f46b4..916d101 100644
---- os-test-clean/udp/connect-send-error-recv.c
-+++ os-test-workdir/udp/connect-send-error-recv.c
-@@ -6,24 +6,5 @@
- 
- int main(void)
- {
--	int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
--	if ( fd < 0 )
--		err(1, "socket");
--	struct sockaddr_in sin;
--	memset(&sin, 0, sizeof(sin));
--	sin.sin_family = AF_INET;
--	sin.sin_addr.s_addr = htobe32(INADDR_LOOPBACK);
--	sin.sin_port = htobe16(65535);
--	if ( connect(fd, (const struct sockaddr*) &sin, sizeof(sin)) < 0 )
--		err(1, "connect");
--	char x = 'x';
--	if ( send(fd, &x, sizeof(x), 0) < 0 )
--		warn("send");
--	usleep(50000);
--	ssize_t amount = recv(fd, &x, sizeof(x), MSG_DONTWAIT);
--	if ( amount < 0 )
--		err(1, "recv");
--	if ( amount == 0 )
--		puts("EOF");
- 	return 0;
- }
 diff --git os-test-clean/udp/recvfrom-getsockname.c os-test-workdir/udp/recvfrom-getsockname.c
 index ce9efad..6336683 100644
 --- os-test-clean/udp/recvfrom-getsockname.c
 +++ os-test-workdir/udp/recvfrom-getsockname.c
 @@ -5,35 +5,5 @@
- 
+
  int main(void)
  {
 -	int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);

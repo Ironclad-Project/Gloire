@@ -2,10 +2,10 @@
 
 name=xorriso
 repology_id=libisoburn
-version=1.5.6
-revision=2
-tarball_url="https://ftp.gnu.org/gnu/xorriso/xorriso-${version}.pl02.tar.gz"
-tarball_blake2b="5f453cb3b1583865c71947c3ce95d87ea138b87605429fa756e34f0ddedb34037381ef81893bb69ecac9a2bd4302648f22f4cc930bf5567d509d1e26e6530f6b"
+version=1.5.8
+revision=1
+tarball_url="https://ftp.gnu.org/gnu/xorriso/xorriso-${version}.tar.gz"
+tarball_blake2b="2f7fedca895ccca1278c68a03df25e31119c633a9f6e5b77b0d33e34380b306acc047ba7c7ff413af1eecb7f6b54a1059e69bf87e4bae4116b81db3b206457a9"
 imagedeps="gperf"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2"

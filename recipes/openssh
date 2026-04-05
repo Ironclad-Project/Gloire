@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=openssh
-version=10.2p1
+version=10.3p1
 revision=1
 tarball_url="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${version}.tar.gz"
-tarball_blake2b="8c031b10b1642e21b46f7d1db84ba42692e378a54af3d8e5b5c8706c3a0a06d442a02ed8803063121e7ff325ea275cad4432b9eaa6a7f47a4d7cfad504953ab6"
+tarball_blake2b="77ff7c3bc943702267d74f6f7cdae44209ab940e42501e8a225761f3c8ab5416f2f0e4e61183e0b4cd79d5a041f4d1600674fcda17d3a2bd172074655cefdcd1"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib openssl"
 

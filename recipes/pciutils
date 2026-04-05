@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=pciutils
-version=3.14.0
-revision=2
-tarball_url="https://mj.ucw.cz/download/linux/pci/pciutils-3.14.0.tar.gz"
-tarball_blake2b="3ab270c4523cc1968d5f3a03d2564eff5560b60eb8307bafe44ee240a6636dc676fbf0a28effe3c9abc99bfc86a975aea066d634a5e5adaffb2c63ba226511d9"
+version=3.15.0
+revision=1
+tarball_url="https://github.com/pciutils/pciutils/releases/download/v${version}/pciutils-${version}.tar.gz"
+tarball_blake2b="29d3d38be6a3b8abce8db86e9160fc27ce966375f2ea441dff20cad9d7f7dfebe42a17d6054a406ed0d52035ad9c9071837e0e7650c954ff1c84514554f6c34f"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

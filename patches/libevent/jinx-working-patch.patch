@@ -1,0 +1,13 @@
+diff --git libevent-clean/CMakeLists.txt libevent-workdir/CMakeLists.txt
+index 676727f..7c021d1 100644
+--- libevent-clean/CMakeLists.txt
++++ libevent-workdir/CMakeLists.txt
+@@ -19,7 +19,7 @@
+ #       start libevent.sln
+ #
+ 
+-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
++cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+ 
+ if (POLICY CMP0054)
+     cmake_policy(SET CMP0054 NEW)

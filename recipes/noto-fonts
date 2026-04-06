@@ -2,10 +2,10 @@
 
 name=noto-fonts
 repology_id=fonts:noto
-version=2026.03.01
+version=2026.04.01
 revision=1
 git_url="https://github.com/notofonts/notofonts.github.io"
-commit=67b512485069e86f2e06413c46b8394d3358021d
+commit=132db3be0104de9ca0aac3c7b1dd33a8fd29ff39
 
 package() {
     cd "${source_dir}"

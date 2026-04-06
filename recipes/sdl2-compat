@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=sdl2-compat
-version=2.32.64
+version=2.32.66
 revision=1
 tarball_url="https://github.com/libsdl-org/sdl2-compat/releases/download/release-${version}/sdl2-compat-${version}.tar.gz"
-tarball_sha512=22c73c794bc2a750d7ec1a3fa16db9e63af4e058f96975b27f856a89a91760596f54899b22d2d8ae3f5a9a6e7f58a37870965d540761212f6c746a8f4fc2e775
+tarball_sha512=c8d4d45b9bf2f3904aee19b75878deebecef3b2e68dc2905c787941ad8078753d0616685c5cad586fe823111b026a6b7779faeedcf6daa3ab0a89e48ce3f599f
 hostdeps="gcc pkg-config"
 deps="sdl3"
 

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2022-2025 mintsuki
+# Copyright (C) 2022-2026 Mintsuki
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,15 +34,15 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="5"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
 XBPS_VERSION=0.60.7
 XBPS_SHA256SUM=ec8c2e4d595863b5748c10d9ada1d51ac1da6f910a9d31682acd1a477310c64e
 
-debootstrap_version=1.0.142
-debootstrap_sha256sum=19729f8e48a56f1e1ecfe7eba4e5f1a8b0a0d1ceee76e157d6d1587019237e33
+debootstrap_version=1.0.143
+debootstrap_sha256sum=15652a91eb1cf04c24c485bbaaf36e0528132bded8475820344a8129c7eaca01
 
 die() {
     echo "$1" 1>&2
@@ -1919,7 +1919,7 @@ int fchownat(int dirfd, const char *pathname,
     return 0;
 }
 EOF
-    cc -O2 -pipe -std=gnu99 -Wall -Wextra -fPIC -shared "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
+    cc -O2 -pipe -std=gnu99 -Wall -Wextra -fPIC -shared -nostdlib "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
     rm "$JINX_CACHE_DIR/nochown.c"
 
     DEBOOTSTRAP_ARCH="$(uname -m)"

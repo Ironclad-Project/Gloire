@@ -149,19 +149,6 @@ index 0307ffb..1cde105 100644
 -  name: 'libfdt',
 -  description: 'Flat Device Tree manipulation',
 -)
-diff --git qemu-clean/target/i386/nvmm/nvmm-all.c qemu-workdir/target/i386/nvmm/nvmm-all.c
-index 533a0e9..094e720 100644
---- qemu-clean/target/i386/nvmm/nvmm-all.c
-+++ qemu-workdir/target/i386/nvmm/nvmm-all.c
-@@ -985,7 +985,7 @@ nvmm_init_vcpu(CPUState *cpu)
-         }
-     }
- 
--    qcpu->vcpu_dirty = true;
-+    cpu->vcpu_dirty = true;
-     cpu->accel = qcpu;
- 
-     return 0;
 diff --git qemu-clean/util/cpuinfo-riscv.c qemu-workdir/util/cpuinfo-riscv.c
 index 0291b72..df89863 100644
 --- qemu-clean/util/cpuinfo-riscv.c

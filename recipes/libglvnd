@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=libglvnd
+version=1.7.0
+revision=1
+tarball_url="https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${version}/libglvnd-v${version}.tar.gz"
+tarball_blake2b="3f4d4ebe8f4584bc5b5e708408f3c39247c5c83e26e61b5c19d3f0d03f1c07b364ea89b117397b3929c948bcb214e45905f9efafbb8069dfb052db5f26f56402"
+hostdeps="gcc pkg-config"
+deps="core-libs mesa libxext"
+
+configure() {
+    meson_configure \
+        -Dgles1=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+    post_package_strip
+}

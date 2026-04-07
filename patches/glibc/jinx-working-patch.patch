@@ -1,27 +1,3 @@
-diff --git glibc-clean/Makeconfig glibc-workdir/Makeconfig
-index 7102d92..29485e8 100644
---- glibc-clean/Makeconfig
-+++ glibc-workdir/Makeconfig
-@@ -1294,7 +1294,9 @@ $(common-objpfx)dl-tunable-list.stmp: \
- # Dump the GCC macros used by the default compiler flags to a header
- # file, so that they can be inspected when using different compiler
- # flags.  Add the GCCMACRO prefix to make these macro names unique.
--$(common-objpfx)gcc-macros.h.in: $(common-objpfx)config.status
-+# Depend on libc-modules.stmp because CPPFLAGS includes -include libc-modules.h.
-+$(common-objpfx)gcc-macros.h.in: $(common-objpfx)config.status \
-+				 $(common-objpfx)libc-modules.stmp
- 	$(CC) $(CFLAGS) $(CPPFLAGS) -E -dM -x c -o $@ /dev/null
- $(common-objpfx)gcc-macros.h: $(common-objpfx)gcc-macros.h.in
- 	sed 's/^#define /#define GCCMACRO/' < $< > $@
-@@ -1408,7 +1410,7 @@ all-subdirs = csu assert ctype locale intl catgets math setjmp signal	    \
- 	      stdlib stdio-common libio malloc string wcsmbs time dirent    \
- 	      posix io termios resource misc socket sysvipc gmon            \
- 	      gnulib iconv iconvdata wctype manual po argp                  \
--	      localedata timezone rt conform debug mathvec support	    \
-+	      localedata timezone rt conform debug mathvec	    \
- 	      dlfcn elf
- 
- ifndef avoid-generated
 diff --git glibc-clean/abi-tags glibc-workdir/abi-tags
 index 87cd681..a4a9d77 100644
 --- glibc-clean/abi-tags
@@ -112,10 +88,10 @@ index 0000000..30bcfeb
 +
 +#endif /* bits/seek_whence.h */
 diff --git glibc-clean/configure glibc-workdir/configure
-index 180e49d..b1ffdf4 100755
+index 0cd2269..d64cfc0 100755
 --- glibc-clean/configure
 +++ glibc-workdir/configure
-@@ -4968,7 +4968,7 @@ fi
+@@ -4966,7 +4966,7 @@ fi
  ###
  if test -z "$enable_hacker_mode" && test x"$libc_config_ok" != xyes; then
    case "$machine-$host_os" in
@@ -124,7 +100,7 @@ index 180e49d..b1ffdf4 100755
      ;;
    *)
      as_fn_error $? "
-@@ -6500,6 +6500,8 @@ gnu*)
+@@ -6498,6 +6498,8 @@ gnu*)
    base_os=mach/hurd ;;
  linux*)
    base_os=unix/sysv ;;
@@ -134,7 +110,7 @@ index 180e49d..b1ffdf4 100755
  
  # For sunos4.1.1, try sunos4.1.1, then sunos4.1, then sunos4, then sunos.
 diff --git glibc-clean/io/fcntl.h glibc-workdir/io/fcntl.h
-index 132d83a..2c64224 100644
+index d0ad4d6..385ed94 100644
 --- glibc-clean/io/fcntl.h
 +++ glibc-workdir/io/fcntl.h
 @@ -132,11 +132,10 @@ typedef __pid_t pid_t;
@@ -218,7 +194,7 @@ index 132d83a..2c64224 100644
  
  /* Do the file control operation described by CMD on FD.
 diff --git glibc-clean/libio/fileops.c glibc-workdir/libio/fileops.c
-index 0cce828..fd9a62f 100644
+index 1852c9e..ef97eef 100644
 --- glibc-clean/libio/fileops.c
 +++ glibc-workdir/libio/fileops.c
 @@ -475,7 +475,7 @@ new_do_write (FILE *fp, const char *data, size_t to_do)
@@ -280,7 +256,7 @@ index 9561833..b09835a 100644
    (_IO_file_close_it (FP), \
     _IO_file_fopen (FP, FILENAME, MODE, 1))
 diff --git glibc-clean/libio/libioP.h glibc-workdir/libio/libioP.h
-index 1e3d28b..28f37aa 100644
+index d3b9e5e..f113e19 100644
 --- glibc-clean/libio/libioP.h
 +++ glibc-workdir/libio/libioP.h
 @@ -54,9 +54,17 @@
@@ -302,7 +278,7 @@ index 1e3d28b..28f37aa 100644
  /* THE JUMPTABLE FUNCTIONS.
  
 diff --git glibc-clean/libio/oldfileops.c glibc-workdir/libio/oldfileops.c
-index a268ece..2b6cdea 100644
+index 41b1549..519af8f 100644
 --- glibc-clean/libio/oldfileops.c
 +++ glibc-workdir/libio/oldfileops.c
 @@ -273,7 +273,7 @@ old_do_write (FILE *fp, const char *data, size_t to_do)
@@ -342,17 +318,12 @@ index a268ece..2b6cdea 100644
    return offset;
  }
 diff --git glibc-clean/libio/stdio.h glibc-workdir/libio/stdio.h
-index d042b36..82a1c44 100644
+index 3bf6a1f..9a4c064 100644
 --- glibc-clean/libio/stdio.h
 +++ glibc-workdir/libio/stdio.h
-@@ -105,14 +105,20 @@ typedef __fpos64_t fpos64_t;
- #define EOF (-1)
+@@ -110,13 +110,15 @@ typedef __fpos64_t fpos64_t;
  
  
-+/* Get the values:
-+   FILENAME_MAX	Maximum length of a filename.  */
-+#include <bits/stdio_lim.h>
-+
  /* The possibilities for the third argument to `fseek'.
 -   These values should not be changed.  */
 -#define SEEK_SET	0	/* Seek from beginning of file.  */
@@ -372,19 +343,8 @@ index d042b36..82a1c44 100644
  #endif
  
  
-@@ -124,10 +130,6 @@ typedef __fpos64_t fpos64_t;
- #define L_tmpnam 20
- #define TMP_MAX 238328
- 
--/* Get the values:
--   FILENAME_MAX	Maximum length of a filename.  */
--#include <bits/stdio_lim.h>
--
- #ifdef __USE_POSIX
- # define L_ctermid 9
- # if !defined __USE_XOPEN2K || defined __USE_GNU
 diff --git glibc-clean/libio/wfileops.c glibc-workdir/libio/wfileops.c
-index 4882a33..f15bad0 100644
+index bb0d6b1..5429d24 100644
 --- glibc-clean/libio/wfileops.c
 +++ glibc-workdir/libio/wfileops.c
 @@ -518,7 +518,7 @@ _IO_wfile_sync (FILE *fp)
@@ -415,10 +375,10 @@ index 4882a33..f15bad0 100644
    return offset;
  }
 diff --git glibc-clean/malloc/Makefile glibc-workdir/malloc/Makefile
-index 83f6c87..3001d7d 100644
+index bd7383d..b3e1b74 100644
 --- glibc-clean/malloc/Makefile
 +++ glibc-workdir/malloc/Makefile
-@@ -211,7 +211,9 @@ install-lib := libmcheck.a
+@@ -213,7 +213,9 @@ install-lib := libmcheck.a
  non-lib.a := libmcheck.a
  
  # Additional libraries.
@@ -430,82 +390,63 @@ index 83f6c87..3001d7d 100644
  
  # Helper objects for some tests.
 diff --git glibc-clean/nptl/allocatestack.c glibc-workdir/nptl/allocatestack.c
-index 800ca89..19456b9 100644
+index d3a9dbd..6ae2452 100644
 --- glibc-clean/nptl/allocatestack.c
 +++ glibc-workdir/nptl/allocatestack.c
-@@ -200,16 +200,17 @@ setup_stack_prot (char *mem, size_t size, struct pthread *pd,
+@@ -198,11 +198,11 @@ setup_stack_prot (char *mem, size_t size, struct pthread *pd,
    char *guard = guard_position (mem, size, guardsize, pd, pagesize_m1);
    if (atomic_load_relaxed (&allocate_stack_mode) == ALLOCATE_GUARD_MADV_GUARD)
      {
-+#ifdef MADV_GUARD_INSTALL
-       if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
+-      if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
++      /*if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
  	{
  	  pd->stack_mode = ALLOCATE_GUARD_MADV_GUARD;
  	  return true;
- 	}
--
--      /* If madvise fails it means the kernel does not support the guard
--	 advise (we assume that the syscall is available, guard is page-aligned
--	 and length is non negative).  The stack has already the expected
--	 protection flags, so it just need to PROT_NONE the guard area.  */
-+#endif
-+      /* If madvise fails (or MADV_GUARD_INSTALL is not available) it means
-+	 the kernel does not support the guard advise.  The stack has already
-+	 the expected protection flags, so it just needs to PROT_NONE the
-+	 guard area.  */
-       atomic_store_relaxed (&allocate_stack_mode, ALLOCATE_GUARD_PROT_NONE);
-       if (__mprotect (guard, guardsize, PROT_NONE) != 0)
- 	return false;
-@@ -259,9 +260,12 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
-   if (guardsize > pd->guardsize)
-     {
-       char *guard = guard_position (mem, size, guardsize, pd, pagesize_m1);
-+#ifdef MADV_GUARD_INSTALL
-       if (pd->stack_mode == ALLOCATE_GUARD_MADV_GUARD)
- 	return __madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0;
--      else if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
-+      else
-+#endif
-+      if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
- 	return __mprotect (guard, guardsize, PROT_NONE) == 0;
-     }
-   /* The current guard area is larger than the required one.  For
-@@ -282,6 +286,7 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
-   else if (pd->guardsize > guardsize)
-     {
-       size_t slacksize = pd->guardsize - guardsize;
-+#ifdef MADV_GUARD_REMOVE
-       if (pd->stack_mode == ALLOCATE_GUARD_MADV_GUARD)
+-	}
++	}/*
+ 
+       /* If madvise fails it means the kernel does not support the guard
+ 	 advise (we assume that the syscall is available, guard is page-aligned
+@@ -262,11 +262,11 @@ adjust_stack_prot (char *mem, size_t size, struct pthread *pd,
+       if (atomic_load_relaxed (&allocate_stack_mode)
+ 	  == ALLOCATE_GUARD_MADV_GUARD)
  	{
- 	  void *slack =
-@@ -292,7 +297,9 @@ adjust_stack_prot (char *mem, size_t size, const struct pthread *pd,
+-	  if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
++	  /*if (__madvise (guard, guardsize, MADV_GUARD_INSTALL) == 0)
+ 	    {
+ 	      pd->stack_mode = ALLOCATE_GUARD_MADV_GUARD;
+ 	      return true;
+-	    }
++	    }*/
+ 	  atomic_store_relaxed (&allocate_stack_mode,
+ 				ALLOCATE_GUARD_PROT_NONE);
+ 	}
+@@ -300,7 +300,7 @@ adjust_stack_prot (char *mem, size_t size, struct pthread *pd,
+ #else
+ 	    guard_position (mem, size, pd->guardsize, pd, pagesize_m1);
  #endif
- 	  return __madvise (slack, slacksize, MADV_GUARD_REMOVE) == 0;
+-	  return __madvise (slack, slacksize, MADV_GUARD_REMOVE) == 0;
++	  return 0;
  	}
--      else if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
-+      else
-+#endif
-+      if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
+       else if (pd->stack_mode == ALLOCATE_GUARD_PROT_NONE)
  	{
- 	  const int prot = stack_prot ();
- #if _STACK_GROWS_DOWN
-@@ -495,9 +502,11 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
+@@ -511,9 +511,9 @@ allocate_stack (const struct pthread_attr *attr, struct pthread **pdp,
  
  	  /* Do madvise in case the tunable glibc.pthread.stack_hugetlb is
  	     set to 0, disabling hugetlb.  */
-+#ifdef MADV_NOHUGEPAGE
- 	  if (__glibc_unlikely (__nptl_stack_hugetlb == 0)
+-	  if (__glibc_unlikely (__nptl_stack_hugetlb == 0)
++	  /*if (__glibc_unlikely (__nptl_stack_hugetlb == 0)
  	      && __madvise (mem, size, MADV_NOHUGEPAGE) != 0)
- 	    return errno;
-+#endif
+-	    return errno;
++	    return errno;*/
  
  	  /* SIZE is guaranteed to be greater than zero.
  	     So we can never get a null pointer back from mmap.  */
 diff --git glibc-clean/nptl/descr.h glibc-workdir/nptl/descr.h
-index ada6867..4511659 100644
+index 627cc39..ff9cf61 100644
 --- glibc-clean/nptl/descr.h
 +++ glibc-workdir/nptl/descr.h
-@@ -407,6 +407,11 @@ struct pthread
+@@ -411,6 +411,11 @@ struct pthread
    bool exiting;
    int exit_lock; /* A low-level lock (for use with __libc_lock_init etc).  */
  
@@ -518,7 +459,7 @@ index ada6867..4511659 100644
    struct tls_internal_t tls_state;
  
 diff --git glibc-clean/nptl/nptl_setxid.c glibc-workdir/nptl/nptl_setxid.c
-index 3da0d19..3d3f24c 100644
+index 2214b32..59b632e 100644
 --- glibc-clean/nptl/nptl_setxid.c
 +++ glibc-workdir/nptl/nptl_setxid.c
 @@ -158,7 +158,13 @@ setxid_signal_thread (struct xid_command *cmdp, struct pthread *t)
@@ -536,7 +477,7 @@ index 3da0d19..3d3f24c 100644
    /* If this failed, it must have had not started yet or else exited.  */
    if (!INTERNAL_SYSCALL_ERROR_P (val))
 diff --git glibc-clean/nptl/pthread_create.c glibc-workdir/nptl/pthread_create.c
-index e1033d4..e3e25b5 100644
+index 6e7e0c6..0f8b663 100644
 --- glibc-clean/nptl/pthread_create.c
 +++ glibc-workdir/nptl/pthread_create.c
 @@ -88,8 +88,13 @@ late_init (void)
@@ -570,7 +511,7 @@ index e1033d4..e3e25b5 100644
  	}
  
        /* Set the scheduling parameters.  */
-@@ -380,6 +390,7 @@ start_thread (void *arg)
+@@ -386,6 +396,7 @@ start_thread (void *arg)
        __libc_fatal ("Fatal glibc error: rseq registration failed\n");
    }
  
@@ -578,7 +519,7 @@ index e1033d4..e3e25b5 100644
  #ifndef __ASSUME_SET_ROBUST_LIST
    if (__nptl_set_robust_list_avail)
  #endif
-@@ -389,6 +400,7 @@ start_thread (void *arg)
+@@ -395,6 +406,7 @@ start_thread (void *arg)
        INTERNAL_SYSCALL_CALL (set_robust_list, &pd->robust_head,
  			     sizeof (struct robust_list_head));
      }
@@ -586,7 +527,7 @@ index e1033d4..e3e25b5 100644
  
    /* This is where the try/finally block should be created.  For
       compilers without that support we do use setjmp.  */
-@@ -506,8 +518,13 @@ start_thread (void *arg)
+@@ -525,8 +537,13 @@ start_thread (void *arg)
       computing the signal mask, to save stack space.  */
    internal_sigfillset (&pd->sigmask);
    internal_sigdelset (&pd->sigmask, SIGSETXID);
@@ -600,7 +541,7 @@ index e1033d4..e3e25b5 100644
  
    /* Tell __pthread_kill_internal that this thread is about to exit.
       If there is a __pthread_kill_internal in progress, this delays
-@@ -600,8 +617,23 @@ out:
+@@ -620,8 +637,23 @@ out:
  
       The exit code is zero since in case all threads exit by calling
       'pthread_exit' the exit status must be 0 (zero).  */
@@ -624,44 +565,8 @@ index e1033d4..e3e25b5 100644
  
    /* NOTREACHED */
  }
-diff --git glibc-clean/nptl/pthread_join_common.c glibc-workdir/nptl/pthread_join_common.c
-index ff389bf..92c73c4 100644
---- glibc-clean/nptl/pthread_join_common.c
-+++ glibc-workdir/nptl/pthread_join_common.c
-@@ -96,6 +96,23 @@ __pthread_clockjoin_ex (pthread_t threadid, void **thread_return,
- 
-       /* We need acquire MO here so that we synchronize with the
-          kernel's store to 0 when the clone terminates. (see above)  */
-+#ifdef __ironclad__
-+      /* Ironclad doesn't support set_tid_address, so we use mlibc-style
-+         userspace signaling.  The thread sets did_exit to 1 and does
-+         futex_wake before calling exit.  */
-+      int exited;
-+      while ((exited = atomic_load_acquire (&pd->did_exit)) == 0)
-+        {
-+	  int ret = __futex_abstimed_wait_cancelable64 (
-+	    (unsigned int *) &pd->did_exit, exited, clockid, abstime,
-+	    FUTEX_PRIVATE);
-+	  if (ret == ETIMEDOUT || ret == EOVERFLOW)
-+	    {
-+	      result = ret;
-+	      break;
-+	    }
-+	}
-+#else
-       pid_t tid;
-       while ((tid = atomic_load_acquire (&pd->tid)) != 0)
-         {
-@@ -113,6 +130,7 @@ __pthread_clockjoin_ex (pthread_t threadid, void **thread_return,
- 	      break;
- 	    }
- 	}
-+#endif
- 
-       pthread_cleanup_pop (0);
-     }
 diff --git glibc-clean/nptl/pthread_kill.c glibc-workdir/nptl/pthread_kill.c
-index 3938e3f..2b738d7 100644
+index 221689e..6550f8d 100644
 --- glibc-clean/nptl/pthread_kill.c
 +++ glibc-workdir/nptl/pthread_kill.c
 @@ -40,7 +40,13 @@ __pthread_kill_implementation (pthread_t threadid, int signo, int no_tid)
@@ -706,7 +611,7 @@ index 3938e3f..2b738d7 100644
  }
  
 diff --git glibc-clean/nptl/pthread_sigmask.c glibc-workdir/nptl/pthread_sigmask.c
-index 752fd17..7a42dff 100644
+index 09fa6bc..a55a024 100644
 --- glibc-clean/nptl/pthread_sigmask.c
 +++ glibc-workdir/nptl/pthread_sigmask.c
 @@ -37,8 +37,13 @@ __pthread_sigmask (int how, const sigset_t *newmask, sigset_t *oldmask)
@@ -724,7 +629,7 @@ index 752fd17..7a42dff 100644
    return (INTERNAL_SYSCALL_ERROR_P (result)
  	  ? INTERNAL_SYSCALL_ERRNO (result)
 diff --git glibc-clean/posix/unistd.h glibc-workdir/posix/unistd.h
-index 3f4e426..a9aaa02 100644
+index 06a6a88..067fae0 100644
 --- glibc-clean/posix/unistd.h
 +++ glibc-workdir/posix/unistd.h
 @@ -201,6 +201,10 @@ __BEGIN_DECLS
@@ -785,15 +690,15 @@ index 3f4e426..a9aaa02 100644
  # endif
  #endif
  
-@@ -1139,9 +1154,11 @@ extern int lockf64 (int __fd, int __cmd, __off64_t __len) __wur;
+@@ -1139,9 +1154,9 @@ extern int lockf64 (int __fd, int __cmd, __off64_t __len) __wur;
         __result; }))
  
  /* Copy LENGTH bytes from INFD to OUTFD.  */
-+#ifndef __ironclad__
- ssize_t copy_file_range (int __infd, __off64_t *__pinoff,
+-ssize_t copy_file_range (int __infd, __off64_t *__pinoff,
++/*ssize_t copy_file_range (int __infd, __off64_t *__pinoff,
  			 int __outfd, __off64_t *__poutoff,
- 			 size_t __length, unsigned int __flags);
-+#endif
+-			 size_t __length, unsigned int __flags);
++			 size_t __length, unsigned int __flags);*/
  #endif /* __USE_GNU */
  
  #if defined __USE_POSIX199309 || defined __USE_UNIX98
@@ -2750,10 +2655,10 @@ index 0000000..8da4e6b
 +  };
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/bits/sched.h glibc-workdir/sysdeps/unix/sysv/ironclad/bits/sched.h
 new file mode 100644
-index 0000000..0f2f079
+index 0000000..0036f33
 --- /dev/null
 +++ glibc-workdir/sysdeps/unix/sysv/ironclad/bits/sched.h
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,55 @@
 +#ifndef _BITS_SCHED_H
 +#define _BITS_SCHED_H 1
 +
@@ -2778,23 +2683,16 @@ index 0000000..0f2f079
 +# define CLONE_SIGHAND 0x00000800 /* Set if signal handlers shared.  */
 +# define CLONE_PIDFD   0x00001000 /* Set if a pidfd should be placed in parent.  */
 +# define CLONE_PTRACE  0x00002000 /* Set if tracing continues on the child.  */
-+# define CLONE_VFORK   0x00004000 /* Set if the parent wants the child to
-+				     wake it up on mm_release.  */
-+# define CLONE_PARENT  0x00008000 /* Set if we want to have the same
-+				     parent as the cloner.  */
++# define CLONE_VFORK   0x00004000 /* Set if the parent wants the child to wake it up on mm_release.  */
++# define CLONE_PARENT  0x00008000 /* Set if we want to have the same parent as the cloner.  */
 +# define CLONE_THREAD  0x00010000 /* Set to add to same thread group.  */
-+# define CLONE_NEWNS   0x00020000 /* Set to create new namespace.  */
 +# define CLONE_SYSVSEM 0x00040000 /* Set to shared SVID SEM_UNDO semantics.  */
 +# define CLONE_SETTLS  0x00080000 /* Set TLS info.  */
-+# define CLONE_PARENT_SETTID 0x00100000 /* Store TID in userlevel buffer
-+					   before MM copy.  */
-+# define CLONE_CHILD_CLEARTID 0x00200000 /* Register exit futex and memory
-+					    location to clear.  */
++# define CLONE_PARENT_SETTID 0x00100000 /* Store TID in userlevel buffer before MM copy.  */
++# define CLONE_CHILD_CLEARTID 0x00200000 /* Register exit futex and memory location to clear.  */
 +# define CLONE_DETACHED 0x00400000 /* Create clone detached.  */
-+# define CLONE_UNTRACED 0x00800000 /* Set if the tracing process can't
-+				      force CLONE_PTRACE on this clone.  */
-+# define CLONE_CHILD_SETTID 0x01000000 /* Store TID in userlevel buffer in
-+					  the child.  */
++# define CLONE_UNTRACED 0x00800000 /* Set if the tracing process can't force CLONE_PTRACE on this clone.  */
++# define CLONE_CHILD_SETTID 0x01000000 /* Store TID in userlevel buffer in the child.  */
 +#endif
 +
 +#include <bits/types/struct_sched_param.h>
@@ -16450,48 +16348,6 @@ index 0000000..8988833
 +   to avoid checking for versions that don't exist on Ironclad.  */
 +
 +/* No compat symbols needed.  */
-diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/stackinfo.h glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/stackinfo.h
-new file mode 100644
-index 0000000..04c60f9
---- /dev/null
-+++ glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/stackinfo.h
-@@ -0,0 +1,36 @@
-+/* This file contains a bit of information about the stack allocation
-+   of the processor.  */
-+
-+#ifndef _STACKINFO_H
-+#define _STACKINFO_H	1
-+
-+#include <elf.h>
-+
-+#ifdef __ILP32__
-+# define RSP_REG "esp"
-+#else
-+# define RSP_REG "rsp"
-+#endif
-+
-+/* On x86_64 the stack grows down.  */
-+#define _STACK_GROWS_DOWN	1
-+
-+/* Ironclad does not need legacy binary compatibility, so default to a
-+   non-executable stack.  This prevents errors when loading shared objects
-+   that lack a PT_GNU_STACK segment (which would otherwise be assumed to
-+   require an executable stack).  */
-+#define DEFAULT_STACK_PERMS (PF_R|PF_W)
-+
-+/* Access to the stack pointer.  The macros are used in alloca_account
-+   for which they need to act as barriers as well, hence the additional
-+   (unnecessary) parameters.  */
-+#define stackinfo_get_sp() \
-+  ({ register void * p__ __asm__(RSP_REG); \
-+     asm volatile("" : "=r" (p__)); \
-+     p__; })
-+#define stackinfo_sub_sp(ptr) \
-+  ({ ptrdiff_t d__;						\
-+     asm volatile ("sub %%" RSP_REG " , %0" : "=r" (d__) : "0" (ptr));	\
-+     d__; })
-+
-+#endif	/* stackinfo.h */
 diff --git glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/syscall.S glibc-workdir/sysdeps/unix/sysv/ironclad/x86_64/syscall.S
 new file mode 100644
 index 0000000..1becfbf
@@ -17191,24 +17047,3 @@ index 0000000..f55cdf6
 +#endif
 +
 +#endif /* _IRONCLAD_X86_64_SYSDEP_H */
-diff --git glibc-clean/wcsmbs/wchar.h glibc-workdir/wcsmbs/wchar.h
-index b31ca2d..496ae13 100644
---- glibc-clean/wcsmbs/wchar.h
-+++ glibc-workdir/wcsmbs/wchar.h
-@@ -387,14 +387,14 @@ extern size_t wcsnrtombs (char *__restrict __dst,
- 
- 
- /* The following functions are extensions found in X/Open CAE.  */
--#ifdef __USE_XOPEN
-+#if defined __USE_XOPEN || defined __USE_MISC
- /* Determine number of column positions required for C.  */
- extern int wcwidth (wchar_t __c) __THROW;
- 
- /* Determine number of column positions required for first N wide
-    characters (or fewer if S ends before this) in S.  */
- extern int wcswidth (const wchar_t *__s, size_t __n) __THROW;
--#endif	/* Use X/Open.  */
-+#endif	/* Use X/Open or Misc.  */
- 
- 
- /* Convert initial portion of the wide string NPTR to `double'

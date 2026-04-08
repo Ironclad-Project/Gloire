@@ -2,7 +2,7 @@
 
 name=marco
 version=1.29.1
-revision=2
+revision=3
 git_url="https://github.com/mate-desktop/marco.git"
 commit=87e3aadef2379c94ff6d47a6bc9c4d6006d334a9
 imagedeps="libglib2.0-dev libgdk-pixbuf2.0-bin"

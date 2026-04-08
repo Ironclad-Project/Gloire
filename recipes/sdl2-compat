@@ -2,7 +2,7 @@
 
 name=sdl2-compat
 version=2.32.66
-revision=1
+revision=2
 tarball_url="https://github.com/libsdl-org/sdl2-compat/releases/download/release-${version}/sdl2-compat-${version}.tar.gz"
 tarball_sha512=c8d4d45b9bf2f3904aee19b75878deebecef3b2e68dc2905c787941ad8078753d0616685c5cad586fe823111b026a6b7779faeedcf6daa3ab0a89e48ce3f599f
 hostdeps="gcc pkg-config"

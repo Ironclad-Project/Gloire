@@ -9,7 +9,7 @@ hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 
 configure() {
-    cmake_configure
+    cmake_configure -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 }
 
 build() {

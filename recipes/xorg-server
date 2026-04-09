@@ -2,7 +2,7 @@
 
 name=xorg-server
 version=21.1.21
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
 commit=312a25c65c8a918fea2cc77abd0db07ec0fc421c
 hostdeps="gcc pkg-config"

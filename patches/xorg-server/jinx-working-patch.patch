@@ -18,71 +18,6 @@ index fd144db..6eb018c 100644
  }
  
  Bool
-diff --git xorg-server-clean/hw/xfree86/common/xf86Config.c xorg-server-workdir/hw/xfree86/common/xf86Config.c
-index 8d8ebf1..87c2449 100644
---- xorg-server-clean/hw/xfree86/common/xf86Config.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Config.c
-@@ -49,6 +49,8 @@
- #include <sys/types.h>
- #include <grp.h>
- 
-+#include <sys/stat.h>
-+
- #include "xf86.h"
- #include "xf86Modes.h"
- #include "xf86Parser.h"
-diff --git xorg-server-clean/hw/xfree86/common/xf86Configure.c xorg-server-workdir/hw/xfree86/common/xf86Configure.c
-index 2b4105f..e6fbed9 100644
---- xorg-server-clean/hw/xfree86/common/xf86Configure.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Configure.c
-@@ -27,6 +27,8 @@
- #include <xorg-config.h>
- #endif
- 
-+#include <errno.h>
-+
- #include "xf86.h"
- #include "xf86Config.h"
- #include "xf86_OSlib.h"
-diff --git xorg-server-clean/hw/xfree86/common/xf86Events.c xorg-server-workdir/hw/xfree86/common/xf86Events.c
-index 395bbc7..4bf86cb 100644
---- xorg-server-clean/hw/xfree86/common/xf86Events.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Events.c
-@@ -53,6 +53,8 @@
- #include <xorg-config.h>
- #endif
- 
-+#include <errno.h>
-+
- #include <X11/X.h>
- #include <X11/Xproto.h>
- #include <X11/Xatom.h>
-diff --git xorg-server-clean/hw/xfree86/common/xf86Helper.c xorg-server-workdir/hw/xfree86/common/xf86Helper.c
-index 98dc372..9ddcbdb 100644
---- xorg-server-clean/hw/xfree86/common/xf86Helper.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Helper.c
-@@ -38,6 +38,8 @@
- #include <xorg-config.h>
- #endif
- 
-+#include <sys/stat.h>
-+
- #include <X11/X.h>
- #include "mi.h"
- #include "os.h"
-diff --git xorg-server-clean/hw/xfree86/common/xf86Init.c xorg-server-workdir/hw/xfree86/common/xf86Init.c
-index 5695e71..96c2d15 100644
---- xorg-server-clean/hw/xfree86/common/xf86Init.c
-+++ xorg-server-workdir/hw/xfree86/common/xf86Init.c
-@@ -37,6 +37,8 @@
- #include <stdlib.h>
- #include <errno.h>
- 
-+#include <sys/stat.h>
-+
- #undef HAS_UTSNAME
- #if !defined(WIN32)
- #define HAS_UTSNAME 1
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
 index 9c30f00..f259d93 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c
@@ -172,24 +107,6 @@ index 9c30f00..f259d93 100644
      if (-1 == fPtr->fd) {
          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                     "Failed to open framebuffer device, consult warnings"
-@@ -881,7 +879,7 @@ RETRY:
-                        "FBIOBLANK: %s\n", strerror(errno));
- 	    break;
-         case EINTR:
--        case ERESTART:
-+        // case ERESTART:
-             goto RETRY;
-         default:
-             fPtr->unsupported_ioctls |= (1 << FBIOBLANK_UNSUPPORTED);
-@@ -915,7 +913,7 @@ RETRY:
-                        "FBIOBLANK: %s\n", strerror(errno));
-             break;
-         case EINTR:
--        case ERESTART:
-+        // case ERESTART:
-             goto RETRY;
-         default:
-             fPtr->unsupported_ioctls |= (1 << FBIOBLANK_UNSUPPORTED);
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.h xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.h
 index 4984ccf..bb3e2f8 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.h
@@ -216,60 +133,6 @@ index f3146f3..9d07524 100644
      srcs_fbdevhw = 'fbdevhw.c'
  else
      srcs_fbdevhw = 'fbdevhwstub.c'
-diff --git xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c xorg-server-workdir/hw/xfree86/os-support/shared/posix_tty.c
-index 0cb9788..e8cac5d 100644
---- xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c
-+++ xorg-server-workdir/hw/xfree86/os-support/shared/posix_tty.c
-@@ -56,6 +56,9 @@
- #include <xorg-config.h>
- #endif
- 
-+#include <termios.h>
-+#include <errno.h>
-+
- #include <X11/X.h>
- #include <xserver_poll.h>
- #include "xf86.h"
-diff --git xorg-server-clean/hw/xfree86/os-support/shared/sigio.c xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
-index ad8af60..6f81278 100644
---- xorg-server-clean/hw/xfree86/os-support/shared/sigio.c
-+++ xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
-@@ -56,6 +56,9 @@
- #include <xorg-config.h>
- #endif
- 
-+#include <sys/stat.h>
-+#include <errno.h>
-+
- #include <X11/X.h>
- #include <xserver_poll.h>
- #include "xf86.h"
-diff --git xorg-server-clean/meson.build xorg-server-workdir/meson.build
-index 39e6e90..962e84f 100644
---- xorg-server-clean/meson.build
-+++ xorg-server-workdir/meson.build
-@@ -41,7 +41,7 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
-         '-Werror=sequence-point',
-         '-Werror=return-type',
-         '-Werror=trigraphs',
--        '-Werror=array-bounds',
-+        #'-Werror=array-bounds',
-         '-Werror=write-strings',
-         '-Werror=address',
-         '-Werror=int-to-pointer-cast',
-diff --git xorg-server-clean/os/access.c xorg-server-workdir/os/access.c
-index bf8e961..f94b33e 100644
---- xorg-server-clean/os/access.c
-+++ xorg-server-workdir/os/access.c
-@@ -120,7 +120,7 @@ SOFTWARE.
- #include <sys/un.h>
- #endif
- 
--#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__)
-+#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__ironclad__)
- #include <sys/utsname.h>
- #endif
- #if defined(SYSV) &&  defined(__i386__)
 diff --git xorg-server-clean/os/utils.c xorg-server-workdir/os/utils.c
 index f0d022f..677c581 100644
 --- xorg-server-clean/os/utils.c

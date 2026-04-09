@@ -2,7 +2,7 @@
 
 name=binutils
 version=2.46.0
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="9f4fd8897d237eb5003bdf439537dfc5f8c681e9ff939fb06bb8235ed298031ea4cc91611edb640ffc432199d5791289d003fe0d07acce80327dc40595a5eb9e"
 imagedeps="build-essential"

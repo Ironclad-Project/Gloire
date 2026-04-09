@@ -2,7 +2,7 @@
 
 name=xorg-server
 version=21.1.21
-revision=2
+revision=3
 git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
 commit=312a25c65c8a918fea2cc77abd0db07ec0fc421c
 hostdeps="gcc pkg-config"
@@ -45,9 +45,5 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
-
-    mkdir -p "${dest_dir}"/etc/X11
-    cp -v "${base_dir}"/build-support/xorg-server/xorg.conf "${dest_dir}"/etc/X11/
-
     post_package_strip
 }

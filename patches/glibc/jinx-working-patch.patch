@@ -17047,3 +17047,16 @@ index 0000000..f55cdf6
 +#endif
 +
 +#endif /* _IRONCLAD_X86_64_SYSDEP_H */
+diff --git glibc-clean/sysdeps/x86_64/stackinfo.h glibc-workdir/sysdeps/x86_64/stackinfo.h
+index fc55808..3ba3d48 100644
+--- glibc-clean/sysdeps/x86_64/stackinfo.h
++++ glibc-workdir/sysdeps/x86_64/stackinfo.h
+@@ -34,7 +34,7 @@
+ 
+ /* Default to an executable stack.  PROT_EXEC can be overridden if PT_GNU_STACK
+  * is present, but it is presumed absent.  */
+-#define DEFAULT_STACK_PROT_PERMS (PROT_READ|PROT_WRITE|PROT_EXEC)
++#define DEFAULT_STACK_PROT_PERMS (PROT_READ|PROT_WRITE)
+ 
+ /* Access to the stack pointer.  The macros are used in alloca_account
+    for which they need to act as barriers as well, hence the additional

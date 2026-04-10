@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   ci_build:
     name: Check for spelling mistakes
-    runs-on: codeberg-tiny
+    runs-on: docker
     container: archlinux:latest
 
     steps:

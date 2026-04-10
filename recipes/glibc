@@ -2,9 +2,9 @@
 
 name=glibc
 version=2.43
-revision=2
-tarball_url="https://ftp.gnu.org/gnu/glibc/glibc-${version}.tar.xz"
-tarball_blake2b="a764edf3d0d52809aa94cf1a8f73341159d226ecc2a595aa3c9e1d1fd4b2d4eb9a599d70bda8812b73d8ef58b39746efdd34026772e38c0f091fe071d461ea98"
+revision=3
+git_url="https://codeberg.org/Ironclad/glibc.git"
+commit=3424736688c49ab2a1ff0fc597fda4200cd0d072
 hostdeps="bootstrap-gcc pkg-config"
 
 prepare() {

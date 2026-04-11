@@ -2,9 +2,9 @@
 
 name=glibc
 version=2.43
-revision=4
+revision=5
 git_url="https://codeberg.org/Ironclad/glibc.git"
-commit=98e2f8574652da81f5da175cba44ddae7695ba8b
+commit=af53e3fbfd10d363ee05601a0a70281633092b00
 hostdeps="bootstrap-gcc pkg-config"
 
 prepare() {

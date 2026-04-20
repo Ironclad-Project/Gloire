@@ -3,29 +3,16 @@
 name=os-test
 skip_pkg_check=yes
 version=0.0git
-revision=7
+revision=8
 git_url="https://gitlab.com/sortix/os-test.git"
 commit=e0aba6b11bd2f10884473a4597a04654ef3332c0
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs make sed"
+deps="core-libs make sed gcc"
 
 configure() {
     cp -rp "${source_dir}/." ./
     rm -rf .git
-}
-
-build() {
-    make all -j${parallelism} \
-        OS=ironclad \
-        CC=${OS_TRIPLET}-gcc \
-        CC_FOR_BUILD=cc \
-        CFLAGS_FOR_BUILD="-pthread"
-    make misc/html -j${parallelism} \
-        OS=ironclad \
-        CC=${OS_TRIPLET}-gcc \
-        CC_FOR_BUILD=${OS_TRIPLET}-gcc \
-        CFLAGS_FOR_BUILD="-pthread"
 }
 
 package() {

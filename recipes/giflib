@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=giflib
-version=6.1.2
+version=6.1.3
 revision=1
 tarball_url="https://sourceforge.net/projects/giflib/files/giflib-${version}.tar.gz"
 tarball_blake2b="3716747d8969a95dd27aade75b266916a6f9f12c0b31b810e9c334d62fa270b22d2db181d925fadd86e0e56e0a057f2517090206fb81df70cdbee2c1fef1d0f9"

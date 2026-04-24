@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gsettings-desktop-schemas
-version=50.0
+version=50.1
 revision=1
-git_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git"
-commit=0b3ea8e1a25ecfc33e9f6af1b1db93c4032b84e6
+tarball_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas/-/archive/${version}/gsettings-desktop-schemas-${version}.tar.gz"
+tarball_blake2b="d2b9d6c857a33f9c2725131711969d6f3bc86a69264a28e33f4294eac0a6f25dec25807799fcb99a598e397aed1e747de3369e9bab9625490ae73e220d71e0db"
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2"

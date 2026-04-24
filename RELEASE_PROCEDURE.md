@@ -6,10 +6,28 @@ the Gloire packages.
 
 ## Release packages
 
+Gloire distributes nightlies and full images. They contain extra packages on
+top of `base` because base is meant to be as minimal as possible, for its use
+in containers, or extremely slim installs, but these minimal package sets are
+sometimes not practical for testing or daily use.
+
+### Nightlies
+
+Nightlies feature a reduced package set to speed up building and testing cycles,
+which is their main purpose.
+
+They have the following packages:
+
+```
+base pv openssh
+```
+
+### Full releases
+
 The releases have the following packages:
 
 ```
-base slim xorg-server fastfetch mesa-demos xorg-xeyes xorg-xwininfo xorg-xfontsel gloire-install dbus xorg-xinit xf86-input-keyboard xf86-input-mouse xf86-video-fbdev metalog cronie nano vim sed file gawk tar mate ttf-dejavu
+base slim xorg-server fastfetch mesa-demos xorg-xeyes xorg-xwininfo xorg-xfontsel gloire-install dbus xorg-xinit xf86-input-keyboard xf86-input-mouse xf86-video-fbdev metalog cronie nano vim sed file gawk tar mate ttf-dejavu pv openssh
 ```
 
 ## Release steps

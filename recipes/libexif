@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=libexif
-version=0.6.25
+version=0.6.26
 revision=1
 tarball_url="https://github.com/libexif/libexif/releases/download/v${version}/libexif-${version}.tar.bz2"
-tarball_blake2b="a0f8a80194694fab295dcd9c72088055b83534b281cb5bdac67a781dfb56fab0e354e32a520eb31d9f4dd604524355d69ba62012056f5706051e8382e4d898b8"
+tarball_blake2b="db29fe7095d8e44a47ba0e87f5f245498352c06192b85962e72d507cc979138cfb07ed4c0f22cfe3ea3e120e7ee9463f8d8a66a14952459822c38b262bf7a042"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

@@ -2,10 +2,10 @@
 
 name=fast_float
 repology_id="fast-float"
-version=8.2.4
+version=8.2.5
 revision=1
 git_url="https://github.com/fastfloat/fast_float.git"
-commit=eb9ab42c0aa86d3cc41871ba7306527d95077b3b
+commit=05087a303dad9c98768b33c829d398223a649bc6
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

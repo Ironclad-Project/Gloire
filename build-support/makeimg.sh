@@ -234,6 +234,12 @@ ObjectID=xbps_reconf
    ObjectEnabled=true
    ObjectRunlevels=graphical-multiuser console-multiuser
    ObjectOptions=RAWDESCRIPTION
+EOF
+"
+
+if [ -f sysroot/usr/bin/metalog ]; then
+    $SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
 
 ObjectID=metalog
    ObjectDescription=metalog
@@ -245,6 +251,14 @@ ObjectID=metalog
    ObjectRunlevels=graphical-multiuser console-multiuser
    ObjectOptions=SERVICE
 
+EOF
+"
+fi
+
+if [ -f sysroot/usr/bin/crond ]; then
+    $SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
+
 ObjectID=crond
    ObjectDescription=crond
    ObjectStartCommand=/usr/bin/crond
@@ -255,6 +269,12 @@ ObjectID=crond
    ObjectRunlevels=graphical-multiuser console-multiuser
    ObjectOptions=SERVICE
 
+EOF
+"
+fi
+
+$SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
 ObjectID=powerd
    ObjectDescription=power management daemon
    ObjectStartCommand=/usr/bin/powerd

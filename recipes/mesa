@@ -2,7 +2,7 @@
 
 name=mesa
 version=26.0.5
-revision=1
+revision=2
 tarball_url="https://archive.mesa3d.org/mesa-${version}.tar.xz"
 tarball_blake2b="594e0737ff10853eac91a45c81db8738874e2d4f61ca2f02229bf62df9d3c133c4e1b605d90c17d17d91df97b78bfdb8051a6e1927b8d7759e4528de0a939f02"
 imagedeps="python3-mako python3-yaml glslang-tools"

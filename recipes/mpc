@@ -2,10 +2,10 @@
 
 name=mpc
 repology_id=gnumpc
-version=1.4.0
+version=1.4.1
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/mpc/mpc-${version}.tar.xz"
-tarball_blake2b="d00dbc52a92efd619498671475743c9f35797343c731542f881c04c4a0b198f5b36df51bfde3ce520866d1851958409a6dd0de02d85d7b2e0ba00ccb27a30464"
+tarball_blake2b="793b4cf37e7e805dcbf24bc39903d5d778702e80cf5eac60b840834f09868656856a008cff6b45e7a5a312c3ed21a593d84f45765e9ac456ab3dd38a083acff1"
 hostdeps="gcc pkg-config"
 deps="core-libs gmp mpfr"
 

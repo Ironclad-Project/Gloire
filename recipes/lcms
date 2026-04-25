@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=lcms
-version=2.18
+version=2.19
 revision=1
 tarball_url="https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz"
-tarball_blake2b="16096647d5b6e91c7785159f841a90c94887497bd21117b539d7c5eac6a5f495efbc2cc06afc9a0cebb6af6d18e8ce7fafd346efad126f15110e663e2dc2d6ab"
+tarball_blake2b="e23091c7c2f4243d367c434d02f113ed833e0188c768b272a16d14766517f94a88a7f2402a40ec1a0747e9e1ad3fadad80590cc2db422a274b49d3f90b63e7ea"
 hostdeps="gcc pkg-config"
 deps="core-libs libjpeg-turbo libtiff"
 

@@ -101,7 +101,7 @@ The instructions to build an x86_64 system are:
 
 ```bash
 mkdir build-x86_64 && cd build-x86_64
-PKGS_TO_INSTALL="*" ../build-support/makeimg.sh
+PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
 ```
 
 > [!NOTE]
@@ -127,7 +127,7 @@ To build the riscv64 port, one can instead use:
 
 ```bash
 mkdir build-riscv64 && cd build-riscv64
-PKGS_TO_INSTALL="*" ../build-support/makeimg.sh
+PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
 ```
 
 Regardless of architecture, if, instead of building all packages, building

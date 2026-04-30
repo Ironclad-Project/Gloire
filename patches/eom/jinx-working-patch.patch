@@ -1,0 +1,22 @@
+diff --git eom-clean/meson.build eom-workdir/meson.build
+index a22ddc9..06a903d 100644
+--- eom-clean/meson.build
++++ eom-workdir/meson.build
+@@ -147,7 +147,7 @@ if get_option('thumbnailer')
+   endif
+ endif
+ 
+-pkg_info.set('EOM_THUMBNAILER', eom_thumbnailer)
++#pkg_info.set('EOM_THUMBNAILER', eom_thumbnailer)
+ 
+ # XMP support
+ if xmp.found()
+@@ -195,7 +195,7 @@ summary({
+   'Colour management support': cms.found(),
+   'GObject Introspection': gobject_introspection.found(),
+   'Native Language support': get_option('nls'),
+-  'Thumbnailer': eom_thumbnailer,
++  #'Thumbnailer': eom_thumbnailer,
+ })
+ 
+ if get_option('nls')

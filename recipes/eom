@@ -2,7 +2,7 @@
 
 name=eom
 version=1.28.1
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/eom/releases/download/v${version}/eom-${version}.tar.xz"
 tarball_blake2b="6f378c80d3536e4a168fc6a162b8853b7d217a9c0721838ce1070068c88554439edae52a20e8ea5737b0892d200ed5e46996b239e14f0810cf8a03fab007c17a"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin itstool libgdk-pixbuf2.0-bin gtk-update-icon-cache desktop-file-utils"
@@ -11,7 +11,7 @@ deps="core-libs gtk3 mate-desktop libpeas shared-mime-info libexif lcms exempi"
 
 configure() {
     meson_configure \
-        -Dthumbnailer=true \
+        -Dthumbnailer=false \
         -Ddebug=false \
         -Dintrospection=disabled \
         -Dlibexif=enabled \

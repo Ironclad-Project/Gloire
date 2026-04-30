@@ -2,7 +2,7 @@
 
 name=qemu
 version=10.2.2
-revision=1
+revision=2
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_blake2b="810efae886e5ba56900882455cc8714923378e34995dceaec8177ba5cc7f922547b7cbf68f7ac3804e498b3b4b3895165646c81ff9ad50b09c8286e8b2293a72"
 imagedeps="build-essential python3-venv"
@@ -23,7 +23,7 @@ configure() {
             ;;
     esac
 
-        CFLAGS="${TARGET_CFLAGS}" \
+        CFLAGS="${TARGET_CFLAGS} -Wno-error" \
         LDFLAGS="${TARGET_LDFLAGS}" \
     ./configure \
         -Db_colorout=always \

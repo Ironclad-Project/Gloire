@@ -2,7 +2,7 @@
 
 name=gcc
 version=16.1.0
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="ceb07866b6b17eb4c69a6b51241b275bc5ec506603a7c1a4c1e2585091a09fc647be945beeff76700bffd9018bda81b072d84f909fd7998baa0cfe3f0eb550b4"
 hostdeps="gcc pkg-config"

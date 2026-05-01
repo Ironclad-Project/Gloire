@@ -110,7 +110,7 @@ index 0000000..9ca91e1
 +MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib,$(MULTILIB_DIRNAMES))
 +MULTIARCH_DIRNAME := $(call if_multiarch,riscv64-ironclad-gnu)
 diff --git gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
-index 7c80a0b..8fac7e4 100644
+index 0eed252..8b28aae 100644
 --- gcc-host-clean/gcc/config.build
 +++ gcc-host-workdir/gcc/config.build
 @@ -45,7 +45,7 @@
@@ -123,10 +123,10 @@ index 7c80a0b..8fac7e4 100644
  
  # System-specific settings.
 diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
-index 087aaa7..e60ba73 100644
+index 8fe9961..e797d7c 100644
 --- gcc-host-clean/gcc/config.gcc
 +++ gcc-host-workdir/gcc/config.gcc
-@@ -885,7 +885,7 @@ case ${target} in
+@@ -938,7 +938,7 @@ case ${target} in
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
    ;;
@@ -135,7 +135,7 @@ index 087aaa7..e60ba73 100644
    extra_options="$extra_options gnu-user.opt"
    gas=yes
    gnu_ld=yes
-@@ -894,7 +894,7 @@ case ${target} in
+@@ -947,7 +947,7 @@ case ${target} in
    esac
    tmake_file="t-slibgcc"
    case $target in
@@ -144,7 +144,7 @@ index 087aaa7..e60ba73 100644
        :;;
      *-*-gnu*)
        native_system_header_dir=/include
-@@ -957,6 +957,8 @@ case ${target} in
+@@ -1010,6 +1010,8 @@ case ${target} in
        rust_target_objs="${rust_target_objs} linux-rust.o"
        target_has_targetrustm=yes
        ;;
@@ -153,7 +153,7 @@ index 087aaa7..e60ba73 100644
      *-*-kfreebsd*-gnu)
        d_target_objs="${d_target_objs} kfreebsd-d.o"
        target_has_targetdm=yes
-@@ -2008,7 +2010,7 @@ x86_64-*-openbsd*)
+@@ -2061,7 +2063,7 @@ x86_64-*-openbsd*)
  	gas=yes
  	gnu_ld=yes
  	;;
@@ -162,7 +162,7 @@ index 087aaa7..e60ba73 100644
  			# Intel 80386's running GNU/*
  			# with ELF format using glibc 2
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h"
-@@ -2056,6 +2058,9 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
+@@ -2109,6 +2111,9 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
  			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux-common.h i386/linux.h"
  		fi
  		;;
@@ -172,7 +172,7 @@ index 087aaa7..e60ba73 100644
  	i[34567]86-*-kfreebsd*-gnu)
  		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
  		;;
-@@ -2067,7 +2072,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
+@@ -2120,7 +2125,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
  		;;
  	esac
  	;;
@@ -181,7 +181,7 @@ index 087aaa7..e60ba73 100644
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h \
  		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
  	case ${target} in
-@@ -2075,6 +2080,9 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
+@@ -2128,6 +2133,9 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
  		tm_file="${tm_file} linux.h linux-android.h i386/linux-common.h i386/linux64.h"
  		extra_options="${extra_options} linux-android.opt"
  	  	;;
@@ -191,7 +191,7 @@ index 087aaa7..e60ba73 100644
  	x86_64-*-kfreebsd*-gnu)
  		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
  		;;
-@@ -2540,6 +2548,14 @@ riscv*-*-linux*)
+@@ -2596,6 +2604,14 @@ riscv*-*-linux*)
  	gcc_cv_initfini_array=yes
  	with_tls=${with_tls:-trad}
  	;;
@@ -203,10 +203,10 @@ index 087aaa7..e60ba73 100644
 +	gcc_cv_initfini_array=yes
 +	with_tls=${with_tls:-trad}
 +	;;
- riscv*-*-elf* | riscv*-*-rtems*)
- 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
- 	case ${target} in
-@@ -3670,7 +3686,7 @@ esac
+ riscv*-*-gnu*)
+ 	tm_file="elfos.h gnu-user.h gnu.h glibc-stdint.h ${tm_file} riscv/gnu.h"
+ 	tmake_file="${tmake_file} riscv/t-riscv"
+@@ -3759,7 +3775,7 @@ esac
  case ${target} in
  *-*-linux*android*|*-*-linux*uclibc*|*-*-linux*musl*)
          ;;
@@ -215,7 +215,7 @@ index 087aaa7..e60ba73 100644
          ;;
  *-*-linux* | *-*-gnu*)
  	case ${target} in
-@@ -6106,6 +6122,9 @@ case ${target} in
+@@ -6270,6 +6286,9 @@ case ${target} in
  	visium-*-*)
  		target_cpu_default2="TARGET_CPU_$with_cpu"
  		;;
@@ -226,10 +226,10 @@ index 087aaa7..e60ba73 100644
  		tmake_file="$tmake_file i386/t-gnu64"
  		;;
 diff --git gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
-index 1deadcc..9b72332 100644
+index a7245aa..8918fa4 100644
 --- gcc-host-clean/gcc/cp/module.cc
 +++ gcc-host-workdir/gcc/cp/module.cc
-@@ -1697,8 +1697,10 @@ elf_in::defrost (const char *name)
+@@ -1698,8 +1698,10 @@ elf_in::defrost (const char *name)
  	      set_error (errno);
  	  else
  	    {
@@ -240,7 +240,7 @@ index 1deadcc..9b72332 100644
  
  	      /* These buffers are never NULL in this case.  */
  	      strtab.buffer = mapping + strtab.pos;
-@@ -1808,8 +1810,10 @@ elf_in::begin (location_t loc)
+@@ -1809,8 +1811,10 @@ elf_in::begin (location_t loc)
      }
    /* We'll be hopping over this randomly.  Some systems declare the
       first parm as char *, and other declare it as void *.  */
@@ -252,7 +252,7 @@ index 1deadcc..9b72332 100644
    hdr.buffer = (char *)mapping;
  #else
 diff --git gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
-index bb07e46..821fe80 100644
+index ba4b44b..e3e0b41 100644
 --- gcc-host-clean/libcpp/Makefile.in
 +++ gcc-host-workdir/libcpp/Makefile.in
 @@ -32,10 +32,10 @@ AUTOCONF = @AUTOCONF@
@@ -278,10 +278,10 @@ index bb07e46..821fe80 100644
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
 diff --git gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
-index 6a88ee5..7f383b4 100644
+index ac10ccc..23d0283 100644
 --- gcc-host-clean/libgcc/config.host
 +++ gcc-host-workdir/libgcc/config.host
-@@ -310,7 +310,7 @@ case ${host} in
+@@ -297,7 +297,7 @@ case ${host} in
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
@@ -290,7 +290,7 @@ index 6a88ee5..7f383b4 100644
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
    if test x$enable_vtable_verify = xyes; then
-@@ -800,7 +800,7 @@ i[34567]86-*-linux*)
+@@ -790,7 +790,7 @@ i[34567]86-*-linux*)
  	md_unwind_header=i386/linux-unwind.h
  	tmake_file="${tmake_file} i386/t-heap-trampoline"
  	;;
@@ -299,7 +299,7 @@ index 6a88ee5..7f383b4 100644
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
  	tm_file="${tm_file} i386/elf-lib.h"
-@@ -1354,6 +1354,10 @@ riscv*-*-linux*)
+@@ -1352,6 +1352,10 @@ riscv*-*-linux*)
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
  	md_unwind_header=riscv/linux-unwind.h
  	;;
@@ -311,7 +311,7 @@ index 6a88ee5..7f383b4 100644
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 diff --git gcc-host-clean/libstdc++-v3/configure.host gcc-host-workdir/libstdc++-v3/configure.host
-index 253e5a9..0d620f6 100644
+index ff97216..6480f60 100644
 --- gcc-host-clean/libstdc++-v3/configure.host
 +++ gcc-host-workdir/libstdc++-v3/configure.host
 @@ -268,7 +268,7 @@ case "${host_os}" in
@@ -324,7 +324,7 @@ index 253e5a9..0d620f6 100644
        os_include_dir="os/uclibc"
      elif [ "$bionic" = "yes" ]; then
 diff --git gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
-index b94b2cd..1a5eaa5 100644
+index 103540b..f96ba18 100644
 --- gcc-host-clean/libstdc++-v3/include/bits/ios_base.h
 +++ gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
 @@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -335,4 +335,4 @@ index b94b2cd..1a5eaa5 100644
 +      _S_beg = 1,
        _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
        _S_end = _GLIBCXX_STDIO_SEEK_END,
-       _S_ios_seekdir_end = 1L << 16
+       _S_ios_seekdir_end __attribute__((__unused__)) = 1L << 16

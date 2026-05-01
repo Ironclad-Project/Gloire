@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=gcc
-version=15.2.0
+version=16.1.0
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
-tarball_blake2b="e270320978ca690e6e8f5ef06414dc13caf561f16403a3783c76fbf3dcee57e755a2d5bba922bf7fcae0bb6120443755d819b003791ae823d54589dd799804de"
+tarball_blake2b="ceb07866b6b17eb4c69a6b51241b275bc5ec506603a7c1a4c1e2585091a09fc647be945beeff76700bffd9018bda81b072d84f909fd7998baa0cfe3f0eb550b4"
 hostdeps="gcc pkg-config"
 deps="core-libs binutils zlib gmp mpfr mpc gettext"
 imagedeps="build-essential"

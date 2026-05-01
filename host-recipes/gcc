@@ -3,7 +3,7 @@
 name=gcc
 from_source=gcc-host
 clean_workdirs=no
-revision=2
+revision=1
 imagedeps="build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"
@@ -64,7 +64,7 @@ package() {
     cd build
     DESTDIR="${dest_dir}" make install-gcc
 
-    ln -s ${OS_TRIPLET}-gnatbind "${dest_dir}${prefix}"/bin/${OS_TRIPLET}-gnatbind-15
+    ln -s ${OS_TRIPLET}-gnatbind "${dest_dir}${prefix}"/bin/${OS_TRIPLET}-gnatbind-16
 
         strip_command=strip \
     post_package_strip

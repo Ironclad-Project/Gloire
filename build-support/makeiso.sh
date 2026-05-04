@@ -235,10 +235,10 @@ sync
 $SUDO umount mount_dir
 $SUDO rm -rf mount_dir
 
-if [ "$JINX_CONFIG_FILE" = "jinx-config-riscv64" ]; then
+if [ "$ARCH" = riscv64 ]; then
     xorriso -as mkisofs -R -r -J \
         -hfsplus -apm-block-size 2048 \
-        --efi-boot boot/limine-uefi-cd.bin \
+        --efi-boot boot/limine/limine-uefi-cd.bin \
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o "$IMAGE_NAME"
 else

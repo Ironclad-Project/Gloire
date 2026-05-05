@@ -1,11 +1,11 @@
 #! /bin/sh
 
 name=curl
-version=8.19.0
+version=8.20.0
 fixed_version=$(echo ${version} | sed 's/\./_/g')
 revision=1
 tarball_url="https://github.com/curl/curl/releases/download/curl-${fixed_version}/curl-${version}.tar.xz"
-tarball_blake2b="d4a943af9a109893112876784dbe106276317e6cd5a2663f4de143c93abb4e266945fa65b4a5fa842f99240c961b027a1b2492e3e32f5247a91c394895e2b8b0"
+tarball_blake2b="5b61a1099212af9b3c18629fd0b6c93881014e7b02ed5171021a2a074a87786ff8f8e94a47c53c3ca83354cfbe74f7d917cae819c97011c0ff9e4ace014e01c2"
 hostdeps="gcc pkg-config"
 deps="core-libs ca-certificates openssl zlib zstd libpsl libidn2 brotli nghttp2"
 

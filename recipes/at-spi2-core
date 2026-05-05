@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=at-spi2-core
-version=2.60.1
+version=2.60.3
 revision=1
 tarball_url="https://gitlab.gnome.org/GNOME/at-spi2-core/-/archive/${version}/at-spi2-core-${version}.tar.gz"
-tarball_blake2b="62bcae638f1d7133d68c279f9edf3442e96ed750caaace64b0d2c72105433b0a5b8a6cbdb1049c03c2f82ad6f0dfa5fc5323e8434e50517e20e7cf76bffdfd8b"
+tarball_blake2b="a3a597306dd9481b18bb9a2d8052eb5fc2c20279702355a5811ec1075990ebd3bfcbc873e357bd983040a5f3c31d97441990527eb5ed0a0eb84a6f772feb6da1"
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs bash dbus glib2 gsettings-desktop-schemas libx11 libxi libxkbcommon libxml2 libxtst"

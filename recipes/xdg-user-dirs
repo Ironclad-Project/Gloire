@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xdg-user-dirs
-version=0.19
-revision=2
+version=0.20
+revision=1
 git_url="https://gitlab.freedesktop.org/xdg/xdg-user-dirs.git"
-commit=0577968675b9d7d660b3715cf6b2e00c6d491d67
+commit=cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

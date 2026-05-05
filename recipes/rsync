@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=rsync
-version=3.4.1
-revision=2
+version=3.4.2
+revision=1
 tarball_url="https://www.samba.org/ftp/rsync/src/rsync-${version}.tar.gz"
-tarball_blake2b="79c1cad697547059ee241e20c26d7f97bed3ad062deb856d31a617fead333a2d9f62c7c47c1efaf70033dbc358fe547d034c35e8181abb51a1fc893557882bc7"
+tarball_blake2b="bfc8aa3dc3b75de5e81519eab6d505ebd4d05ebc79c3336ebc925486fa6267cd13a37844d0817183cec68215788bc07e4a281f716bcd0bc7d93daa995df9122c"
 hostdeps="gcc pkg-config"
 deps="core-libs lz4 openssl xxhash zlib zstd"
 

@@ -2,10 +2,10 @@
 
 name=xorg-xrandr
 repology_id=xrandr
-version=1.5.3
+version=1.5.4
 revision=1
 tarball_url="https://www.x.org/pub/individual/app/xrandr-${version}.tar.xz"
-tarball_blake2b="a2f253e0027976ef1bbf346361f6cfcfb575db36f134ec21e234f733fe7e70959d401c6b078a0d6d0297021aeff12eef57e4fdc865c86531784e439927385995"
+tarball_blake2b="c83fe2aa6bb7277ae9bba04bf0584c8558bd55cbff4142ac84c39933a520c4fbdda90272983fdecff8e96526bdb44ad73414d7b1e0b5ce0a1a9990896d056f3f"
 hostdeps="gcc pkg-config"
 deps="core-libs libxmu libxaw libxt libx11 libxrandr"
 

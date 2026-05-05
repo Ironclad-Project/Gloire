@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=xbitmaps
-version=1.1.3
+version=1.1.4
 revision=1
 tarball_url="https://www.x.org/pub/individual/data/xbitmaps-${version}.tar.gz"
-tarball_blake2b="b5bde889f7b821952ec7102c04ee35145e3434e49cb8b6f78de61519f3679a68269fdeb49885be2747288bb66722f954459e65c530058578ab542d9750a2a5a8"
+tarball_blake2b="0ee8477c227ed5a4c44c55bb485b0da845389e52724e4a28ecab0320a714954b3f2f4ec1210d2200bfa0d661496b7a7a1239aadb1ac37ea1b417e80b150ab613"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-util-macros"
 

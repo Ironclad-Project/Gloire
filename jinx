@@ -68,6 +68,7 @@ cmd_help() {
     printf "\n   reinstall          Reinstalls package(s)"
     printf "\n   dry-run            Prints all packages that need to be built in order (space separated)"
     printf "\n   download           Downloads pre-built package(s) from remote repo"
+    printf "\n   run-in             Runs a command in a container prepared with a recipe's hostdeps"
     printf "\n   rebuild-cache      Rebuilds Jinx cache"
     printf "\n\nexample: $0 update '*'\n"
 }
@@ -744,30 +745,53 @@ do_tarball_fetch() {
 
     checksum_verified=no
 
+    fill_recipe_checksum() {
+        # $1: variable name, $2: actual checksum value
+        if [ -n "${current_recipe_file}" ] && [ -f "${current_recipe_file}" ]; then
+            # Match `var=?`, `var="?"`, or `var='?'`
+            # with optional surrounding whitespace, preserving whatever quoting style was used.
+            sed -i -E "s#^([[:space:]]*$1=)(\"|')?\\?(\"|')?([[:space:]]*)\$#\\1\\2$2\\3\\4#" "${current_recipe_file}"
+        else
+            die "* error: cannot autofill $1 for ${name}: recipe file unknown"
+        fi
+    }
+
     if ! [ -z "${tarball_sha256}" ]; then
         actual_sha256="$(sha256sum "${tarball_path}" | awk '{print $1;}')"
         if ! [ ${actual_sha256} = ${tarball_sha256} ]; then
-            die "* error: Failed to verify SHA256 for ${name}.
+            if [ "${tarball_sha256}" = "?" ]; then
+                fill_recipe_checksum tarball_sha256 "${actual_sha256}"
+            else
+                die "* error: Failed to verify SHA256 for ${name}.
   Expected '${tarball_sha256}';
   got '${actual_sha256}'."
+            fi
         fi
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_sha512}" ]; then
         actual_sha512="$(sha512sum "${tarball_path}" | awk '{print $1;}')"
         if ! [ ${actual_sha512} = ${tarball_sha512} ]; then
-            die "* error: Failed to verify SHA512 for ${name}.
+            if [ "${tarball_sha512}" = "?" ]; then
+                fill_recipe_checksum tarball_sha512 "${actual_sha512}"
+            else
+                die "* error: Failed to verify SHA512 for ${name}.
   Expected '${tarball_sha512}';
   got '${actual_sha512}'."
+            fi
         fi
         checksum_verified=yes
     fi
     if ! [ -z "${tarball_blake2b}" ]; then
         actual_blake2b="$(b2sum "${tarball_path}" | awk '{print $1;}')"
         if ! [ ${actual_blake2b} = ${tarball_blake2b} ]; then
-            die "* error: Failed to verify BLAKE2B for ${name}.
+            if [ "${tarball_blake2b}" = "?" ]; then
+                fill_recipe_checksum tarball_blake2b "${actual_blake2b}"
+            else
+                die "* error: Failed to verify BLAKE2B for ${name}.
   Expected '${tarball_blake2b}';
   got '${actual_blake2b}'."
+            fi
         fi
         checksum_verified=yes
     fi
@@ -813,9 +837,11 @@ get_real_source_dir() {
 
 source_source_recipe() {
     if [ -f "${base_dir}"/source-recipes/$1 ]; then
-        include_recipe "${base_dir}"/source-recipes/$1
+        current_recipe_file="${base_dir}"/source-recipes/$1
+        include_recipe "${current_recipe_file}"
     elif [ -f "${base_dir}"/recipes/$1 ]; then
-        include_recipe "${base_dir}"/recipes/$1
+        current_recipe_file="${base_dir}"/recipes/$1
+        include_recipe "${current_recipe_file}"
 
         imagedeps="${source_imagedeps}"
         hostdeps="${source_hostdeps}"
@@ -1096,6 +1122,7 @@ clean_sources() {
     force_remove "${base_dir}"/sources/$1.version
     force_remove "${base_dir}"/sources/$1.patched
     force_remove "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/sources/$1.built
 }
 
 need_repatch() {
@@ -1122,7 +1149,11 @@ do_source() {
         tracked_subshell '
             allow_network="yes"
             clean_sources '$1'
-            [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
+            [ "${is_local_package}" = true ] \
+                || [ ! -z "${tarball_sha256}" -a "${tarball_sha256}" = "?" ] \
+                || [ ! -z "${tarball_sha512}" -a "${tarball_sha512}" = "?" ] \
+                || [ ! -z "${tarball_blake2b}" -a "${tarball_blake2b}" = "?" ] \
+                || container_base_dir_ro="-o ro"
             run_in_container internal-fetch '$1'
             echo "${version}" >"${base_dir}"/sources/'$1'.version
         '
@@ -1270,12 +1301,15 @@ do_pkg() {
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
         force_remove "${build_dir}"/builds/"$1"
-        tracked_subshell '
-        if ! [ -z "${from_source}" ]; then
-            name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
+        if [ -f "${base_dir}"/sources/$1.built ] && \
+           ! [ "$(cat "${base_dir}"/sources/$1.built)" = "${version}_${revision}" ]; then
+            tracked_subshell '
+            if ! [ -z "${from_source}" ]; then
+                name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
+            fi
+            clean_sources "${name}"
+            '
         fi
-        clean_sources "${name}"
-        '
     fi
 
     if ! [ -z "${from_source}" ]; then
@@ -1283,6 +1317,8 @@ do_pkg() {
     else
         tracked_subshell 'do_source "${name}"'
     fi
+
+    echo "${version}_${revision}" >"${base_dir}"/sources/$1.built
 
     prepare_container
 
@@ -1723,6 +1759,84 @@ cmd_regen() {
     done
 }
 
+do_run_in() {
+    pkg="$1"
+    cmd_file="$2"
+
+    include_recipe "${base_dir}"/recipes/${pkg}
+
+    mkdir -p "${build_dir}"/builds/${name}
+
+    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
+        if ! [ -z "${from_source}" ]; then
+            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+            source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
+        else
+            from_source=${name}
+        fi
+
+        if [ -z "${source_dir}" ]; then
+            source_dir="${base_dir}"/sources/${from_source}
+        else
+            source_dir="${base_dir}"/"${source_dir}"
+        fi
+    fi
+
+    prefix="/usr"
+    sysroot_dir="/sysroot"
+
+    cd "${build_dir}"/builds/${name}
+
+    set --
+    . "${cmd_file}"
+}
+
+cmd_run_in() {
+    if [ -z "$1" ]; then
+        die "$0: run-in requires a recipe name"
+    fi
+    run_in_recipe="$1"
+    shift 1
+    if [ -z "$1" ]; then
+        die "$0: run-in requires a command to run"
+    fi
+
+    if ! [ -f "${base_dir}"/recipes/${run_in_recipe} ]; then
+        die "$0: recipe '${run_in_recipe}' not found"
+    fi
+
+    include_recipe "${base_dir}"/recipes/${run_in_recipe}
+
+    if ! [ -z "${from_source}" ]; then
+        tracked_subshell 'do_source "${from_source}"'
+    else
+        tracked_subshell 'do_source "${name}"'
+    fi
+
+    make_temp
+    cmd_file="${tmp}"
+    {
+        printf 'exec'
+        for arg in "$@"; do
+            escaped=$(printf '%s' "$arg" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g')
+            printf ' "%s"' "$escaped"
+        done
+        printf '\n'
+    } >"${cmd_file}"
+    cmd_file_inner="/base_dir/.jinx-cache/tmp/$(basename "${cmd_file}")"
+
+    prepare_container
+
+    mkdir -p "${build_dir}"/builds/${name}
+
+    unset container_sources_ro
+    unset container_base_dir_ro
+    allow_network="yes"
+    run_in_container internal-run-in "${run_in_recipe}" "${cmd_file_inner}"
+
+    destroy_container
+}
+
 cmd_host_rebuild() {
     for ppkg in "$@"; do
         for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
@@ -2075,6 +2189,10 @@ case "$1" in
     internal-package)
         do_package "$2"
         ;;
+    internal-run-in)
+        shift 1
+        do_run_in "$@"
+        ;;
     host-build)
         shift 1
         cmd_host_build "$@"
@@ -2117,6 +2235,10 @@ case "$1" in
     download)
         shift 1
         cmd_download "$@"
+        ;;
+    run-in)
+        shift 1
+        cmd_run_in "$@"
         ;;
     *)
         die "$0: unknown command: $1"

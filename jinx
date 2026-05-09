@@ -34,7 +34,7 @@ export LC_COLLATE
 umask 0022
 
 jinx_major_ver="0.8"
-jinx_minor_ver="6"
+jinx_minor_ver="7"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -142,7 +142,7 @@ if [ "$script" = "//jinx" ]; then
 fi
 
 case "$1" in
-    install)
+    install|reinstall)
         ;;
     *)
         if [ "${in_container}" = "false" ] && [ "$(id -u)" = "0" ]; then
@@ -1301,14 +1301,10 @@ do_pkg() {
 
     if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
         force_remove "${build_dir}"/builds/"$1"
-        if [ -f "${base_dir}"/sources/$1.built ] && \
+        if [ -z "${from_source}" ] && \
+           [ -f "${base_dir}"/sources/$1.built ] && \
            ! [ "$(cat "${base_dir}"/sources/$1.built)" = "${version}_${revision}" ]; then
-            tracked_subshell '
-            if ! [ -z "${from_source}" ]; then
-                name=$(unset name && source_source_recipe ${from_source} && echo "${name}")
-            fi
-            clean_sources "${name}"
-            '
+            tracked_subshell 'clean_sources "${name}"'
         fi
     fi
 

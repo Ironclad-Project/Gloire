@@ -12,7 +12,7 @@ sometimes not practical for testing or daily use.
 The monthlies have the following packages:
 
 ```
-base pv openssh nano vim gloire-install fastfetch
+base pv openssh nano vim gloire-install fastfetch less
 ```
 
 ## Release steps

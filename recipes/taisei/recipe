@@ -1,0 +1,27 @@
+#! /bin/sh
+
+version=1.4.4
+revision=3
+tarball_url="https://github.com/taisei-project/taisei/releases/download/v${version}/taisei-${version}.tar.xz"
+tarball_blake2b="8dcd65265062f510e407494ab977a1f2d98937fef3657fb61cc582f8ec855dc8402c79fa059a9ceff52e45a0ff50fde810d72c3a1b270ed64824d6dcb42ab983"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl"
+
+configure() {
+    meson_configure \
+        -Ddocs=disabled \
+        -Da_default=null \
+        -Db_lto=false \
+        -Da_sdl=disabled \
+        -Dvfs_zip=disabled
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+    post_package_strip
+}

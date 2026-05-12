@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /usr/bin/env bash
 
 # Copyright (C) 2022-2026 Mintsuki
 
@@ -24,17 +24,27 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 set -e
+set -u
 
-IFS=" ""	"'
-'
+# Optional environment variables - initialise to empty so set -u is satisfied
+# regardless of whether the user/parent shell set them.
+: "${JINX_PARALLELISM:=}"
+: "${JINX_CACHE_DIR:=}"
+: "${JINX_NATIVE_MODE:=}"
+: "${JINX_NATIVE_LANG:=}"
+: "${JINX_CLEAN_WORKDIRS:=}"
+: "${TERM:=}"
+: "${COLORTERM:=}"
+: "${LD_LIBRARY_PATH:=}"
 
-LC_COLLATE=C
-export LC_COLLATE
+IFS=$' \t\n'
+
+export LC_COLLATE=C
 
 umask 0022
 
-jinx_major_ver="0.8"
-jinx_minor_ver="7"
+jinx_major_ver="0.9"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -49,23 +59,20 @@ die() {
     exit 1
 }
 
-if [ -z "$1" ]; then
+if [[ -z ${1-} ]]; then
     die "$0: no command specified."
 fi
 
 cmd_help() {
-    echo "usage: $0 <command> <package(s)>"
+    echo "usage: $0 <command> [args...]"
     printf "\n   help|--help        Displays this message"
     printf "\n   version|--version  Prints the version"
     printf "\n   init               Initialises a build directory"
+    printf "\n   update             Rebuild outdated package(s); use '-b' to also build never-built ones"
     printf "\n   build              Builds package(s), does incremental builds"
-    printf "\n   update             Update package(s) and their dependencies if necessary"
     printf "\n   rebuild            Rebuilds package(s)"
-    printf "\n   host-build         Same as build, but for host package(s)"
-    printf "\n   host-rebuild       Same as rebuild, but for host package(s)"
     printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
-    printf "\n   install            Installs package(s)"
-    printf "\n   reinstall          Reinstalls package(s)"
+    printf "\n   install            Installs package(s) (use '-f' to reinstall)"
     printf "\n   dry-run            Prints all packages that need to be built in order (space separated)"
     printf "\n   download           Downloads pre-built package(s) from remote repo"
     printf "\n   run-in             Runs a command in a container prepared with a recipe's hostdeps"
@@ -74,17 +81,17 @@ cmd_help() {
 }
 
 cmd_init() {
-    if ! [ -f "$1"/Jinxfile ]; then
+    if [[ ! -f "$1/Jinxfile" ]]; then
         die "$0: Provided source directory contains no Jinxfile"
     fi
 
-    srcdir="$1"
+    local srcdir="$1"
 
-    if [ -f ".jinx-parameters" ]; then
+    if [[ -f .jinx-parameters ]]; then
         die "$0: Current directory already initialised, run '$0 deinit' first"
     fi
 
-    if [ -f "Jinxfile" ]; then
+    if [[ -f Jinxfile ]]; then
         die "$0: In-tree builds are not supported"
     fi
 
@@ -97,8 +104,9 @@ EOF
 
     shift 1
 
+    local p
     for p in "$@"; do
-        echo "JINX_$p" | sed 's/=/="/g;s/$/"/g' >>.jinx-parameters
+        printf 'JINX_%s="%s"\n' "${p%%=*}" "${p#*=}" >>.jinx-parameters
     done
 
     echo "Initialised with '${srcdir}' as source directory"
@@ -120,58 +128,58 @@ case "$1" in
         ;;
 esac
 
-if ! [ "$(uname -s)" = "Linux" ]; then
+if [[ $(uname -s) != Linux ]]; then
     die "$0: Jinx only supports running on Linux hosts."
 fi
 
 script_name="$(basename "$0")"
 script_dir="$(dirname "$0")"
-if [ "$script_dir" = "." ] || [ -z "$script_dir" ]; then
-    if echo "$0" | grep "/" >/dev/null 2>&1; then
+if [[ $script_dir == . || -z $script_dir ]]; then
+    if [[ $0 == */* ]]; then
         script_dir=.
     else
-        script_dir="$(dirname $(which "${script_name}"))"
+        script_dir="$(dirname "$(which "${script_name}")")"
     fi
 fi
 script_dir="$(cd "${script_dir}" && pwd -P)"
 script="${script_dir}/${script_name}"
 
 in_container=false
-if [ "$script" = "//jinx" ]; then
+if [[ $script == //jinx ]]; then
     in_container=true
 fi
 
 case "$1" in
-    install|reinstall)
+    install)
         ;;
     *)
-        if [ "${in_container}" = "false" ] && [ "$(id -u)" = "0" ]; then
+        if [[ ${in_container} == false && $(id -u) == 0 ]]; then
             die "$0: Jinx does not support running as root."
         fi
         ;;
 esac
 
-if [ -z "$JINX_PARALLELISM" ]; then
-    max_threads_by_mem="$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))"
+if [[ -z ${JINX_PARALLELISM} ]]; then
+    max_threads_by_mem=$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))
     parallelism="$(nproc 2>/dev/null || echo 1)"
-    parallelism="$(( $parallelism < $max_threads_by_mem ? $parallelism : $max_threads_by_mem ))"
+    parallelism=$(( parallelism < max_threads_by_mem ? parallelism : max_threads_by_mem ))
 else
     parallelism="$JINX_PARALLELISM"
 fi
 
-if [ "$in_container" = "false" ]; then
+if [[ ${in_container} == false ]]; then
     build_dir="$(pwd -P)"
 else
     build_dir=/build_dir
 fi
 
-if ! [ -f "${build_dir}"/.jinx-parameters ]; then
+if [[ ! -f "${build_dir}/.jinx-parameters" ]]; then
     die "$0: Please run '$0 init <source dir> <parameters>' first"
 fi
 
 . "${build_dir}"/.jinx-parameters
 
-if [ "$in_container" = "false" ]; then
+if [[ ${in_container} == false ]]; then
     base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
 else
     base_dir=/base_dir
@@ -179,29 +187,29 @@ fi
 
 JINX_CONFIG_FILE="${base_dir}/Jinxfile"
 
-if ! [ -d "$(dirname "$JINX_CONFIG_FILE")" ]; then
+if [[ ! -d "$(dirname "$JINX_CONFIG_FILE")" ]]; then
     die "$0: cannot access Jinxfile directory"
 fi
 JINX_CONFIG_FILE="$(cd "$(dirname "$JINX_CONFIG_FILE")" && pwd -P)"/"$(basename "$JINX_CONFIG_FILE")"
 
-if [ -z "$JINX_CACHE_DIR" ]; then
+if [[ -z ${JINX_CACHE_DIR} ]]; then
     JINX_CACHE_DIR="${base_dir}/.jinx-cache"
 fi
-if ! [ -d "$(dirname "$JINX_CACHE_DIR")" ]; then
+if [[ ! -d "$(dirname "$JINX_CACHE_DIR")" ]]; then
     die "$0: cannot access cache directory parent"
 fi
 
-if [ "$in_container" = "false" ]; then
+if [[ ${in_container} == false ]]; then
     mkdir -p "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
     export PATH="${JINX_CACHE_DIR}/xbps/bin:${JINX_CACHE_DIR}/debootstrap/usr/sbin:${PATH}:/usr/sbin:/sbin"
-    if ! [ -z "${LD_LIBRARY_PATH}" ]; then
+    if [[ -n ${LD_LIBRARY_PATH} ]]; then
         LD_LIBRARY_PATH=":${LD_LIBRARY_PATH}"
     fi
     export LD_LIBRARY_PATH="${JINX_CACHE_DIR}/xbps/lib${LD_LIBRARY_PATH}"
 
-    mkdir -p "${base_dir}/sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
+    mkdir -p "${base_dir}/sources" "${base_dir}/host-sources" "${build_dir}/host-builds" "${build_dir}/host-pkgs" "${build_dir}/builds" "${build_dir}/pkgs"
 fi
 
 apt_cache="$JINX_CACHE_DIR/apt-cache"
@@ -211,98 +219,109 @@ force_remove() {
     rm -rf "$@"
 }
 
-temp_collect=""
+temp_collect=()
 
 cleanup_done=no
 cleanup() {
-    if [ "${cleanup_done}" = "yes" ]; then
+    if [[ ${cleanup_done} == yes ]]; then
         return
     fi
     cleanup_done=yes
-    eval "force_remove ${temp_collect}"
+    if (( ${#temp_collect[@]} > 0 )); then
+        force_remove "${temp_collect[@]}"
+    fi
 }
 
-trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT
-trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' EXIT
+trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT EXIT
 
 make_temp() {
-    tmp="$(mktemp $1 "$JINX_CACHE_DIR/tmp/tmp.XXXXXXXX")"
-    temp_collect="${temp_collect} \"${tmp}\""
+    tmp="$(mktemp ${1-} "$JINX_CACHE_DIR/tmp/tmp.XXXXXXXX")"
+    temp_collect+=("${tmp}")
 }
 
 tracked_subshell() {
     (
-        temp_collect=""
+        temp_collect=()
         cleanup_done=no
-        trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT
-        trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' EXIT
+        trap 'tmp_ret=$?; set +e; cleanup; trap - EXIT; exit ${tmp_ret}' INT TERM HUP QUIT EXIT
         set -e
         eval "$1"
     )
-    retval=$?
-    if ! [ ${retval} = 0 ]; then
-        exit ${retval}
-    fi
 }
 
 include_recipe() {
-    unset cross_compile
-    unset name
-    unset version
-    unset revision
-    unset from_source
-    unset deps
-    unset builddeps
-    unset hostdeps
-    unset hostrundeps
-    unset imagedeps
-    unset allow_network
-    unset source_deps
-    unset source_hostdeps
-    unset source_imagedeps
-    unset source_allow_network
-    unset clean_workdirs
-    unset bootstrap_pkg
-    unset from_source
-    unset source_dir
-    unset git_url
-    unset commit
-    unset shallow
-    unset tarball_url
-    unset tarball_sha256
-    unset tarball_sha512
-    unset tarball_blake2b
-
-    early_prepare() {
-        :
-    }
-
-    prepare() {
-        :
-    }
-
-    configure() {
-        :
-    }
-
-    build() {
-        :
-    }
-
-    package() {
-        :
-    }
-
-    if ! [ -f "$1" ]; then
-        die "$0: recipe '$1' not found"
+    if [[ ! -f $1/recipe ]]; then
+        printf 'die %q\n' "$0: recipe file '$1/recipe' not found"
+        return 1
     fi
+    cat <<'EOF'
+local cross_compile=
+local version=
+local revision=
+local from_source=
+local from_host_source=
+local deps=
+local builddeps=
+local hostdeps=
+local hostrundeps=
+local imagedeps=
+local allow_network=
+local source_deps=
+local source_hostdeps=
+local source_imagedeps=
+local source_allow_network=
+local clean_workdirs=
+local bootstrap_pkg=
+local source_dir=
+local git_url=
+local commit=
+local shallow=
+local tarball_url=
+local tarball_sha256=
+local tarball_sha512=
+local tarball_blake2b=
 
-    . "$1"
+early_prepare() { :; }
+prepare() { :; }
+configure() { :; }
+build() { :; }
+package() { :; }
+EOF
+    printf 'local recipe_dir=%q\n' "$1"
+    printf 'local name=%q\n' "$(basename "$1")"
+    printf 'local _expected_name=%q\n' "$(basename "$1")"
+    printf '. %q/recipe\n' "$1"
+    cat <<'EOF'
+
+if [[ ${name} != ${_expected_name} ]]; then
+    die "$0: recipe at '${recipe_dir}' must not override 'name' (recipe sets '${name}' but directory is '${_expected_name}'); remove the 'name=' assignment from the recipe"
+fi
+
+case "${recipe_dir}" in
+    */host-recipes/*) local _from_source_dir=host-recipes ;;
+    *) local _from_source_dir=recipes ;;
+esac
+if [[ -n ${from_host_source} ]]; then
+    if [[ -n ${from_source} ]]; then
+        die "$0: recipe '${name}' sets both from_source and from_host_source"
+    fi
+    local from_source=${from_host_source}
+    local _from_source_dir=host-recipes
+elif [[ -n ${from_source} ]]; then
+    local _from_source_dir=recipes
+fi
+local _sources_root=${_from_source_dir/recipes/sources}
+
+if [[ -n ${from_source} && -d ${recipe_dir}/patches ]]; then
+    die "$0: recipe '${name}' uses from_source/from_host_source and cannot have its own patches/ directory (patches live with the source recipe)"
+fi
+EOF
 }
 
 build_hostdeps() {
+    local hostdep
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        [ -f "${base_dir}"/host-recipes/${hostdep} ] || die "missing host dependency '${hostdep}' for recipe '${name}'"
+        [[ -f "${base_dir}/host-recipes/${hostdep}/recipe" ]] || die "missing host dependency '${hostdep}' for recipe '${name}'"
 
         tracked_subshell '
             do_host_build_if_needed ${hostdep}
@@ -311,106 +330,87 @@ build_hostdeps() {
 }
 
 build_deps() {
+    local dep
     for dep in ${deps} ${builddeps}; do
-        [ -f "${base_dir}"/recipes/${dep} ] || die "missing dependency '${dep}' for recipe '${name}'"
+        [[ -f "${base_dir}/recipes/${dep}/recipe" ]] || die "missing dependency '${dep}' for recipe '${name}'"
 
         tracked_subshell '
-            do_update ${dep}
-        '
-    done
-}
-
-get_hostdeps_file_run() {
-    deps_to_do=""
-
-    for hostdep in ${hostrundeps}; do
-        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
-            deps_to_do="${deps_to_do} ${hostdep}"
-            new_hostdeps_file=" ${hostdep} $(cat "${hostdeps_file}") "
-            echo "${new_hostdeps_file}" >"${hostdeps_file}"
-        fi
-    done
-
-    for hostdep in ${deps_to_do}; do
-        tracked_subshell '
-            include_recipe "${base_dir}"/host-recipes/${hostdep}
-            get_hostdeps_file
+            do_update yes ${dep}
         '
     done
 }
 
 get_hostdeps_file() {
-    deps_to_do=""
+    local deps_to_do=""
 
+    local hostdep
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
-            deps_to_do="${deps_to_do} ${hostdep}"
-            new_hostdeps_file=" ${hostdep} $(cat "${hostdeps_file}") "
-            echo "${new_hostdeps_file}" >"${hostdeps_file}"
+        if [[ -z ${_hostdeps_collected[$hostdep]+x} ]]; then
+            local deps_to_do="${deps_to_do} ${hostdep}"
+            _hostdeps_collected[$hostdep]=1
         fi
     done
 
     for hostdep in ${deps_to_do}; do
-        tracked_subshell '
-            include_recipe "${base_dir}"/host-recipes/${hostdep}
-            get_hostdeps_file
-        '
+        eval "$(include_recipe "${base_dir}"/host-recipes/${hostdep})"
+        get_hostdeps_file
     done
 }
 
 topo_sort_visit() {
-    case " $_global_visited " in
-        *" $1 "*) return ;;
-    esac
-    _global_visited="$_global_visited $1"
+    [[ -n ${_visited[$1]+x} ]] && return
+    _visited[$1]=1
 
-    _deps=$(awk -F: -v node="$1" '$1 == node {print $2; exit}' "$_global_graph")
-    for _dep in $_deps; do
-        [ -n "$_dep" ] && topo_sort_visit "$_dep"
+    local _dep
+    for _dep in ${_graph[$1]}; do
+        [[ -n $_dep ]] && topo_sort_visit "$_dep"
     done
 
-    _global_result="$_global_result$1
-"
+    _result="${_result}$1 "
 }
 
 topo_sort() {
-    make_temp
-    _global_graph="${tmp}"
-    _global_visited=" "
-    _global_result=""
+    local -A _graph
+    local -A _visited
+    local _result=
 
-    printf '%s\n' "$1" > "$_global_graph"
+    local _node _deps
+    while IFS=: read -r _node _deps; do
+        [[ -z $_node ]] && continue
+        # first occurrence wins (matches awk's previous exit-on-first-match)
+        [[ -n ${_graph[$_node]+x} ]] || _graph[$_node]=$_deps
+    done <<<"$1"
 
-    awk -F: '{print $1}' "$_global_graph" | sort -u | {
-        while read _node; do
-            topo_sort_visit "$_node"
-        done
-        printf '%s' "$_global_result" | tr '\n' ' ' | sed 's/ $/\n/'
-    }
+    for _node in $(printf '%s\n' "${!_graph[@]}" | sort); do
+        topo_sort_visit "$_node"
+    done
+
+    echo "${_result% }"
 }
 
 get_builddeps() {
-    pkg="$1"
+    local pkg="$1"
 
-    include_recipe "${base_dir}/recipes/${pkg}"
+    eval "$(include_recipe "${base_dir}/recipes/${pkg}")"
 
-    make_temp
-    deps_file="${tmp}"
+    local -A _deps_collected
 
     get_builddeps_file
 
-    graph="${pkg}:${deps}"
-    if ! [ -z "${builddeps}" ]; then
-        graph=$(echo "${graph} ${builddeps}" | sed 's/: /:/g')
+    local graph="${pkg}:${deps}"
+    if [[ -n ${builddeps} ]]; then
+        local graph="${graph} ${builddeps}"
+        local graph="${graph//: /:}"
     fi
 
-    for dep in $(cat "${deps_file}"); do
-        if ! [ -f "${base_dir}/recipes/${dep}" ]; then
+    local dep
+    for dep in "${!_deps_collected[@]}"; do
+        if [[ ! -f "${base_dir}/recipes/${dep}/recipe" ]]; then
             die "$0: dependency '${dep}' for recipe '${pkg}' not found"
         fi
 
-        graph="${graph}
-${dep}:$(include_recipe "${base_dir}/recipes/${dep}" && echo ${deps})"
+        local graph="${graph}
+${dep}:$(eval "$(include_recipe "${base_dir}/recipes/${dep}")" && echo ${deps})"
     done
 
     topo_sort "${graph}"
@@ -419,27 +419,27 @@ ${dep}:$(include_recipe "${base_dir}/recipes/${dep}" && echo ${deps})"
 get_hostdeps_builddeps() {
     # Similar to get_builddeps, but for host recipes.
     # Builds a topological ordering of host recipe dependencies.
-    hostpkg="$1"
+    local hostpkg="$1"
 
-    include_recipe "${base_dir}/host-recipes/${hostpkg}"
+    eval "$(include_recipe "${base_dir}/host-recipes/${hostpkg}")"
 
-    make_temp
-    hostdeps_file="${tmp}"
+    local -A _hostdeps_collected
 
     get_hostdeps_file_for_topo
 
-    graph="${hostpkg}:${hostdeps} ${hostrundeps}"
-    if ! [ -z "${hostdeps}" ] || ! [ -z "${hostrundeps}" ]; then
-        graph=$(echo "${graph}" | sed 's/: /:/g')
+    local graph="${hostpkg}:${hostdeps} ${hostrundeps}"
+    if [[ -n ${hostdeps} || -n ${hostrundeps} ]]; then
+        local graph="${graph//: /:}"
     fi
 
-    for hostdep in $(cat "${hostdeps_file}"); do
-        if ! [ -f "${base_dir}/host-recipes/${hostdep}" ]; then
+    local hostdep
+    for hostdep in "${!_hostdeps_collected[@]}"; do
+        if [[ ! -f "${base_dir}/host-recipes/${hostdep}/recipe" ]]; then
             die "$0: host dependency '${hostdep}' for host recipe '${hostpkg}' not found"
         fi
 
-        graph="${graph}
-${hostdep}:$(include_recipe "${base_dir}/host-recipes/${hostdep}" && echo ${hostdeps} ${hostrundeps})"
+        local graph="${graph}
+${hostdep}:$(eval "$(include_recipe "${base_dir}/host-recipes/${hostdep}")" && echo ${hostdeps} ${hostrundeps})"
     done
 
     topo_sort "${graph}"
@@ -447,65 +447,63 @@ ${hostdep}:$(include_recipe "${base_dir}/host-recipes/${hostdep}" && echo ${host
 
 get_hostdeps_file_for_topo() {
     # Collects all host dependencies recursively for use in topological sort.
-    deps_to_do=""
+    local deps_to_do=""
 
+    local hostdep
     for hostdep in ${hostdeps} ${hostrundeps}; do
-        if ! grep " ${hostdep} " "${hostdeps_file}" >/dev/null 2>&1; then
-            deps_to_do="${deps_to_do} ${hostdep}"
-            printf " ${hostdep} " >>"${hostdeps_file}"
+        if [[ -z ${_hostdeps_collected[$hostdep]+x} ]]; then
+            local deps_to_do="${deps_to_do} ${hostdep}"
+            _hostdeps_collected[$hostdep]=1
         fi
     done
 
     for hostdep in ${deps_to_do}; do
-        tracked_subshell '
-            include_recipe "${base_dir}"/host-recipes/${hostdep}
-            get_hostdeps_file_for_topo
-        '
+        eval "$(include_recipe "${base_dir}"/host-recipes/${hostdep})"
+        get_hostdeps_file_for_topo
     done
 }
 
 get_builddeps_file() {
-    deps_to_do=""
+    local deps_to_do=""
 
+    local dep
     for dep in ${deps} ${builddeps}; do
-        if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
-            deps_to_do="${deps_to_do} ${dep}"
-            printf " ${dep} " >>"${deps_file}"
+        if [[ -z ${_deps_collected[$dep]+x} ]]; then
+            local deps_to_do="${deps_to_do} ${dep}"
+            _deps_collected[$dep]=1
         fi
     done
 
     for dep in ${deps_to_do}; do
-        tracked_subshell '
-            include_recipe "${base_dir}"/recipes/${dep}
-            get_deps_file
-        '
+        eval "$(include_recipe "${base_dir}"/recipes/${dep})"
+        get_deps_file
     done
 }
 
 get_deps_file() {
-    deps_to_do=""
+    local deps_to_do=""
 
+    local dep
     for dep in ${deps}; do
-        if ! grep " ${dep} " "${deps_file}" >/dev/null 2>&1; then
-            deps_to_do="${deps_to_do} ${dep}"
-            printf " ${dep} " >>"${deps_file}"
+        if [[ -z ${_deps_collected[$dep]+x} ]]; then
+            local deps_to_do="${deps_to_do} ${dep}"
+            _deps_collected[$dep]=1
         fi
     done
 
     for dep in ${deps_to_do}; do
-        tracked_subshell '
-            include_recipe "${base_dir}"/recipes/${dep}
-            get_deps_file
-        '
+        eval "$(include_recipe "${base_dir}"/recipes/${dep})"
+        get_deps_file
     done
 }
 
 run_in_container1() {
-    run_in_cont1_root="$1"
+    local run_in_cont1_root="$1"
     shift 1
 
     cat /etc/resolv.conf >"${run_in_cont1_root}/etc/resolv.conf"
 
+    local arg
     unshare --user --map-root-user --mount --pid --fork -- sh -c "
         set -e
 
@@ -528,7 +526,7 @@ run_in_container1() {
             PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin \
             LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib \
             DEBIAN_FRONTEND=noninteractive \
-            $(for arg in "$@"; do echo '"'"$(echo "${arg}" | sed 's/"/\\"/g')"'" \'; done)
+            $(for arg in "$@"; do printf '"%s" \\\n' "${arg//\"/\\\"}"; done)
             # keep this whitespace
         '
     "
@@ -537,8 +535,9 @@ run_in_container1() {
 }
 
 check_duplicates() {
+    local elem
     for elem in $(cd "$1" && find .); do
-        if [ -f "$2"/${elem} ] || [ -L "$2"/${elem} ]; then
+        if [[ -f "$2/${elem}" || -L "$2/${elem}" ]]; then
             return 1
         fi
     done
@@ -547,10 +546,8 @@ check_duplicates() {
 prepare_container() {
     cd "${build_dir}"
 
-    make_temp
-    hostdeps_file="${tmp}"
-    make_temp
-    deps_file="${tmp}"
+    local -A _hostdeps_collected
+    local -A _deps_collected
 
     build_hostdeps
     build_deps
@@ -561,36 +558,39 @@ prepare_container() {
     make_temp -d
     container_pkgs="${tmp}"
     make_temp -d
-    sysroot_dir="${tmp}"
+    sysroot="${tmp}"
 
     make_temp
-    tmp_stdout="${tmp}"
+    local tmp_stdout="${tmp}"
     make_temp
-    tmp_stderr="${tmp}"
-    for dep in $(cat "${deps_file}"); do
+    local tmp_stderr="${tmp}"
+    local dep
+    for dep in "${!_deps_collected[@]}"; do
         XBPS_ARCH=invalid \
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
-		xbps-install -y -r "${sysroot_dir}" -R "${build_dir}"/pkgs "${dep}" >"${tmp_stdout}" 2>"${tmp_stderr}" \
+		xbps-install -y -r "${sysroot}" -R "${build_dir}"/pkgs "${dep}" >"${tmp_stdout}" 2>"${tmp_stderr}" \
 	|| (echo "jinx: xbps-install failed! stdout:" && sed 's/^/\- /' "${tmp_stdout}" && echo jinx: stderr: && sed 's/^/\- /' "${tmp_stderr}" && exit 17)
     done
 
-    if [ "$JINX_NATIVE_MODE" = "yes" ] && [ -z "$cross_compile" ]; then
-        imgroot="${sysroot_dir}"
+    if [[ $JINX_NATIVE_MODE == yes && -z $cross_compile ]]; then
+        imgroot="${sysroot}"
     else
-        for hostdep in $(cat "${hostdeps_file}"); do
-            if ! check_duplicates "${build_dir}"/host-pkgs/${hostdep}/usr/local "${container_pkgs}"; then
+        local hostdep
+        for hostdep in "${!_hostdeps_collected[@]}"; do
+            if ! check_duplicates "${build_dir}/host-pkgs/${hostdep}/usr/local" "${container_pkgs}"; then
                 die "jinx: error: Dependency '${hostdep}' contains file confilcts"
             fi
-            cp -Pplr "${build_dir}"/host-pkgs/${hostdep}/usr/local/. "${container_pkgs}"/
+            cp -Pplr "${build_dir}/host-pkgs/${hostdep}/usr/local/." "${container_pkgs}/"
         done
 
         imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
 
-        pkgset=""
+        local pkgset=""
+        local pkg
         for pkg in ${imagedeps}; do
-            pkgset="${pkgset}${pkg}/"
+            local pkgset="${pkgset}${pkg}/"
 
-            if [ -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid" ]; then
+            if [[ -f "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid" ]]; then
                 continue
             fi
 
@@ -604,9 +604,7 @@ prepare_container() {
             run_in_container1 "$JINX_CACHE_DIR/sets/${pkgset}.image" apt-get install -y "${pkg}"
 
             # Fix permissions of files
-            for f in $(find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 2>/dev/null); do
-                chmod 755 "$f"
-            done
+            find "$JINX_CACHE_DIR/sets/${pkgset}.image" -perm 000 -exec chmod 755 {} + 2>/dev/null
 
             touch "$JINX_CACHE_DIR/sets/${pkgset}.image/.jinx-set-valid"
         done
@@ -616,52 +614,56 @@ prepare_container() {
 }
 
 run_in_container() {
-    if [ "${allow_network}" = "yes" ]; then
-        unshare_net_flag=""
+    if [[ ${allow_network} == yes ]]; then
+        local unshare_net_flag=""
     else
-        unshare_net_flag="--net"
+        local unshare_net_flag="--net"
     fi
 
-    if [ ! -z "$TERM" ]; then
-        run_in_cont_term="TERM=\"$TERM\""
+    local run_in_cont_term=
+    if [[ -n $TERM ]]; then
+        local run_in_cont_term="TERM=\"$TERM\""
     fi
 
-    if ! [ -z "$COLORTERM" ]; then
-        run_in_cont_colorterm="COLORTERM=\"$COLORTERM\""
+    local run_in_cont_colorterm=
+    if [[ -n $COLORTERM ]]; then
+        local run_in_cont_colorterm="COLORTERM=\"$COLORTERM\""
     fi
 
-    mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir"
+    mkdir -p "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/host-sources" "${imgroot}/build_dir"
     cat /etc/resolv.conf >"${imgroot}/etc/resolv.conf"
     touch "${imgroot}/jinx"
 
-    container_pkgs_native_mount=""
-    sysroot_native_mount=""
-    if ( [ "$JINX_NATIVE_MODE" = "yes" ] && [ "$cross_compile" = "yes" ] ) || ( ! [ "$JINX_NATIVE_MODE" = "yes" ] ); then
+    local container_pkgs_native_mount=""
+    local sysroot_native_mount=""
+    if [[ ($JINX_NATIVE_MODE == yes && $cross_compile == yes) || $JINX_NATIVE_MODE != yes ]]; then
         mkdir -p "${imgroot}/sysroot"
 
-        container_pkgs_native_mount="mount -o ro --bind '${container_pkgs}' '${imgroot}/usr/local'"
-        sysroot_native_mount="mount -o ro --bind '${sysroot_dir}' '${imgroot}/sysroot'"
+        local container_pkgs_native_mount="mount -o ro --bind '${container_pkgs}' '${imgroot}/usr/local'"
+        local sysroot_native_mount="mount -o ro --bind '${sysroot}' '${imgroot}/sysroot'"
 
-        run_in_cont_lang=en_US.UTF-8
+        local run_in_cont_lang=en_US.UTF-8
     else
-        if ! [ -z "$JINX_NATIVE_LANG" ]; then
-            run_in_cont_lang="$JINX_NATIVE_LANG"
+        if [[ -n $JINX_NATIVE_LANG ]]; then
+            local run_in_cont_lang="$JINX_NATIVE_LANG"
         else
-            run_in_cont_lang=C
+            local run_in_cont_lang=C
         fi
     fi
 
-    shadow_git_dir_build=""
-    if [ -d "${build_dir}"/.git ]; then
+    local shadow_git_dir_build=""
+    if [[ -d "${build_dir}/.git" ]]; then
         make_temp -d
-        shadow_git_dir_build="mount --bind '${tmp}' '${imgroot}/build_dir/.git'"
+        local shadow_git_dir_build="mount --bind '${tmp}' '${imgroot}/build_dir/.git'"
     fi
 
-    shadow_git_dir_base=""
-    if [ -d "${base_dir}"/.git ]; then
+    local shadow_git_dir_base=""
+    if [[ -d "${base_dir}/.git" ]]; then
         make_temp -d
-        shadow_git_dir_base="mount --bind '${tmp}' '${imgroot}/base_dir/.git'"
+        local shadow_git_dir_base="mount --bind '${tmp}' '${imgroot}/base_dir/.git'"
     fi
+
+    local arg
 
     unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
         set -e
@@ -680,6 +682,7 @@ run_in_container() {
         mount --bind '${base_dir}/.jinx-cache/tmp' '${imgroot}/base_dir/.jinx-cache/tmp'
         mount --bind '${build_dir}' '${imgroot}/build_dir'
         mount ${container_sources_ro} --bind '${base_dir}/sources' '${imgroot}/base_dir/sources'
+        mount ${container_sources_ro} --bind '${base_dir}/host-sources' '${imgroot}/base_dir/host-sources'
         ${container_pkgs_native_mount}
         ${sysroot_native_mount}
         ${shadow_git_dir_base}
@@ -702,64 +705,66 @@ run_in_container() {
             JINX_CONFIG_FILE=/base_dir/Jinxfile \
             JINX_SOURCE_DIR=/base_dir \
             /bin/bash /jinx \
-            $(for arg in "$@"; do echo '"'"$(echo "${arg}" | sed 's/"/\\"/g')"'" \'; done)
+            $(for arg in "$@"; do printf '"%s" \\\n' "${arg//\"/\\\"}"; done)
             # keep this whitespace
         '
     "
 
-    force_remove "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/build_dir" "${imgroot}/jinx"
+    force_remove "${imgroot}/sysroot" "${imgroot}/base_dir" "${imgroot}/sources" "${imgroot}/host-sources" "${imgroot}/build_dir" "${imgroot}/jinx"
     rm "${imgroot}/etc/resolv.conf"
 }
 
 destroy_container() {
-    force_remove "${container_pkgs}" "${sysroot_dir}"
+    force_remove "${container_pkgs}" "${sysroot}"
 }
 
 do_git_fetch() {
-    if [ -z "${commit}" ]; then
+    if [[ -z ${commit} ]]; then
         die "* error: Git commit not specified"
     fi
 
-    if ! ( echo "${commit}" | grep -qE '^[0-9a-f]{40}$' ); then
+    if [[ ! ${commit} =~ ^[0-9a-f]{40}$ ]]; then
         die "* error: Invalid commit hash"
     fi
 
-    if [ "${shallow}" = "no" ]; then
-        git clone "${git_url}" "${base_dir}"/sources/${name}
-        git -C "${base_dir}"/sources/${name} -c advice.detachedHead=false checkout "${commit}"
+    if [[ ${shallow} == no ]]; then
+        git clone "${git_url}" "${base_dir}"/${_sources_root}/${name}
+        git -C "${base_dir}"/${_sources_root}/${name} -c advice.detachedHead=false checkout "${commit}"
     else
-        git clone "${git_url}" -c advice.detachedHead=false --revision="${commit}" --depth=1 "${base_dir}"/sources/${name}
+        git clone "${git_url}" -c advice.detachedHead=false --revision="${commit}" --depth=1 "${base_dir}"/${_sources_root}/${name}
     fi
 }
 
 do_tarball_fetch() {
-    tarball_path="${base_dir}"/sources/"$(basename "${tarball_url}")"
+    local tarball_path="${base_dir}/${_sources_root}/$(basename "${tarball_url}")"
 
-    if ! [ -f "$tarball_path" ]; then
+    if [[ ! -f $tarball_path ]]; then
         make_temp
-        download_path="${tmp}"
+        local download_path="${tmp}"
 
         curl -L -o "${download_path}" "${tarball_url}"
         mv "${download_path}" "${tarball_path}"
     fi
 
-    checksum_verified=no
+    local checksum_verified=no
 
     fill_recipe_checksum() {
-        # $1: variable name, $2: actual checksum value
-        if [ -n "${current_recipe_file}" ] && [ -f "${current_recipe_file}" ]; then
+        local var_name="$1"
+        local checksum_value="$2"
+        if [[ -n ${current_recipe_file} && -f ${current_recipe_file} ]]; then
             # Match `var=?`, `var="?"`, or `var='?'`
             # with optional surrounding whitespace, preserving whatever quoting style was used.
-            sed -i -E "s#^([[:space:]]*$1=)(\"|')?\\?(\"|')?([[:space:]]*)\$#\\1\\2$2\\3\\4#" "${current_recipe_file}"
+            sed -i -E "s#^([[:space:]]*${var_name}=)(\"|')?\\?(\"|')?([[:space:]]*)\$#\\1\\2${checksum_value}\\3\\4#" "${current_recipe_file}"
         else
-            die "* error: cannot autofill $1 for ${name}: recipe file unknown"
+            die "* error: cannot autofill ${var_name} for ${name}: recipe file unknown"
         fi
     }
 
-    if ! [ -z "${tarball_sha256}" ]; then
-        actual_sha256="$(sha256sum "${tarball_path}" | awk '{print $1;}')"
-        if ! [ ${actual_sha256} = ${tarball_sha256} ]; then
-            if [ "${tarball_sha256}" = "?" ]; then
+    if [[ -n ${tarball_sha256} ]]; then
+        local actual_sha256="$(sha256sum "${tarball_path}")"
+        local actual_sha256="${actual_sha256%% *}"
+        if [[ ${actual_sha256} != "${tarball_sha256}" ]]; then
+            if [[ ${tarball_sha256} == "?" ]]; then
                 fill_recipe_checksum tarball_sha256 "${actual_sha256}"
             else
                 die "* error: Failed to verify SHA256 for ${name}.
@@ -767,12 +772,13 @@ do_tarball_fetch() {
   got '${actual_sha256}'."
             fi
         fi
-        checksum_verified=yes
+        local checksum_verified=yes
     fi
-    if ! [ -z "${tarball_sha512}" ]; then
-        actual_sha512="$(sha512sum "${tarball_path}" | awk '{print $1;}')"
-        if ! [ ${actual_sha512} = ${tarball_sha512} ]; then
-            if [ "${tarball_sha512}" = "?" ]; then
+    if [[ -n ${tarball_sha512} ]]; then
+        local actual_sha512="$(sha512sum "${tarball_path}")"
+        local actual_sha512="${actual_sha512%% *}"
+        if [[ ${actual_sha512} != "${tarball_sha512}" ]]; then
+            if [[ ${tarball_sha512} == "?" ]]; then
                 fill_recipe_checksum tarball_sha512 "${actual_sha512}"
             else
                 die "* error: Failed to verify SHA512 for ${name}.
@@ -780,12 +786,13 @@ do_tarball_fetch() {
   got '${actual_sha512}'."
             fi
         fi
-        checksum_verified=yes
+        local checksum_verified=yes
     fi
-    if ! [ -z "${tarball_blake2b}" ]; then
-        actual_blake2b="$(b2sum "${tarball_path}" | awk '{print $1;}')"
-        if ! [ ${actual_blake2b} = ${tarball_blake2b} ]; then
-            if [ "${tarball_blake2b}" = "?" ]; then
+    if [[ -n ${tarball_blake2b} ]]; then
+        local actual_blake2b="$(b2sum "${tarball_path}")"
+        local actual_blake2b="${actual_blake2b%% *}"
+        if [[ ${actual_blake2b} != "${tarball_blake2b}" ]]; then
+            if [[ ${tarball_blake2b} == "?" ]]; then
                 fill_recipe_checksum tarball_blake2b "${actual_blake2b}"
             else
                 die "* error: Failed to verify BLAKE2B for ${name}.
@@ -793,81 +800,93 @@ do_tarball_fetch() {
   got '${actual_blake2b}'."
             fi
         fi
-        checksum_verified=yes
+        local checksum_verified=yes
     fi
 
-    if [ "${checksum_verified}" = "no" ]; then
+    if [[ ${checksum_verified} == no ]]; then
         die "* error: No checksum method specified for ${name}"
     fi
 
     make_temp -d
-    extract_dir="${tmp}"
+    local extract_dir="${tmp}"
 
     ( cd "${extract_dir}" && tar -xf "${tarball_path}" )
 
-    mv "${extract_dir}"/* "${base_dir}"/sources/${name} >/dev/null 2>&1 || (
-        mkdir -p "${base_dir}"/sources/${name}
-        mv "${extract_dir}"/* "${base_dir}"/sources/${name}/
+    mv "${extract_dir}"/* "${base_dir}"/${_sources_root}/${name} >/dev/null 2>&1 || (
+        mkdir -p "${base_dir}"/${_sources_root}/${name}
+        mv "${extract_dir}"/* "${base_dir}"/${_sources_root}/${name}/
     )
 
     force_remove "${extract_dir}" "${tarball_path}"
 }
 
 get_real_source_dir() {
-    unset is_local_package
-    unset is_sourceless_package
-
-    if [ -z "${source_dir}" ] && [ -z "${git_url}" ] && [ -z "${tarball_url}" ]; then
-        source_dir=/dev/null
-        is_local_package=true
-        is_sourceless_package=true
+    if [[ -z ${source_dir} && -z ${git_url} && -z ${tarball_url} ]]; then
+        cat <<'EOF'
+local source_dir=/dev/null
+local is_local_package=true
+local is_sourceless_package=true
+EOF
         return
     fi
 
-    if [ -z "${source_dir}" ]; then
-        source_dir="${base_dir}"/sources/${name}
+    cat <<'EOF'
+local is_sourceless_package=
+EOF
+
+    if [[ -z ${source_dir} ]]; then
+        cat <<'EOF'
+local is_local_package=
+EOF
+        printf 'local source_dir=%q\n' "${base_dir}/${_sources_root}/${name}"
     else
-        source_dir="${base_dir}"/"${source_dir}"
-        if ! [ -d "${source_dir}" ]; then
-            die "* source_dir of a local package is not a valid path"
+        local _real_path="${base_dir}/${source_dir}"
+        if [[ ! -d ${_real_path} ]]; then
+            printf 'die %q\n' "* source_dir of a local package is not a valid path"
+            return 1
         fi
-        is_local_package=true
+        cat <<'EOF'
+local is_local_package=true
+EOF
+        printf 'local source_dir=%q\n' "${_real_path}"
     fi
 }
 
 source_source_recipe() {
-    if [ -f "${base_dir}"/source-recipes/$1 ]; then
-        current_recipe_file="${base_dir}"/source-recipes/$1
-        include_recipe "${current_recipe_file}"
-    elif [ -f "${base_dir}"/recipes/$1 ]; then
-        current_recipe_file="${base_dir}"/recipes/$1
-        include_recipe "${current_recipe_file}"
-
-        imagedeps="${source_imagedeps}"
-        hostdeps="${source_hostdeps}"
-        deps="${source_deps}"
-        allow_network="${source_allow_network}"
-    else
-        die "* could not find source recipe '$1'"
+    local name="$1"
+    local dir="$2"
+    local _path="${base_dir}/${dir}/${name}"
+    if [[ ! -f $_path/recipe ]]; then
+        printf 'die %q\n' "* could not find recipe '${name}' in ${dir}/"
+        return 1
     fi
+    printf 'local current_recipe_file=%q\n' "${_path}/recipe"
+    include_recipe "${_path}"
+
+    cat <<'EOF'
+local imagedeps="${source_imagedeps}"
+local hostdeps="${source_hostdeps}"
+local deps="${source_deps}"
+local allow_network="${source_allow_network}"
+EOF
 }
 
 do_fetch() {
-    source_source_recipe $1
+    eval "$(source_source_recipe "$1" "$2")"
 
-    get_real_source_dir
+    eval "$(get_real_source_dir)"
 
-    sysroot_dir="/sysroot"
+    local sysroot=/sysroot
 
-    if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
-        if ! [ -z "${git_url}" ]; then
+    if [[ ${is_local_package} != true && ${is_sourceless_package} != true ]]; then
+        if [[ -n ${git_url} ]]; then
             do_git_fetch
-        elif ! [ -z "${tarball_url}" ]; then
+        elif [[ -n ${tarball_url} ]]; then
             do_tarball_fetch
         fi
     fi
 
-    if ! [ "${is_sourceless_package}" = true ]; then
+    if [[ ${is_sourceless_package} != true ]]; then
         tracked_subshell '
             cd "${source_dir}"
             early_prepare
@@ -876,61 +895,65 @@ do_fetch() {
 }
 
 do_patch() {
-    source_source_recipe $1
+    eval "$(source_source_recipe "$1" "$2")"
 
-    get_real_source_dir
+    eval "$(get_real_source_dir)"
 
     make_temp
-    patch_trash="${tmp}"
+    local patch_trash="${tmp}"
 
     cd "${source_dir}"
 
-    needs_match_timestamps=no
-    force_remove "${base_dir}"/sources/${name}-clean
-    if [ -d "${base_dir}"/patches/${name} ]; then
-        for patch in "${base_dir}"/patches/${name}/*; do
-            [ "${patch}" = "${base_dir}/patches/${name}/*" ] && break
-            [ "${patch}" = "${base_dir}"/patches/${name}/jinx-working-patch.patch ] && continue
+    local _patches_dir="${base_dir}/${_from_source_dir}/${name}/patches"
+    local needs_match_timestamps=no
+    force_remove "${base_dir}/${_sources_root}/${name}-clean"
+    if [[ -d ${_patches_dir} ]]; then
+        local patch
+        for patch in "${_patches_dir}"/*; do
+            [[ ${patch} == "${_patches_dir}/*" ]] && break
+            [[ ${patch} == "${_patches_dir}/jinx-working-patch.patch" ]] && continue
 
-            if ! [ -d "${base_dir}"/sources/${name}-clean ]; then
-                cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
-                needs_match_timestamps=yes
+            if [[ ! -d "${base_dir}/${_sources_root}/${name}-clean" ]]; then
+                cp -rp "${source_dir}" "${base_dir}/${_sources_root}/${name}-clean"
+                local needs_match_timestamps=yes
             fi
 
             patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${patch}"
         done
 
-        if [ "${needs_match_timestamps}" = yes ]; then
+        if [[ ${needs_match_timestamps} == yes ]]; then
             # make sure timestamps match
-            for f in $(diff -rq --no-dereference "${base_dir}"/sources/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
-                touch --reference="$f" "$(echo "$f" | sed "s|sources/${name}-clean|sources/${name}|g")"
+            local f
+            for f in $(diff -rq --no-dereference "${base_dir}/${_sources_root}/${name}-clean" "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
+                touch --reference="$f" "${f//${_sources_root}\/${name}-clean/${_sources_root}\/${name}}"
             done
-            force_remove "${base_dir}"/sources/${name}-clean
+            force_remove "${base_dir}/${_sources_root}/${name}-clean"
         fi
     fi
 
-    cp -rp "${source_dir}" "${base_dir}"/sources/${name}-clean
+    cp -rp "${source_dir}" "${base_dir}/${_sources_root}/${name}-clean"
 
-    if [ -f "${base_dir}"/patches/${name}/jinx-working-patch.patch ]; then
-        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${base_dir}"/patches/${name}/jinx-working-patch.patch
+    if [[ -f "${_patches_dir}/jinx-working-patch.patch" ]]; then
+        patch --no-backup-if-mismatch -p1 -r "${patch_trash}" < "${_patches_dir}/jinx-working-patch.patch"
 
         # make sure timestamps match
-        for f in $(diff -rq --no-dereference "${base_dir}"/sources/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
-            touch --reference="$f" "$(echo "$f" | sed "s|sources/${name}-clean|sources/${name}|g")"
+        local f
+        for f in $(diff -rq --no-dereference "${base_dir}"/${_sources_root}/${name}-clean "${source_dir}" | sed '/^Only in/d;s/^Files //g;s/ and.*$//g'); do
+            touch --reference="$f" "${f//${_sources_root}\/${name}-clean/${_sources_root}\/${name}}"
         done
     fi
 
-    cp -rp "${source_dir}" "${base_dir}"/sources/${name}-workdir
+    cp -rp "${source_dir}" "${base_dir}"/${_sources_root}/${name}-workdir
 
     cd "${base_dir}"
 }
 
 do_prepare() {
-    source_source_recipe $1
+    eval "$(source_source_recipe "$1" "$2")"
 
-    get_real_source_dir
+    eval "$(get_real_source_dir)"
 
-    sysroot_dir="/sysroot"
+    local sysroot=/sysroot
 
     cd "${source_dir}"
     prepare
@@ -938,23 +961,27 @@ do_prepare() {
 }
 
 do_configure_host() {
-    include_recipe "${base_dir}"/host-recipes/$1
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
 
     mkdir -p "${build_dir}"/host-builds/${name}
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-        source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
-
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local from_source=${name}
+        fi
+
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
+        else
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr/local"
-    sysroot_dir="/sysroot"
+    local prefix="/usr/local"
+    local sysroot="/sysroot"
 
     cd "${build_dir}"/host-builds/${name}
     configure
@@ -962,23 +989,27 @@ do_configure_host() {
 }
 
 do_build_host() {
-    include_recipe "${base_dir}"/host-recipes/$1
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
 
     mkdir -p "${build_dir}"/host-builds/${name}
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-        source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
-
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local from_source=${name}
+        fi
+
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
+        else
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr/local"
-    sysroot_dir="/sysroot"
+    local prefix="/usr/local"
+    local sysroot="/sysroot"
 
     cd "${build_dir}"/host-builds/${name}
     build
@@ -986,26 +1017,30 @@ do_build_host() {
 }
 
 do_package_host() {
-    include_recipe "${base_dir}"/host-recipes/$1
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
 
-    dest_dir="${build_dir}"/host-pkgs/${name}
+    local dest_dir="${build_dir}/host-pkgs/${name}"
 
     force_remove "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-        source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
-
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local from_source=${name}
+        fi
+
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
+        else
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr/local"
-    sysroot_dir="/sysroot"
+    local prefix="/usr/local"
+    local sysroot="/sysroot"
 
     mkdir -p "${dest_dir}${prefix}"
 
@@ -1013,35 +1048,33 @@ do_package_host() {
     package
 
     # Remove libtool files
-    for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
-        rm -rvf $i
-    done
+    find "${dest_dir}${prefix}" -name "*.la" -exec rm -rvf {} +
 
     cd "${base_dir}"
 }
 
 do_configure() {
-    include_recipe "${base_dir}"/recipes/$1
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
 
     mkdir -p "${build_dir}"/builds/${name}
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-            source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            from_source=${name}
+            local from_source=${name}
         fi
 
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr"
-    sysroot_dir="/sysroot"
+    local prefix="/usr"
+    local sysroot="/sysroot"
 
     cd "${build_dir}"/builds/${name}
     configure
@@ -1049,27 +1082,27 @@ do_configure() {
 }
 
 do_build() {
-    include_recipe "${base_dir}"/recipes/$1
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
 
     mkdir -p "${build_dir}"/builds/${name}
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-            source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            from_source=${name}
+            local from_source=${name}
         fi
 
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr"
-    sysroot_dir="/sysroot"
+    local prefix="/usr"
+    local sysroot="/sysroot"
 
     cd "${build_dir}"/builds/${name}
     build
@@ -1077,30 +1110,30 @@ do_build() {
 }
 
 do_package() {
-    include_recipe "${base_dir}"/recipes/$1
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
 
-    dest_dir="${build_dir}"/pkgs/${name}
+    local dest_dir="${build_dir}/pkgs/${name}"
 
     force_remove "${dest_dir}"
     mkdir -p "${dest_dir}"
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-            source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            from_source=${name}
+            local from_source=${name}
         fi
 
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr"
-    sysroot_dir="/sysroot"
+    local prefix="/usr"
+    local sysroot="/sysroot"
 
     mkdir -p "${dest_dir}${prefix}"
 
@@ -1108,74 +1141,67 @@ do_package() {
     package
 
     # Remove libtool files
-    for i in $(find "${dest_dir}${prefix}" -name "*.la"); do
-        rm -rvf $i
-    done
+    find "${dest_dir}${prefix}" -name "*.la" -exec rm -rvf {} +
 
     cd "${base_dir}"
 }
 
 clean_sources() {
-    force_remove "${base_dir}"/sources/$1
-    force_remove "${base_dir}"/sources/$1-clean
-    force_remove "${base_dir}"/sources/$1-workdir
-    force_remove "${base_dir}"/sources/$1.version
-    force_remove "${base_dir}"/sources/$1.patched
-    force_remove "${base_dir}"/sources/$1.prepared
-    force_remove "${base_dir}"/sources/$1.built
-}
-
-need_repatch() {
-    force_remove "${base_dir}"/sources/$1
-
-    if [ -d "${base_dir}"/sources/$1-clean ]; then
-        mv "${base_dir}"/sources/$1-clean "${base_dir}"/sources/$1
-    fi
-
-    force_remove "${base_dir}"/sources/$1-workdir
-    force_remove "${base_dir}"/sources/$1.patched
-    force_remove "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/${_sources_root}/$1
+    force_remove "${base_dir}"/${_sources_root}/$1-clean
+    force_remove "${base_dir}"/${_sources_root}/$1-workdir
+    force_remove "${base_dir}"/${_sources_root}/$1.version
+    force_remove "${base_dir}"/${_sources_root}/$1.patched
+    force_remove "${base_dir}"/${_sources_root}/$1.prepared
+    force_remove "${base_dir}"/${_sources_root}/$1.built
 }
 
 do_source() {
-    source_source_recipe $1
+    eval "$(source_source_recipe "$1" "$2")"
 
-    get_real_source_dir
+    eval "$(get_real_source_dir)"
 
-    cross_compile=yes
+    local cross_compile=yes
+    local container_pkgs=
+    local sysroot=
+    local imgroot=
+    local container_sources_ro=
+    local container_base_dir_ro=
     prepare_container
 
-    if ! [ -f "${base_dir}"/sources/$1.version ] || ! [ "$(cat "${base_dir}"/sources/$1.version)" = "${version}" ]; then
+    if [[ ! -f "${base_dir}/${_sources_root}/$1.version" || $(cat "${base_dir}/${_sources_root}/$1.version") != "${version}" ]]; then
         tracked_subshell '
-            allow_network="yes"
+            local allow_network=yes
+            local container_base_dir_ro=
             clean_sources '$1'
-            [ "${is_local_package}" = true ] \
-                || [ ! -z "${tarball_sha256}" -a "${tarball_sha256}" = "?" ] \
-                || [ ! -z "${tarball_sha512}" -a "${tarball_sha512}" = "?" ] \
-                || [ ! -z "${tarball_blake2b}" -a "${tarball_blake2b}" = "?" ] \
-                || container_base_dir_ro="-o ro"
-            run_in_container internal-fetch '$1'
-            echo "${version}" >"${base_dir}"/sources/'$1'.version
+            [[ ${is_local_package} == true ]] \
+                || [[ -n ${tarball_sha256} && ${tarball_sha256} == "?" ]] \
+                || [[ -n ${tarball_sha512} && ${tarball_sha512} == "?" ]] \
+                || [[ -n ${tarball_blake2b} && ${tarball_blake2b} == "?" ]] \
+                || local container_base_dir_ro="-o ro"
+            run_in_container internal-fetch '$1' '$2'
+            echo "${version}" >"${base_dir}"/${_sources_root}/'$1'.version
         '
     fi
 
-    if ! [ -f "${base_dir}"/sources/$1.patched ]; then
+    if [[ ! -f "${base_dir}/${_sources_root}/$1.patched" ]]; then
         tracked_subshell '
-            if ! [ "${is_local_package}" = true ] && ! [ "${is_sourceless_package}" = true ]; then
-                allow_network="yes"
-                run_in_container internal-patch '$1'
+            if [[ ${is_local_package} != true && ${is_sourceless_package} != true ]]; then
+                local allow_network=yes
+                run_in_container internal-patch '$1' '$2'
             fi
-            touch "${base_dir}"/sources/'$1'.patched
+            touch "${base_dir}"/${_sources_root}/'$1'.patched
         '
     fi
 
-    if ! [ -f "${base_dir}"/sources/$1.prepared ]; then
+    if [[ ! -f "${base_dir}/${_sources_root}/$1.prepared" ]]; then
         tracked_subshell '
-            if ! [ "${is_sourceless_package}" = true ]; then
-                [ "${is_local_package}" = true ] || container_base_dir_ro="-o ro"
-                run_in_container internal-prepare '$1'
+            local container_base_dir_ro=
+            if [[ ${is_sourceless_package} != true ]]; then
+                [[ ${is_local_package} == true ]] || local container_base_dir_ro="-o ro"
+                run_in_container internal-prepare '$1' '$2'
             fi
-            touch "${base_dir}"/sources/'$1'.prepared
+            touch "${base_dir}"/${_sources_root}/'$1'.prepared
         '
     fi
 
@@ -1195,95 +1221,110 @@ do_host_rebuild() {
 }
 
 do_regen() {
-    source_source_recipe $1
+    eval "$(source_source_recipe "$1" "$2")"
 
-    [ -f "${base_dir}"/sources/$1.patched ] || die "cannot regenerate non-built package"
+    if [[ -n ${from_source} ]]; then
+        if [[ ${_from_source_dir} == host-recipes ]]; then
+            die "$0: recipe '$1' uses from_source/from_host_source; regen its source with: $0 regen host:${from_source}"
+        else
+            die "$0: recipe '$1' uses from_source/from_host_source; regen its source with: $0 regen ${from_source}"
+        fi
+    fi
+    [[ -f "${base_dir}/${_sources_root}/$1.patched" ]] || die "cannot regenerate non-built package"
 
-    get_real_source_dir
+    eval "$(get_real_source_dir)"
 
     make_temp
-    patch_file="${tmp}"
+    local patch_file="${tmp}"
 
-    if ! [ "${is_local_package}" = true ]; then
-        cd "${base_dir}"/sources
+    if [[ ${is_local_package} != true ]]; then
+        cd "${base_dir}/${_sources_root}"
 
         # exclude version control dirs
         make_temp -d
-        vc_dir_clean="${tmp}"
+        local vc_dir_clean="${tmp}"
         force_remove "${vc_dir_clean}"
         make_temp -d
-        vc_dir_workdir="${tmp}"
+        local vc_dir_workdir="${tmp}"
         force_remove "${vc_dir_workdir}"
 
-        if ! [ -z "${git_url}" ]; then
+        if [[ -n ${git_url} ]]; then
             mv $1-clean/.git "${vc_dir_clean}"
             mv $1-workdir/.git "${vc_dir_workdir}"
         fi
 
         git diff --no-index --no-prefix $1-clean $1-workdir >"${patch_file}" || true
 
-        if ! [ -z "${git_url}" ]; then
+        if [[ -n ${git_url} ]]; then
             mv "${vc_dir_clean}" $1-clean/.git
             mv "${vc_dir_workdir}" $1-workdir/.git
         fi
 
-        if [ -s "${patch_file}" ]; then
-            mkdir -p "${base_dir}"/patches/$1
-            mv "${patch_file}" "${base_dir}"/patches/$1/jinx-working-patch.patch
+        if [[ -s "${patch_file}" ]]; then
+            mkdir -p "${base_dir}/${_from_source_dir}/$1/patches"
+            mv "${patch_file}" "${base_dir}/${_from_source_dir}/$1/patches/jinx-working-patch.patch"
         fi
 
         cd "${base_dir}"
 
         force_remove "${source_dir}"
-        cp -rp "${base_dir}"/sources/$1-workdir "${source_dir}"
+        cp -rp "${base_dir}"/${_sources_root}/$1-workdir "${source_dir}"
     fi
 
-    force_remove "${base_dir}"/sources/$1.prepared
+    force_remove "${base_dir}"/${_sources_root}/$1.prepared
 
-    cross_compile=yes
+    local cross_compile=yes
+    local container_pkgs=
+    local sysroot=
+    local imgroot=
+    local container_sources_ro=
+    local container_base_dir_ro=
     prepare_container
-    run_in_container internal-prepare $1
+    run_in_container internal-prepare "$1" "$2"
     destroy_container
 }
 
 do_host_pkg() {
-    include_recipe "${base_dir}"/host-recipes/$1
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
 
     echo "* building host package: $name"
 
-    if ! [ -z "${from_source}" ]; then
-        tracked_subshell 'do_source "${from_source}"'
+    if [[ -n ${from_source} ]]; then
+        tracked_subshell 'do_source "${from_source}" "${_from_source_dir}"'
     else
-        tracked_subshell 'do_source "${name}"'
+        tracked_subshell 'do_source "${name}" host-recipes'
     fi
 
-    cross_compile=yes
+    local cross_compile=yes
+    local container_pkgs=
+    local sysroot=
+    local imgroot=
+    local container_base_dir_ro=
     prepare_container
 
-    container_sources_ro="-o ro"
-    if ! [ -d "${build_dir}"/host-builds/$1 ]; then
+    local container_sources_ro="-o ro"
+    if [[ ! -d "${build_dir}/host-builds/$1" ]]; then
         run_in_container internal-configure-host $1
     fi
     run_in_container internal-build-host $1
     force_remove "${build_dir}"/host-pkgs/$1
     run_in_container internal-package-host $1
-    unset container_sources_ro
 
     destroy_container
 
-    if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
-        if ! [ "$clean_workdirs" = "no" ]; then
+    if [[ ${JINX_CLEAN_WORKDIRS} == yes ]]; then
+        if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/host-builds/$1
 
-            if [ -z "${from_source}" ]; then
-                source_source_recipe $1
+            if [[ -z ${from_source} ]]; then
+                eval "$(source_source_recipe "$1" host-recipes)"
             else
-                source_source_recipe ${from_source}
+                eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")"
             fi
 
-            get_real_source_dir
+            eval "$(get_real_source_dir)"
 
-            if ! [ "${is_sourceless_package}" = true ] && ! [ "${is_local_package}" = true ]; then
+            if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]]; then
                 clean_sources "${name}"
             fi
         fi
@@ -1291,55 +1332,59 @@ do_host_pkg() {
 }
 
 do_pkg() {
-    include_recipe "${base_dir}"/recipes/$1
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
 
     echo "* building package: $name"
 
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
     fi
 
-    if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+    if [[ ! -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
         force_remove "${build_dir}"/builds/"$1"
-        if [ -z "${from_source}" ] && \
-           [ -f "${base_dir}"/sources/$1.built ] && \
-           ! [ "$(cat "${base_dir}"/sources/$1.built)" = "${version}_${revision}" ]; then
+        if [[ -z ${from_source} ]] \
+           && [[ -f "${base_dir}/${_sources_root}/$1.built" ]] \
+           && [[ $(cat "${base_dir}/${_sources_root}/$1.built") != "${version}_${revision}" ]]; then
             tracked_subshell 'clean_sources "${name}"'
         fi
     fi
 
-    if ! [ -z "${from_source}" ]; then
-        tracked_subshell 'do_source "${from_source}"'
+    if [[ -n ${from_source} ]]; then
+        tracked_subshell 'do_source "${from_source}" "${_from_source_dir}"'
     else
-        tracked_subshell 'do_source "${name}"'
+        tracked_subshell 'do_source "${name}" recipes'
     fi
 
-    echo "${version}_${revision}" >"${base_dir}"/sources/$1.built
+    echo "${version}_${revision}" >"${base_dir}"/${_sources_root}/$1.built
 
+    local container_pkgs=
+    local sysroot=
+    local imgroot=
+    local container_base_dir_ro=
     prepare_container
 
-    container_sources_ro="-o ro"
-    if ! [ -d "${build_dir}"/builds/$1 ]; then
+    local container_sources_ro="-o ro"
+    if [[ ! -d "${build_dir}/builds/$1" ]]; then
         run_in_container internal-configure $1
     fi
     run_in_container internal-build $1
     force_remove "${build_dir}"/pkgs/$1
     run_in_container internal-package $1
-    unset container_sources_ro
 
     destroy_container
 
-    xbps_deps=""
+    local xbps_deps=""
+    local dep
     for dep in ${deps}; do
-        bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${dep} && echo "${bootstrap_pkg}")
-        if [ "${bootstrap_pkg}" = "yes" ]; then
+        local bootstrap_pkg=$(eval "$(include_recipe "${base_dir}"/recipes/${dep})" && echo "${bootstrap_pkg}")
+        if [[ ${bootstrap_pkg} == yes ]]; then
             continue
         fi
 
-        xbps_deps="${xbps_deps} ${dep}>=0.0"
+        local xbps_deps="${xbps_deps} ${dep}>=0.0"
     done
 
-    dest_dir="${build_dir}"/pkgs/${name}
+    local dest_dir="${build_dir}/pkgs/${name}"
 
     cd "${build_dir}"/pkgs
         XBPS_ARCH=invalid \
@@ -1359,144 +1404,108 @@ do_pkg() {
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
 
-    if [ "$JINX_CLEAN_WORKDIRS" = "yes" ]; then
-        if ! [ "$clean_workdirs" = "no" ]; then
+    if [[ ${JINX_CLEAN_WORKDIRS} == yes ]]; then
+        if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/builds/$1
 
-            if [ -z "${from_source}" ]; then
-                source_source_recipe $1
+            if [[ -z ${from_source} ]]; then
+                eval "$(source_source_recipe "$1" recipes)"
             else
-                source_source_recipe ${from_source}
+                eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")"
             fi
 
-            get_real_source_dir
+            eval "$(get_real_source_dir)"
 
-            if ! [ "${is_sourceless_package}" = true ] && ! [ "${is_local_package}" = true ]; then
+            if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]]; then
                 clean_sources "${name}"
             fi
         fi
     fi
 }
 
-cmd_host_build() {
-    for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_host_pkg "${pkg}"'
-        done
-    done
-}
-
 cmd_build() {
+    local ppkg
     for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_pkg "${pkg}"'
-        done
+        local pkg
+        if [[ ${ppkg} == host:* ]]; then
+            for pkg in $(cd "${base_dir}/host-recipes" && echo ${ppkg#host:}); do
+                tracked_subshell 'do_host_pkg "${pkg}"'
+            done
+        else
+            for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+                tracked_subshell 'do_pkg "${pkg}"'
+            done
+        fi
     done
 }
 
 do_build_if_needed() {
-    include_recipe "${base_dir}"/recipes/$1
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
     fi
 
-    if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
+    if [[ ! -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
         tracked_subshell 'do_pkg "'$1'"'
     fi
 }
 
 do_host_build_if_needed() {
-    if ! [ -d "${build_dir}"/host-pkgs/${hostdep} ]; then
+    if [[ ! -d "${build_dir}/host-pkgs/${hostdep}" ]]; then
         tracked_subshell 'do_host_pkg "'$1'"'
     fi
 }
 
 do_update() {
-    include_recipe "${base_dir}"/recipes/$1
-    if ! [ -z "${from_source}" ]; then
-        version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    local with_build="$1"
+    shift
+    eval "$(include_recipe "${base_dir}"/recipes/$1)"
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
     fi
 
-    if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-        make_temp
-        hostdeps_file="${tmp}"
-
-        get_hostdeps_file
-
-        for hostdep in $(cat "${hostdeps_file}"); do
-            tracked_subshell 'do_host_build_if_needed "${hostdep}"'
-        done
-        builddeps_var="$(tracked_subshell 'get_builddeps "${name}"')"
-        for dep in ${builddeps_var}; do
-            tracked_subshell 'do_build_if_needed "${dep}"'
-        done
-    fi
-}
-
-cmd_update() {
-    if [ -z "$1" ]; then
-        set -- '*'
+    # Up to date already? Nothing to do.
+    if [[ -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
+        return 0
     fi
 
-    for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_update "${pkg}"'
-        done
+    # Not previously built? Skip unless caller asked to build missing ones.
+    if [[ ${with_build} != yes ]] && ! compgen -G "${build_dir}/pkgs/${name}-*_*.${JINX_ARCH}.xbps" >/dev/null; then
+        return 0
+    fi
+
+    local -A _hostdeps_collected
+
+    get_hostdeps_file
+
+    local hostdep
+    for hostdep in "${!_hostdeps_collected[@]}"; do
+        tracked_subshell 'do_host_build_if_needed "${hostdep}"'
+    done
+    local builddeps_var="$(tracked_subshell 'get_builddeps "${name}"')"
+    local dep
+    for dep in ${builddeps_var}; do
+        tracked_subshell 'do_build_if_needed "${dep}"'
     done
 }
 
-get_deps_fast() {
-    # Fast dep extraction without sourcing the recipe file
-    # Outputs: space-separated deps and builddeps
-    recipe_file="$1"
-    deps_line="$(grep '^deps=' "$recipe_file" 2>/dev/null | head -1)"
-    builddeps_line="$(grep '^builddeps=' "$recipe_file" 2>/dev/null | head -1)"
+cmd_update() {
+    local with_build=no
+    if [[ ${1-} == "-b" ]]; then
+        local with_build=yes
+        shift 1
+    fi
+    if [[ -z ${1-} ]]; then
+        set -- '*'
+    fi
 
-    # Extract values: deps="foo bar" -> foo bar
-    deps_line="${deps_line#deps=}"
-    builddeps_line="${builddeps_line#builddeps=}"
-
-    # Remove comments first (everything from # onwards)
-    deps_line="${deps_line%%#*}"
-    builddeps_line="${builddeps_line%%#*}"
-
-    # Remove trailing whitespace
-    deps_line="$(printf '%s' "$deps_line" | sed 's/[[:space:]]*$//')"
-    builddeps_line="$(printf '%s' "$builddeps_line" | sed 's/[[:space:]]*$//')"
-
-    # Remove quotes if present
-    deps_line="${deps_line%\"}"
-    deps_line="${deps_line#\"}"
-    builddeps_line="${builddeps_line%\"}"
-    builddeps_line="${builddeps_line#\"}"
-
-    printf '%s' "${deps_line} ${builddeps_line}"
-}
-
-get_hostdeps_fast() {
-    # Fast host dep extraction without sourcing the recipe file
-    recipe_file="$1"
-    hostdeps_line="$(grep '^hostdeps=' "$recipe_file" 2>/dev/null | head -1)"
-    hostrundeps_line="$(grep '^hostrundeps=' "$recipe_file" 2>/dev/null | head -1)"
-
-    hostdeps_line="${hostdeps_line#hostdeps=}"
-    hostrundeps_line="${hostrundeps_line#hostrundeps=}"
-
-    # Remove comments first (everything from # onwards)
-    hostdeps_line="${hostdeps_line%%#*}"
-    hostrundeps_line="${hostrundeps_line%%#*}"
-
-    # Remove trailing whitespace
-    hostdeps_line="$(printf '%s' "$hostdeps_line" | sed 's/[[:space:]]*$//')"
-    hostrundeps_line="$(printf '%s' "$hostrundeps_line" | sed 's/[[:space:]]*$//')"
-
-    # Remove quotes if present
-    hostdeps_line="${hostdeps_line%\"}"
-    hostdeps_line="${hostdeps_line#\"}"
-    hostrundeps_line="${hostrundeps_line%\"}"
-    hostrundeps_line="${hostrundeps_line#\"}"
-
-    printf '%s' "${hostdeps_line} ${hostrundeps_line}"
+    local ppkg
+    for ppkg in "$@"; do
+        local pkg
+        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+            tracked_subshell 'do_update "${with_build}" "${pkg}"'
+        done
+    done
 }
 
 cmd_dry_run() {
@@ -1504,131 +1513,105 @@ cmd_dry_run() {
     # that are not already built in the build cache. Host packages (prefixed 'host:')
     # are mentioned inline just before the regular package that needs them,
     # and only if they haven't been mentioned before.
-    if [ -z "$1" ]; then
+    if [[ -z ${1-} ]]; then
         set -- '*'
     fi
 
     # Expand all package patterns upfront
-    all_packages=""
+    local all_packages=""
+    local ppkg
     for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            all_packages="${all_packages} ${pkg}"
+        local pkg
+        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+            local all_packages="${all_packages} ${pkg}"
         done
     done
 
-    # Build a fast lookup table: package -> deps (without sourcing)
-    make_temp
-    pkg_deps_cache="${tmp}"
-    touch "${pkg_deps_cache}"
-
+    # Build a lookup table: package -> deps
+    local -A pkg_deps
     for pkg in ${all_packages}; do
-        fast_deps="$(get_deps_fast "${base_dir}/recipes/${pkg}")"
-        printf "%s:%s\n" "${pkg}" "${fast_deps}" >> "${pkg_deps_cache}"
+        pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/recipes/${pkg}")" && echo "${deps} ${builddeps}")
     done
 
-    # Recursively collect all transitive deps (without sourcing recipes)
-    make_temp
-    all_deps_cache="${tmp}"
-    touch "${all_deps_cache}"
+    # Recursively collect all transitive deps
+    local -A collected
 
     collect_all_deps() {
-        pkg="$1"
-        if grep -q "^${pkg}$" "${all_deps_cache}" 2>/dev/null; then
-            return
-        fi
-        printf "%s\n" "${pkg}" >> "${all_deps_cache}"
+        local pkg="$1"
+        [[ -n ${collected[$pkg]+x} ]] && return
+        collected[$pkg]=1
 
-        deps="$(grep "^${pkg}:" "${pkg_deps_cache}" | cut -d: -f2-)"
-        for dep in ${deps}; do
-            if [ ! -z "${dep}" ]; then
-                collect_all_deps "${dep}"
-            fi
+        # Lazily fill pkg_deps for transitively-discovered packages
+        [[ -n ${pkg_deps[$pkg]+x} ]] || pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/recipes/${pkg}")" && echo "${deps} ${builddeps}")
+
+        local dep
+        for dep in ${pkg_deps[$pkg]}; do
+            [[ -n $dep ]] && collect_all_deps "$dep"
         done
     }
 
-    # Collect all deps for all packages
     for pkg in ${all_packages}; do
         collect_all_deps "${pkg}"
     done
 
     # Now check which ones are unbuilt
-    all_unbuilt=""
-    for dep in $(cat "${all_deps_cache}"); do
-        include_recipe "${base_dir}"/recipes/"${dep}"
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    local all_unbuilt=""
+    local dep
+    for dep in "${!collected[@]}"; do
+        eval "$(include_recipe "${base_dir}"/recipes/"${dep}")"
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
         fi
-        if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-            all_unbuilt="${all_unbuilt} ${dep}"
+        if [[ ! -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
+            local all_unbuilt="${all_unbuilt} ${dep}"
         fi
     done
 
-    # Collect host deps for all unbuilt packages (fast)
-    make_temp
-    pkg_hostdeps_cache="${tmp}"
-    touch "${pkg_hostdeps_cache}"
-
-    all_hostdeps_unsorted=""
+    # Collect host deps for all unbuilt packages
+    local -A pkg_hostdeps
     for pkg in ${all_unbuilt}; do
-        hostdeps="$(get_hostdeps_fast "${base_dir}/recipes/${pkg}")"
-        if ! [ -z "${hostdeps}" ]; then
-            printf "%s:%s\n" "${pkg}" "${hostdeps}" >> "${pkg_hostdeps_cache}"
-            all_hostdeps_unsorted="${all_hostdeps_unsorted} ${hostdeps}"
+        local hostdeps="$(eval "$(include_recipe "${base_dir}/recipes/${pkg}")" && echo "${hostdeps} ${hostrundeps}")"
+        if [[ -n ${hostdeps} ]]; then
+            pkg_hostdeps[$pkg]=$hostdeps
         fi
     done
-
-    # Topo sort host deps once
-    hostdeps_sorted=""
-    if ! [ -z "${all_hostdeps_unsorted}" ]; then
-        hostdeps_unique="$(printf '%s\n' ${all_hostdeps_unsorted} | awk '!seen[$0]++' | tr '\n' ' ')"
-        hostdeps_sorted="$(tracked_subshell '
-            for hostdep in '"${hostdeps_unique}"'; do
-                sorted_hostdeps="$(get_hostdeps_builddeps "${hostdep}")"
-                printf "%s\n" "${sorted_hostdeps}"
-            done | awk "!seen[\$0]++"
-        ')"
-    fi
-
-    # Build topologically sorted list of unbuilt deps
-    make_temp
-    topo_sorted_unbuilt="${tmp}"
-    make_temp
-    topo_graph="${tmp}"
 
     # Build graph for topo sort
+    local graph=
     for dep in ${all_unbuilt}; do
-        deps_of_dep="$(grep "^${dep}:" "${pkg_deps_cache}" | cut -d: -f2-)"
         # Only include deps that are also unbuilt
-        unbuilt_deps_of_dep=""
-        for d in ${deps_of_dep}; do
-            if printf ' %s ' "${all_unbuilt}" | grep -q " ${d} "; then
-                unbuilt_deps_of_dep="${unbuilt_deps_of_dep} ${d}"
+        local unbuilt_deps_of_dep=""
+        local d
+        for d in ${pkg_deps[$dep]}; do
+            if [[ " ${all_unbuilt} " == *" ${d} "* ]]; then
+                local unbuilt_deps_of_dep="${unbuilt_deps_of_dep} ${d}"
             fi
         done
-        printf "%s:%s\n" "${dep}" "${unbuilt_deps_of_dep}" >> "${topo_graph}"
+        local graph="${graph}${dep}:${unbuilt_deps_of_dep}
+"
     done
 
-    topo_sort_result="$(topo_sort "$(cat "${topo_graph}")")"
+    local topo_sort_result="$(topo_sort "${graph}")"
 
     # Emit in topological order with host deps inline
-    pending_list=""
-    emitted_hostdeps=" "
+    local pending_list=""
+    local emitted_hostdeps=" "
 
     for dep in ${topo_sort_result}; do
         # Emit host deps for this package first
-        dep_hostdeps="$(grep "^${dep}:" "${pkg_hostdeps_cache}" 2>/dev/null | cut -d: -f2-)"
-        if ! [ -z "${dep_hostdeps}" ]; then
-            for hostdep in ${dep_hostdeps}; do
-                if ! printf '%s' "${emitted_hostdeps}" | grep -q " ${hostdep} "; then
-                    if ! [ -d "${build_dir}/host-pkgs/${hostdep}" ]; then
-                        pending_list="${pending_list} host:${hostdep}"
+        if [[ -n ${pkg_hostdeps[$dep]+x} ]]; then
+            local hostdep
+            for hostdep in ${pkg_hostdeps[$dep]}; do
+                if [[ ${emitted_hostdeps} != *" ${hostdep} "* ]]; then
+                    if [[ ! -d "${build_dir}/host-pkgs/${hostdep}" ]]; then
+                        local pending_list="${pending_list} host:${hostdep}"
                     fi
-                    emitted_hostdeps="${emitted_hostdeps}${hostdep} "
+                    local emitted_hostdeps="${emitted_hostdeps}${hostdep} "
                 fi
             done
         fi
         # Then emit the package itself
-        pending_list="${pending_list} ${dep}"
+        local pending_list="${pending_list} ${dep}"
     done
 
     # Print packages preserving order, space separated, with global deduplication
@@ -1636,47 +1619,39 @@ cmd_dry_run() {
 }
 
 cmd_download() {
-    if [ -z "${JINX_REPO_URL}" ]; then
+    if [[ -z ${JINX_REPO_URL-} ]]; then
         die "$0: JINX_REPO_URL not set in Jinxfile"
     fi
 
-    if [ -z "$1" ]; then
+    if [[ -z ${1-} ]]; then
         die "$0: download requires at least one package name"
     fi
 
     # Expand package patterns
-    all_packages=""
+    local all_packages=""
+    local ppkg
     for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            all_packages="${all_packages} ${pkg}"
+        local pkg
+        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+            local all_packages="${all_packages} ${pkg}"
         done
     done
 
-    # Collect transitive deps using fast dep extraction
-    make_temp
-    pkg_deps_cache="${tmp}"
-    touch "${pkg_deps_cache}"
-
-    for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "*" ')' ); do
-        fast_deps="$(get_deps_fast "${base_dir}/recipes/${pkg}")"
-        printf "%s:%s\n" "${pkg}" "${fast_deps}" >> "${pkg_deps_cache}"
+    # Collect transitive deps
+    local -A pkg_deps
+    for pkg in $(cd "${base_dir}/recipes" && echo *); do
+        pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/recipes/${pkg}")" && echo "${deps} ${builddeps}")
     done
 
-    make_temp
-    all_deps_cache="${tmp}"
-    touch "${all_deps_cache}"
+    local -A collected
 
     collect_all_deps() {
-        pkg="$1"
-        if grep -q "^${pkg}$" "${all_deps_cache}" 2>/dev/null; then
-            return
-        fi
-        printf "%s\n" "${pkg}" >> "${all_deps_cache}"
-        deps="$(grep "^${pkg}:" "${pkg_deps_cache}" | cut -d: -f2-)"
-        for dep in ${deps}; do
-            if [ ! -z "${dep}" ]; then
-                collect_all_deps "${dep}"
-            fi
+        local pkg="$1"
+        [[ -n ${collected[$pkg]+x} ]] && return
+        collected[$pkg]=1
+        local dep
+        for dep in ${pkg_deps[$pkg]}; do
+            [[ -n $dep ]] && collect_all_deps "$dep"
         done
     }
 
@@ -1685,19 +1660,20 @@ cmd_download() {
     done
 
     # Determine which packages are missing from pkgs/
-    download_list=""
-    for dep in $(cat "${all_deps_cache}"); do
-        include_recipe "${base_dir}"/recipes/"${dep}"
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+    local download_list=""
+    local dep
+    for dep in "${!collected[@]}"; do
+        eval "$(include_recipe "${base_dir}"/recipes/"${dep}")"
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
         fi
-        pkg_filename="${name}-${version}_${revision}.${JINX_ARCH}.xbps"
-        if ! [ -f "${build_dir}/pkgs/${pkg_filename}" ]; then
-            download_list="${download_list} ${pkg_filename}"
+        local pkg_filename="${name}-${version}_${revision}.${JINX_ARCH}.xbps"
+        if [[ ! -f "${build_dir}/pkgs/${pkg_filename}" ]]; then
+            local download_list="${download_list} ${pkg_filename}"
         fi
     done
 
-    if [ -z "${download_list}" ]; then
+    if [[ -z ${download_list} ]]; then
         echo "* all packages already present in pkgs/"
         return
     fi
@@ -1705,31 +1681,33 @@ cmd_download() {
     # Fetch repo index for checksum verification
     echo "* fetching repository index..."
     make_temp
-    repodata_path="${tmp}"
+    local repodata_path="${tmp}"
     curl -fL -o "${repodata_path}" "${JINX_REPO_URL}/${JINX_ARCH}-repodata" \
         || die "$0: failed to fetch repository index from ${JINX_REPO_URL}"
 
     make_temp
-    index_plist="${tmp}"
+    local index_plist="${tmp}"
     zstdcat "${repodata_path}" | tar -xOf - index.plist >"${index_plist}"
 
     # Download each missing package
+    local pkg_file
     for pkg_file in ${download_list}; do
         echo "* downloading ${pkg_file}..."
         make_temp
-        dl_path="${tmp}"
+        local dl_path="${tmp}"
         curl -fL -o "${dl_path}" "${JINX_REPO_URL}/${pkg_file}" \
             || die "$0: failed to download ${pkg_file} from ${JINX_REPO_URL}"
 
         # Verify SHA256 against repodata
-        pkg_name="${pkg_file%%-[0-9]*}"
-        expected_sha256="$(sed -n "/<key>${pkg_name}<\\/key>/,/<key>filename-sha256<\\/key>/{
+        local pkg_name="${pkg_file%%-[0-9]*}"
+        local expected_sha256="$(sed -n "/<key>${pkg_name}<\\/key>/,/<key>filename-sha256<\\/key>/{
             /<key>filename-sha256<\\/key>/{n;s/.*<string>\\(.*\\)<\\/string>.*/\\1/p;}
         }" "${index_plist}")"
 
-        if ! [ -z "${expected_sha256}" ]; then
-            actual_sha256="$(sha256sum "${dl_path}" | awk '{print $1;}')"
-            if ! [ "${actual_sha256}" = "${expected_sha256}" ]; then
+        if [[ -n ${expected_sha256} ]]; then
+            local actual_sha256="$(sha256sum "${dl_path}")"
+            local actual_sha256="${actual_sha256%% *}"
+            if [[ ${actual_sha256} != "${expected_sha256}" ]]; then
                 die "$0: SHA256 mismatch for ${pkg_file}:
   expected '${expected_sha256}'
   got      '${actual_sha256}'"
@@ -1750,36 +1728,46 @@ cmd_download() {
 }
 
 cmd_regen() {
-    for i in "$@"; do
-        tracked_subshell 'do_regen "$i"'
+    local ppkg
+    for ppkg in "$@"; do
+        local pkg
+        if [[ ${ppkg} == host:* ]]; then
+            for pkg in $(cd "${base_dir}/host-recipes" && echo ${ppkg#host:}); do
+                tracked_subshell 'do_regen "${pkg}" host-recipes'
+            done
+        else
+            for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+                tracked_subshell 'do_regen "${pkg}" recipes'
+            done
+        fi
     done
 }
 
 do_run_in() {
-    pkg="$1"
-    cmd_file="$2"
+    local pkg="$1"
+    local cmd_file="$2"
 
-    include_recipe "${base_dir}"/recipes/${pkg}
+    eval "$(include_recipe "${base_dir}"/recipes/${pkg})"
 
     mkdir -p "${build_dir}"/builds/${name}
 
-    if ! [ -z "${from_source}" ] || ! [ -z "${tarball_url}" ] || ! [ -z "${git_url}" ] || ! [ -z "${source_dir}" ]; then
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
-            source_dir="$(unset source_dir && source_source_recipe ${from_source} && echo "$source_dir")"
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
         else
-            from_source=${name}
+            local from_source=${name}
         fi
 
-        if [ -z "${source_dir}" ]; then
-            source_dir="${base_dir}"/sources/${from_source}
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
         else
-            source_dir="${base_dir}"/"${source_dir}"
+            local source_dir="${base_dir}"/"${source_dir}"
         fi
     fi
 
-    prefix="/usr"
-    sysroot_dir="/sysroot"
+    local prefix="/usr"
+    local sysroot="/sysroot"
 
     cd "${build_dir}"/builds/${name}
 
@@ -1788,109 +1776,124 @@ do_run_in() {
 }
 
 cmd_run_in() {
-    if [ -z "$1" ]; then
+    if [[ -z ${1-} ]]; then
         die "$0: run-in requires a recipe name"
     fi
-    run_in_recipe="$1"
+    local recipe_glob="$1"
     shift 1
-    if [ -z "$1" ]; then
+    if [[ -z ${1-} ]]; then
         die "$0: run-in requires a command to run"
     fi
 
-    if ! [ -f "${base_dir}"/recipes/${run_in_recipe} ]; then
-        die "$0: recipe '${run_in_recipe}' not found"
-    fi
+    local run_in_recipe
+    for run_in_recipe in $(cd "${base_dir}/recipes" && echo ${recipe_glob}); do
+        if [[ ! -f "${base_dir}/recipes/${run_in_recipe}/recipe" ]]; then
+            die "$0: recipe '${run_in_recipe}' not found"
+        fi
 
-    include_recipe "${base_dir}"/recipes/${run_in_recipe}
+        eval "$(include_recipe "${base_dir}"/recipes/${run_in_recipe})"
 
-    if ! [ -z "${from_source}" ]; then
-        tracked_subshell 'do_source "${from_source}"'
-    else
-        tracked_subshell 'do_source "${name}"'
-    fi
+        if [[ -n ${from_source} ]]; then
+            tracked_subshell 'do_source "${from_source}" "${_from_source_dir}"'
+        else
+            tracked_subshell 'do_source "${name}" recipes'
+        fi
 
-    make_temp
-    cmd_file="${tmp}"
-    {
-        printf 'exec'
-        for arg in "$@"; do
-            escaped=$(printf '%s' "$arg" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g')
-            printf ' "%s"' "$escaped"
-        done
-        printf '\n'
-    } >"${cmd_file}"
-    cmd_file_inner="/base_dir/.jinx-cache/tmp/$(basename "${cmd_file}")"
+        make_temp
+        local cmd_file="${tmp}"
+        {
+            printf 'exec'
+            local arg
+            for arg in "$@"; do
+                local escaped="$arg"
+                local escaped="${escaped//\\/\\\\}"
+                local escaped="${escaped//\"/\\\"}"
+                local escaped="${escaped//\`/\\\`}"
+                printf ' "%s"' "$escaped"
+            done
+            printf '\n'
+        } >"${cmd_file}"
+        local cmd_file_inner="/base_dir/.jinx-cache/tmp/$(basename "${cmd_file}")"
 
-    prepare_container
+        local container_pkgs=
+        local sysroot=
+        local imgroot=
+        prepare_container
 
-    mkdir -p "${build_dir}"/builds/${name}
+        mkdir -p "${build_dir}"/builds/${name}
 
-    unset container_sources_ro
-    unset container_base_dir_ro
-    allow_network="yes"
-    run_in_container internal-run-in "${run_in_recipe}" "${cmd_file_inner}"
+        local container_sources_ro=
+        local container_base_dir_ro=
+        local allow_network=yes
+        run_in_container internal-run-in "${run_in_recipe}" "${cmd_file_inner}"
 
-    destroy_container
-}
-
-cmd_host_rebuild() {
-    for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/host-recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_host_rebuild "${pkg}"'
-        done
+        destroy_container
     done
 }
 
 cmd_rebuild() {
+    local ppkg
     for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            tracked_subshell 'do_rebuild "${pkg}"'
-        done
+        local pkg
+        if [[ ${ppkg} == host:* ]]; then
+            for pkg in $(cd "${base_dir}/host-recipes" && echo ${ppkg#host:}); do
+                tracked_subshell 'do_host_rebuild "${pkg}"'
+            done
+        else
+            for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+                tracked_subshell 'do_rebuild "${pkg}"'
+            done
+        fi
     done
 }
 
 cmd_install() {
-    force_install=""
-    if [ "$1" = "-f" ]; then
-        force_install="$1"
+    local force_install=""
+    if [[ ${1-} == "-f" ]]; then
+        local force_install="$1"
         shift 1
     fi
-    sysroot="$1"
+    if [[ -z ${1-} ]]; then
+        die "$0: install requires a sysroot directory"
+    fi
+    local sysroot="$1"
     shift 1
     mkdir -m 755 -p "${sysroot}"
 
-    pkgs_to_install=""
+    local pkgs_to_install=""
+    local ppkg
     for ppkg in "$@"; do
-        for pkg in $(eval '(' cd "'${base_dir}'"/recipes '&&' echo "${ppkg}" ')' ); do
-            bootstrap_pkg=$(unset bootstrap_pkg && . "${base_dir}"/recipes/${pkg} && echo "${bootstrap_pkg}")
-            if [ "${bootstrap_pkg}" = "yes" ]; then
+        local pkg
+        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+            local bootstrap_pkg=$(eval "$(include_recipe "${base_dir}"/recipes/${pkg})" && echo "${bootstrap_pkg}")
+            if [[ ${bootstrap_pkg} == yes ]]; then
                 continue
             fi
 
-            pkgs_to_install="${pkgs_to_install} ${pkg}"
+            local pkgs_to_install="${pkgs_to_install} ${pkg}"
         done
     done
 
-    files_to_ignore='\.keep
+    local files_to_ignore='\.keep
 \.plist
 /INSTALL
 /REMOVE'
 
     make_temp
-    all_files="${tmp}"
+    local all_files="${tmp}"
 
     for pkg in ${pkgs_to_install}; do
         echo "* installing ${pkg}..."
 
         tracked_subshell '
-        include_recipe "${base_dir}"/recipes/${pkg}
+        eval "$(include_recipe "${base_dir}"/recipes/${pkg})"
 
-        if ! [ -z "${from_source}" ]; then
-            version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
         fi
 
-        if ! [ -f "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps ]; then
-            if [ "$(id -u)" = "0" ]; then
+        if [[ ! -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
+            if [[ $(id -u) == 0 ]]; then
                 die "$0: a package needs to be built, but Jinx was invoked as root"
             fi
             tracked_subshell '\''do_pkg "${pkg}"'\''
@@ -1898,7 +1901,7 @@ cmd_install() {
 
         # xbps seems to only install the package every second time when reinstalling.
         # Remove the package to be sure it gets reinstalled.
-        if ! [ -z "${force_install}" ]; then
+        if [[ -n ${force_install} ]]; then
             XBPS_ARCH=invalid \
             XBPS_TARGET_ARCH="${JINX_ARCH}" \
                 xbps-remove -Ffy -r "${sysroot}" ${pkg} >/dev/null 2>&1 || true
@@ -1915,27 +1918,28 @@ cmd_install() {
     echo "* checking for conflicts..."
 
     make_temp
-    all_files_sorted="${tmp}"
+    local all_files_sorted="${tmp}"
 
     make_temp
-    all_files_uniq="${tmp}"
+    local all_files_uniq="${tmp}"
 
     sort <"${all_files}" >"${all_files_sorted}"
     uniq <"${all_files_sorted}" >"${all_files_uniq}"
 
-    dup_elements="$(comm -23 "${all_files_sorted}" "${all_files_uniq}" | uniq)"
+    local dup_elements="$(comm -23 "${all_files_sorted}" "${all_files_uniq}" | uniq)"
 
-    if ! [ -z "${dup_elements}" ]; then
+    if [[ -n ${dup_elements} ]]; then
         echo "* error: duplicate files were found."
+        local elem
         for elem in ${dup_elements}; do
             echo "  file path: ${elem}"
             printf "  in packages:"
             for pkg in ${pkgs_to_install}; do
                 tracked_subshell '
-                include_recipe "${base_dir}"/recipes/${pkg}
+                eval "$(include_recipe "${base_dir}"/recipes/${pkg})"
 
-                if ! [ -z "${from_source}" ]; then
-                    version=$(unset version && source_source_recipe ${from_source} && echo "$version")
+                if [[ -n ${from_source} ]]; then
+                    local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
                 fi
 
                 if zstdcat "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | tar -tf - | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
@@ -1957,9 +1961,9 @@ reinit_container() {
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image"
 
-    SHA256_COMMAND="sha256sum"
+    local SHA256_COMMAND="sha256sum"
     if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
-        SHA256_COMMAND="sha256"
+        local SHA256_COMMAND="sha256"
         if ! command -v "${SHA256_COMMAND%% *}" >/dev/null 2>&1; then
             die "error: Cannot find sha256(sum) command"
         fi
@@ -1990,9 +1994,9 @@ reinit_container() {
     mv config.mk.sed config.mk
 
     if command -v gmake >/dev/null 2>&1; then
-        MAKE=gmake
+        local MAKE=gmake
     else
-        MAKE=make
+        local MAKE=make
     fi
 
     ${MAKE} -j${parallelism}
@@ -2032,14 +2036,14 @@ EOF
     cc -O2 -pipe -std=gnu99 -Wall -Wextra -fPIC -shared -nostdlib "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
     rm "$JINX_CACHE_DIR/nochown.c"
 
-    DEBOOTSTRAP_ARCH="$(uname -m)"
+    local DEBOOTSTRAP_ARCH="$(uname -m)"
     case "${DEBOOTSTRAP_ARCH}" in
-        i?86) DEBOOTSTRAP_ARCH=i386 ;;
-        x86_64) DEBOOTSTRAP_ARCH=amd64 ;;
-        arm*) DEBOOTSTRAP_ARCH=armhf ;;
-        aarch64) DEBOOTSTRAP_ARCH=arm64 ;;
-        loongarch64) DEBOOTSTRAP_ARCH=loong64 ;;
-        ppc64le) DEBOOTSTRAP_ARCH=ppc64el ;;
+        i?86) local DEBOOTSTRAP_ARCH=i386 ;;
+        x86_64) local DEBOOTSTRAP_ARCH=amd64 ;;
+        arm*) local DEBOOTSTRAP_ARCH=armhf ;;
+        aarch64) local DEBOOTSTRAP_ARCH=arm64 ;;
+        loongarch64) local DEBOOTSTRAP_ARCH=loong64 ;;
+        ppc64le) local DEBOOTSTRAP_ARCH=ppc64el ;;
     esac
 
     # Install debootstrap
@@ -2068,6 +2072,7 @@ EOF
             --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
     "
 
+    local dir
     for dir in dev proc sys run tmp var/tmp; do
         force_remove "${JINX_CACHE_DIR}/sets/.image/${dir}"
         mkdir -p "${JINX_CACHE_DIR}/sets/.image/${dir}"
@@ -2089,13 +2094,11 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" locale-gen
 
     # Fix permissions of files
-    for f in $(find "$JINX_CACHE_DIR/sets/.image" -perm 000 2>/dev/null); do
-        chmod 755 "$f"
-    done
+    find "$JINX_CACHE_DIR/sets/.image" -perm 000 -exec chmod 755 {} + 2>/dev/null
 
     run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 curl diffutils findutils gawk git grep gzip lzip patch sed tar xz-utils zstd ${JINX_BASE_PACKAGES}
 
-    if ! [ -z "${JINX_CMAKE_PLATFORM}" ]; then
+    if [[ -n ${JINX_CMAKE_PLATFORM} ]]; then
         cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/
     fi
 }
@@ -2120,7 +2123,7 @@ redo_first_use() {
     first_use
 }
 
-if ! [ -f "$JINX_CONFIG_FILE" ]; then
+if [[ ! -f $JINX_CONFIG_FILE ]]; then
     die "$0: missing Jinxfile in directory '$base_dir'"
 fi
 
@@ -2131,41 +2134,41 @@ unset JINX_CMAKE_PLATFORM
 unset JINX_REPO_URL
 . "${JINX_CONFIG_FILE}"
 
-if [ -z "${JINX_MAJOR_VER}" ]; then
+if [[ -z ${JINX_MAJOR_VER-} ]]; then
     die "$0: required Jinxfile variable JINX_MAJOR_VER missing"
 fi
 
-if ! [ "$JINX_MAJOR_VER" = "$jinx_major_ver" ]; then
-    die "$0: needed major version ($JINX_MAJOR_VER) differs from Jinx-provided major version ($jinx_major_ver)"
+if [[ ${JINX_MAJOR_VER} != "${jinx_major_ver}" ]]; then
+    die "$0: needed major version (${JINX_MAJOR_VER}) differs from Jinx-provided major version (${jinx_major_ver})"
 fi
 
-if [ -z "${JINX_DEBIAN_SNAPSHOT}" ]; then
+if [[ -z ${JINX_DEBIAN_SNAPSHOT-} ]]; then
     die "$0: required Jinxfile variable JINX_DEBIAN_SNAPSHOT missing"
 fi
 
-if [ -z "$JINX_ARCH" ]; then
+if [[ -z ${JINX_ARCH-} ]]; then
     die "$0: required config variable \$JINX_ARCH missing"
 fi
 
-if ! [ -d "$JINX_CACHE_DIR" ]; then
+if [[ ! -d $JINX_CACHE_DIR ]]; then
     first_use
 fi
 
-if  ( ! [ -f "${JINX_CACHE_DIR}/version" ] || ! [ "$(cat "${JINX_CACHE_DIR}/version")" = "${jinx_version}" ] ) \
- || ( ! [ -f "${JINX_CACHE_DIR}/debian_snapshot" ] || ! [ "$(cat "${JINX_CACHE_DIR}/debian_snapshot")" = "${JINX_DEBIAN_SNAPSHOT}" ] ) \
- || ( ! [ -f "${JINX_CACHE_DIR}/base_packages" ] || ! [ "$(cat "${JINX_CACHE_DIR}/base_packages")" = "${JINX_BASE_PACKAGES}" ] ); then
+if  [[ ! -f "${JINX_CACHE_DIR}/version" || $(cat "${JINX_CACHE_DIR}/version") != "${jinx_version}" ]] \
+ || [[ ! -f "${JINX_CACHE_DIR}/debian_snapshot" || $(cat "${JINX_CACHE_DIR}/debian_snapshot") != "${JINX_DEBIAN_SNAPSHOT}" ]] \
+ || [[ ! -f "${JINX_CACHE_DIR}/base_packages" || $(cat "${JINX_CACHE_DIR}/base_packages") != "${JINX_BASE_PACKAGES-}" ]]; then
     redo_first_use
 fi
 
 case "$1" in
     internal-prepare)
-        do_prepare "$2"
+        do_prepare "$2" "$3"
         ;;
     internal-fetch)
-        do_fetch "$2"
+        do_fetch "$2" "$3"
         ;;
     internal-patch)
-        do_patch "$2"
+        do_patch "$2" "$3"
         ;;
     internal-configure-host)
         do_configure_host "$2"
@@ -2189,10 +2192,6 @@ case "$1" in
         shift 1
         do_run_in "$@"
         ;;
-    host-build)
-        shift 1
-        cmd_host_build "$@"
-        ;;
     build)
         shift 1
         cmd_build "$@"
@@ -2205,10 +2204,6 @@ case "$1" in
         shift 1
         cmd_regen "$@"
         ;;
-    host-rebuild)
-        shift 1
-        cmd_host_rebuild "$@"
-        ;;
     rebuild)
         shift 1
         cmd_rebuild "$@"
@@ -2216,10 +2211,6 @@ case "$1" in
     install)
         shift 1
         cmd_install "$@"
-        ;;
-    reinstall)
-        shift 1
-        cmd_install -f "$@"
         ;;
     rebuild-cache)
         redo_first_use

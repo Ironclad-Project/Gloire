@@ -16,4 +16,4 @@ if [ "$1" = "--erase-cache" ]; then
     $SUDO rm -rf .jinx-cache
 fi
 
-$SUDO rm -rf build-x86_64 build-riscv64 sources
+$SUDO rm -rf build-x86_64 build-riscv64 sources host-sources

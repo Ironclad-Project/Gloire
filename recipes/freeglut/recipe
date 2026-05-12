@@ -1,0 +1,24 @@
+#! /bin/sh
+
+version=3.8.0
+revision=1
+git_url="https://github.com/freeglut/freeglut.git"
+commit=3db1649ce1f5e42f1338b51e3fa14849be547d5d
+hostdeps="gcc pkg-config"
+deps="core-libs libxi mesa glu"
+
+configure() {
+    cmake_configure \
+        -DFREEGLUT_BUILD_DEMOS=OFF \
+        -DFREEGLUT_BUILD_STATIC_LIBS=OFF
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

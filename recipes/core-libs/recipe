@@ -1,0 +1,6 @@
+#! /bin/sh
+
+skip_pkg_check=yes
+version=0.0
+revision=1
+deps="glibc libgcc libstdc++ libatomic libxcrypt tzdata"

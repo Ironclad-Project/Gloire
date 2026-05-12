@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=8.20.0
+fixed_version=$(echo ${version} | sed 's/\./_/g')
+revision=1
+tarball_url="https://github.com/curl/curl/releases/download/curl-${fixed_version}/curl-${version}.tar.xz"
+tarball_blake2b="5b61a1099212af9b3c18629fd0b6c93881014e7b02ed5171021a2a074a87786ff8f8e94a47c53c3ca83354cfbe74f7d917cae819c97011c0ff9e4ace014e01c2"
+hostdeps="gcc pkg-config"
+deps="core-libs ca-certificates openssl zlib zstd libpsl libidn2 brotli nghttp2"
+
+configure() {
+    cmake_configure \
+        -DENABLE_THREADED_RESOLVER=ON \
+        -DCURL_USE_OPENSSL=ON \
+        -DCURL_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

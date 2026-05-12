@@ -1,0 +1,25 @@
+#! /bin/sh
+
+version=1.86.0
+revision=1
+git_url="https://gitlab.gnome.org/GNOME/gobject-introspection.git"
+commit=0f1412500b7d9039510b7b36b07c9f8ba0809bfa
+imagedeps="libpython3-dev gobject-introspection"
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 python"
+
+configure() {
+    meson_configure \
+        -Dgtk_doc=false \
+        -Dbuild_introspection_data=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

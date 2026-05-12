@@ -1,0 +1,22 @@
+#! /bin/sh
+
+version=5.8.3
+revision=1
+tarball_url="https://github.com/tukaani-project/xz/releases/download/v${version}/xz-${version}.tar.xz"
+tarball_blake2b="36d6ae3ce1ee70f1d18d10107f7d6b4dfb43c34e11d8ec4504feeaa50b43cfa8d80de2b8ac2a1b66478723a83b4ebacf4179b69fb4d746f08b120b2e804fc2ce"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

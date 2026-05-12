@@ -1,0 +1,31 @@
+#! /bin/sh
+
+version=4.19.4
+revision=1
+tarball_url="https://github.com/shadow-maint/shadow/releases/download/${version}/shadow-${version}.tar.gz"
+tarball_blake2b="44ec01d4e3ce25dec9500cf0fbcf436a81cec72fa4fffea06357d61f9b2b900bdad421981931f4900f654ae62d0697acd318c01933b280a26fbed1c28a0231db"
+hostdeps="gcc pkg-config"
+deps="core-libs libbsd"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure \
+        --disable-logind
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    # I cannot get it to not install in sbin so we bring out the jackhammer.
+    mv "${dest_dir}"/usr/sbin/* "${dest_dir}"/usr/bin/
+    rm -rf "${dest_dir}"/usr/sbin
+
+    post_package_strip
+}

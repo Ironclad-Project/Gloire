@@ -1,0 +1,22 @@
+#! /bin/sh
+
+version=1.2.0
+revision=1
+git_url="https://github.com/google/brotli.git"
+commit=028fb5a23661f123017c060daa546b55cf4bde29
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=1.4.21
+revision=1
+tarball_url="https://ftp.gnu.org/gnu/m4/m4-${version}.tar.xz"
+tarball_blake2b="047573505e04295ba94e7b3eff6c705d7e7b8ed9e7794a686b04a709acb2f3edaea54eb0e76b7f9ffeb1b3dc48e9e34ad8d7b73633e7a1fca4348b13b4b5cc28"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

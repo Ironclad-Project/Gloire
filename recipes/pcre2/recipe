@@ -1,0 +1,24 @@
+#! /bin/sh
+
+version=10.47
+revision=1
+git_url="https://github.com/PCRE2Project/pcre2.git"
+commit=f454e231fe5006dd7ff8f4693fd2b8eb94333429
+hostdeps="gcc pkg-config"
+deps="core-libs bzip2 readline zlib"
+
+configure() {
+    cmake_configure \
+        -DPCRE2_BUILD_PCRE2_16=ON \
+        -DPCRE2_BUILD_PCRE2_32=ON
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

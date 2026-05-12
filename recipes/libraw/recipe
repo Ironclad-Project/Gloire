@@ -1,0 +1,27 @@
+#! /bin/sh
+
+version=0.22.1
+revision=1
+tarball_url="https://www.libraw.org/data/LibRaw-${version}.tar.gz"
+tarball_blake2b="b200a1a8a726a769b322a2930a34e9c0cee8d11665c63af82b08066d6665124166938cbc0b5c1cbb103f008c01c824bfcbc3a1f3361e32450379b63245e8169e"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}
+

@@ -1,0 +1,11 @@
+#! /bin/sh
+
+repology_id=fonts:noto-cjk
+version=20240730
+revision=1
+git_url="https://github.com/notofonts/noto-cjk.git"
+commit=9b0f1436e455d902de067a2501422e5dc71ad16b
+
+package() {
+    install -Dm644 "${source_dir}"/*/OTC/*.ttc -t "${dest_dir}"/usr/share/fonts/noto-cjk
+}

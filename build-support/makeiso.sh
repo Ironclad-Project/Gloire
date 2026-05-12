@@ -44,19 +44,19 @@ if ! [ -f .jinx-parameters ]; then
     "${source_dir}"/jinx init "${source_dir}" ARCH="${ARCH}"
 fi
 
-"${source_dir}"/jinx update base $PKGS_TO_INSTALL
+"${source_dir}"/jinx update -b base $PKGS_TO_INSTALL
 
 $SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 
 if ! [ -d host-pkgs/limine ]; then
-    "${source_dir}"/jinx host-build limine
+    "${source_dir}"/jinx build host:limine
 fi
 
 if [ "$ARCH" = x86_64 ]; then
     if ! [ -d host-pkgs/memtest86+ ]; then
-        "${source_dir}"/jinx host-build memtest86+
+        "${source_dir}"/jinx build host:memtest86+
     fi
 fi
 

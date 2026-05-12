@@ -1,0 +1,27 @@
+#! /bin/sh
+
+repology_id=xdrv:mouse
+version=2.0.0
+revision=1
+tarball_url="https://xorg.freedesktop.org/archive/individual/driver/xf86-input-mouse-${version}.tar.gz"
+tarball_blake2b="be4366547d2a2c9549944e7adb0225bc25977254a3022651a0a0b36f05924f9be4740abb261d7fa79866192705ab6f76c6e1e363c4dc6ed8b077c63fa0c0687c"
+hostdeps="gcc pkg-config"
+deps="core-libs xorg-server xorg-util-macros"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

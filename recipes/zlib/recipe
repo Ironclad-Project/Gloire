@@ -1,0 +1,35 @@
+#! /bin/sh
+
+version=1.3.2
+revision=2
+tarball_url="https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="21bcccda24d5868b9268e9f7a0fb125ff284cd07f8c708c021dd2702a48852447d4b1bc1e64480cf4d04539ef1ae99225fbde4f63894727a5edcfcd00f21c5e9"
+imagedeps="patchelf"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+        prefix="${prefix}" \
+        CHOST="${OS_TRIPLET}" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+    ${source_dir}/configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    # Remove static libraries
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+
+    # The sonames are completely broken, lets fix that
+    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so.${version}"
+    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so.1"
+    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so"
+
+    post_package_strip
+}

@@ -1,0 +1,31 @@
+#! /bin/sh
+
+skip_pkg_check=yes
+version=0.0git
+revision=60
+git_url="https://codeberg.org/Ironclad/Ironclad.git"
+commit=7c115d1f46f5e913d73ee135bc0da5ff43c7ef05
+source_hostdeps="autoconf automake pkg-config"
+imagedeps="gprbuild"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+early_prepare() {
+    ./bootstrap
+}
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure_noflags
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+}

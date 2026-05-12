@@ -1,0 +1,31 @@
+#! /bin/sh
+
+version=0.5.12
+revision=1
+git_url="https://github.com/libproxy/libproxy.git"
+commit=99da01926b1b1e303a4d2331bbd74bed424863e7
+hostdeps="gcc pkg-config"
+deps="core-libs glib2 gsettings-desktop-schemas"
+
+configure() {
+    meson_configure \
+        -Ddocs=false \
+        -Dpacrunner-duktape=false \
+        -Dcurl=false \
+        -Dvapi=false \
+        -Dintrospection=false \
+        -Dtests=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    # Remove static libraries.
+    rm -v "${dest_dir}${prefix}"/lib/*.a
+
+    post_package_strip
+}

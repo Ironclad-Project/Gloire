@@ -1,0 +1,20 @@
+#! /bin/sh
+
+skip_pkg_check=yes
+version=0.0git
+revision=8
+git_url="https://gitlab.com/sortix/os-test.git"
+commit=e0aba6b11bd2f10884473a4597a04654ef3332c0
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs make sed gcc"
+
+configure() {
+    cp -rp "${source_dir}/." ./
+    rm -rf .git
+}
+
+package() {
+    mkdir -p "${dest_dir}${prefix}/share/os-test"
+    cp -rp . "${dest_dir}${prefix}/share/os-test/"
+}

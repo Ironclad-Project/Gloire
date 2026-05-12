@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=1.4.2
+revision=1
+tarball_url="https://ftp.gnu.org/gnu/libunistring/libunistring-${version}.tar.xz"
+tarball_blake2b="a03c51d3b1295642f5933e1b129f1b3f81705ef10422a30e6786d36e5788334ee6fbff1d70b31e1a95a65a6869db35f7ce77f6a59555eadf1ee31ecf19d92ccd"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

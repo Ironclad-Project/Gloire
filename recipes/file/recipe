@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=5.47
+revision=1
+tarball_url="https://astron.com/pub/file/file-${version}.tar.gz"
+tarball_blake2b="52b91ee7868a9b75431e00fca7f7db1362b3d39eb065f52434ea73d9ccd7497f3371f7e0a455644c56df3e6acee247208edc47bf8004fa922dba32786cc3e10c"
+hostdeps="gcc pkg-config file"
+deps="core-libs bzip2 xz zlib zstd"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

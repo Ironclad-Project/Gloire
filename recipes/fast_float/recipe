@@ -1,0 +1,23 @@
+#! /bin/sh
+
+repology_id="fast-float"
+version=8.2.5
+revision=1
+git_url="https://github.com/fastfloat/fast_float.git"
+commit=05087a303dad9c98768b33c829d398223a649bc6
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

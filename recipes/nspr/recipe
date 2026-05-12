@@ -1,0 +1,45 @@
+#! /bin/sh
+
+version=4.38.2
+revision=1
+tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
+tarball_blake2b="1e677504bed875651d7204d6df1a0f9671233bdab5a7b7cfdd691084c16c31a74a1126569372e4fe59edc8318b622551f979fbe55c8e64df1d977dbd63962cac"
+imagedeps="build-essential gcc"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    # Disable two unneeded scripts
+    sed -i '/^RELEASE/s|^|#|' ${source_dir}/nspr/pr/src/misc/Makefile.in
+    # Disable static libraries
+    sed -i 's|$(LIBRARY) ||'  ${source_dir}/nspr/config/rules.mk
+
+    autotools_recursive_regen
+}
+
+configure() {
+        CC="${OS_TRIPLET}-gcc" \
+        CXX="${OS_TRIPLET}-g++" \
+        HOST_CC="gcc" \
+        HOST_CFLAGS="${HOST_CFLAGS}" \
+        HOST_CXXFLAGS="${HOST_CXXFLAGS}" \
+        HOST_CPPFLAGS="${HOST_CPPFLAGS}" \
+        HOST_LDFLAGS="${HOST_LDFLAGS}" \
+        CROSS_COMPILE=1 \
+        configure_script_path="${source_dir}/nspr/configure" \
+    autotools_configure \
+        --enable-optimize \
+        --with-mozilla \
+        --with-pthreads \
+        --enable-64bit
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

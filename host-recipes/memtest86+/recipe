@@ -1,0 +1,33 @@
+#! /bin/sh
+
+version=7.20
+revision=1
+tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="f53570e9364f7fc15c946d925b449139f72bdfab6e2c69e40f7edf6aa034c6b46e40194d32eb56122365b6badc199ed9eeb8f3281d1908adb85495ffd25ea5f7"
+hostdeps="gcc"
+imagedeps="nasm build-essential mtools dosfstools xorriso"
+
+build() {
+    if [ "${JINX_ARCH}" != "x86_64" ]; then
+        return
+    fi
+
+    cp -rp ${source_dir}/. ./
+
+    cd build64
+    make -j${parallelism}
+}
+
+package() {
+    if [ "${JINX_ARCH}" != "x86_64" ]; then
+        return
+    fi
+
+    cd build64
+    mkdir -p "${dest_dir}"/boot
+    cp memtest.bin "${dest_dir}"/boot/
+    cp memtest.efi "${dest_dir}"/boot/
+
+        strip_command=strip \
+    post_package_strip
+}

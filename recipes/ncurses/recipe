@@ -1,0 +1,53 @@
+#! /bin/sh
+
+version=6.6
+revision=1
+tarball_url="https://github.com/ThomasDickey/ncurses-snapshots/archive/refs/tags/v6_6.tar.gz"
+tarball_blake2b="736b7b46f5f9e16f983ba7d0e5073c84c22db23984eeaf90905ad952c6720726832606c2c39cf64ed6ddbd3744979f245f1ed797c11f1e48e2218077eec96f11"
+imagedeps="build-essential ncurses-bin patchelf"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+        cf_cv_func_nanosleep=yes \
+    autotools_configure \
+        --enable-widec \
+        --enable-pc-files \
+        --with-shared \
+        --with-cxx-shared \
+        --with-cxx-binding \
+        --without-normal \
+        --without-debug \
+        --with-manpage-format=normal \
+        --with-pkg-config-libdir=${prefix}/lib/pkgconfig \
+        --with-termlib \
+        --without-ada
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    make install DESTDIR="${dest_dir}"
+
+    for lib in ncurses ncurses++ form panel menu tinfo; do
+       rm -vf                    "${dest_dir}${prefix}"/lib/lib${lib}.so
+       echo "INPUT(-l${lib}w)" > "${dest_dir}${prefix}"/lib/lib${lib}.so
+       ln -sfv ${lib}w.pc        "${dest_dir}${prefix}"/lib/pkgconfig/${lib}.pc
+       # Set library soname
+       patchelf --set-soname lib${lib}w.so "${dest_dir}${prefix}"/lib/lib${lib}w.so
+    done
+    rm -vf                     "${dest_dir}${prefix}"/lib/libcursesw.so
+    echo "INPUT(-lncursesw)" > "${dest_dir}${prefix}"/lib/libcursesw.so
+    ln -sfv libncurses.so      "${dest_dir}${prefix}"/lib/libcurses.so
+
+    # Remove static libraries
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+
+    post_package_strip
+}

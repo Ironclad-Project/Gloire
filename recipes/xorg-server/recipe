@@ -1,0 +1,48 @@
+#! /bin/sh
+
+version=21.1.21
+revision=3
+git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
+commit=312a25c65c8a918fea2cc77abd0db07ec0fc421c
+hostdeps="gcc pkg-config"
+deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus"
+
+configure() {
+    meson_configure \
+        -Dxkb_bin_dir=${prefix}/bin \
+        -Dxkb_dir=${prefix}/share/X11/xkb \
+        -Dxkb_output_dir=/var/lib/xkb \
+        -Ddefault_font_path=${prefix}/share/fonts/X11 \
+        -Dxorg=true \
+        -Dxv=true \
+        -Dxvfb=true \
+        -Dxephyr=false \
+        -Dxnest=false \
+        -Dsuid_wrapper=false \
+        -Dpciaccess=false \
+        -Ddpms=false \
+        -Dscreensaver=true \
+        -Dxres=false \
+        -Dxvmc=false \
+        -Dsystemd_logind=false \
+        -Dsecure-rpc=false \
+        -Dudev=false \
+        -Dudev_kms=false \
+        -Ddri1=false \
+        -Ddri2=false \
+        -Ddri3=false \
+        -Dint10=false \
+        -Dvgahw=false \
+        -Ddrm=false \
+        -Dglamor=false \
+        -Dglx=false
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+    post_package_strip
+}

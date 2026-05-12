@@ -1,0 +1,61 @@
+#! /bin/sh
+
+version=2.43
+revision=7
+git_url="https://codeberg.org/Ironclad/glibc.git"
+commit=e1ccaae3894c6cc12be7aad03378d336574e3ccb
+hostdeps="bootstrap-gcc pkg-config"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    # glibc handles fortify internally via --enable-fortify-source.
+    # Remove any -D_FORTIFY_SOURCE from TARGET_CFLAGS to avoid conflicts.
+    TARGET_CFLAGS="${TARGET_CFLAGS//-Wp,-D_FORTIFY_SOURCE=?/}"
+
+    echo "slibdir=${prefix}/lib" >> configparms
+    echo "rtlddir=${prefix}/lib" >> configparms
+    echo "sbindir=${prefix}/bin" >> configparms
+    echo "rootsbindir=${prefix}/bin" >> configparms
+
+    autotools_configure \
+        --with-headers=${sysroot}${prefix}/include \
+        --with-bugurl=https://codeberg.org/Ironclad/Gloire/issues \
+        --enable-bind-now \
+        --enable-cet \
+        --enable-fortify-source \
+        --enable-stack-protector=strong \
+        --disable-nscd \
+        --disable-profile \
+        --disable-timezone-tools \
+        --disable-werror
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    cat <<'EOF' >"${dest_dir}"/INSTALL
+#! /bin/sh
+
+export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+
+ACTION="$1"
+
+case "${ACTION}" in
+pre)
+    ;;
+post)
+    locale-gen
+    ;;
+esac
+
+exit 0
+EOF
+    chmod +x "${dest_dir}"/INSTALL
+}

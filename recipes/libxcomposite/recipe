@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=0.4.7
+revision=1
+tarball_url="https://www.x.org/archive/individual/lib/libXcomposite-${version}.tar.gz"
+tarball_blake2b="bc9c4dec74000b353e9763c2b7ed04d3ebd95a0bbf48564f1366f714b7a5b191784a91fa6b90579d6c3907a7142e50af52231f2ced3644139cbc171ba242cec8"
+hostdeps="gcc pkg-config"
+deps="core-libs libxfixes xorg-proto"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+}

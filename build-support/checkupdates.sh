@@ -7,15 +7,16 @@ test -z "${script_dir}" && script_dir=.
 
 base_dir="$(cd "${script_dir}"/.. && pwd -P)"
 
-for pkg in "$@"; do
+for pkg in ../recipes/*; do
     unset repology_id
     unset repology_srcname
     unset repology_status
     unset skip_pkg_check
 
-    . "${pkg}"
+    . "${pkg}"/recipe
 
-    printf "checking $name ..."
+    pkg=${pkg##*/}
+    printf "checking ${pkg} ..."
 
     if [ "$skip_pkg_check" = "yes" ]; then
         printf ' \033[0;37;100mskipped\033[0m\n'
@@ -23,7 +24,7 @@ for pkg in "$@"; do
     fi
 
     if [ -z "$repology_id" ]; then
-        name_to_check="$name"
+        name_to_check="${pkg}"
     else
         name_to_check="$repology_id"
     fi
@@ -39,8 +40,13 @@ for pkg in "$@"; do
     else
         status_to_check=".status==\"$repology_status\" and"
     fi
-    sleep .5
+
     repology_response="$(curl -s -A 'https://codeberg.org/Ironclad/Gloire' https://repology.org/api/v1/project/$name_to_check)"
+
+    # Repology asks of us that we do no more than a request a second, we will
+    # do a wait in between them
+    sleep 1.5
+
     checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera" or .repo=="homebrew")).version' | grep -v '"HEAD"' | sort -Vr | head -n 1)
     if [ -z "$checked_vers" ]; then
         checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)

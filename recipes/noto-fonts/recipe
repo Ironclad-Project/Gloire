@@ -9,7 +9,7 @@ commit=66c4b351c58f99ace5a6265d329080d74b057909
 package() {
     cd "${source_dir}"
     install -Dm644 fonts/*/hinted/ttf/*.tt[fc] -t "${dest_dir}"/usr/share/fonts/noto
-    install -Dm644 "${base_dir}"/build-support/noto-fonts/*.conf -t "${dest_dir}"/usr/share/fontconfig/conf.avail/
+    install -Dm644 "${recipe_dir}"/*.conf -t "${dest_dir}"/usr/share/fontconfig/conf.avail/
     install -d "${dest_dir}"/usr/share/fontconfig/conf.default
     ln -rs "${dest_dir}"/usr/share/fontconfig/conf.avail/* "${dest_dir}"/usr/share/fontconfig/conf.default
 }

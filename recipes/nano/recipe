@@ -24,7 +24,7 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     mkdir -p "${dest_dir}"/etc
-    cp -v "${base_dir}"/build-support/nano/nanorc "${dest_dir}"/etc/
+    cp -v "${recipe_dir}"/nanorc "${dest_dir}"/etc/
 
     post_package_strip
 }

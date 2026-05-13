@@ -9,11 +9,10 @@ hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxpm libpng zlib"
 
 prepare() {
-    cp -v "${base_dir}"/build-support/ace-of-penguins/jack.png    ./lib/png/
-    cp -v "${base_dir}"/build-support/ace-of-penguins/king.png    ./lib/png/
-    cp -v "${base_dir}"/build-support/ace-of-penguins/penguin.png ./lib/png/
-    cp -v "${base_dir}"/build-support/ace-of-penguins/queen.png   ./lib/png/
-
+    cp -v "${recipe_dir}"/jack.png    ./lib/png/
+    cp -v "${recipe_dir}"/king.png    ./lib/png/
+    cp -v "${recipe_dir}"/penguin.png ./lib/png/
+    cp -v "${recipe_dir}"/queen.png   ./lib/png/
     autotools_recursive_regen
 }
 
@@ -31,6 +30,5 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
-
     post_package_strip
 }

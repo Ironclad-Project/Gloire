@@ -66,9 +66,9 @@ package() {
 
     ln -s gcc "${dest_dir}${prefix}"/bin/cc
     ln -s gfortran "${dest_dir}${prefix}"/bin/f95
-    cp -v "${base_dir}"/build-support/gcc/c89 "${dest_dir}${prefix}"/bin/
-    cp -v "${base_dir}"/build-support/gcc/c99 "${dest_dir}${prefix}"/bin/
-    cp -v "${base_dir}"/build-support/gcc/f77 "${dest_dir}${prefix}"/bin/
+    cp -v "${recipe_dir}"/c89 "${dest_dir}${prefix}"/bin/
+    cp -v "${recipe_dir}"/c99 "${dest_dir}${prefix}"/bin/
+    cp -v "${recipe_dir}"/f77 "${dest_dir}${prefix}"/bin/
     chmod +x "${dest_dir}${prefix}"/bin/c89
     chmod +x "${dest_dir}${prefix}"/bin/c99
     chmod +x "${dest_dir}${prefix}"/bin/f77

@@ -1,0 +1,33 @@
+#! /bin/sh
+
+version=1.25.0
+revision=1
+tarball_url="https://ftp.gnu.org/gnu/wget/wget-${version}.tar.gz"
+tarball_blake2b="26e92884857ea5dc642597ed24f1923de1ef1e5d16fd943a33366b81220d416bd8cd7d3af74538f585ff43aa8470e7e2f371f50544f9672b3e6638d33ad5bab6"
+imagedeps="gperf"
+hostdeps="gcc pkg-config"
+deps="core-libs gnutls ca-certificates"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    cat >> "${dest_dir}/etc/wgetrc" << EOF
+
+# default root certs location
+ca_certificate=/etc/ssl/certs/ca-certificates.crt
+EOF
+
+    post_package_strip
+}

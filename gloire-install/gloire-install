@@ -1,0 +1,29 @@
+#! /bin/sh
+
+dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Welcome to gloire-install!" \
+    --msgbox "\nThis script will help you install Gloire into a physical device in an interactive manner" 0 0
+
+if [ "$EUID" -ne 0 ]; then
+    dialog --clear \
+        --backtitle "gloire-install" \
+        --title "Running as non root" \
+        --msgbox "\nThis script requires to be ran as the root user (UID 0), please rerun it as such" 0 0
+    exit
+fi
+
+available_lsblk="$(lsblk)"
+
+device=$(dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Choose an installation device" \
+    --inputbox "Block devices detected by the system:"$'\n'"$available_lsblk" 0 0 \
+    2>&1 >/dev/tty)
+
+dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Confirm actions" \
+    --msgbox "All data in '$device' will be deleted, do you wish to proceed?" 0 0
+
+mkfs.fat "/dev/$device"

@@ -1,0 +1,87 @@
+diff --git gptfdisk-clean/Makefile gptfdisk-workdir/Makefile
+index af9701c..05beeed 100644
+--- gptfdisk-clean/Makefile
++++ gptfdisk-workdir/Makefile
+@@ -75,7 +75,7 @@ SGDISK_LDLIBS=-lpopt
+ CGDISK_LDLIBS=-lncursesw
+ LIB_NAMES=crc32 support guid gptpart mbrpart basicmbr mbr gpt bsd parttypes attributes diskio diskio-unix
+ MBR_LIBS=support diskio diskio-unix basicmbr mbrpart
+-ALL=gdisk cgdisk sgdisk fixparts
++ALL=gdisk sgdisk fixparts
+ FN_EXTENSION=
+ 
+ # Settings for non-Linux OSes....
+@@ -173,7 +173,7 @@ depend: $(SRCS)
+ 	$(DEPEND) $(SRCS)
+ 
+ $(OBJS):
+-	$(CRITICAL_CXX_FLAGS) 
++	$(CRITICAL_CXX_FLAGS)
+ 
+ # makedepend dependencies below -- type "makedepend *.cc" to regenerate....
+ # DO NOT DELETE
+diff --git gptfdisk-clean/diskio-unix.cc gptfdisk-workdir/diskio-unix.cc
+index 0897c56..1d0029d 100644
+--- gptfdisk-clean/diskio-unix.cc
++++ gptfdisk-workdir/diskio-unix.cc
+@@ -177,7 +177,7 @@ int DiskIO::GetBlockSize(void) {
+ #if defined (__FreeBSD__) || defined (__FreeBSD_kernel__)
+       err = ioctl(fd, DIOCGSECTORSIZE, &blockSize);
+ #endif
+-#ifdef __linux__
++#if defined(__linux__) || defined(__ironclad__)
+       err = ioctl(fd, BLKSSZGET, &blockSize);
+ #endif
+ 
+@@ -302,6 +302,17 @@ int DiskIO::DiskSync(void) {
+          retval = 1;
+       } // if/else
+       platformFound++;
++#endif
++#ifdef __ironclad__
++      fsync(fd);
++      i = ioctl(fd, BLKRRPART);
++      if (i) {
++         cout << "Warning: The kernel is still using the old partition table.\n"
++              << "The new table will be used at the next reboot\n";
++      } else {
++         retval = 1;
++      } // if/else
++      platformFound++;
+ #endif
+       if (platformFound == 0)
+          cerr << "Warning: Platform not recognized!\n";
+@@ -403,7 +414,7 @@ int DiskIO::Write(void* buffer, int numBytes) {
+          cerr << "Unable to allocate memory in DiskIO::Write()! Terminating!\n";
+          exit(1);
+       } // if
+-      
++
+       // Copy the data to my own buffer, then write it
+       memcpy(tempSpace, buffer, numBytes);
+       for (i = numBytes; i < numBlocks * blockSize; i++) {
+@@ -466,7 +477,7 @@ uint64_t DiskIO::DiskSize(int *err) {
+       sectors = bytes / b;
+       platformFound++;
+ #endif
+-#ifdef __linux__
++#if defined(__linux__) || defined(__ironclad__)
+       long sz;
+       long long b;
+       *err = ioctl(fd, BLKGETSIZE, &sz);
+diff --git gptfdisk-clean/gptcurses.cc gptfdisk-workdir/gptcurses.cc
+index b476700..476fc43 100644
+--- gptfdisk-clean/gptcurses.cc
++++ gptfdisk-workdir/gptcurses.cc
+@@ -23,11 +23,7 @@
+ #include <iostream>
+ #include <string>
+ #include <sstream>
+-#if defined (__APPLE__) || (__FreeBSD__)
+ #include <ncurses.h>
+-#else
+-#include <ncursesw/ncurses.h>
+-#endif
+ #include "gptcurses.h"
+ #include "support.h"
+ 

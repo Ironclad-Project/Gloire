@@ -1,0 +1,19 @@
+#! /bin/sh
+
+version=1.0.10
+revision=1
+tarball_url="https://downloads.sourceforge.net/project/gptfdisk/gptfdisk/${version}/gptfdisk-${version}.tar.gz"
+tarball_blake2b="9047bf68a2c5c254bda9b2815488963dc19a9415c90fbf4a127268a37fe8a545b7d45a333e356bd9da22e37ef649d9f60896ffedfdc35b60c7642a48e4ed2e5a"
+hostdeps="gcc pkg-config"
+deps="core-libs popt ncurses e2fsprogs"
+
+build() {
+    cp -r ${source_dir}/. ./
+    make CXX=${OS_TRIPLET}-g++ -j${parallelism}
+}
+
+package() {
+    install -d "${dest_dir}/usr/bin"
+    install -t "${dest_dir}/usr/bin" gdisk sgdisk fixparts
+    post_package_strip
+}

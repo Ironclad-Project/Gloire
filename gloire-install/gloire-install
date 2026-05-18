@@ -17,7 +17,7 @@ available_lsblk="$(lsblk)"
 
 device=$(dialog --clear \
     --backtitle "gloire-install" \
-    --title "Choose an installation device" \
+    --title "Choose a device to install the OS" \
     --inputbox "Block devices detected by the system:"$'\n'"$available_lsblk" 0 0 \
     2>&1 >/dev/tty)
 
@@ -26,4 +26,27 @@ dialog --clear \
     --title "Confirm actions" \
     --msgbox "All data in '$device' will be deleted, do you wish to proceed?" 0 0
 
-mkfs.fat "/dev/$device"
+set -ex
+
+sgdisk --zap-all "/dev/$device"
+sgdisk -n 1:0:+2G "/dev/$device"
+sgdisk -n 2:0:0 "/dev/$device"
+
+# Format devices.
+#mkfs.fat "/dev/$boot_device"
+#yes | mkfs.ext2 "/dev/$root_device"
+
+# Mount devices.
+#mkdir newroot
+#path_newroot=$(realpath newroot)
+#mount "/dev/$root_device" "$path_newroot"
+#mkdir -p "$path_newroot/boot"
+#mount "/dev/$boot_device" "$path_newroot/boot"
+
+# Install in the root system.
+#yes 'y' | xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Su base -r "$path_newroot"
+
+# Cleanup
+#umount "$path_newroot/boot"
+#umount "$path_newroot"
+#sync

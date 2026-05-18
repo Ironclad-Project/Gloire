@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=2.43
-revision=7
+revision=8
 git_url="https://codeberg.org/Ironclad/glibc.git"
-commit=e1ccaae3894c6cc12be7aad03378d336574e3ccb
+commit=1b229c8fa0780948660481072a012c13e40d4c40
 hostdeps="bootstrap-gcc pkg-config"
 
 prepare() {

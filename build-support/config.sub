@@ -2220,7 +2220,7 @@ case $kernel-$os-$obj in
 		;;
 	uclinux-uclibc*- | uclinux-gnu*- )
 		;;
-	ironclad-gnu*-)
+	ironclad-gnu*- | ironclad-mlibc*- )
 		;;
 	managarm-mlibc*- | managarm-kernel*- )
 		;;

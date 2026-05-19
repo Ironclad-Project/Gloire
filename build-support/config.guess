@@ -150,7 +150,7 @@ UNAME_SYSTEM=`(uname -s) 2>/dev/null` || UNAME_SYSTEM=unknown
 UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
 
 case $UNAME_SYSTEM in
-Linux|GNU|GNU/*)
+Ironclad|Linux|GNU|GNU/*)
 	LIBC=unknown
 
 	set_cc_for_build
@@ -167,6 +167,8 @@ Linux|GNU|GNU/*)
 	LIBC=gnu
 	#elif defined(__LLVM_LIBC__)
 	LIBC=llvm
+	#elif defined(__mlibc__)
+	LIBC=mlibc
 	#else
 	#include <stdarg.h>
 	/* First heuristic to detect musl libc.  */
@@ -1598,10 +1600,10 @@ EOF
 	GUESS=$UNAME_MACHINE-unknown-unleashed$UNAME_RELEASE
 	;;
     x86_64:[Ii]ronclad:*:*|i?86:[Ii]ronclad:*:*)
-	GUESS=$UNAME_MACHINE-pc-ironclad-gnu
+	GUESS=$UNAME_MACHINE-pc-ironclad-$LIBC
 	;;
     *:[Ii]ronclad:*:*)
-	GUESS=$UNAME_MACHINE-unknown-ironclad-gnu
+	GUESS=$UNAME_MACHINE-unknown-ironclad-$LIBC
 	;;
 esac
 

@@ -68,6 +68,10 @@ build() {
     cd build
     make -j${parallelism} all-gcc
     make -j${parallelism} -C gcc cross-gnattools ada.all.cross
+
+    make -j${parallelism} all-target-libgcc
+    make -j${parallelism} all-target-libstdc++-v3
+    make -j${parallelism} all-target-libatomic
 }
 
 package() {
@@ -75,6 +79,10 @@ package() {
 
     cd build
     DESTDIR="${dest_dir}" make install-gcc
+
+    DESTDIR="${dest_dir}" make install-target-libgcc
+    DESTDIR="${dest_dir}" make install-target-libstdc++-v3
+    DESTDIR="${dest_dir}" make install-target-libatomic
 
     ln -s ${OS_TRIPLET}-gnatbind "${dest_dir}${prefix}"/bin/${OS_TRIPLET}-gnatbind-16
 

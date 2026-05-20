@@ -50,12 +50,12 @@ $SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 
-if ! [ -d host-pkgs/limine ]; then
+if ! [ -f host-pkgs/limine-*.xbps ]; then
     "${source_dir}"/jinx build host:limine
 fi
 
 if [ "$ARCH" = x86_64 ]; then
-    if ! [ -d host-pkgs/memtest86+ ]; then
+    if ! [ -f host-pkgs/memtest86+-*.xbps ]; then
         "${source_dir}"/jinx build host:memtest86+
     fi
 fi
@@ -90,21 +90,25 @@ cp "${source_dir}"/artwork/background.png iso_root/boot/
 cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
 # Install the boot binaries required by the target.
+mkdir limine-tmp
+( cd limine-tmp && tar -xf ../host-pkgs/limine-*.xbps )
 case "$ARCH" in
     riscv64)
         $SUDO mkdir -p iso_root/boot/limine
         $SUDO mkdir -p iso_root/boot/EFI/BOOT
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/boot/EFI/BOOT/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/boot/EFI/BOOT/
         ;;
     x86_64)
+        mkdir memtest-tmp
+        ( cd memtest-tmp && tar -xf ../host-pkgs/memtest86+-*.xbps )
         $SUDO mkdir -p iso_root/boot/EFI/BOOT
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios.sys    iso_root/boot/
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTX64.EFI        iso_root/boot/EFI/BOOT/
-        $SUDO cp host-pkgs/limine/usr/local/share/limine/BOOTIA32.EFI       iso_root/boot/EFI/BOOT/
-        $SUDO cp host-pkgs/memtest86+/boot/memtest.bin                      iso_root/boot/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/boot/EFI/BOOT/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/boot/EFI/BOOT/
+        $SUDO cp memtest-tmp/boot/memtest.bin                         iso_root/boot/
         ;;
 esac
 
@@ -248,7 +252,9 @@ else
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o "$IMAGE_NAME"
 
-    host-pkgs/limine/usr/local/bin/limine bios-install "$IMAGE_NAME"
+    limine-tmp/usr/local/bin/limine bios-install "$IMAGE_NAME"
 fi
+
+rm -rf limine-tmp memtest-tmp
 
 sync

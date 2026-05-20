@@ -9,14 +9,6 @@ deps="glibc"
 
 . "${base_dir}"/build-support/gcc-ada-helpers
 
-build() {
-    ada_symlink_gnat
-
-    cd "${build_dir}"/host-builds/gcc/build
-
-    make -j${parallelism} all-target-libgcc
-}
-
 package() {
     ada_symlink_gnat
 
@@ -31,8 +23,4 @@ package() {
 
     cp -r tmp_libgcc_dir/usr/local/lib "${dest_dir}${prefix}"/
     cp -r tmp_libgcc_dir/usr/local/${OS_TRIPLET}/* "${dest_dir}${prefix}"/
-
-    # Copy libgcc into GCC's tree else it will complain.
-    mkdir -p "${build_dir}"/host-pkgs/gcc/usr/local/lib
-    cp -r tmp_libgcc_dir/usr/local/lib/* "${build_dir}"/host-pkgs/gcc/usr/local/lib/
 }

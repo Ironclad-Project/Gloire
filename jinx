@@ -43,13 +43,44 @@ export LC_COLLATE=C
 
 umask 0022
 
-jinx_major_ver="0.9"
+jinx_major_ver="0.10"
 jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
-XBPS_VERSION=0.60.7
-XBPS_SHA256SUM=ec8c2e4d595863b5748c10d9ada1d51ac1da6f910a9d31682acd1a477310c64e
+# Pre-built static musl-linked xbps binaries are fetched from the
+# xbps-static-builds CI repo at the timestamp-tagged release below. The release
+# publishes one tarball per supported arch, named
+# xbps-static-bin-linux-${uname-m}.tar.gz, each wrapping a top-level directory
+# of the same stem. armel, loongarch64, and mips64el are not covered (no Alpine
+# container image on Docker Hub).
+XBPS_RELEASE_URL_BASE="https://github.com/Mintsuki/xbps-static-builds/releases/download/20260521T170342Z"
+declare -A XBPS_SHA256=(
+    [x86_64]=c41de4470f06d3e2d662e4793bd454e9e5e20ab36a3494e12da54101de1db196
+    [aarch64]=6aa7e9764d43e497167b4faec53a4f53726bb109b93d9338e25358085053f336
+    [armv7l]=0f4c11f1904cb63d9f2ba8d3beb52395ccbe8c895e9961191b90dde793a62fcf
+    [armv6l]=dce0a59b03ad839b21d72dd333321739836608fe006eb9e375efacb36c58af07
+    [i686]=f748d96c12a345078e29b6b6eebb8a2641fe2254512e5418a0a4c640ae9437cb
+    [ppc64le]=83e1d0a5b8823d3fc436a5d74ba2f358e3dcc5ff271f0696c457779537a4c87a
+    [riscv64]=b8855d16114e1af84134ba2eb0e99202746ea38ce6233922e244e2c3a8058d9b
+    [s390x]=b5992ff37a3b2f1ef7542eac00714b687ebb3ddd045adec9679270e700e2b53f
+)
+
+# Pre-built nochown.so (LD_PRELOAD shim that no-ops every chown variant) is
+# fetched from the nochown CI repo at the timestamp-tagged release below; used
+# inside the build container so apt/debootstrap don't fail when they try to
+# chown to UIDs outside the user namespace's restricted mapping.
+NOCHOWN_RELEASE_URL_BASE="https://github.com/Mintsuki/nochown/releases/download/20260521T175213Z"
+declare -A NOCHOWN_SHA256=(
+    [x86_64]=74330fe145f0e4180e22a9b3ec054c98f854d7a7d9cca034364a12a8d04c576a
+    [aarch64]=45aac7c467f33404f6bbddb1a24cdd5bfc66581e63a87d80233f8dedc7e30479
+    [armv7l]=3209f70a893ef1c59ceff8c50a8c0ab445266aadab88c47d4648f8e75e10df86
+    [armv6l]=45c04e2f8b1f4db00527620c1fbdabf438880377fc26fd95d6283d270147ef39
+    [i686]=c1604dfc56120180f5b097d4ff1d529511a1457ae3aa0e3a28a11a16bb689154
+    [ppc64le]=6f55eb63b27f962f9bfe6f338451e854cb6467ed773aae754882f7e0e277f043
+    [riscv64]=6780c1878715dc8558ad0553def1457c70c5bf133544c419d1bb41d7c2272d82
+    [s390x]=749beba8f4b72338e4b7769e0ed69a2f448e7cdc963cfd1d0a18d679c2f61ba2
+)
 
 debootstrap_version=1.0.143
 debootstrap_sha256sum=15652a91eb1cf04c24c485bbaaf36e0528132bded8475820344a8129c7eaca01
@@ -71,6 +102,7 @@ cmd_help() {
     printf "\n   update             Rebuild outdated package(s); use '-b' to also build never-built ones"
     printf "\n   build              Builds package(s), does incremental builds"
     printf "\n   rebuild            Rebuilds package(s)"
+    printf "\n   revbump            Bumps the revision of all (transitive) dependents of package(s)"
     printf "\n   regenerate|regen   Regenerates patch for package(s) and re-runs prepare step"
     printf "\n   install            Installs package(s) (use '-f' to reinstall)"
     printf "\n   dry-run            Prints all packages that need to be built in order (space separated)"
@@ -81,23 +113,41 @@ cmd_help() {
 }
 
 cmd_init() {
-    if [[ ! -f "$1/Jinxfile" ]]; then
-        die "$0: Provided source directory contains no Jinxfile"
+    if [[ -z ${1-} ]]; then
+        die "$0: init requires a directory argument"
     fi
 
-    local srcdir="$1"
+    local srcdir
+    local builddir
 
-    if [[ -f .jinx-parameters ]]; then
-        die "$0: Current directory already initialised, run '$0 deinit' first"
+    if [[ -f "$1/Jinxfile" ]]; then
+        # <dir> is the source directory; the current directory is the build directory.
+        local srcdir="$1"
+        local builddir="$(pwd -P)"
+    elif [[ -f Jinxfile ]]; then
+        # The current directory is the source; <dir> is a build directory to create.
+        if [[ -e "$1" ]]; then
+            die "$0: '$1' already exists; when the current directory is the source, <dir> must be a new directory to create as the build directory"
+        fi
+        local srcdir="$(pwd -P)"
+        mkdir -p "$1"
+        local builddir="$(cd "$1" && pwd -P)"
+    else
+        die "$0: could not find a Jinxfile in '$1' or in the current directory"
     fi
 
-    if [[ -f Jinxfile ]]; then
+    if [[ -f "${builddir}/.jinx-parameters" ]]; then
+        die "$0: '${builddir}' is already initialised; remove its .jinx-parameters first"
+    fi
+
+    if [[ -f "${builddir}/Jinxfile" ]]; then
         die "$0: In-tree builds are not supported"
     fi
 
-    cat <<EOF >.jinx-parameters
+    cat <<EOF >"${builddir}/.jinx-parameters"
 #! /bin/sh
 
+JINX_INIT_MAJOR_VER="${jinx_major_ver}"
 JINX_SOURCE_DIR="${srcdir}"
 JINX_ARCH="$(uname -m)"
 EOF
@@ -106,10 +156,10 @@ EOF
 
     local p
     for p in "$@"; do
-        printf 'JINX_%s="%s"\n' "${p%%=*}" "${p#*=}" >>.jinx-parameters
+        printf 'JINX_%s="%s"\n' "${p%%=*}" "${p#*=}" >>"${builddir}/.jinx-parameters"
     done
 
-    echo "Initialised with '${srcdir}' as source directory"
+    echo "Initialised '${builddir}' as build directory with '${srcdir}' as source directory"
 }
 
 case "$1" in
@@ -167,6 +217,11 @@ else
     parallelism="$JINX_PARALLELISM"
 fi
 
+# Architecture tag for host packages. Host recipes build native tools that run
+# on the build machine, so they are keyed on the build host's arch, independent
+# of JINX_ARCH (which is the target arch and may differ for cross builds).
+host_arch="$(uname -m)"
+
 if [[ ${in_container} == false ]]; then
     build_dir="$(pwd -P)"
 else
@@ -178,6 +233,10 @@ if [[ ! -f "${build_dir}/.jinx-parameters" ]]; then
 fi
 
 . "${build_dir}"/.jinx-parameters
+
+if [[ ${JINX_INIT_MAJOR_VER-} != "${jinx_major_ver}" ]]; then
+    die "$0: build directory '${build_dir}' was initialised with Jinx major version '${JINX_INIT_MAJOR_VER-(none)}', incompatible with this Jinx ${jinx_major_ver}. Delete the build directory and run 'jinx init' again to start over."
+fi
 
 if [[ ${in_container} == false ]]; then
     base_dir="$(cd "$JINX_SOURCE_DIR" && pwd -P)"
@@ -534,15 +593,6 @@ run_in_container1() {
     rm "${run_in_cont1_root}/etc/resolv.conf"
 }
 
-check_duplicates() {
-    local elem
-    for elem in $(cd "$1" && find .); do
-        if [[ -f "$2/${elem}" || -L "$2/${elem}" ]]; then
-            return 1
-        fi
-    done
-}
-
 prepare_container() {
     cd "${build_dir}"
 
@@ -575,13 +625,17 @@ prepare_container() {
     if [[ $JINX_NATIVE_MODE == yes && -z $cross_compile ]]; then
         imgroot="${sysroot}"
     else
+        make_temp -d
+        local host_root="${tmp}"
         local hostdep
         for hostdep in "${!_hostdeps_collected[@]}"; do
-            if ! check_duplicates "${build_dir}/host-pkgs/${hostdep}/usr/local" "${container_pkgs}"; then
-                die "jinx: error: Dependency '${hostdep}' contains file confilcts"
-            fi
-            cp -Pplr "${build_dir}/host-pkgs/${hostdep}/usr/local/." "${container_pkgs}/"
+            XBPS_ARCH=invalid \
+            XBPS_TARGET_ARCH="${host_arch}" \
+                xbps-install -y -r "${host_root}" -R "${build_dir}"/host-pkgs "${hostdep}" >"${tmp_stdout}" 2>"${tmp_stderr}" \
+            || (echo "jinx: xbps-install (host deps) failed! stdout:" && sed 's/^/\- /' "${tmp_stdout}" && echo jinx: stderr: && sed 's/^/\- /' "${tmp_stderr}" && exit 17)
         done
+        container_pkgs="${host_root}/usr/local"
+        mkdir -p "${container_pkgs}"
 
         imagedeps="$(echo "${imagedeps}" | xargs -n1 | sort -u | xargs)"
 
@@ -752,9 +806,21 @@ do_tarball_fetch() {
         local var_name="$1"
         local checksum_value="$2"
         if [[ -n ${current_recipe_file} && -f ${current_recipe_file} ]]; then
-            # Match `var=?`, `var="?"`, or `var='?'`
-            # with optional surrounding whitespace, preserving whatever quoting style was used.
-            sed -i -E "s#^([[:space:]]*${var_name}=)(\"|')?\\?(\"|')?([[:space:]]*)\$#\\1\\2${checksum_value}\\3\\4#" "${current_recipe_file}"
+            # Replace the first `var=?`, `var="?"` or `var='?'` placeholder,
+            # preserving indentation and quoting style.
+            local _re='^([[:space:]]*)'"${var_name}"'=("?|'\''?)[?]("?|'\''?)([[:space:]]*)$'
+            make_temp
+            local _out="${tmp}"
+            local _done=no
+            local line
+            while IFS= read -r line || [[ -n ${line} ]]; do
+                if [[ ${_done} == no && ${line} =~ $_re ]]; then
+                    local line="${BASH_REMATCH[1]}${var_name}=${BASH_REMATCH[2]}${checksum_value}${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
+                    local _done=yes
+                fi
+                printf '%s\n' "${line}"
+            done <"${current_recipe_file}" >"${_out}"
+            mv "${_out}" "${current_recipe_file}"
         else
             die "* error: cannot autofill ${var_name} for ${name}: recipe file unknown"
         fi
@@ -1153,7 +1219,8 @@ clean_sources() {
     force_remove "${base_dir}"/${_sources_root}/$1.version
     force_remove "${base_dir}"/${_sources_root}/$1.patched
     force_remove "${base_dir}"/${_sources_root}/$1.prepared
-    force_remove "${base_dir}"/${_sources_root}/$1.built
+    force_remove "${base_dir}"/${_sources_root}/$1.revision
+    force_remove "${base_dir}"/${_sources_root}/$1.host-revision
 }
 
 do_source() {
@@ -1290,10 +1357,25 @@ do_host_pkg() {
     echo "* building host package: $name"
 
     if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+    fi
+
+    if [[ ! -f "${build_dir}/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps" ]]; then
+        force_remove "${build_dir}"/host-builds/"$1"
+        if [[ -z ${from_source} ]] \
+           && [[ -f "${base_dir}/${_sources_root}/$1.host-revision" ]] \
+           && [[ $(cat "${base_dir}/${_sources_root}/$1.host-revision") != "${revision}" ]]; then
+            tracked_subshell 'clean_sources "${name}"'
+        fi
+    fi
+
+    if [[ -n ${from_source} ]]; then
         tracked_subshell 'do_source "${from_source}" "${_from_source_dir}"'
     else
         tracked_subshell 'do_source "${name}" host-recipes'
     fi
+
+    echo "${revision}" >"${base_dir}"/${_sources_root}/$1.host-revision
 
     local cross_compile=yes
     local container_pkgs=
@@ -1311,6 +1393,32 @@ do_host_pkg() {
     run_in_container internal-package-host $1
 
     destroy_container
+
+    local xbps_deps=""
+    local hostrundep
+    for hostrundep in ${hostrundeps}; do
+        local xbps_deps="${xbps_deps} ${hostrundep}>=0.0"
+    done
+
+    local dest_dir="${build_dir}/host-pkgs/${name}"
+
+    cd "${build_dir}"/host-pkgs
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${host_arch}" \
+    xbps-create \
+        -A ${host_arch} \
+        -s ${name} \
+        -n ${name}-${version}_${revision} \
+        -D "${xbps_deps}" \
+        "${dest_dir}"
+
+    force_remove "${dest_dir}"
+
+        XBPS_ARCH=invalid \
+        XBPS_TARGET_ARCH="${host_arch}" \
+    xbps-rindex \
+        -a "${build_dir}"/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps \
+        -f
 
     if [[ ${JINX_CLEAN_WORKDIRS} == yes ]]; then
         if [[ ${clean_workdirs} != no ]]; then
@@ -1343,8 +1451,8 @@ do_pkg() {
     if [[ ! -f "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" ]]; then
         force_remove "${build_dir}"/builds/"$1"
         if [[ -z ${from_source} ]] \
-           && [[ -f "${base_dir}/${_sources_root}/$1.built" ]] \
-           && [[ $(cat "${base_dir}/${_sources_root}/$1.built") != "${version}_${revision}" ]]; then
+           && [[ -f "${base_dir}/${_sources_root}/$1.revision" ]] \
+           && [[ $(cat "${base_dir}/${_sources_root}/$1.revision") != "${revision}" ]]; then
             tracked_subshell 'clean_sources "${name}"'
         fi
     fi
@@ -1355,7 +1463,7 @@ do_pkg() {
         tracked_subshell 'do_source "${name}" recipes'
     fi
 
-    echo "${version}_${revision}" >"${base_dir}"/${_sources_root}/$1.built
+    echo "${revision}" >"${base_dir}"/${_sources_root}/$1.revision
 
     local container_pkgs=
     local sysroot=
@@ -1450,8 +1558,21 @@ do_build_if_needed() {
     fi
 }
 
+host_pkg_filename() {
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+    fi
+    echo "${name}-${version}_${revision}.${host_arch}.xbps"
+}
+
 do_host_build_if_needed() {
-    if [[ ! -d "${build_dir}/host-pkgs/${hostdep}" ]]; then
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+    fi
+
+    if [[ ! -f "${build_dir}/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps" ]]; then
         tracked_subshell 'do_host_pkg "'$1'"'
     fi
 }
@@ -1489,6 +1610,27 @@ do_update() {
     done
 }
 
+do_host_update() {
+    local with_build="$1"
+    shift
+    eval "$(include_recipe "${base_dir}"/host-recipes/$1)"
+    if [[ -n ${from_source} ]]; then
+        local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+    fi
+
+    # Up to date already? Nothing to do.
+    if [[ -f "${build_dir}/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps" ]]; then
+        return 0
+    fi
+
+    # Not previously built? Skip unless caller asked to build missing ones.
+    if [[ ${with_build} != yes ]] && ! compgen -G "${build_dir}/host-pkgs/${name}-*_*.${host_arch}.xbps" >/dev/null; then
+        return 0
+    fi
+
+    tracked_subshell 'do_host_pkg "'$1'"'
+}
+
 cmd_update() {
     local with_build=no
     if [[ ${1-} == "-b" ]]; then
@@ -1502,9 +1644,15 @@ cmd_update() {
     local ppkg
     for ppkg in "$@"; do
         local pkg
-        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
-            tracked_subshell 'do_update "${with_build}" "${pkg}"'
-        done
+        if [[ ${ppkg} == host:* ]]; then
+            for pkg in $(cd "${base_dir}/host-recipes" && echo ${ppkg#host:}); do
+                tracked_subshell 'do_host_update "${with_build}" "${pkg}"'
+            done
+        else
+            for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+                tracked_subshell 'do_update "${with_build}" "${pkg}"'
+            done
+        fi
     done
 }
 
@@ -1515,6 +1663,42 @@ cmd_dry_run() {
     # and only if they haven't been mentioned before.
     if [[ -z ${1-} ]]; then
         set -- '*'
+    fi
+
+    # Split host targets ('host:' prefix) from normal ones; the normal
+    # algorithm below only sees normal recipes, host targets are previewed
+    # separately in host topological order.
+    local -a host_globs=() normal_args=()
+    local a
+    for a in "$@"; do
+        if [[ ${a} == host:* ]]; then
+            host_globs+=("${a#host:}")
+        else
+            normal_args+=("${a}")
+        fi
+    done
+    set -- ${normal_args[@]+"${normal_args[@]}"}
+
+    local host_pending=""
+    if (( ${#host_globs[@]} > 0 )); then
+        local -A _hp_seen
+        local host_order=""
+        local hg hpkg _ho
+        for hg in "${host_globs[@]}"; do
+            for hpkg in $(cd "${base_dir}/host-recipes" && echo ${hg}); do
+                [[ -f "${base_dir}/host-recipes/${hpkg}/recipe" ]] || continue
+                for _ho in $(tracked_subshell 'get_hostdeps_builddeps "${hpkg}"'); do
+                    [[ -n ${_hp_seen[$_ho]+x} ]] && continue
+                    _hp_seen[$_ho]=1
+                    local host_order="${host_order} ${_ho}"
+                done
+            done
+        done
+        for _ho in ${host_order}; do
+            if [[ ! -f "${build_dir}/host-pkgs/$(host_pkg_filename "${_ho}")" ]]; then
+                local host_pending="${host_pending} host:${_ho}"
+            fi
+        done
     fi
 
     # Expand all package patterns upfront
@@ -1603,7 +1787,7 @@ cmd_dry_run() {
             local hostdep
             for hostdep in ${pkg_hostdeps[$dep]}; do
                 if [[ ${emitted_hostdeps} != *" ${hostdep} "* ]]; then
-                    if [[ ! -d "${build_dir}/host-pkgs/${hostdep}" ]]; then
+                    if [[ ! -f "${build_dir}/host-pkgs/$(host_pkg_filename "${hostdep}")" ]]; then
                         local pending_list="${pending_list} host:${hostdep}"
                     fi
                     local emitted_hostdeps="${emitted_hostdeps}${hostdep} "
@@ -1615,7 +1799,7 @@ cmd_dry_run() {
     done
 
     # Print packages preserving order, space separated, with global deduplication
-    printf '%s\n' ${pending_list} | awk '!seen[$0]++{printf "%s ", $0} END{print ""}'
+    printf '%s\n' ${host_pending} ${pending_list} | awk '!seen[$0]++{printf "%s ", $0} END{print ""}'
 }
 
 cmd_download() {
@@ -1682,7 +1866,7 @@ cmd_download() {
     echo "* fetching repository index..."
     make_temp
     local repodata_path="${tmp}"
-    curl -fL -o "${repodata_path}" "${JINX_REPO_URL}/${JINX_ARCH}-repodata" \
+    wget -O "${repodata_path}" "${JINX_REPO_URL}/${JINX_ARCH}-repodata" \
         || die "$0: failed to fetch repository index from ${JINX_REPO_URL}"
 
     make_temp
@@ -1695,7 +1879,7 @@ cmd_download() {
         echo "* downloading ${pkg_file}..."
         make_temp
         local dl_path="${tmp}"
-        curl -fL -o "${dl_path}" "${JINX_REPO_URL}/${pkg_file}" \
+        wget -O "${dl_path}" "${JINX_REPO_URL}/${pkg_file}" \
             || die "$0: failed to download ${pkg_file} from ${JINX_REPO_URL}"
 
         # Verify SHA256 against repodata
@@ -1847,6 +2031,125 @@ cmd_rebuild() {
     done
 }
 
+revbump_one_recipe() {
+    # Rewrite the first literal 'revision=' line, incrementing the integer and
+    # preserving indentation, quoting style and trailing whitespace.
+    local recipe_file="$1"
+    local label="$2"
+
+    if [[ ! -f ${recipe_file} ]]; then
+        die "$0: revbump: recipe file '${recipe_file}' not found"
+    fi
+
+    local rev_re='^([[:space:]]*)revision=("?|'\''?)([0-9]+)("?|'\''?)([[:space:]]*)$'
+
+    make_temp
+    local out="${tmp}"
+
+    local count=0
+    local old_rev=
+    local line
+    while IFS= read -r line || [[ -n ${line} ]]; do
+        if [[ ${line} =~ $rev_re ]]; then
+            local count=$((count + 1))
+            if [[ ${count} == 1 ]]; then
+                local old_rev="${BASH_REMATCH[3]}"
+                local line="${BASH_REMATCH[1]}revision=${BASH_REMATCH[2]}$((old_rev + 1))${BASH_REMATCH[4]}${BASH_REMATCH[5]}"
+            fi
+        fi
+        printf '%s\n' "${line}"
+    done <"${recipe_file}" >"${out}"
+
+    if [[ ${count} != 1 ]]; then
+        die "$0: revbump: recipe '${label}' has ${count} literal 'revision=' line(s); expected exactly 1 (bump it manually)"
+    fi
+
+    mv "${out}" "${recipe_file}"
+
+    echo "  ${label}: revision ${old_rev} -> $((old_rev + 1))"
+}
+
+cmd_revbump() {
+    # Bump the revision of every recipe that depends, directly or
+    # transitively, on the given package(s). Targets and dependents may be
+    # normal recipes or host recipes (selected with the 'host:' prefix).
+    # 'deps'/'builddeps' resolve in recipes/, 'hostdeps'/'hostrundeps' in
+    # host-recipes/, so the graph spans both namespaces.
+    if [[ -z ${1-} ]]; then
+        die "$0: revbump requires at least one package name"
+    fi
+
+    local -A revdeps
+    local nsdir pkg
+    for nsdir in recipes host-recipes; do
+        for pkg in $(cd "${base_dir}/${nsdir}" && echo *); do
+            [[ -f "${base_dir}/${nsdir}/${pkg}/recipe" ]] || continue
+            local node="${nsdir}/${pkg}"
+
+            local depinfo
+            depinfo="$(eval "$(include_recipe "${base_dir}/${nsdir}/${pkg}")" \
+                && printf '%s\n%s\n' "${deps} ${builddeps}" "${hostdeps} ${hostrundeps}")"
+            local rdeps_line="${depinfo%%$'\n'*}"
+            local rhost_line="${depinfo#*$'\n'}"
+            local rhost_line="${rhost_line%%$'\n'*}"
+
+            local d
+            for d in ${rdeps_line}; do
+                [[ -n $d ]] && revdeps["recipes/${d}"]+=" ${node}"
+            done
+            for d in ${rhost_line}; do
+                [[ -n $d ]] && revdeps["host-recipes/${d}"]+=" ${node}"
+            done
+        done
+    done
+
+    local -A to_bump
+    local -A targets
+
+    revbump_visit() {
+        local n="$1"
+        local r
+        for r in ${revdeps[$n]-}; do
+            if [[ -z ${to_bump[$r]+x} ]]; then
+                to_bump[$r]=1
+                revbump_visit "$r"
+            fi
+        done
+    }
+
+    local ppkg
+    for ppkg in "$@"; do
+        local tns tglob
+        if [[ ${ppkg} == host:* ]]; then
+            local tns=host-recipes
+            local tglob="${ppkg#host:}"
+        else
+            local tns=recipes
+            local tglob="${ppkg}"
+        fi
+        for pkg in $(cd "${base_dir}/${tns}" && echo ${tglob}); do
+            if [[ ! -f "${base_dir}/${tns}/${pkg}/recipe" ]]; then
+                die "$0: revbump: recipe '${tns}/${pkg}' not found"
+            fi
+            targets["${tns}/${pkg}"]=1
+            revbump_visit "${tns}/${pkg}"
+        done
+    done
+
+    # A requested package is the changed input itself, never a bump target.
+    local node
+    local bumped_any=no
+    for node in $(printf '%s\n' "${!to_bump[@]}" | sort); do
+        [[ -n ${targets[$node]+x} ]] && continue
+        revbump_one_recipe "${base_dir}/${node}/recipe" "${node}"
+        local bumped_any=yes
+    done
+
+    if [[ ${bumped_any} == no ]]; then
+        echo "jinx: revbump: no dependents found for: $*"
+    fi
+}
+
 cmd_install() {
     local force_install=""
     if [[ ${1-} == "-f" ]]; then
@@ -1969,72 +2272,16 @@ reinit_container() {
         fi
     fi
 
-    # Build xbps
-    wget -O "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" https://github.com/void-linux/xbps/archive/${XBPS_VERSION}.tar.gz
-    if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/xbps-${XBPS_VERSION}.tar.gz" | grep "${XBPS_SHA256SUM}" >/dev/null 2>&1; then
-        die "Jinx: Failed to verify XBPS tarball"
+    # Fetch the pre-built nochown.so for this host arch, verify, drop it into
+    # the container's rootfs so the LD_PRELOAD references at /nochown.so work.
+    local nochown_sha256="${NOCHOWN_SHA256[${host_arch}]-}"
+    if [[ -z ${nochown_sha256} || ${nochown_sha256} == "?" ]]; then
+        die "Jinx: no pre-built nochown.so published for host arch '${host_arch}' (see NOCHOWN_SHA256 in jinx)"
     fi
-
-    tracked_subshell '
-
-    cd "$JINX_CACHE_DIR"
-    tar -zxf xbps-${XBPS_VERSION}.tar.gz
-    cd xbps-${XBPS_VERSION}
-
-    sed "s/&& DEBUG=yes/&& DEBUG=no/g" configure >configure.sed
-    mv configure.sed configure
-    chmod +x configure
-
-    CFLAGS="-O2 -pipe -Wno-error" ./configure --verbose --prefix="$JINX_CACHE_DIR/xbps" --localstatedir=/var
-
-    sed "/DBDIR/d" data/Makefile >data/Makefile.sed
-    mv data/Makefile.sed data/Makefile
-
-    sed "s/-lxml2/-lxml2 -llzma -lm/g" config.mk >config.mk.sed
-    mv config.mk.sed config.mk
-
-    if command -v gmake >/dev/null 2>&1; then
-        local MAKE=gmake
-    else
-        local MAKE=make
+    wget -O "$JINX_CACHE_DIR/sets/.image/nochown.so" "${NOCHOWN_RELEASE_URL_BASE}/nochown-linux-${host_arch}.so"
+    if ! "${SHA256_COMMAND}" "$JINX_CACHE_DIR/sets/.image/nochown.so" | grep "${nochown_sha256}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify nochown.so"
     fi
-
-    ${MAKE} -j${parallelism}
-    ${MAKE} install
-
-    cd ..
-    force_remove xbps-${XBPS_VERSION}*
-
-    '
-
-    cat >"$JINX_CACHE_DIR/nochown.c" <<EOF
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-int chown(const char *pathname, uid_t owner, gid_t group) {
-    (void)pathname; (void)owner; (void)group;
-    return 0;
-}
-
-int fchown(int fd, uid_t owner, gid_t group) {
-    (void)fd; (void)owner; (void)group;
-    return 0;
-}
-
-int lchown(const char *pathname, uid_t owner, gid_t group) {
-    (void)pathname; (void)owner; (void)group;
-    return 0;
-}
-
-int fchownat(int dirfd, const char *pathname,
-             uid_t owner, gid_t group, int flags) {
-    (void)dirfd; (void)pathname; (void)owner; (void)group; (void)flags;
-    return 0;
-}
-EOF
-    cc -O2 -pipe -std=gnu99 -Wall -Wextra -fPIC -shared -nostdlib "$JINX_CACHE_DIR/nochown.c" -o "$JINX_CACHE_DIR/sets/.image/nochown.so"
-    rm "$JINX_CACHE_DIR/nochown.c"
 
     local DEBOOTSTRAP_ARCH="$(uname -m)"
     case "${DEBOOTSTRAP_ARCH}" in
@@ -2096,11 +2343,35 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     # Fix permissions of files
     find "$JINX_CACHE_DIR/sets/.image" -perm 000 -exec chmod 755 {} + 2>/dev/null
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 curl diffutils findutils gawk git grep gzip lzip patch sed tar xz-utils zstd ${JINX_BASE_PACKAGES}
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 curl diffutils findutils gawk git grep gzip lzip patch sed tar xz-utils zstd ${JINX_BASE_PACKAGES-}
 
-    if [[ -n ${JINX_CMAKE_PLATFORM} ]]; then
+    if [[ -n ${JINX_CMAKE_PLATFORM-} ]]; then
         cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/
     fi
+
+    # Fetch the pre-built static-musl xbps tarball for this host arch from the
+    # xbps-static-builds CI repo, verify, extract. Building xbps locally is
+    # avoided because Debian doesn't ship musl-linked libssl/libarchive/etc.,
+    # and statically linked glibc breaks libfetch's networking via NSS.
+    local xbps_sha256="${XBPS_SHA256[${host_arch}]-}"
+    if [[ -z ${xbps_sha256} || ${xbps_sha256} == "?" ]]; then
+        die "Jinx: no pre-built xbps tarball published for host arch '${host_arch}' (see XBPS_SHA256 in jinx)"
+    fi
+
+    local xbps_dirname="xbps-static-bin-linux-${host_arch}"
+    local xbps_tarball="${xbps_dirname}.tar.gz"
+    wget -O "${JINX_CACHE_DIR}/${xbps_tarball}" "${XBPS_RELEASE_URL_BASE}/${xbps_tarball}"
+    if ! "${SHA256_COMMAND}" "${JINX_CACHE_DIR}/${xbps_tarball}" | grep "${xbps_sha256}" >/dev/null 2>&1; then
+        die "Jinx: Failed to verify xbps tarball"
+    fi
+
+    # The tarball wraps everything in a top-level ${xbps_dirname}/ dir; extract
+    # then rename so ${JINX_CACHE_DIR}/xbps/{bin,lib,...} are where PATH and
+    # LD_LIBRARY_PATH already expect them.
+    ( cd "${JINX_CACHE_DIR}" && gunzip < "${xbps_tarball}" | tar -xf - )
+    force_remove "${JINX_CACHE_DIR}/xbps"
+    mv "${JINX_CACHE_DIR}/${xbps_dirname}" "${JINX_CACHE_DIR}/xbps"
+    rm "${JINX_CACHE_DIR}/${xbps_tarball}"
 }
 
 first_use() {
@@ -2112,7 +2383,7 @@ first_use() {
 
     echo "${jinx_version}" >"${JINX_CACHE_DIR}/version"
     echo "${JINX_DEBIAN_SNAPSHOT}" >"${JINX_CACHE_DIR}/debian_snapshot"
-    echo "${JINX_BASE_PACKAGES}" >"${JINX_CACHE_DIR}/base_packages"
+    echo "${JINX_BASE_PACKAGES-}" >"${JINX_CACHE_DIR}/base_packages"
 
     echo "* done"
 }
@@ -2207,6 +2478,10 @@ case "$1" in
     rebuild)
         shift 1
         cmd_rebuild "$@"
+        ;;
+    revbump)
+        shift 1
+        cmd_revbump "$@"
         ;;
     install)
         shift 1

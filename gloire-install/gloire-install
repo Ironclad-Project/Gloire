@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -eu
+
 dialog --clear \
     --backtitle "gloire-install" \
     --title "Welcome to gloire-install!" \
@@ -13,40 +15,75 @@ if [ "$EUID" -ne 0 ]; then
     exit
 fi
 
-available_lsblk="$(lsblk)"
-
-device=$(dialog --clear \
+available_lsblk="$(lsblk -n | awk 'NF==3 && !/.*p[0-9]+/ { print $1 }')"
+dialog_out=$(mktemp)
+if ! dialog --clear \
     --backtitle "gloire-install" \
-    --title "Choose a device to install the OS" \
-    --inputbox "Block devices detected by the system:"$'\n'"$available_lsblk" 0 0 \
-    2>&1 >/dev/tty)
+    --title "Device selection" \
+    --menu "Choose one(1) device to install Gloire" 0 0 0 \
+    $(i=0; for d in $available_lsblk; do echo $((++i)) $d; done) 2> $dialog_out
+then
+    clear
+    exit
+fi
+option_device=$(cat $dialog_out)
+device=$(f() { n=$1; shift 1; shift $n; echo $1; }; f $(($option_device-1)) $available_lsblk)
+rm $dialog_out
+
+if ! dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Confirm actions" \
+    --yesno "All data in '$device' will be deleted, do you wish to proceed?" 0 0;
+then
+   clear
+   exit
+fi
+
+set -x
+
+# Make 3 partitions: BIOS Boot for limine, ESP, and the main partition.
+sgdisk --zap-all "/dev/$device"
+sgdisk -n 1:0:+2M "/dev/$device"
+sgdisk -n 2:0:+2G "/dev/$device"
+sgdisk -n 3:0:0 "/dev/$device"
+bios_partition="${device}p1"
+esp_partition="${device}p2"
+root_partition="${device}p3"
+
+# Set flags and UUID.
+root_uuid=$(uuidgen)
+sgdisk "/dev/$device" -t 1:ef02 -c 1:"Gloire BIOS+Limine"
+sgdisk "/dev/$device" -t 2:ef00 -c 2:"Gloire EFI System Partition"
+sgdisk "/dev/$device" -t 3:8300 -c 3:"Gloire Root Partition" -u 3:"$root_uuid"
+
+# Format devices.
+mkfs.fat "/dev/$esp_partition"
+yes | mkfs.ext2 "/dev/$root_partition"
+
+# Mount devices.
+mkdir newroot
+path_newroot=$(realpath newroot)
+mount "/dev/$root_partition" "$path_newroot"
+mkdir -p "$path_newroot/boot"
+mount "/dev/$esp_partition" "$path_newroot/boot"
+
+# Install in the root system.
+xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu base -r "$path_newroot"
+
+# Cleanup after moving files over.
+umount "$path_newroot/boot"
+umount "$path_newroot"
+
+# Install limine.
+limine bios-install "/dev/$device"
+
+sync
+
+set +x
 
 dialog --clear \
     --backtitle "gloire-install" \
-    --title "Confirm actions" \
-    --msgbox "All data in '$device' will be deleted, do you wish to proceed?" 0 0
+    --title "Installation done" \
+    --msgbox "Gloire has been installed on '$device'. The system will now poweroff, if you installed Gloire from an external drive, remove it before powering the machine again if you desire to boot into your new system." 0 0
 
-set -ex
-
-sgdisk --zap-all "/dev/$device"
-sgdisk -n 1:0:+2G "/dev/$device"
-sgdisk -n 2:0:0 "/dev/$device"
-
-# Format devices.
-#mkfs.fat "/dev/$boot_device"
-#yes | mkfs.ext2 "/dev/$root_device"
-
-# Mount devices.
-#mkdir newroot
-#path_newroot=$(realpath newroot)
-#mount "/dev/$root_device" "$path_newroot"
-#mkdir -p "$path_newroot/boot"
-#mount "/dev/$boot_device" "$path_newroot/boot"
-
-# Install in the root system.
-#yes 'y' | xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Su base -r "$path_newroot"
-
-# Cleanup
-#umount "$path_newroot/boot"
-#umount "$path_newroot"
-#sync
+poweroff

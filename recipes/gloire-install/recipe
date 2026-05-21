@@ -2,9 +2,9 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=3
+revision=4
 source_dir="gloire-install"
-deps="bash dialog e2fsprogs dosfstools gptfdisk"
+deps="bash dialog e2fsprogs dosfstools gptfdisk limine"
 
 package() {
     mkdir -p "${dest_dir}"/usr/bin

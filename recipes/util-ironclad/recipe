@@ -2,9 +2,9 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=17
+revision=18
 git_url="https://codeberg.org/Ironclad/util-ironclad.git"
-commit=91002a9f7059180e8eba662b6002b68d72468cb5
+commit=931f89b52322a7724e7d5db3959372b23891977d
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

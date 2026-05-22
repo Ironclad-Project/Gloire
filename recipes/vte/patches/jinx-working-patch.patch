@@ -1,16 +1,3 @@
-diff --git vte-clean/meson.build vte-workdir/meson.build
-index 02b01db..54c274b 100644
---- vte-clean/meson.build
-+++ vte-workdir/meson.build
-@@ -267,7 +267,7 @@ endforeach
- # Check for symbols
- 
- check_symbols_required = [
--  ['TIOCGWINSZ', ['sys/ioctl.h', 'sys/termios.h',]],
-+  ['TIOCGWINSZ', ['asm/ioctls.h']],
- ]
- 
- foreach symbol: check_symbols_required
 diff --git vte-clean/src/missing.cc vte-workdir/src/missing.cc
 index c769fb4..68dfc79 100644
 --- vte-clean/src/missing.cc

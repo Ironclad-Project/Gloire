@@ -476,14 +476,13 @@ index fc71ca4..728eb52 100644
    // conservative answer.
    return false;
 diff --git llvm-libs-clean/llvm/lib/Support/Unix/Process.inc llvm-libs-workdir/llvm/lib/Support/Unix/Process.inc
-index c6e79af..66f884f 100644
+index c6e79af..9867bb6 100644
 --- llvm-libs-clean/llvm/lib/Support/Unix/Process.inc
 +++ llvm-libs-workdir/llvm/lib/Support/Unix/Process.inc
-@@ -38,6 +38,9 @@
+@@ -38,6 +38,8 @@
  #include <sys/ioctl.h>
  #endif
  
-+#include <asm/ioctls.h>
 +#include <termios.h>
 +
  //===----------------------------------------------------------------------===//

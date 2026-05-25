@@ -50,14 +50,10 @@ $SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 
-if ! [ -f host-pkgs/limine-*.xbps ]; then
-    "${source_dir}"/jinx build host:limine
-fi
+"${source_dir}"/jinx update -b host:limine
 
 if [ "$ARCH" = x86_64 ]; then
-    if ! [ -f host-pkgs/memtest86+-*.xbps ]; then
-        "${source_dir}"/jinx build host:memtest86+
-    fi
+    "${source_dir}"/jinx update -b host:memtest86+
 fi
 
 # Prepare the iso and boot directories.
@@ -90,24 +86,27 @@ cp "${source_dir}"/artwork/background.png iso_root/boot/
 cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
 # Install the boot binaries required by the target.
+rm -rf limine-tmp
 mkdir limine-tmp
-( cd limine-tmp && tar -xf ../host-pkgs/limine-*.xbps )
+( cd limine-tmp && tar -xf $(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1) )
 case "$ARCH" in
     riscv64)
         $SUDO mkdir -p iso_root/boot/limine
-        $SUDO mkdir -p iso_root/boot/EFI/BOOT
+        $SUDO mkdir -p iso_root/EFI/BOOT
         $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/boot/EFI/BOOT/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
         ;;
     x86_64)
+        rm -rf memtest-tmp
         mkdir memtest-tmp
-        ( cd memtest-tmp && tar -xf ../host-pkgs/memtest86+-*.xbps )
-        $SUDO mkdir -p iso_root/boot/EFI/BOOT
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/boot/EFI/BOOT/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/boot/EFI/BOOT/
+        ( cd memtest-tmp && tar -xf $(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1) )
+        $SUDO mkdir -p iso_root/boot/limine
+        $SUDO mkdir -p iso_root/EFI/BOOT
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
         $SUDO cp memtest-tmp/boot/memtest.bin                         iso_root/boot/
         ;;
 esac
@@ -246,9 +245,9 @@ if [ "$ARCH" = riscv64 ]; then
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o "$IMAGE_NAME"
 else
-    xorriso -as mkisofs -R -r -J -b boot/limine-bios-cd.bin \
+    xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
-        -apm-block-size 2048 --efi-boot boot/limine-uefi-cd.bin \
+        -apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o "$IMAGE_NAME"
 

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=692
+version=702
 revision=1
 tarball_url="https://www.greenwoodsoftware.com/less/less-${version}.tar.gz"
-tarball_blake2b="379d7738894f16fed1b429c9e26c2e46fd27c790be2b0b8b6c0f6744913845ea6003d5b50db4186847c4daf430fb5a23d2c9f35780577a0fb1c1a3b603bfbb41"
+tarball_blake2b="89d52e986a4bf62f6bb8fccf80a7e256e91a1a8e8935e6a4e0bf6ca02080008494b31e5f6d91a4ac5fb7eadb8d49d5289f1020b174bfc344534130baf00b0a39"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 

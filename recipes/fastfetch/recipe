@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.56.1
-revision=2
+version=2.63.1
+revision=1
 git_url="https://github.com/fastfetch-cli/fastfetch.git"
-commit=a9f43ff466ad9ba47222c795d2725f721a86eac0
+commit=acf610416c2d5bb1438f723699aca47647fbeba5
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

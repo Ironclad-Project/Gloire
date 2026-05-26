@@ -32,7 +32,7 @@ locally built image with an emulator like QEMU. For using QEMU with an x86_64
 ISO, one can do:
 
 ```bash
-qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -cdrom gloire.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -cdrom gloire.iso -boot d -serial stdio
 ```
 
 Where `gloire.iso` is your image of choice, and optionally attaching additional storage (HDDs) as needed,
@@ -57,9 +57,8 @@ To do the same with a riscv64 image, one can do:
 ```bash
 qemu-system-riscv64 -M virt,acpi=on -cpu rv64,svpbmt=on -device ramfb \
   -device qemu-xhci -m 4G -device usb-kbd -device usb-tablet -serial stdio \
-  -drive if=pflash,unit=0,format=raw,file=<firmware image> \
-  -drive id=disk,file=gloire.img,if=none -device ahci,id=ahci \
-  -device ide-hd,drive=disk,bus=ahci.0
+  -drive if=pflash,unit=0,format=raw,file=<firmware image>,readonly=on \
+  -cdrom gloire.iso
 ```
 
 For riscv64, UEFI firmware can be obtained

@@ -21,12 +21,6 @@ case "$(basename "${build_dir}")" in
         ;;
 esac
 
-# Create build directory if needed.
-mkdir -p "${build_dir}"
-
-# Enter build directory.
-cd "${build_dir}"
-
 # If already initialized, get ARCH from .jinx-parameters file.
 if [ -f .jinx-parameters ]; then
     if ! [ "${ARCH}" = "$(. ./.jinx-parameters && echo "${JINX_ARCH}")" ]; then

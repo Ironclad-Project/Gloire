@@ -2,10 +2,9 @@ NAME="Gloire"
 PRETTY_NAME="Gloire GNU/Ironclad"
 ID=gloire
 BUILD_ID=rolling
-ANSI_COLOR="38;2;23;147;209"
+ANSI_COLOR="35"
 HOME_URL="https://codeberg.org/Ironclad/Gloire"
 DOCUMENTATION_URL="https://codeberg.org/Ironclad/Gloire/wiki"
-SUPPORT_URL="https://codeberg.org/Ironclad/Gloire/wiki"
+SUPPORT_URL="https://codeberg.org/Ironclad/Gloire/issues"
 BUG_REPORT_URL="https://codeberg.org/Ironclad/Gloire/issues"
 LOGO=gloire-logo
-

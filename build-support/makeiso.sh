@@ -227,6 +227,49 @@ ObjectID=killall5
 EOF
 "
 
+# Add /etc/issue and /etc/motd for flare and valuable info.
+$SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/issue
+                  &#BGPPPPPG#&
+               B5?77!!?YJJ7!7YBB&
+            &G5YJ77!7JYYYYYBPJ&PY#
+          #PYYYYYY?!?YYYYY7?7JP5JJ
+         B?YYYYYY7!!7JYYYYJ!!?JJJ5
+  &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG&
+ G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG&    Welcome to [1;35mGloire[0m's
+ J777JB?!7JJ???!!!7?JYYYYYPJ!7JB            Live ISO!
+ GYYG #JJJJJ??7!!!JYYY5PGB&GB&
+    #Y!?GB5YYJY5PG###&
+    GJJP
+
+Gloire is an OS built with the [1mIronclad[0m kernel and using [1;31mGNU[0m tools for the userland.
+It is 100% freedom-respecting free/libre software, and distributed following
+the GNU Free System Distribution Guidelines.
+
+Gloire and Ironclad come with ABSOLUTELY NO WARRANTY, to the extent permitted
+by applicable law.
+
+Available users for login in this image are 'user' and 'root', both have no
+passwords.
+EOF
+"
+
+$SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/motd
+Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>, or
+check the differences between a Linux and Ironclad userland at
+<https://codeberg.org/Ironclad/Gloire/wiki/Differences-with-GNU-Linux>.
+
+Thanks in advance, and [1;34mhave a nice time around[0m!
+EOF
+"
+
+$SUDO sh -c "
+cat << 'EOF' >> mount_dir/etc/hostname
+gloirelive
+EOF
+"
+
 # Unmount after we are done.
 sync
 $SUDO umount mount_dir

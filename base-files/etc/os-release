@@ -1,9 +1,1 @@
-NAME="Gloire"
-PRETTY_NAME="Gloire (w/ Ironclad kernel)"
-ID=gloire
-BUILD_ID=rolling
-ANSI_COLOR="45"
-HOME_URL="https://codeberg.org/Ironclad/Gloire"
-DOCUMENTATION_URL="https://codeberg.org/Ironclad/Gloire/wiki"
-SUPPORT_URL="https://codeberg.org/Ironclad/Gloire/issues"
-BUG_REPORT_URL="https://codeberg.org/Ironclad/Gloire/issues"
+../usr/lib/os-release

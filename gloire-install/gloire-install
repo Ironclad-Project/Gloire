@@ -12,10 +12,18 @@ if [ "$EUID" -ne 0 ]; then
         --backtitle "gloire-install" \
         --title "Running as non root" \
         --msgbox "\nThis script requires to be ran as the root user (UID 0), please rerun it as such" 0 0
-    exit
+    exit 1
 fi
 
 available_lsblk="$(lsblk -n | awk 'NF==3 && !/.*p[0-9]+/ { print $1 }')"
+if [ -z "$available_lsblk" ]; then
+    dialog --clear \
+        --backtitle "gloire-install" \
+        --title "Could not find suitable devices" \
+        --msgbox "\nThis script did not find a suitable unmounted drive for installation, is your drive supported and attached?" 0 0
+    exit 1
+fi
+
 dialog_out=$(mktemp)
 if ! dialog --clear \
     --backtitle "gloire-install" \
@@ -29,6 +37,18 @@ fi
 option_device=$(cat $dialog_out)
 device=$(f() { n=$1; shift 1; shift $n; echo $1; }; f $(($option_device-1)) $available_lsblk)
 rm $dialog_out
+
+hostname_out=$(mktemp)
+if ! dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Hostname selection" \
+    --inputbox "Type the hostname the new machine will have" 0 0 2> $hostname_out
+then
+    clear
+    exit
+fi
+hostname=$(cat $hostname_out)
+rm $hostname_out
 
 if ! dialog --clear \
     --backtitle "gloire-install" \
@@ -68,7 +88,89 @@ mkdir -p "$path_newroot/boot"
 mount "/dev/$esp_partition" "$path_newroot/boot"
 
 # Install in the root system.
-xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu base -r "$path_newroot"
+# xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu base -r "$path_newroot"
+
+# Add essential files, like the init system files, and hostname
+mkdir -p "$path_newroot"/etc/epoch
+cat << 'EOF' >> "$path_newroot"/etc/epoch/epoch.conf
+# https://universe2.us/epochconfig.html
+
+Hostname=FILE /etc/hostname
+DefaultRunlevel=graphical-multiuser
+DisableCAD=false
+EnableLogging=true
+BlankLogOnBoot=true
+
+ObjectID=mounting
+   ObjectDescription=Mounting /etc/fstab partitions
+   ObjectStartCommand=mount -a
+   ObjectStopCommand=NONE
+   ObjectStartPriority=1
+   ObjectStopPriority=0
+   ObjectEnabled=true
+   ObjectRunlevels=graphical-multiuser console-multiuser
+   ObjectOptions=RAWDESCRIPTION
+
+ObjectID=clear_tmp
+   ObjectDescription=Clearing /tmp and /run
+   ObjectStartCommand=rm -rvf /tmp/* &>/dev/null && rm -rvf /run/* &>/dev/null
+   ObjectStopCommand=NULL
+   ObjectStartPriority=2
+   ObjectStopPriority=0
+   ObjectEnabled=true
+   ObjectRunlevels=graphical-multiuser console-multiuser
+   ObjectOptions=RAWDESCRIPTION
+
+ObjectID=xbps_reconf
+   ObjectDescription=Running first boot configuration (if needed)
+   ObjectStartCommand=gloire-first-boot
+   ObjectStopCommand=NONE
+   ObjectStartPriority=3
+   ObjectStopPriority=0
+   ObjectEnabled=true
+   ObjectRunlevels=graphical-multiuser console-multiuser
+   ObjectOptions=RAWDESCRIPTION
+
+ObjectID=powerd
+   ObjectDescription=power management daemon
+   ObjectStartCommand=/usr/bin/powerd
+   ObjectStopCommand=PID
+   ObjectStartPriority=4
+   ObjectStopPriority=4
+   ObjectEnabled=true
+   ObjectRunlevels=graphical-multiuser console-multiuser
+   ObjectOptions=SERVICE
+
+ObjectID=gcon
+   ObjectDescription=gcon
+   ObjectStartCommand=/usr/bin/gcon
+   ObjectStopCommand=PID
+   ObjectStartPriority=5
+   ObjectStopPriority=5
+   ObjectEnabled=true
+   ObjectRunlevels=console-multiuser
+   ObjectOptions=FORK
+
+ObjectID=killall5_soft
+   ObjectDescription=Terminating all processes
+   ObjectStopCommand=killall5 -15 && sleep 5
+   ObjectStartPriority=0
+   ObjectStopPriority=6
+   ObjectEnabled=true
+   ObjectOptions=HALTONLY RAWDESCRIPTION
+
+ObjectID=killall5
+   ObjectDescription=Killing all processes
+   ObjectStopCommand=killall5 -9 && sleep 5
+   ObjectStartPriority=0
+   ObjectStopPriority=7
+   ObjectEnabled=true
+   ObjectOptions=HALTONLY RAWDESCRIPTION
+EOF
+
+cat << 'EOF' >> "$path_newroot"/etc/hostname
+gloirelive
+EOF
 
 # Cleanup after moving files over.
 umount "$path_newroot/boot"

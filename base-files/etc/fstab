@@ -1,5 +1,0 @@
-# /etc/fstab
-# Static information about the filesystems.
-
-# <id, UUID=... or device> <mount point> <filesystem> <options> <dump> <pass>
-

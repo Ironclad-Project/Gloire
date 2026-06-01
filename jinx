@@ -1,16 +1,16 @@
 #! /usr/bin/env bash
 
-# Copyright (C) 2022-2026 Mintsuki
-
+# Copyright (C) 2022-2026 Mintsuki and contributors.
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-
+#
 # 1. Redistributions of source code must retain the above copyright notice,
 #    this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
 #    and/or other materials provided with the distribution.
-
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -23,8 +23,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-set -e
-set -u
+set -eu
 
 # Optional environment variables - initialise to empty so set -u is satisfied
 # regardless of whether the user/parent shell set them.
@@ -44,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="0"
+jinx_minor_ver="1"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -563,7 +562,7 @@ run_in_container1() {
     cat /etc/resolv.conf >"${run_in_cont1_root}/etc/resolv.conf"
 
     local arg
-    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork -- "$BASH" -c "
         set -e
 
         mount --rbind --make-rslave /dev '${run_in_cont1_root}/dev'
@@ -719,7 +718,7 @@ run_in_container() {
 
     local arg
 
-    unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- "$BASH" -c "
         set -e
 
         mount -o ro --bind '${imgroot}' '${imgroot}'
@@ -2310,7 +2309,7 @@ reinit_container() {
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
 
-    unshare --user --map-root-user --mount --pid --fork -- sh -c "
+    unshare --user --map-root-user --mount --pid --fork -- "$BASH" -c "
         set -e
 
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'

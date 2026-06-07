@@ -38,17 +38,32 @@ option_device=$(cat $dialog_out)
 device=$(f() { n=$1; shift 1; shift $n; echo $1; }; f $(($option_device-1)) $available_lsblk)
 rm $dialog_out
 
-hostname_out=$(mktemp)
+dialog_out=$(mktemp)
 if ! dialog --clear \
     --backtitle "gloire-install" \
     --title "Hostname selection" \
-    --inputbox "Type the hostname the new machine will have" 0 0 2> $hostname_out
+    --inputbox "Type the hostname the new machine will have" 0 0 2> $dialog_out
 then
     clear
     exit
 fi
-hostname=$(cat $hostname_out)
-rm $hostname_out
+hostname=$(cat $dialog_out)
+rm $dialog_out
+
+dialog_out=$(mktemp)
+if ! dialog --clear \
+    --backtitle "gloire-install" \
+    --title "Desktop environment" \
+    --radiolist "Would you like a desktop environment to be installed?" 0 0 0 \
+    1 "Minimal terminal-only install" on \
+    2 "MATE Desktop Environment (X11)" off \
+    3 "Joe's Window Manager (JWM/X11)" off 2> $dialog_out
+then
+    clear
+    exit
+fi
+option_desktop=$(cat $dialog_out)
+rm $dialog_out
 
 if ! dialog --clear \
     --backtitle "gloire-install" \
@@ -78,7 +93,7 @@ sgdisk "/dev/$device" -t 3:8300 -c 3:"Gloire Root Partition" -u 3:"$root_uuid"
 
 # Format devices.
 mkfs.fat "/dev/$esp_partition"
-yes | mkfs.ext2 "/dev/$root_partition"
+mkfs.ext2 -F "/dev/$root_partition"
 
 # Mount devices.
 mkdir newroot
@@ -87,8 +102,13 @@ mount "/dev/$root_partition" "$path_newroot"
 mkdir -p "$path_newroot/boot"
 mount "/dev/$esp_partition" "$path_newroot/boot"
 
-# Install in the root system.
-# xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu base -r "$path_newroot"
+# Install in the root system and other package options.
+yes | xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu base -r "$path_newroot"
+case $option_desktop in
+    2) xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu xorg-server xf86-input-keyboard xf86-input-mouse xf86-video-fbdev xorg-xinit mate -r "$path_newroot" ;;
+    3) xbps-install -R https://gloire-repo.ironclad-os.org/xbps-pkgs/x86_64 -Syu xorg-server xf86-input-keyboard xf86-input-mouse xf86-video-fbdev xorg-xinit jwm -r "$path_newroot" ;;
+    *) ;;
+esac
 
 # Add essential files, like the init system files, and hostname
 mkdir -p "$path_newroot"/etc/epoch
@@ -168,9 +188,7 @@ ObjectID=killall5
    ObjectOptions=HALTONLY RAWDESCRIPTION
 EOF
 
-cat << 'EOF' >> "$path_newroot"/etc/hostname
-gloirelive
-EOF
+echo $hostname > "$path_newroot"/etc/hostname
 
 # Cleanup after moving files over.
 umount "$path_newroot/boot"

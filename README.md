@@ -38,12 +38,6 @@ qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 -cdrom gloi
 Where `gloire.iso` is your image of choice, and optionally attaching additional storage (HDDs) as needed,
 for installations.
 
-> [!IMPORTANT]
-> Ironclad supports SATA and NVMe drives, not ATA, which emulators like QEMU
-> will use by default unless told otherwise! If you are using QEMU, please use
-> the `-M q35` flag to change the default disk controller to SATA, among other
-> things.
-
 > [!NOTE]
 > Depending on your distribution, to use Linux's KVM, you might need to add your
 > user to the `kvm` usergroup, as such:
@@ -67,9 +61,9 @@ For riscv64, UEFI firmware can be obtained
 
 ### On physical hardware
 
-Gloire should run fine on any 64-bit x86 machine, be it UEFI or BIOS. To run it,
-one can burn a Gloire live ISO to a USB flash drive or optical media and boot
-from it.
+Gloire should run fine on any 64-bit x86 machine and most 64-bit UEFI-capable
+RISC-V boards. To run it, one can burn a Gloire live ISO to a USB flash drive
+or optical media and boot from it.
 
 ## Contributing and bug reporting
 
@@ -87,14 +81,13 @@ You can visit our list of community channels on Ironclad's
 A list of the tools needed for compilation of the OS are:
 
 - `bash`, `awk`, `find` and `xargs` (from `findutils`), `free` (from `procps`), `git`, `GNU make`, `grep`, `gzip`, `sed`, `tar`, `unshare` (from `util-linux`), `wget`, and `zstd` for Jinx.
-- `sgdisk` (from the `gdisk` or `gptfdisk` package) for building the final disk image.
 - `qemu` for testing, if wanted.
 
 The project uses `jinx` as its build system, which is included in the tree.
-The instructions to build an x86_64 system are:
+The instructions to build a system are:
 
 ```bash
-mkdir build-x86_64 && cd build-x86_64
+mkdir build-<architecture> && cd build-<architecture>
 PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
 ```
 
@@ -112,17 +105,6 @@ PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
 > ```sh
 > sudo sh -c 'echo "kernel.apparmor_restrict_unprivileged_userns = 0" >/etc/sysctl.d/99-userns.conf'
 > ```
-
-The image size will default to 4G, this may be too big or too small for the
-selection of packages the user may have built the image with. To change
-this value, use the environment variable `IMAGE_SIZE`.
-
-To build the riscv64 port, one can instead use:
-
-```bash
-mkdir build-riscv64 && cd build-riscv64
-PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
-```
 
 Regardless of architecture, if, instead of building all packages, building
 a minimal command-line only environment is desired, instead of `"*"`, one

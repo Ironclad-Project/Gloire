@@ -179,7 +179,7 @@ EOF
 
 # Copy the system root to the initramfs filesystem.
 cd sysroot
-$SUDO tar --format=ustar -czf ../gloire-root.tar.gz *
+$SUDO tar --sort=name --format=ustar -czf ../gloire-root.tar.gz *
 cd ..
 
 # Copy the bootloader wallpaper and kernel to the ISO root.

@@ -1,16 +1,16 @@
 #! /bin/sh
 
-version=2026b
+version=2026c
 revision=1
 tarball_url="https://data.iana.org/time-zones/releases/tzdata${version}.tar.gz"
-tarball_blake2b="3134d88addaa6a53749a4c87aa5c1b9d4632478152c67a26e5d1cfcf97b4eaafac3b16a41e61840360d4bde5aa05701aeb1caaafcc8a006c7f4708cfa2ac686d"
+tarball_blake2b="53a759b9081736b5daba8574b2f6a6852fcd0fbb85237d90e5c589f4126a445a9fbbf338383fc14cee09fa4bb38b546a8285adcbdd944d93eb7e1242cae8feda"
 imagedeps="tzdata"
 hostdeps="gcc binutils"
 deps="glibc libgcc libstdc++ libatomic"
 
 early_prepare() {
     curl -Lo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
-    b2sum tzcode.tar.gz | grep -q 89ac1ee3b79c596a4903b9c25a794b24fa8e6076e61fbd30c09c690bd002f3759c76afd303abb9d716efa08da216b64362ec06be0e2c60ee89fd6a5e7b397f17
+    b2sum tzcode.tar.gz | grep -q 09939593ad33e894d7ad62f8a7e1ee09a4490143a4c744551f81e836eb1b63f96926d362e415d1e254d2fe2d52378017c190b027e1d99a00b94014a413e329dd
     tar -xf tzcode.tar.gz
     rm tzcode.tar.gz
 }

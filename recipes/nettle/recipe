@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.10.2
-revision=2
+version=4.0
+revision=1
 tarball_url="https://ftp.gnu.org/gnu/nettle/nettle-${version}.tar.gz"
-tarball_blake2b="2bcd54c97d793238a9c6527f0ba4851dd9e5b53c80abc1ed012ef53e9dbed1fc47c474ca7c29a2c0a989830e45f85eb61db4752dd8b8487cffc8559f43788c89"
+tarball_blake2b="7391fe45917ad394973a9069305c415779182ca9c7640105c47bbf23ef74301099ca8ab1bc18cc331297ec43c848b34b1c1549ae1111dadea17c35032a5ffcdc"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs gmp"

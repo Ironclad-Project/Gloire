@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=0.21.5
+version=0.23.0
 revision=1
 tarball_url="https://github.com/rockdaboot/libpsl/releases/download/${version}/libpsl-${version}.tar.gz"
-tarball_blake2b="a0076f622b85df99f866de6707850ac216b764bdb68c6d516f4603da42dac8eae3ee4c53d68dbb6af6f779c2c7f1b9caab74c8b558209b1f6823f95c13fc3ceb"
+tarball_blake2b="d0f2c39ba05b76b36f2a79a507bf3a09fc04c81b11bdad0d695ffff43c89dc54cb489be0a535bdbf77f65322710174387716bb8dfa01bca476cb519cfe73911b"
 hostdeps="gcc pkg-config"
 deps="core-libs libidn2 libunistring"
 

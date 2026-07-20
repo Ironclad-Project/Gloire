@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=5.47
+version=5.48
 revision=1
 tarball_url="https://astron.com/pub/file/file-${version}.tar.gz"
-tarball_blake2b="52b91ee7868a9b75431e00fca7f7db1362b3d39eb065f52434ea73d9ccd7497f3371f7e0a455644c56df3e6acee247208edc47bf8004fa922dba32786cc3e10c"
+tarball_blake2b="d8ca86ec79db28c59d7c5da9282fb5fa03a0775147856cb4d35528f12d2eb4293aca3336cb0e5108ce56c2f6a255e5b36957ba826b185575531508176f2af06a"
 hostdeps="gcc pkg-config file"
 deps="core-libs bzip2 xz zlib zstd"
 

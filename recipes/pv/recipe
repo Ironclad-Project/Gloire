@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.10.5
+version=1.11.0
 revision=1
 tarball_url="https://www.ivarch.com/s/pv-${version}.tar.gz"
-tarball_blake2b="c23bb4780401c223e5ca8340f54e4f3f2acdd5bd1645ee02ae44ccd1f0a16290ad37a66743e080b44c69471b7f2f0790ad6190bba7fe43c1c5cc4844563551b7"
+tarball_blake2b="4fa75bad5389b823c113573457397e44cf9e0c3a24f58503f47d55d0eee937fabe0fc5cf360930e3bd0c81337747f73ebbf0fdb0aca4057cde22ffa2f22c9be5"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

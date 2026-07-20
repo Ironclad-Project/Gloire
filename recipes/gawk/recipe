@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=5.4.0
+version=5.4.1
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/gawk/gawk-${version}.tar.xz"
-tarball_blake2b="ce326dc386e62d288c4fe1268ba493f9c3a1e8af7dec90f95b2942588370f5a3538837d71dc4208534ace2aa84fce46ab6d5d681451b560fdf884aaf1b89fb11"
+tarball_blake2b="8bd7913c268a66e3f9eca6bed8d7b8fe23c75148c932d186c5e35429dc12f331f960e0fbb5d62d4675ff47f369f63c92db5b3214303edab3a868f0071dd0c4c1"
 hostdeps="gcc pkg-config"
 deps="core-libs mpfr gmp readline"
 

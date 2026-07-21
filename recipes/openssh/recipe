@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=10.4p1
-revision=1
+revision=2
 tarball_url="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${version}.tar.gz"
 tarball_blake2b="3051a345fd24333708277a1de781deca9094dd07cc55e613e93715b1266d80d59043bf5cdb2282d02c797cb9446916020e70fbd4c7a2470da7ab98eb612f6b74"
 hostdeps="gcc pkg-config"
@@ -16,7 +16,6 @@ configure() {
     autotools_configure \
         --sysconfdir=/etc/ssh \
         --disable-strip \
-        --with-ssl-engine \
         --with-privsep-user=nobody \
         --with-privsep-path=${prefix}/share/empty.sshd \
         --with-default-path=${prefix}/local/sbin:${prefix}/local/bin:${prefix}/bin \

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.12.1
+version=3.12.2
 revision=1
 tarball_url="https://feh.finalrewind.org/feh-${version}.tar.bz2"
-tarball_blake2b="ba7c01cb7b231ddfc5aa4b8051a25bcb937e01fd48cdf753aef9868b18de3b3c815bac5c0508828ff154bb213af9bc11ad03e2657ed011486f99a22faeedc586"
+tarball_blake2b="5ffb5bd57340523ec12f4f900f92704fc67570438638b48ce15b034bc36ce9b02fbccad600da785a5d4e3660dd7f46e0e48d09dfbaec0d347439fc041949ca10"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxt libpng imlib2 curl libxinerama"
 

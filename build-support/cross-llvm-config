@@ -8,7 +8,7 @@ our_version = 22
 
 
 def do_version():
-    return '{}.1.4'.format(our_version)
+    return '{}.1.8'.format(our_version)
 
 # Obtained with './builds/llvm-libs/NATIVE/bin/llvm-config --components' and
 # must be re-pasted when updating.

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.1.12
-revision=4
+version=2.1.13
+revision=1
 tarball_url="https://github.com/libevent/libevent/releases/download/release-${version}-stable/libevent-${version}-stable.tar.gz"
-tarball_blake2b="bc1ace15f639ecef2e6b3f95976b8830c1d86f1d06606dd949e2978611fdf9859ed4eb9292d13e6e90e3835063edb94aae64a15c518d5dabe680f37d5a7f5290"
+tarball_blake2b="f18ecdc37e2caa6a5862719f3a6a4120c86573c1a9719ecc2f432bc4d013d574964defff6c3cf2e187d5c8b7f07c11fd3967b3d72b892169d18fb8e4a9a4de5a"
 hostdeps="gcc pkg-config"
 deps="core-libs openssl"
 

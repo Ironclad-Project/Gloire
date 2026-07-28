@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="1"
+jinx_minor_ver="4"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -209,7 +209,7 @@ case "$1" in
 esac
 
 if [[ -z ${JINX_PARALLELISM} ]]; then
-    max_threads_by_mem=$(( ((($(free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))
+    max_threads_by_mem=$(( ((($(LC_ALL=C free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))
     parallelism="$(nproc 2>/dev/null || echo 1)"
     parallelism=$(( parallelism < max_threads_by_mem ? parallelism : max_threads_by_mem ))
 else
@@ -353,6 +353,14 @@ EOF
 
 if [[ ${name} != ${_expected_name} ]]; then
     die "$0: recipe at '${recipe_dir}' must not override 'name' (recipe sets '${name}' but directory is '${_expected_name}'); remove the 'name=' assignment from the recipe"
+fi
+
+if [[ -n ${tarball_url} && -n ${git_url} ]]; then
+    die "$0: recipe '${name}' sets both tarball_url and git_url (mutually exclusive source methods)"
+fi
+
+if [[ -n ${source_dir} && -n ${tarball_url} ]]; then
+    die "$0: recipe '${name}' sets both source_dir and tarball_url (mutually exclusive source methods)"
 fi
 
 case "${recipe_dir}" in
@@ -772,6 +780,11 @@ destroy_container() {
 }
 
 do_git_fetch() {
+    # $1: clone destination (default: the recipe's sources/ slot).
+    # $2: "full" forces a full clone regardless of the shallow property.
+    local _dest="${1:-${base_dir}/${_sources_root}/${name}}"
+    local _force_full="${2:-}"
+
     if [[ -z ${commit} ]]; then
         die "* error: Git commit not specified"
     fi
@@ -780,11 +793,11 @@ do_git_fetch() {
         die "* error: Invalid commit hash"
     fi
 
-    if [[ ${shallow} == no ]]; then
-        git clone "${git_url}" "${base_dir}"/${_sources_root}/${name}
-        git -C "${base_dir}"/${_sources_root}/${name} -c advice.detachedHead=false checkout "${commit}"
+    if [[ ${shallow} == no || ${_force_full} == full ]]; then
+        git clone "${git_url}" "${_dest}"
+        git -C "${_dest}" -c advice.detachedHead=false checkout "${commit}"
     else
-        git clone "${git_url}" -c advice.detachedHead=false --revision="${commit}" --depth=1 "${base_dir}"/${_sources_root}/${name}
+        git clone "${git_url}" -c advice.detachedHead=false --revision="${commit}" --depth=1 "${_dest}"
     fi
 }
 
@@ -906,7 +919,9 @@ EOF
         printf 'local source_dir=%q\n' "${base_dir}/${_sources_root}/${name}"
     else
         local _real_path="${base_dir}/${source_dir}"
-        if [[ ! -d ${_real_path} ]]; then
+        # A managed clone (git_url also set) may not exist yet; it gets cloned on
+        # first fetch. A plain local package's source_dir must already exist.
+        if [[ -z ${git_url} && ! -d ${_real_path} ]]; then
             printf 'die %q\n' "* source_dir of a local package is not a valid path"
             return 1
         fi
@@ -943,7 +958,14 @@ do_fetch() {
 
     local sysroot=/sysroot
 
-    if [[ ${is_local_package} != true && ${is_sourceless_package} != true ]]; then
+    if [[ ${is_local_package} == true ]]; then
+        # Managed clone: a local package with a git_url is cloned into source_dir
+        # once and then used in place. An existing tree is never re-cloned (remove
+        # it to start fresh); plain local and sourceless packages have no git_url.
+        if [[ -n ${git_url} && ! -d ${source_dir} ]]; then
+            do_git_fetch "${source_dir}" full
+        fi
+    else
         if [[ -n ${git_url} ]]; then
             do_git_fetch
         elif [[ -n ${tarball_url} ]]; then
@@ -1235,7 +1257,15 @@ do_source() {
     local container_base_dir_ro=
     prepare_container
 
+    local _need_fetch=no
     if [[ ! -f "${base_dir}/${_sources_root}/$1.version" || $(cat "${base_dir}/${_sources_root}/$1.version") != "${version}" ]]; then
+        local _need_fetch=yes
+    fi
+    # Re-clone a managed clone whose working tree was removed, even if .version matches.
+    if [[ ${is_local_package} == true && -n ${git_url} && ! -d ${source_dir} ]]; then
+        local _need_fetch=yes
+    fi
+    if [[ ${_need_fetch} == yes ]]; then
         tracked_subshell '
             local allow_network=yes
             local container_base_dir_ro=
@@ -1801,29 +1831,33 @@ cmd_dry_run() {
     printf '%s\n' ${host_pending} ${pending_list} | awk '!seen[$0]++{printf "%s ", $0} END{print ""}'
 }
 
-cmd_download() {
-    if [[ -z ${JINX_REPO_URL-} ]]; then
-        die "$0: JINX_REPO_URL not set in Jinxfile"
-    fi
-
-    if [[ -z ${1-} ]]; then
-        die "$0: download requires at least one package name"
-    fi
+cmd_download_for() {
+    # Args: repo_url recipes_dir pkgs_dir arch glob1 [glob2 ...]
+    local repo_url="$1"
+    local recipes_dir="$2"
+    local pkgs_dir="$3"
+    local arch="$4"
+    shift 4
 
     # Expand package patterns
     local all_packages=""
     local ppkg
     for ppkg in "$@"; do
         local pkg
-        for pkg in $(cd "${base_dir}/recipes" && echo ${ppkg}); do
+        for pkg in $(cd "${base_dir}/${recipes_dir}" && echo ${ppkg}); do
             local all_packages="${all_packages} ${pkg}"
         done
     done
 
-    # Collect transitive deps
+    # Collect transitive deps. For normal recipes the relevant edges are
+    # deps+builddeps; for host recipes they are hostdeps+hostrundeps.
     local -A pkg_deps
-    for pkg in $(cd "${base_dir}/recipes" && echo *); do
-        pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/recipes/${pkg}")" && echo "${deps} ${builddeps}")
+    for pkg in $(cd "${base_dir}/${recipes_dir}" && echo *); do
+        if [[ ${recipes_dir} == recipes ]]; then
+            pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" && echo "${deps} ${builddeps}")
+        else
+            pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" && echo "${hostdeps} ${hostrundeps}")
+        fi
     done
 
     local -A collected
@@ -1842,31 +1876,31 @@ cmd_download() {
         collect_all_deps "${pkg}"
     done
 
-    # Determine which packages are missing from pkgs/
+    # Determine which packages are missing locally
     local download_list=""
     local dep
     for dep in "${!collected[@]}"; do
-        eval "$(include_recipe "${base_dir}"/recipes/"${dep}")"
+        eval "$(include_recipe "${base_dir}"/${recipes_dir}/"${dep}")"
         if [[ -n ${from_source} ]]; then
             local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
         fi
-        local pkg_filename="${name}-${version}_${revision}.${JINX_ARCH}.xbps"
-        if [[ ! -f "${build_dir}/pkgs/${pkg_filename}" ]]; then
+        local pkg_filename="${name}-${version}_${revision}.${arch}.xbps"
+        if [[ ! -f "${pkgs_dir}/${pkg_filename}" ]]; then
             local download_list="${download_list} ${pkg_filename}"
         fi
     done
 
     if [[ -z ${download_list} ]]; then
-        echo "* all packages already present in pkgs/"
+        echo "* all requested ${recipes_dir} packages already present in ${pkgs_dir##*/}/"
         return
     fi
 
     # Fetch repo index for checksum verification
-    echo "* fetching repository index..."
+    echo "* fetching ${arch} repository index..."
     make_temp
     local repodata_path="${tmp}"
-    wget -O "${repodata_path}" "${JINX_REPO_URL}/${JINX_ARCH}-repodata" \
-        || die "$0: failed to fetch repository index from ${JINX_REPO_URL}"
+    wget -O "${repodata_path}" "${repo_url}/${arch}-repodata" \
+        || die "$0: failed to fetch repository index from ${repo_url}"
 
     make_temp
     local index_plist="${tmp}"
@@ -1878,8 +1912,8 @@ cmd_download() {
         echo "* downloading ${pkg_file}..."
         make_temp
         local dl_path="${tmp}"
-        wget -O "${dl_path}" "${JINX_REPO_URL}/${pkg_file}" \
-            || die "$0: failed to download ${pkg_file} from ${JINX_REPO_URL}"
+        wget -O "${dl_path}" "${repo_url}/${pkg_file}" \
+            || die "$0: failed to download ${pkg_file} from ${repo_url}"
 
         # Verify SHA256 against repodata
         local pkg_name="${pkg_file%%-[0-9]*}"
@@ -1897,15 +1931,46 @@ cmd_download() {
             fi
         fi
 
-        mv "${dl_path}" "${build_dir}/pkgs/${pkg_file}"
+        mv "${dl_path}" "${pkgs_dir}/${pkg_file}"
 
         # Re-index this package
         XBPS_ARCH=invalid \
-        XBPS_TARGET_ARCH="${JINX_ARCH}" \
+        XBPS_TARGET_ARCH="${arch}" \
         xbps-rindex \
-            -a "${build_dir}/pkgs/${pkg_file}" \
+            -a "${pkgs_dir}/${pkg_file}" \
             -f
     done
+}
+
+cmd_download() {
+    if [[ -z ${1-} ]]; then
+        die "$0: download requires at least one package name"
+    fi
+
+    # Split host: targets from normal ones; each group is downloaded against
+    # its own arch repodata, from its own repo URL, into its own pkgs/ tree.
+    local -a host_globs=() normal_args=()
+    local a
+    for a in "$@"; do
+        if [[ ${a} == host:* ]]; then
+            host_globs+=("${a#host:}")
+        else
+            normal_args+=("${a}")
+        fi
+    done
+
+    if (( ${#normal_args[@]} > 0 )); then
+        if [[ -z ${JINX_REPO_URL-} ]]; then
+            die "$0: JINX_REPO_URL not set in Jinxfile"
+        fi
+        cmd_download_for "${JINX_REPO_URL}" recipes "${build_dir}/pkgs" "${JINX_ARCH}" "${normal_args[@]}"
+    fi
+    if (( ${#host_globs[@]} > 0 )); then
+        if [[ -z ${JINX_HOST_REPO_URL-} ]]; then
+            die "$0: JINX_HOST_REPO_URL not set in Jinxfile (required for downloading host packages)"
+        fi
+        cmd_download_for "${JINX_HOST_REPO_URL}" host-recipes "${build_dir}/host-pkgs" "${host_arch}" "${host_globs[@]}"
+    fi
 
     echo "* download complete"
 }
@@ -1958,6 +2023,38 @@ do_run_in() {
     . "${cmd_file}"
 }
 
+do_run_in_host() {
+    local pkg="$1"
+    local cmd_file="$2"
+
+    eval "$(include_recipe "${base_dir}"/host-recipes/${pkg})"
+
+    mkdir -p "${build_dir}"/host-builds/${name}
+
+    if [[ -n ${from_source} || -n ${tarball_url} || -n ${git_url} || -n ${source_dir} ]]; then
+        if [[ -n ${from_source} ]]; then
+            local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
+            local source_dir="$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$source_dir")"
+        else
+            local from_source=${name}
+        fi
+
+        if [[ -z ${source_dir} ]]; then
+            local source_dir="${base_dir}"/${_sources_root}/${from_source}
+        else
+            local source_dir="${base_dir}"/"${source_dir}"
+        fi
+    fi
+
+    local prefix="/usr/local"
+    local sysroot="/sysroot"
+
+    cd "${build_dir}"/host-builds/${name}
+
+    set --
+    . "${cmd_file}"
+}
+
 cmd_run_in() {
     if [[ -z ${1-} ]]; then
         die "$0: run-in requires a recipe name"
@@ -1968,18 +2065,28 @@ cmd_run_in() {
         die "$0: run-in requires a command to run"
     fi
 
+    local recipes_dir=recipes
+    local internal_cmd=internal-run-in
+    local builds_dir=builds
+    if [[ ${recipe_glob} == host:* ]]; then
+        local recipes_dir=host-recipes
+        local internal_cmd=internal-run-in-host
+        local builds_dir=host-builds
+        local recipe_glob="${recipe_glob#host:}"
+    fi
+
     local run_in_recipe
-    for run_in_recipe in $(cd "${base_dir}/recipes" && echo ${recipe_glob}); do
-        if [[ ! -f "${base_dir}/recipes/${run_in_recipe}/recipe" ]]; then
-            die "$0: recipe '${run_in_recipe}' not found"
+    for run_in_recipe in $(cd "${base_dir}/${recipes_dir}" && echo ${recipe_glob}); do
+        if [[ ! -f "${base_dir}/${recipes_dir}/${run_in_recipe}/recipe" ]]; then
+            die "$0: recipe '${recipes_dir}/${run_in_recipe}' not found"
         fi
 
-        eval "$(include_recipe "${base_dir}"/recipes/${run_in_recipe})"
+        eval "$(include_recipe "${base_dir}"/${recipes_dir}/${run_in_recipe})"
 
         if [[ -n ${from_source} ]]; then
             tracked_subshell 'do_source "${from_source}" "${_from_source_dir}"'
         else
-            tracked_subshell 'do_source "${name}" recipes'
+            tracked_subshell 'do_source "${name}" "${recipes_dir}"'
         fi
 
         make_temp
@@ -2001,14 +2108,19 @@ cmd_run_in() {
         local container_pkgs=
         local sysroot=
         local imgroot=
+        if [[ ${recipes_dir} == host-recipes ]]; then
+            # Host recipes always use the cross-compile flow, regardless of
+            # JINX_NATIVE_MODE (host_arch sysroot at /sysroot, host pkgs at /usr/local).
+            local cross_compile=yes
+        fi
         prepare_container
 
-        mkdir -p "${build_dir}"/builds/${name}
+        mkdir -p "${build_dir}"/${builds_dir}/${name}
 
         local container_sources_ro=
         local container_base_dir_ro=
         local allow_network=yes
-        run_in_container internal-run-in "${run_in_recipe}" "${cmd_file_inner}"
+        run_in_container "${internal_cmd}" "${run_in_recipe}" "${cmd_file_inner}"
 
         destroy_container
     done
@@ -2402,6 +2514,7 @@ unset JINX_DEBIAN_SNAPSHOT
 unset JINX_BASE_PACKAGES
 unset JINX_CMAKE_PLATFORM
 unset JINX_REPO_URL
+unset JINX_HOST_REPO_URL
 . "${JINX_CONFIG_FILE}"
 
 if [[ -z ${JINX_MAJOR_VER-} ]]; then
@@ -2461,6 +2574,10 @@ case "$1" in
     internal-run-in)
         shift 1
         do_run_in "$@"
+        ;;
+    internal-run-in-host)
+        shift 1
+        do_run_in_host "$@"
         ;;
     build)
         shift 1

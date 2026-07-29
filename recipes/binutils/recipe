@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.46.1
+version=2.47
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
-tarball_blake2b="a5a0578281d6315a43437ccf7636b3b91185c2706f1582b22af6973f55a86f5b4bc7eb03aa9ceaec547070152c08c982bc40ee9ce07679f2e3bb49e050bae76c"
+tarball_blake2b="329cae8792c500c71d8cce03aab127e8d77f1d409f74872082e64df5163e5c730fe585f8f9c21905cb6227cae18e6675ae4caed653223a26b5d9d4fdb90910ea"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib zstd"

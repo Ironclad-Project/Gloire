@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index ac2315e..89264bc 100644
+index ac2315e..d0f2853 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
@@ -11,18 +11,7 @@ index ac2315e..89264bc 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -506,7 +508,9 @@ set(LIBFASTFETCH_SRC
-     src/modules/lm/lm.c
-     src/modules/loadavg/loadavg.c
-     src/modules/locale/locale.c
--    src/modules/localip/localip.c
-+    # Ironclad does not support this, and no localip_nosupport.c is available!
-+    # Work around the problem
-+    # src/modules/localip/localip.c
-     src/modules/logo/logo.c
-     src/modules/memory/memory.c
-     src/modules/monitor/monitor.c
-@@ -1364,6 +1368,78 @@ elseif(GNU)
+@@ -1364,6 +1366,79 @@ elseif(GNU)
          src/detection/wmtheme/wmtheme_linux.c
          src/detection/camera/camera_nosupport.c
     )
@@ -50,6 +39,7 @@ index ac2315e..89264bc 100644
 +        src/detection/diskio/diskio_nosupport.c # sysfs
 +        src/detection/bluetooth/bluetooth_nosupport.c # We don't do bluetooth yet
 +        src/detection/bluetoothradio/bluetoothradio_nosupport.c # We don't do bluetooth yet
++        src/detection/codec/codec_linux.c
 +        src/detection/disk/disk_nosupport.c # sysfs and procfs
 +        src/detection/dns/dns_linux.c
 +        src/detection/displayserver/linux/displayserver_linux.c
@@ -101,7 +91,7 @@ index ac2315e..89264bc 100644
  endif()
  
  if(ENABLE_TRACER)
-@@ -1529,6 +1605,8 @@ elseif(NetBSD)
+@@ -1529,6 +1604,8 @@ elseif(NetBSD)
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
  elseif(Haiku)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
@@ -110,7 +100,7 @@ index ac2315e..89264bc 100644
  elseif(GNU)
      # On Hurd PATH_MAX is not defined. Set an arbitrary limit as workaround.
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE PATH_MAX=4096 O_PATH=0)
-@@ -1983,6 +2061,10 @@ elseif(Haiku)
+@@ -1983,6 +2060,10 @@ elseif(Haiku)
          PRIVATE "be"
          PRIVATE "gnu"
      )
@@ -121,34 +111,6 @@ index ac2315e..89264bc 100644
  endif()
  
  target_include_directories(libfastfetch
-diff --git fastfetch-clean/presets/all.jsonc fastfetch-workdir/presets/all.jsonc
-index c9f9516..f3cd2e3 100644
---- fastfetch-clean/presets/all.jsonc
-+++ fastfetch-workdir/presets/all.jsonc
-@@ -37,7 +37,7 @@
-         "terminal",
-         "terminalfont",
-         "terminalsize",
--        "terminaltheme",
-+        // "terminaltheme",
-         {
-             "type": "cpu",
-             "showPeCoreCount": true,
-diff --git fastfetch-clean/src/common/FFstrbuf.h fastfetch-workdir/src/common/FFstrbuf.h
-index 4c89b9a..6ac6d3b 100644
---- fastfetch-clean/src/common/FFstrbuf.h
-+++ fastfetch-workdir/src/common/FFstrbuf.h
-@@ -23,6 +23,10 @@ __stdcall char* StrStrIA(const char* lpFirst, const char* lpSrch);
-     #define strcasestr StrStrIA
- #endif
- 
-+#ifdef __ironclad__
-+char *strcasestr(const char *__s1, const char *__s2);
-+#endif
-+
- #define FASTFETCH_STRBUF_DEFAULT_ALLOC 32
- 
- // static string (allocated == 0), chars points to a string literal
 diff --git fastfetch-clean/src/common/impl/FFPlatform_unix.c fastfetch-workdir/src/common/impl/FFPlatform_unix.c
 index 3b9c87d..47df390 100644
 --- fastfetch-clean/src/common/impl/FFPlatform_unix.c
@@ -351,40 +313,6 @@ index ce7abb3..9a66e5f 100644
  
      #include "common/kmod.h"
  
-diff --git fastfetch-clean/src/modules/modules.c fastfetch-workdir/src/modules/modules.c
-index 8378711..31d6653 100644
---- fastfetch-clean/src/modules/modules.c
-+++ fastfetch-workdir/src/modules/modules.c
-@@ -47,9 +47,6 @@ static FFModuleBaseInfo* C[] = {
- #if !FF_MODULE_DISABLE_CHASSIS
-     &ffChassisModuleInfo,
- #endif
--#if !FF_MODULE_DISABLE_CODEC
--    &ffCodecModuleInfo,
--#endif
- #if !FF_MODULE_DISABLE_COMMAND
-     &ffCommandModuleInfo,
- #endif
-@@ -161,9 +158,6 @@ static FFModuleBaseInfo* L[] = {
- #if !FF_MODULE_DISABLE_LOCALE
-     &ffLocaleModuleInfo,
- #endif
--#if !FF_MODULE_DISABLE_LOCALIP
--    &ffLocalIPModuleInfo,
--#endif
- #if !FF_MODULE_DISABLE_LOGO
-     &ffLogoModuleInfo,
- #endif
-@@ -224,9 +218,6 @@ static FFModuleBaseInfo* P[] = {
- #endif
- #if !FF_MODULE_DISABLE_PROCESSES
-     &ffProcessesModuleInfo,
--#endif
--#if !FF_MODULE_DISABLE_PUBLICIP
--    &ffPublicIPModuleInfo,
- #endif
-     NULL,
- };
 diff --git fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
 index b58d6c9..8a615d0 100644
 --- fastfetch-clean/src/options/general.h

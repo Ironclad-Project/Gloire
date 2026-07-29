@@ -1,14 +1,18 @@
 #! /bin/sh
 
 version=2.66.0
-revision=1
+revision=2
 git_url="https://github.com/fastfetch-cli/fastfetch.git"
 commit=08698098579bb8b043b0a343159b8018f5cea4fc
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs sqlite zlib"
 
 configure() {
-    cmake_configure
+    cmake_configure \
+        -DBUILD_FLASHFETCH='OFF' \
+        -DENABLE_SQLITE3='ON' \
+        -DMODULE_DISABLE_LOCALIP='ON' \
+        -DMODULE_DISABLE_PUBLICIP='ON'
 }
 
 build() {

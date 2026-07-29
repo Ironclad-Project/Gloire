@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index ee9f582..9b9d642 100644
+index ac2315e..89264bc 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
@@ -11,28 +11,7 @@ index ee9f582..9b9d642 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -71,15 +73,15 @@ include(CMakeDependentOption)
- 
- cmake_dependent_option(ENABLE_VULKAN "Enable vulkan" ON "LINUX OR APPLE OR FreeBSD OR OpenBSD OR NetBSD OR WIN32 OR ANDROID OR SunOS OR Haiku OR GNU" OFF)
- cmake_dependent_option(ENABLE_WAYLAND "Enable wayland-client" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR GNU" OFF)
--cmake_dependent_option(ENABLE_XCB_RANDR "Enable xcb-randr" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU" OFF)
--cmake_dependent_option(ENABLE_XRANDR "Enable xrandr" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU" OFF)
-+cmake_dependent_option(ENABLE_XCB_RANDR "Enable xcb-randr" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU OR Ironclad" OFF)
-+cmake_dependent_option(ENABLE_XRANDR "Enable xrandr" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU OR Ironclad" OFF)
- cmake_dependent_option(ENABLE_DRM "Enable libdrm" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR SunOS OR GNU" OFF)
- cmake_dependent_option(ENABLE_DRM_AMDGPU "Enable libdrm_amdgpu" ON "LINUX OR FreeBSD OR GNU" OFF)
--cmake_dependent_option(ENABLE_GIO "Enable gio-2.0" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU" OFF)
--cmake_dependent_option(ENABLE_DCONF "Enable dconf" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU" OFF)
-+cmake_dependent_option(ENABLE_GIO "Enable gio-2.0" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU OR Ironclad" OFF)
-+cmake_dependent_option(ENABLE_DCONF "Enable dconf" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU OR Ironclad" OFF)
- cmake_dependent_option(ENABLE_EET "Enable eet" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR GNU" OFF)
- cmake_dependent_option(ENABLE_DBUS "Enable dbus-1" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR ANDROID OR SunOS OR Haiku OR GNU" OFF)
--cmake_dependent_option(ENABLE_SQLITE3 "Enable sqlite3" ON "LINUX OR FreeBSD OR APPLE OR OpenBSD OR NetBSD OR SunOS OR GNU" OFF)
-+cmake_dependent_option(ENABLE_SQLITE3 "Enable sqlite3" ON "LINUX OR FreeBSD OR APPLE OR OpenBSD OR NetBSD OR SunOS OR GNU OR Ironclad" OFF)
- cmake_dependent_option(ENABLE_RPM "Enable rpm" ON "LINUX OR GNU" OFF)
- cmake_dependent_option(ENABLE_IMAGEMAGICK7 "Enable imagemagick 7" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR ANDROID OR WIN32 OR SunOS OR Haiku OR GNU" OFF)
- cmake_dependent_option(ENABLE_IMAGEMAGICK6 "Enable imagemagick 6" ON "LINUX OR FreeBSD OR OpenBSD OR NetBSD OR APPLE OR SunOS OR GNU" OFF)
-@@ -475,7 +477,9 @@ set(LIBFASTFETCH_SRC
+@@ -506,7 +508,9 @@ set(LIBFASTFETCH_SRC
      src/modules/lm/lm.c
      src/modules/loadavg/loadavg.c
      src/modules/locale/locale.c
@@ -43,7 +22,7 @@ index ee9f582..9b9d642 100644
      src/modules/logo/logo.c
      src/modules/memory/memory.c
      src/modules/monitor/monitor.c
-@@ -1327,6 +1331,77 @@ elseif(GNU)
+@@ -1364,6 +1368,78 @@ elseif(GNU)
          src/detection/wmtheme/wmtheme_linux.c
          src/detection/camera/camera_nosupport.c
     )
@@ -93,13 +72,14 @@ index ee9f582..9b9d642 100644
 +        src/detection/lm/lm_linux.c
 +        src/detection/locale/locale_linux.c
 +        src/detection/gamepad/gamepad_nosupport.c
-+        src/detection/memory/memory_sunos.c
++        src/detection/memory/memory_ironclad.c
 +        src/detection/media/media_linux.c
 +        src/detection/mouse/mouse_nosupport.c # No sysfs, maybe add custom solution
 +        src/detection/netio/netio_nosupport.c # No sysfs
 +        src/detection/opengl/opengl_linux.c
 +        src/detection/os/os_linux.c
 +        src/detection/packages/packages_linux.c
++        src/detection/packages/packages_nix.c
 +        src/detection/terminalfont/terminalfont_linux.c
 +        src/detection/terminalshell/terminalshell_linux.c
 +        src/detection/terminalsize/terminalsize_linux.c
@@ -120,8 +100,8 @@ index ee9f582..9b9d642 100644
 +    )
  endif()
  
- # Proprietary GPU driver APIs
-@@ -1463,6 +1538,8 @@ elseif(NetBSD)
+ if(ENABLE_TRACER)
+@@ -1529,6 +1605,8 @@ elseif(NetBSD)
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
  elseif(Haiku)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
@@ -130,7 +110,7 @@ index ee9f582..9b9d642 100644
  elseif(GNU)
      # On Hurd PATH_MAX is not defined. Set an arbitrary limit as workaround.
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE PATH_MAX=4096 O_PATH=0)
-@@ -1839,6 +1916,10 @@ elseif(Haiku)
+@@ -1983,6 +2061,10 @@ elseif(Haiku)
          PRIVATE "be"
          PRIVATE "gnu"
      )
@@ -142,7 +122,7 @@ index ee9f582..9b9d642 100644
  
  target_include_directories(libfastfetch
 diff --git fastfetch-clean/presets/all.jsonc fastfetch-workdir/presets/all.jsonc
-index 74bea1f..fed5b02 100644
+index c9f9516..f3cd2e3 100644
 --- fastfetch-clean/presets/all.jsonc
 +++ fastfetch-workdir/presets/all.jsonc
 @@ -37,7 +37,7 @@
@@ -155,10 +135,10 @@ index 74bea1f..fed5b02 100644
              "type": "cpu",
              "showPeCoreCount": true,
 diff --git fastfetch-clean/src/common/FFstrbuf.h fastfetch-workdir/src/common/FFstrbuf.h
-index 2c9a09b..d908407 100644
+index 4c89b9a..6ac6d3b 100644
 --- fastfetch-clean/src/common/FFstrbuf.h
 +++ fastfetch-workdir/src/common/FFstrbuf.h
-@@ -22,6 +22,10 @@ __stdcall char* StrStrIA(const char* lpFirst, const char* lpSrch);
+@@ -23,6 +23,10 @@ __stdcall char* StrStrIA(const char* lpFirst, const char* lpSrch);
      #define strcasestr StrStrIA
  #endif
  
@@ -170,7 +150,7 @@ index 2c9a09b..d908407 100644
  
  // static string (allocated == 0), chars points to a string literal
 diff --git fastfetch-clean/src/common/impl/FFPlatform_unix.c fastfetch-workdir/src/common/impl/FFPlatform_unix.c
-index 76afb35..eaf1cd3 100644
+index 3b9c87d..47df390 100644
 --- fastfetch-clean/src/common/impl/FFPlatform_unix.c
 +++ fastfetch-workdir/src/common/impl/FFPlatform_unix.c
 @@ -142,6 +142,8 @@ static void getExePath(FFPlatform* platform) {
@@ -242,52 +222,35 @@ index 91e3edd..5d88c67 100644
  
  const char* ffDetectLoadavg(double result[3]) {
      return getloadavg(result, 3) == 3 ? NULL : "getloadavg() failed";
-diff --git fastfetch-clean/src/detection/packages/packages_linux.c fastfetch-workdir/src/detection/packages/packages_linux.c
-index 98a01b2..2b60d91 100644
---- fastfetch-clean/src/detection/packages/packages_linux.c
-+++ fastfetch-workdir/src/detection/packages/packages_linux.c
-@@ -459,6 +459,7 @@ static uint32_t getPacmanPackages(FFstrbuf* baseDir) {
- }
+diff --git fastfetch-workdir/src/detection/memory/memory_ironclad.c fastfetch-workdir/src/detection/memory/memory_ironclad.c
+new file mode 100644
+index 0000000..23fd66a
+--- /dev/null
++++ fastfetch-workdir/src/detection/memory/memory_ironclad.c
+@@ -0,0 +1,10 @@
++#include "memory.h"
++#include <unistd.h>
++
++const char* ffDetectMemory(FFMemoryResult* ram) {
++    uint64_t pageSize = instance.state.platform.sysinfo.pageSize;
++
++    ram->bytesTotal = (uint64_t) sysconf(_SC_PHYS_PAGES) * pageSize;
++    ram->bytesUsed = ram->bytesTotal - (uint64_t) sysconf(_SC_AVPHYS_PAGES) * pageSize;
++    return NULL;
++}
+diff --git fastfetch-clean/src/detection/packages/packages.h fastfetch-workdir/src/detection/packages/packages.h
+index 2119349..1574082 100644
+--- fastfetch-clean/src/detection/packages/packages.h
++++ fastfetch-workdir/src/detection/packages/packages.h
+@@ -66,7 +66,7 @@ const char* ffDetectPackages(FFPackagesResult* result, FFPackagesOptions* option
+ bool ffPackagesReadCache(FFstrbuf* cacheDir, FFstrbuf* cacheContent, const char* filePath, const char* packageId, uint32_t* result);
+ bool ffPackagesWriteCache(FFstrbuf* cacheDir, FFstrbuf* cacheContent, uint32_t num_elements);
  
- static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts, FFPackagesOptions* options) {
-+#ifndef __ironclad__
-     if (!(options->disabled & FF_PACKAGES_FLAG_APK_BIT)) {
-         packageCounts->apk += getNumStrings(baseDir, "/lib/apk/db/installed", "C:Q", "apk");
-     }
-@@ -500,9 +501,11 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
-     if (!(options->disabled & FF_PACKAGES_FLAG_SNAP_BIT)) {
-         packageCounts->snap += getSnap(baseDir);
-     }
-+#endif
-     if (!(options->disabled & FF_PACKAGES_FLAG_XBPS_BIT)) {
-         packageCounts->xbps += getXBPS(baseDir, "/var/db/xbps");
-     }
-+#ifndef __ironclad__
-     if (!(options->disabled & FF_PACKAGES_FLAG_BREW_BIT)) {
-         packageCounts->brewCask += getNumElements(baseDir, "/home/linuxbrew/.linuxbrew/Caskroom", true);
-         packageCounts->brew += getNumElements(baseDir, "/home/linuxbrew/.linuxbrew/Cellar", true);
-@@ -540,6 +543,7 @@ static void getPackageCounts(FFstrbuf* baseDir, FFPackagesResult* packageCounts,
-     if (!(options->disabled & FF_PACKAGES_FLAG_CARDS_BIT)) {
-         packageCounts->cards += getNumElements(baseDir, "/var/lib/pkg/DB", true);
-     }
-+#endif
- }
- 
- static void getPackageCountsRegular(FFstrbuf* baseDir, FFPackagesResult* packageCounts, FFPackagesOptions* options) {
-@@ -606,6 +610,7 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
+-#if defined(__linux__) || defined(__APPLE__) || defined(__GNU__)
++#if defined(__linux__) || defined(__APPLE__) || defined(__GNU__) || defined(__ironclad__)
+ uint32_t ffPackagesGetNix(FFstrbuf* baseDir, const char* dirname);
  #endif
- 
-     ffStrbufSet(&baseDir, &instance.state.platform.homeDir);
-+#ifndef __ironclad__
-     if (!(options->disabled & FF_PACKAGES_FLAG_NIX_BIT)) {
-         // Count packages from $HOME/.nix-profile
-         result->nixUser += ffPackagesGetNix(&baseDir, ".nix-profile");
-@@ -648,4 +653,5 @@ void ffDetectPackagesImpl(FFPackagesResult* result, FFPackagesOptions* options)
-         result->appimage += getNumElementsBySuffix(&baseDir, "/AppImages", ".appimage");
-         result->appimage += getNumElementsBySuffix(&baseDir, "/Applications", ".appimage");
-     }
-+#endif
- }
+ #ifndef _WIN32
 diff --git fastfetch-clean/src/detection/publicip/publicip.c fastfetch-workdir/src/detection/publicip/publicip.c
 index abca57c..e422c0c 100644
 --- fastfetch-clean/src/detection/publicip/publicip.c
@@ -340,33 +303,6 @@ index e06f958..db050ee 100644
      #include <sys/termios.h>
  #endif
  
-diff --git fastfetch-clean/src/detection/terminaltheme/terminaltheme.c fastfetch-workdir/src/detection/terminaltheme/terminaltheme.c
-index 5be3c20..2b4a1ba 100644
---- fastfetch-clean/src/detection/terminaltheme/terminaltheme.c
-+++ fastfetch-workdir/src/detection/terminaltheme/terminaltheme.c
-@@ -1,5 +1,6 @@
- #include "terminaltheme.h"
- #include "common/io.h"
-+#include "common/debug.h"
- #include "common/stringUtils.h"
- 
- #include <inttypes.h>
-@@ -96,10 +97,15 @@ static inline bool detectColor(FFTerminalThemeResult* result, bool forceEnv) {
- }
- 
- bool ffDetectTerminalTheme(FFTerminalThemeResult* result, bool forceEnv) {
-+#ifdef __ironclad__
-+    FF_DEBUG("TODO: Investigate why this hangs on gcon and potentially others!");
-+    return false;
-+#else
-     if (!detectColor(result, forceEnv)) {
-         return false;
-     }
-     result->fg.dark = result->fg.r * 299 + result->fg.g * 587 + result->fg.b * 114 < 128000;
-     result->bg.dark = result->bg.r * 299 + result->bg.g * 587 + result->bg.b * 114 < 128000;
-     return true;
-+#endif
- }
 diff --git fastfetch-clean/src/detection/uptime/uptime_linux.c fastfetch-workdir/src/detection/uptime/uptime_linux.c
 index 75c7768..9739636 100644
 --- fastfetch-clean/src/detection/uptime/uptime_linux.c
@@ -416,21 +352,41 @@ index ce7abb3..9a66e5f 100644
      #include "common/kmod.h"
  
 diff --git fastfetch-clean/src/modules/modules.c fastfetch-workdir/src/modules/modules.c
-index fe72923..18ea6c4 100644
+index 8378711..31d6653 100644
 --- fastfetch-clean/src/modules/modules.c
 +++ fastfetch-workdir/src/modules/modules.c
-@@ -81,7 +81,9 @@ static FFModuleBaseInfo* L[] = {
-     &ffLMModuleInfo,
-     &ffLoadavgModuleInfo,
+@@ -47,9 +47,6 @@ static FFModuleBaseInfo* C[] = {
+ #if !FF_MODULE_DISABLE_CHASSIS
+     &ffChassisModuleInfo,
+ #endif
+-#if !FF_MODULE_DISABLE_CODEC
+-    &ffCodecModuleInfo,
+-#endif
+ #if !FF_MODULE_DISABLE_COMMAND
+     &ffCommandModuleInfo,
+ #endif
+@@ -161,9 +158,6 @@ static FFModuleBaseInfo* L[] = {
+ #if !FF_MODULE_DISABLE_LOCALE
      &ffLocaleModuleInfo,
-+#ifndef __ironclad__
-     &ffLocalIPModuleInfo,
-+#endif
+ #endif
+-#if !FF_MODULE_DISABLE_LOCALIP
+-    &ffLocalIPModuleInfo,
+-#endif
+ #if !FF_MODULE_DISABLE_LOGO
      &ffLogoModuleInfo,
+ #endif
+@@ -224,9 +218,6 @@ static FFModuleBaseInfo* P[] = {
+ #endif
+ #if !FF_MODULE_DISABLE_PROCESSES
+     &ffProcessesModuleInfo,
+-#endif
+-#if !FF_MODULE_DISABLE_PUBLICIP
+-    &ffPublicIPModuleInfo,
+ #endif
      NULL,
  };
 diff --git fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
-index 454ca60..4dd020a 100644
+index b58d6c9..8a615d0 100644
 --- fastfetch-clean/src/options/general.h
 +++ fastfetch-workdir/src/options/general.h
 @@ -15,7 +15,7 @@ typedef struct FFOptionsGeneral {

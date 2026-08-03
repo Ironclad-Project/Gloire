@@ -1,6 +1,6 @@
 #! /bin/sh
 
-version=3.53.3
+version=3.53.4
 revision=1
 tarball_url="https://sqlite.org/2026/sqlite-autoconf-3530300.tar.gz"
 tarball_blake2b="61ee1a88258fdfed02c51c9b0302a0eb27e58b90b5285be6e89753293f1662caa0a7d6de586bdfd72ddeffe166a0704702bed99040d2998674b22289718f3935"

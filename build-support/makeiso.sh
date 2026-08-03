@@ -54,10 +54,103 @@ fi
 $SUDO rm -rf iso_root
 mkdir -p iso_root/boot
 
+# Allocate the image. If a size is passed, we just use that size, else, we try
+# to guesstimate calculate a rough size.
+# Try to not use fractional sizes (3.X for example) since certain Linux distros
+# like debian struggle to use it.
+if [ -z "$IMAGE_SIZE" ]; then
+    IMAGE_SIZE=500M
+fi
+if [ -z "$IMAGE_NAME" ]; then
+    IMAGE_NAME=gloire.iso
+fi
+fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
+
+# Create and format the initramfs filesystem.
+# TODO: Once ready, move to ext4, now its ext2 only.
+$SUDO mkfs.ext2 iso_root/boot/gloire.ext
+mkdir -p mount_dir
+$SUDO mount iso_root/boot/gloire.ext mount_dir
+
+# Copy the system root to the initramfs filesystem.
+$SUDO cp -rp sysroot/* mount_dir/
+
+# Copy the bootloader wallpaper and kernel to the ISO root.
+cp "${source_dir}"/artwork/background.png iso_root/boot/
+cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
+
+# Install the boot binaries required by the target.
+rm -rf limine-tmp
+mkdir limine-tmp
+( cd limine-tmp && tar -xf $(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1) )
+case "$ARCH" in
+    riscv64)
+        $SUDO mkdir -p iso_root/boot/limine
+        $SUDO mkdir -p iso_root/EFI/BOOT
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
+        ;;
+    x86_64)
+        rm -rf memtest-tmp
+        mkdir memtest-tmp
+        ( cd memtest-tmp && tar -xf $(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1) )
+        $SUDO mkdir -p iso_root/boot/limine
+        $SUDO mkdir -p iso_root/EFI/BOOT
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
+        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
+        $SUDO cp memtest-tmp/boot/memtest.bin                         iso_root/boot/
+        ;;
+esac
+
+# Generate the config file. Take into account that there may not be a graphical
+# option, and that non x86 ports will not have memtest.
+CONFIG_TEMP="$(mktemp)"
+cat << 'EOF' > "$CONFIG_TEMP"
+timeout: 5
+wallpaper: boot():/boot/background.png
+wallpaper_style: stretched
+
+${KERNEL_PATH}=boot():/boot/ironclad
+${PROTOCOL}=limine
+
+/Gloire - Live TTY only
+    protocol: ${PROTOCOL}
+    path: ${KERNEL_PATH}
+    cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init"
+    module_path: $boot():/boot/gloire.ext.gz
+
+/Advanced options for Gloire
+    //Gloire - Live TTY Debug (noaslr)
+        protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
+        cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init" noaslr
+        module_path: $boot():/boot/gloire.ext.gz
+
+    //Gloire - Live Emergency shell (noaslr)
+        protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
+        cmdline: init=/bin/gcon root=ramdev1 noaslr
+        module_path: $boot():/boot/gloire.ext.gz
+EOF
+
+if [ "$ARCH" = x86_64 ]; then # Assume its only defined for riscv64.
+   cat << 'EOF' >> "$CONFIG_TEMP"
+
+/Memory test (memtest86+)
+    protocol: linux
+    kernel_path: boot():/memtest.bin
+EOF
+fi
+cp "$CONFIG_TEMP" iso_root/boot/limine.conf
+rm "$CONFIG_TEMP"
+
 # Add init system config.
-$SUDO mkdir sysroot/etc/epoch
+$SUDO mkdir mount_dir/etc/epoch
 $SUDO sh -c "
-cat << 'EOF' >> sysroot/etc/epoch/epoch.conf
+cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
 # https://universe2.us/epochconfig.html
 
 Hostname=FILE /etc/hostname
@@ -108,7 +201,7 @@ ObjectID=powerd
 
 ObjectID=gcon
    ObjectDescription=gcon
-   ObjectStartCommand=/usr/bin/gcon
+   ObjectStartCommand=gcon
    ObjectStopCommand=PID
    ObjectStartPriority=5
    ObjectStopPriority=5
@@ -136,7 +229,7 @@ EOF
 
 # Add /etc/issue and /etc/motd for flare and valuable info.
 $SUDO sh -c "
-cat << 'EOF' >> sysroot/etc/issue
+cat << 'EOF' >> mount_dir/etc/issue
                   &#BGPPPPPG#&
                B5?77!!?YJJ7!7YBB&
             &G5YJ77!7JYYYYYBPJ&PY#
@@ -162,7 +255,7 @@ EOF
 "
 
 $SUDO sh -c "
-cat << 'EOF' >> sysroot/etc/motd
+cat << 'EOF' >> mount_dir/etc/motd
 Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>, or
 check the differences between a Linux and Ironclad userland at
 <https://codeberg.org/Ironclad/Gloire/wiki/Differences-with-GNU-Linux>.
@@ -172,93 +265,18 @@ EOF
 "
 
 $SUDO sh -c "
-cat << 'EOF' >> sysroot/etc/hostname
+cat << 'EOF' >> mount_dir/etc/hostname
 gloirelive
 EOF
 "
 
-# Copy the system root to the initramfs filesystem.
-cd sysroot
-$SUDO tar --sort=name --format=ustar -czf ../gloire-root.tar.gz *
-cd ..
+# Unmount after we are done.
+sync
+$SUDO umount mount_dir
+$SUDO rm -rf mount_dir
 
-# Copy the bootloader wallpaper and kernel to the ISO root.
-cp "${source_dir}"/artwork/background.png iso_root/boot/
-cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
-mv gloire-root.tar.gz iso_root/boot/
-
-# Install the boot binaries required by the target.
-rm -rf limine-tmp
-mkdir limine-tmp
-( cd limine-tmp && tar -xf $(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1) )
-case "$ARCH" in
-    riscv64)
-        $SUDO mkdir -p iso_root/boot/limine
-        $SUDO mkdir -p iso_root/EFI/BOOT
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
-        ;;
-    x86_64)
-        rm -rf memtest-tmp
-        mkdir memtest-tmp
-        ( cd memtest-tmp && tar -xf $(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1) )
-        $SUDO mkdir -p iso_root/boot/limine
-        $SUDO mkdir -p iso_root/EFI/BOOT
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
-        $SUDO cp memtest-tmp/boot/memtest.bin                         iso_root/boot/
-        ;;
-esac
-
-# Generate the config file. Take into account that there may not be a graphical
-# option, and that non x86 ports will not have memtest.
-CONFIG_TEMP="$(mktemp)"
-cat << 'EOF' > "$CONFIG_TEMP"
-timeout: 5
-wallpaper: boot():/boot/background.png
-wallpaper_style: stretched
-
-${KERNEL_PATH}=boot():/boot/ironclad
-${PROTOCOL}=limine
-
-/Gloire - Live TTY only
-    protocol: ${PROTOCOL}
-    path: ${KERNEL_PATH}
-    cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init"
-    module_path: $boot():/boot/gloire-root.tar.gz
-
-/Advanced options for Gloire
-    //Gloire - Live TTY Debug (noaslr)
-        protocol: ${PROTOCOL}
-        path: ${KERNEL_PATH}
-        cmdline: init=/bin/env root=ramdev1 initargs="runlevel=console-multiuser /sbin/init" noaslr
-        module_path: $boot():/boot/gloire-root.tar.gz
-
-    //Gloire - Live Emergency shell (noaslr)
-        protocol: ${PROTOCOL}
-        path: ${KERNEL_PATH}
-        cmdline: init=/bin/gcon root=ramdev1 noaslr
-        module_path: $boot():/boot/gloire-root.tar.gz
-EOF
-
-if [ "$ARCH" = x86_64 ]; then # Assume its only defined for riscv64.
-   cat << 'EOF' >> "$CONFIG_TEMP"
-
-/Memory test (memtest86+)
-    protocol: linux
-    kernel_path: boot():/memtest.bin
-EOF
-fi
-cp "$CONFIG_TEMP" iso_root/boot/limine.conf
-rm "$CONFIG_TEMP"
-
-# Make the ISO.
-if [ -z "$IMAGE_NAME" ]; then
-    IMAGE_NAME=gloire.iso
-fi
+# Tar the filesystem to save space.
+gzip iso_root/boot/gloire.ext
 
 if [ "$ARCH" = riscv64 ]; then
     xorriso -as mkisofs -R -r -J \

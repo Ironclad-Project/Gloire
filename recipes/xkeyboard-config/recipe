@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.47
+version=2.48
 revision=1
 git_url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git"
-commit=a79055334104d382bd511760b67acf9a5a161361
+commit=cf8d1151bb4c9ef5b895828d0e6dd7860c0833e0
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-xkbcomp"
 

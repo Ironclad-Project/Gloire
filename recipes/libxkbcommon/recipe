@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.13.1
+version=1.13.2
 revision=1
 git_url="https://github.com/xkbcommon/libxkbcommon.git"
-commit=6f76d19db72b5d450e927b41e1e96cbe3252aba8
+commit=1e11d3afe458ad2efe1d081b3185e42d32c80f56
 hostdeps="gcc pkg-config"
 deps="core-libs libxcb libxml2 xkeyboard-config"
 

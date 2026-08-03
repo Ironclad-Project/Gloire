@@ -1,0 +1,22 @@
+#! /bin/sh
+
+version=2.5.4
+revision=1
+tarball_url="https://github.com/uclouvain/openjpeg/archive/v${version}.tar.gz"
+tarball_blake2b="8bcb821c4a5b437ffc53fbe4017da4bc9579d7c349bf558fea4db7856e267030760845e529b6692053779fee170074fb18f3e75051914eb30cfc6d46d284fce6"
+hostdeps="gcc pkg-config"
+deps="core-libs mpfr gmp readline"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

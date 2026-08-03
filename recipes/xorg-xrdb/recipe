@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id=xrdb
-version=1.2.2
+version=1.2.3
 revision=1
 tarball_url="https://www.x.org/releases/individual/app/xrdb-${version}.tar.xz"
-tarball_blake2b="fbf396089a82db2a21866527f7d847f106164e1ce10795a2f96e34d5165311f4ed718eee10429792fc4fe273529af3350c41d765cb067c6310707bcc976bfdbe"
+tarball_blake2b="40816165f081860862e72252b7f4d6159c6cfc21bcf5a500676bff6590e9c19560a2168acc60f906eefa201a966b71868f9d8dbb091fbb7df78de51509befb8c"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxmu"
 

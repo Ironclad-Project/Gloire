@@ -1,10 +1,10 @@
 #! /bin/sh
 
-_version=1.3-20260107
+_version=1.3-20260721
 version=${_version//-/.}
 revision=1
 tarball_url="https://invisible-mirror.net/archives/dialog/dialog-${_version}.tgz"
-tarball_blake2b="6047d566b820da45093cd9ac48d31c50b338ad8e8c408d42347885bd021843daedcdb50a7d85e2c3e61345a2ca848c727882c807f359455592c00755f3ce722c"
+tarball_blake2b="39810f45337bb7b5df297f58cd5a13f3350d32d73ca2192624ea22203afb837c0777484af6f400ee7ee36291163f1e5a14cd777281249878577580badd3cfd19"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 

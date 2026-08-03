@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id=xclock
-version=1.1.1
-revision=3
+version=1.2.1
+revision=1
 tarball_url="https://xorg.freedesktop.org/archive/individual/app/xclock-${version}.tar.gz"
-tarball_blake2b="4fd77b8f1f0962774dd0e6295f7482c05be8107e1606a9705ccd2864d2c9b37adda4a41a6704c6e1363edd2b7e704324799c4feaff39e218b326b66274b48187"
+tarball_blake2b="280543acac24c0e20346072e56c7d9087cf72455b5a38383de1af44e667080c131426384abf6d219c30e56e53bc95d825053d460582143003837be3b9c08e3f8"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxmu libxaw libxrender libxft libxkbfile"
 

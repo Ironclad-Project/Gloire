@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=14.2.1
+version=14.3.0
 revision=1
 tarball_url="https://github.com/harfbuzz/harfbuzz/releases/download/${version}/harfbuzz-${version}.tar.xz"
-tarball_blake2b="7dab5e69ea502a8b65e1a84c84796ce1afa5e369f3d705af3bbb884a116bf283a170a613831a5af2d28d5eea87360909335590c1a5f9d914088317041b5c01b4"
+tarball_blake2b="e4cce203054d98bae061f7baeee2a13f0e71138601f355d8e149296df6ac04f02edfa3bdf14daee2c5a723024caac28c677c09089061f9bb7dc3d179ca8a3e38"
 hostdeps="gcc pkg-config"
 deps="core-libs graphite2 glib2 zlib freetype2 cairo icu"
 

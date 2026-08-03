@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.0.8
+version=1.0.9
 revision=1
 tarball_url="https://www.x.org/pub/individual/app/xlsfonts-${version}.tar.xz"
-tarball_blake2b="16ff4ba039f3122844c44c907fbfaff0fbbe6f219bd96cf7154179cbb5865b7911c3af926750dd702917f04a103c889cccea3aa03b48d2a4a47885b448b268e4"
+tarball_blake2b="0502168372442d173cef38beb6782db794acafb3d6a3ed84761c00085a46cbf7890543b9980d710a3cea9d37367ade424dc999957960afb988f67fcd74bd13d5"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11"
 

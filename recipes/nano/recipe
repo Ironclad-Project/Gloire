@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=9.1
+version=9.2
 revision=1
 tarball_url="https://ftp.gnu.org/gnu/nano/nano-${version}.tar.xz"
-tarball_blake2b="d762076463b0c683d13cd4c47cc05db573a1890c9ea0629c2aa37d36305197242eb724229afc59468aa47c515dbfb8378d9fa6fafa88d8b90a2af6d1ed467b14"
+tarball_blake2b="b8f5aedbb296654817eac82723a6ae6323b2710d225152ee6356fefe5e692958236a00ab4c7fd5abff71b84c3c023afc06854e4e216b80879c48ce94486c4b89"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses file"
 

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id=xset
-version=1.2.5
+version=1.2.6
 revision=1
 tarball_url="https://www.x.org/pub/individual/app/xset-${version}.tar.xz"
-tarball_blake2b="81d93de0bd2a5f0d76937109a8f16f5e1d5074ec5209ea373d9f4b3f5064ac15a9e3c9cdc850cbe6103469fcdfc4d69df033ce7bbf80e22b507d3664e49911a9"
+tarball_blake2b="6d0df9c342cd6bc22b081c2ddb9057474736ed5446b84b9a843479327028bfe612703a98c32ba32572ffb3067decd8a27340729bfafd58e893e274a0d0d06aed"
 hostdeps="gcc pkg-config"
 deps="core-libs libxmu"
 

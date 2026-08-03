@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.69.0
+version=1.70.0
 revision=1
 tarball_url="https://github.com/nghttp2/nghttp2/releases/download/v${version}/nghttp2-${version}.tar.xz"
-tarball_blake2b="a1b3509fb609bd93f57e1eee85f24c2db30d15b384d01d1efb1073ccf730d7d8a12f16213f1b0d137d0c6e2cf1b52e03f15038626aed5d6eadf06bc0af233c08"
+tarball_blake2b="3ecc4170b86dc45cfc33e78caa3eb3d7efa9ef35b4494f5c14e6a71b8dfee6ac47144cafc1e7a2962c8836d95d4f6553467600e6af44d64642c7d998a3582b10"
 hostdeps="gcc pkg-config"
 deps="core-libs brotli jansson libevent libxml2 openssl"
 

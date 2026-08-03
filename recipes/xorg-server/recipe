@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=21.1.21
-revision=3
+version=21.1.24
+revision=1
 git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
-commit=312a25c65c8a918fea2cc77abd0db07ec0fc421c
+commit=65d790bd208ec380b196eb98f144abb0b32e334d
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus"
 

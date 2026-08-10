@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.18.2
+version=2.18.3
 revision=1
 git_url="https://gitlab.freedesktop.org/fontconfig/fontconfig.git"
-commit=a4e25ec391d417e4bca052fbfa5cd7ce5f7fd39e
+commit=0f236723a3c26bd9745e32ba2b3ee21e5f809295
 imagedeps="gperf"
 hostdeps="gcc pkg-config"
 deps="core-libs freetype2 libexpat libxml2"

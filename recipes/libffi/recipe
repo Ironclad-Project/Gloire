@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.7.1
+version=3.8.0
 revision=1
 tarball_url="https://github.com/libffi/libffi/releases/download/v${version}/libffi-${version}.tar.gz"
-tarball_blake2b="642741667d55aa2921fc250adea68eafd2519e786199fd2d0463a57ab6e830b51d97a361156bc2761d8c1bfecb9156ddc3147b6f81f4379bc054b98a29675526"
+tarball_blake2b="589f87f79ea637dbddd00db3e320090f17855da5b1669a42b154f1c61bcafd1e8a964738d25b424c95ba5e148565df4b7379800ba42f40149c74d749f4f4b096"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

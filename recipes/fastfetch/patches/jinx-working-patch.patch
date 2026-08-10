@@ -213,34 +213,6 @@ index 2119349..1574082 100644
  uint32_t ffPackagesGetNix(FFstrbuf* baseDir, const char* dirname);
  #endif
  #ifndef _WIN32
-diff --git fastfetch-clean/src/detection/publicip/publicip.c fastfetch-workdir/src/detection/publicip/publicip.c
-index abca57c..e422c0c 100644
---- fastfetch-clean/src/detection/publicip/publicip.c
-+++ fastfetch-workdir/src/detection/publicip/publicip.c
-@@ -1,5 +1,6 @@
- #include "publicip.h"
- #include "common/networking.h"
-+#include "common/debug.h"
- 
- #define FF_UNINITIALIZED ((const char*) (uintptr_t) -1)
- static FFNetworkingState states[2];
-@@ -51,6 +52,10 @@ static inline void wrapYyjsonFree(yyjson_doc** doc) {
- }
- 
- const char* ffDetectPublicIp(FFPublicIPOptions* options, FFPublicIpResult* result) {
-+#ifdef __ironclad__
-+    FF_DEBUG("Ironclad does not support this feature yet!");
-+    return "Not supported";
-+#else
-     FFNetworkingState* state = &states[options->ipv6];
-     const char** status = &statuses[options->ipv6];
-     if (*status == FF_UNINITIALIZED) {
-@@ -92,4 +97,5 @@ const char* ffDetectPublicIp(FFPublicIPOptions* options, FFPublicIpResult* resul
-     ffStrbufInitMove(&result->ip, &response);
-     ffStrbufTrimRightSpace(&result->ip);
-     return NULL;
-+#endif
- }
 diff --git fastfetch-clean/src/detection/swap/swap_nosupport.c fastfetch-workdir/src/detection/swap/swap_nosupport.c
 index ebc29b4..5a9b7e2 100644
 --- fastfetch-clean/src/detection/swap/swap_nosupport.c

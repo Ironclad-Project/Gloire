@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.58.0
+version=1.58.2
 revision=1
 tarball_url="https://gitlab.gnome.org/GNOME/pango/-/archive/${version}/pango-${version}.tar.gz"
-tarball_blake2b="0901b2b237b235d6aa2e9581544d54f52ca90c479660dc78723bf23612f40097420616ae3c9de43340d3bd451cbe39a34d09946af127956a3c232575bdb8b579"
+tarball_blake2b="24b870b42cb1c7c1e2f164a3ee543851f9fce5a4d9c75c47602ce6cc11d07e0271fa3d0d1b1d55f4a9c01bf9265790b7da8ba74fda9b36fa13dec0b2a819c13c"
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 fontconfig freetype2 fribidi cairo libx11 harfbuzz libxft"

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.0.8
+version=2.0.9
 revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXfont2-${version}.tar.gz"
-tarball_blake2b="8bafeadd5405dfea82fb379e20cd2a018e152dc415ee9a1a94f60a2fc1d30473f55e666bf2d5df2c0d74a9240653c3c010fd4f035ee3ae5819cc55ca6a9cfd60"
+tarball_blake2b="fdc2ffe6b3d664b0c07a8a2dbb1d757ca13c8a880787b1c52e1f54749a75d6474b8808b58d36041b431452ba32e397851efff6f89af7aa3235287b4d2a84338a"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-util-macros xorg-proto libx11 xtrans freetype2 fontconfig bzip2 libfontenc zlib"
 

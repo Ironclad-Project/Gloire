@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=5.5.0
+version=5.5.1
 revision=1
 tarball_url="https://github.com/lua/lua/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="c65ac2138642121d0bc46e641d242ceb96770b3b070f9de689789487bf1c51958bb03a54a004103948935ce20ed9bb6649f8ec165a7ee19e475bbc3430edf62a"
+tarball_blake2b="1b7f4c8d2efaef34a008a52ad513185ddb20bdc4ca053fb82149de2e75c7b442b1c44fdc39d246db0092a015dda6ae1cb847da28758a6aa09ba3253465c8fb91"
 imagedeps="nasm"
 hostdeps="gcc pkg-config"
 deps="core-libs readline"

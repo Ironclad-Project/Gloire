@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.25.0
+version=2.2.1
 revision=1
-tarball_url="https://ftp.gnu.org/gnu/wget/wget-${version}.tar.gz"
-tarball_blake2b="26e92884857ea5dc642597ed24f1923de1ef1e5d16fd943a33366b81220d416bd8cd7d3af74538f585ff43aa8470e7e2f371f50544f9672b3e6638d33ad5bab6"
+tarball_url="https://ftp.gnu.org/gnu/wget/wget2-${version}.tar.gz"
+tarball_blake2b="dccd9db63a237055377fb78e36ba36f357f5ec47b999e74aeffc170e3918a9d16df9a775b8836139e0640682eefe1d96d8bf6c7278b556ae9182039fa5dd90c0"
 imagedeps="gperf"
 hostdeps="gcc pkg-config"
 deps="core-libs gnutls ca-certificates"
@@ -23,6 +23,7 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
+    mkdir "${dest_dir}/etc"
     cat >> "${dest_dir}/etc/wgetrc" << EOF
 
 # default root certs location

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.1
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/pluma/releases/download/v${version}/pluma-${version}.tar.xz"
 tarball_blake2b="8ef8123ffc1c8c4c720c2358881f030a7cff2ed14f9a0a621ffc91815c6a68b09767af47b0166655564a91add3df508f7055a2b5685f7f3cba6b153469ff58df"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin itstool"

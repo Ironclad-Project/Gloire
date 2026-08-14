@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.8.8
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/libnotify.git"
 commit=8b35b6b74e4af71a20b024330b71ce0daf6c022f
 imagedeps="libglib2.0-dev"

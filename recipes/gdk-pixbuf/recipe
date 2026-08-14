@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.44.7
+version=2.44.8
 revision=1
 tarball_url="https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/${version}/gdk-pixbuf-${version}.tar.gz"
-tarball_blake2b="3c2eced769901be9c6f7998abb21de375268861e4b4f3507339efb151cf34bc4fe7d00d3191db0a18d11352b51c9705c4cdd17789a982c76493250358dcab8ab"
+tarball_blake2b="3294933dc80653beef24ae393436320b33480e5e6123d2e4fc59cdc4a32fc231fc1055d481f42f5d86b4d7b23b815283859fc5fdb56bed6dab65cdc7d8f17e96"
 imagedeps="libglib2.0-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2 libjpeg-turbo libpng libx11 libtiff"

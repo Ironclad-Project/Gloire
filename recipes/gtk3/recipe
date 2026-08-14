@@ -3,7 +3,7 @@
 repology_id=gtk
 repology_srcname=gtk3
 version=3.24.52
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/gtk.git"
 commit=6a0b360d473f7c546314738c0c8dd9829eb9d3c2
 imagedeps="libglib2.0-dev libgdk-pixbuf-2.0 python3-packaging"

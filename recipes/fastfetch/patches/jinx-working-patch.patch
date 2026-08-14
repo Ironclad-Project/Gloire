@@ -169,21 +169,6 @@ index 0000000..7ad301a
 +
 +	return NULL;
 +}
-diff --git fastfetch-clean/src/detection/loadavg/loadavg_sunos.c fastfetch-workdir/src/detection/loadavg/loadavg_sunos.c
-index 91e3edd..5d88c67 100644
---- fastfetch-clean/src/detection/loadavg/loadavg_sunos.c
-+++ fastfetch-workdir/src/detection/loadavg/loadavg_sunos.c
-@@ -1,6 +1,10 @@
- #include "detection/loadavg/loadavg.h"
- 
-+#ifndef __ironclad__
- #include <sys/loadavg.h>
-+#else
-+#include <stdlib.h> // Provides getloadavg as a BSD extension
-+#endif
- 
- const char* ffDetectLoadavg(double result[3]) {
-     return getloadavg(result, 3) == 3 ? NULL : "getloadavg() failed";
 diff --git fastfetch-workdir/src/detection/memory/memory_ironclad.c fastfetch-workdir/src/detection/memory/memory_ironclad.c
 new file mode 100644
 index 0000000..23fd66a

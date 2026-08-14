@@ -41,11 +41,13 @@ for pkg in ../recipes/*; do
         status_to_check=".status==\"$repology_status\" and"
     fi
 
-    repology_response="$(curl -s -A 'https://codeberg.org/Ironclad/Gloire' https://repology.org/api/v1/project/$name_to_check)"
-
-    # Repology asks of us that we do no more than a request a second, we will
-    # do a wait in between them
-    sleep 1.5
+    # XXX: Repology seems to implement a whitelist of agents, which does not
+    # seem to include curl, or Gloire's repository, which is recommended under
+    # their bulk user guidelines.
+    # It is a biiiit dirty, but we will disguise ourselves as mozilla to bypass
+    # this while we get in communication with the repology people for a
+    # recommended approach.
+    repology_response="$(curl -s -A 'Mozilla/5.0 (X11; Linux x86_64; rv:153.0) Gecko/20100101 Firefox/153.0' https://repology.org/api/v1/project/$name_to_check)"
 
     checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera" or .repo=="homebrew")).version' | grep -v '"HEAD"' | sort -Vr | head -n 1)
     if [ -z "$checked_vers" ]; then

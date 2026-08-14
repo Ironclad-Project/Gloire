@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=19beta2
-revision=1
+revision=2
 tarball_url="https://ftp.postgresql.org/pub/source/v${version}/postgresql-${version}.tar.bz2"
 tarball_blake2b="28753aef951e3bd1ecf36808d7f0b669ef1cccbc5a35c9ce78289945639dfc2f9d781c661919d70782b620757ccfcd66b37c33d95423f882fc39c1053ab2fe3b"
 imagedeps="binutils"

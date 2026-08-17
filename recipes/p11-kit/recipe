@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=0.26.4
+version=0.26.5
 revision=1
 tarball_url="https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz"
-tarball_blake2b="91a8ff7679e34dbc9d3143c957ec2bba211da85f74c2aa3d150f3078de9387e1f04b4bbec56040e0c12249c1866e7ca191844c1dcdd6c1de29bec04e6d72ea96"
+tarball_blake2b="3588e4abeca13450c8228b4e104942b459c86fa5bf07fd391b895ff99694e37a20562462fd3e5290dce79a45a16cc821da4ed86d9d4446beb1305d4638421589"
 hostdeps="gcc pkg-config"
 deps="core-libs libffi libtasn1 bash-completion"
 

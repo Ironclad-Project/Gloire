@@ -2,7 +2,7 @@
 
 repology_id=libsoup
 version=3.6.6
-revision=2
+revision=3
 tarball_url="https://download.gnome.org/sources/libsoup/3.6/libsoup-${version}.tar.xz"
 tarball_blake2b="9fa76992fe38e45a82bb07977cece4196fd58b204758d2df3a9c86d67b3bd3a7195061f62c96674975a9a72e0d714ade199712fbe0fdb9fb02f18b1794341d86"
 imagedeps="libglib2.0-dev-bin"

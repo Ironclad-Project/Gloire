@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.8.13
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-${version}.tar.xz"
 tarball_blake2b="80677a45a7c6f892287020e3e6b0add2432f2c64a4c9a649ce889921ac65b44931504ad0682ccc12e4b6d8f94c1a72e35c50673c9d04bd4e327063b812339380"
 hostdeps="gcc pkg-config"

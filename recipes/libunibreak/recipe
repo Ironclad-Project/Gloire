@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=7.0
+fixed_version=$(echo ${version} | sed 's/\./_/g')
+revision=1
+tarball_url="https://github.com/adah1972/libunibreak/releases/download/libunibreak_${fixed_version}/libunibreak-${version}.tar.gz"
+tarball_blake2b="fab7099297a643be0a26b140d7409c31d48d78a71e6e27a27daa38a570e8408a399e4da3314d0ecc6e3bfee60963bbe38938dd4ed7a8d4f7934c3f4f2d9fb6cc"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+    post_package_strip
+}

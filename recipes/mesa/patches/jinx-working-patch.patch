@@ -28,10 +28,10 @@ index b2d10c5..3236a9a 100644
  #elif defined(__APPLE__)
  #define RENDERDOC_CC
 diff --git mesa-clean/meson.build mesa-workdir/meson.build
-index 1eca91f..2c095b3 100644
+index d6e3a8b..89a3221 100644
 --- mesa-clean/meson.build
 +++ mesa-workdir/meson.build
-@@ -1205,7 +1205,7 @@ if cc.has_function('fmemopen')
+@@ -1249,7 +1249,7 @@ if cc.has_function('fmemopen')
  endif
  
  # TODO: this is very incomplete
@@ -41,10 +41,10 @@ index 1eca91f..2c095b3 100644
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
 diff --git mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-index b3d2338..97bf224 100644
+index d682021..893d1d8 100644
 --- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
 +++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-@@ -1831,7 +1831,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
+@@ -1841,7 +1841,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
     default:
        break;
     }
@@ -80,20 +80,20 @@ index 7403724..99e14a2 100644
 +
  #endif /* DETECT_OS_H */
 diff --git mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
-index ee2b790..0e2d4c2 100644
+index 16dd51b..f1253c2 100644
 --- mesa-clean/src/util/os_misc.c
 +++ mesa-workdir/src/util/os_misc.c
-@@ -58,7 +58,7 @@
+@@ -60,7 +60,7 @@
  #  include <unistd.h>
- #  include <log/log.h>
- #  include <cutils/properties.h>
+ #  include <android/log.h>
+ #  include <sys/system_properties.h>
 -#elif DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM
 +#elif DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM || DETECT_OS_IRONCLAD
  #  include <unistd.h>
  #elif DETECT_OS_OPENBSD || DETECT_OS_FREEBSD
  #  include <sys/resource.h>
 diff --git mesa-clean/src/util/os_time.c mesa-workdir/src/util/os_time.c
-index 71fc7e3..f1ef5a0 100644
+index 71fc7e3..ba0fe5c 100644
 --- mesa-clean/src/util/os_time.c
 +++ mesa-workdir/src/util/os_time.c
 @@ -80,7 +80,7 @@ os_time_nanosleep_until(int64_t deadline)
@@ -101,15 +101,15 @@ index 71fc7e3..f1ef5a0 100644
  os_time_sleep(int64_t usecs)
  {
 -#if DETECT_OS_LINUX || DETECT_OS_MANAGARM || DETECT_OS_FUCHSIA
-+#if DETECT_OS_LINUX || DETECT_OS_MANAGARM || DETECT_OS_IRONCLAD || DETECT_OS_FUCHSIA
++#if DETECT_OS_LINUX || DETECT_OS_MANAGARM || DETECT_OS_FUCHSIA || DETECT_OS_IRONCLAD
     struct timespec time;
     time.tv_sec = usecs / 1000000;
     time.tv_nsec = (usecs % 1000000) * 1000;
 diff --git mesa-clean/src/util/u_thread.c mesa-workdir/src/util/u_thread.c
-index 3a8785c..8032dbe 100644
+index d1cf085..fc18f6a 100644
 --- mesa-clean/src/util/u_thread.c
 +++ mesa-workdir/src/util/u_thread.c
-@@ -71,7 +71,7 @@ int u_thread_create(thrd_t *thrd, int (*routine)(void *), void *param)
+@@ -97,7 +97,7 @@ int u_thread_create(thrd_t *thrd, int (*routine)(void *), void *param)
  void u_thread_setname( const char *name )
  {
  #if defined(HAVE_PTHREAD)
@@ -118,7 +118,7 @@ index 3a8785c..8032dbe 100644
     int ret = pthread_setname_np(pthread_self(), name);
     if (ret == ERANGE) {
        char buf[16];
-@@ -150,7 +150,7 @@ util_set_thread_affinity(thrd_t thread,
+@@ -176,7 +176,7 @@ util_set_thread_affinity(thrd_t thread,
  int64_t
  util_thread_get_time_nano(thrd_t thread)
  {

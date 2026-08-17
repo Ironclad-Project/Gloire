@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.8.0
-revision=1
+revision=2
 git_url="https://github.com/freeglut/freeglut.git"
 commit=3db1649ce1f5e42f1338b51e3fa14849be547d5d
 hostdeps="gcc pkg-config"

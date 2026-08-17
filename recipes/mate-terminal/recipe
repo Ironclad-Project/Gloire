@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.3
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/mate-terminal/releases/download/v${version}/mate-terminal-${version}.tar.xz"
 tarball_blake2b="8d2b07f950a2cfcaaf84f98896286deac81c20f970e7e082f18f66ed325d9e778fa7888b649b458ceec3c4e53ab304d5988f9fd58697bbdc2b64a61d5ced470b"
 imagedeps="libglib2.0-dev itstool"

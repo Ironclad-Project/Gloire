@@ -3,7 +3,7 @@
 repology_id=gtksourceview
 repology_srcname=gtksourceview4
 version=4.8.4
-revision=2
+revision=3
 git_url="https://gitlab.gnome.org/GNOME/gtksourceview.git"
 commit=7fd3adb3134bbec167167bb6400e018e4f781eb9
 imagedeps="libglib2.0-dev"

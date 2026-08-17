@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=26.08.0
-revision=2
+revision=3
 git_url="https://gitlab.freedesktop.org/poppler/poppler.git"
 commit=d663f8fe0237073fadf43e4e19acc46b3ba3e80a
 hostdeps="gcc pkg-config"

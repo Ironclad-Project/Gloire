@@ -2,7 +2,7 @@
 
 version=8.21.0
 fixed_version=$(echo ${version} | sed 's/\./_/g')
-revision=2
+revision=3
 tarball_url="https://github.com/curl/curl/releases/download/curl-${fixed_version}/curl-${version}.tar.xz"
 tarball_blake2b="230989e586a592b2aee768a1a6d48f1c8247e4d26afd0787a94f45faa9fbebcda5c9a8e2b739fb5a2ada151c13b09a8e2319825e9314fcc894377f24e92d338f"
 hostdeps="gcc pkg-config"

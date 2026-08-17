@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=13
+revision=14
 
 # Very base packages.
 deps="base-files ironclad tzdata xbps"

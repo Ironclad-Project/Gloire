@@ -1,0 +1,41 @@
+diff --git libvorbis-clean/CMakeLists.txt libvorbis-workdir/CMakeLists.txt
+index f377c42..6c3391a 100644
+--- libvorbis-clean/CMakeLists.txt
++++ libvorbis-workdir/CMakeLists.txt
+@@ -42,6 +42,11 @@ function(get_version_info result current_var_name age_var_name revision_var_name
+     math(EXPR VERSION_INFO_CURRENT_MINUS_AGE "${VERSION_INFO_CURRENT} - ${VERSION_INFO_AGE}")
+ 
+     set(${result} "${VERSION_INFO_CURRENT_MINUS_AGE}.${VERSION_INFO_AGE}.${VERSION_INFO_REVISION}" PARENT_SCOPE)
++    # libtool's -version-info puts (current - age) in the soname, and the full
++    # triplet only in the file name.  Export it so callers can set SOVERSION
++    # and VERSION separately, which is what produces the lib.so.<major>
++    # symlink every consumer links against.
++    set(${result}_SOVERSION "${VERSION_INFO_CURRENT_MINUS_AGE}" PARENT_SCOPE)
+ endfunction()
+ 
+ # Helper function to configure pkg-config files
+diff --git libvorbis-clean/lib/CMakeLists.txt libvorbis-workdir/lib/CMakeLists.txt
+index 7cd68e5..5164fb3 100644
+--- libvorbis-clean/lib/CMakeLists.txt
++++ libvorbis-workdir/lib/CMakeLists.txt
+@@ -79,11 +79,17 @@ if (NOT BUILD_FRAMEWORK)
+     add_library(vorbisfile ${VORBISFILE_SOURCES})
+ 
+     get_version_info(VORBIS_VERSION_INFO "V_LIB_CURRENT" "V_LIB_AGE" "V_LIB_REVISION")
+-    set_target_properties(vorbis PROPERTIES SOVERSION ${VORBIS_VERSION_INFO})
++    set_target_properties(vorbis PROPERTIES
++        VERSION ${VORBIS_VERSION_INFO}
++        SOVERSION ${VORBIS_VERSION_INFO_SOVERSION})
+     get_version_info(VORBISENC_VERSION_INFO "VE_LIB_CURRENT" "VE_LIB_AGE" "VE_LIB_REVISION")
+-    set_target_properties(vorbisenc PROPERTIES SOVERSION ${VORBISENC_VERSION_INFO})
++    set_target_properties(vorbisenc PROPERTIES
++        VERSION ${VORBISENC_VERSION_INFO}
++        SOVERSION ${VORBISENC_VERSION_INFO_SOVERSION})
+     get_version_info(VORBISFILE_VERSION_INFO "VF_LIB_CURRENT" "VF_LIB_AGE" "VF_LIB_REVISION")
+-    set_target_properties(vorbisfile PROPERTIES SOVERSION ${VORBISFILE_VERSION_INFO})
++    set_target_properties(vorbisfile PROPERTIES
++        VERSION ${VORBISFILE_VERSION_INFO}
++        SOVERSION ${VORBISFILE_VERSION_INFO_SOVERSION})
+ 
+     target_include_directories(vorbis
+         PUBLIC

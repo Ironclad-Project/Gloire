@@ -11,6 +11,7 @@ for pkg in ../recipes/*; do
     unset repology_id
     unset repology_srcname
     unset repology_status
+    unset repology_version
     unset skip_pkg_check
 
     . "${pkg}"/recipe
@@ -41,6 +42,12 @@ for pkg in ../recipes/*; do
         status_to_check=".status==\"$repology_status\" and"
     fi
 
+    if [ -z "$repology_version" ]; then
+        version_to_check="$version"
+    else
+        version_to_check="$repology_version"
+    fi
+
     # XXX: Repology seems to implement a whitelist of agents, which does not
     # seem to include curl, or Gloire's repository, which is recommended under
     # their bulk user guidelines.
@@ -66,11 +73,11 @@ for pkg in ../recipes/*; do
 
     checked_vers="$(echo "$checked_vers" | sed 's/\"//g')"
 
-    if ! [ "$version" = "$checked_vers" ]; then
-        if ! [ "$(printf "$checked_vers\n$version\n" | sort -Vr | head -n 1)" = "$version" ]; then
-            printf " \033[0;97;42mneeds update $version -> $checked_vers\033[0m\n"
+    if ! [ "$version_to_check" = "$checked_vers" ]; then
+        if ! [ "$(printf "$checked_vers\n$version_to_check\n" | sort -Vr | head -n 1)" = "$version_to_check" ]; then
+            printf " \033[0;97;42mneeds update $version_to_check -> $checked_vers\033[0m\n"
         else
-            printf " \033[0;97;44mmore up-to-date than detected ($version vs $checked_vers)\033[0m\n"
+            printf " \033[0;97;44mmore up-to-date than detected ($version_to_check vs $checked_vers)\033[0m\n"
         fi
         continue
     fi

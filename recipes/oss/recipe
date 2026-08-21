@@ -1,0 +1,34 @@
+#! /bin/sh
+
+_version=4.2-build2020
+version=${_version//-build/.}
+revision=1
+repology_id=oss4
+repology_version=${_version}
+tarball_url="http://www.opensound.com/developer/sources/stable/gpl/oss-v${_version}-src-gpl.tar.bz2"
+tarball_blake2b="739aabd8b1851a3878d62b101e91552b647b2b402c83e539d1150c52809b72efbe3c7a93f08ba6b57132f5c20763345fb9579f79315b7a137faec9135a664652"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs libvorbis"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    make -f Makefile.ironclad \
+        CC="${OS_TRIPLET}-gcc" \
+        OGG_SUPPORT=1 \
+        HOSTCC="cc" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        CPPFLAGS="${TARGET_CPPFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        prefix="${prefix}" \
+        -j${parallelism}
+}
+
+package() {
+    make -f Makefile.ironclad install \
+        DESTDIR="${dest_dir}" \
+        prefix="${prefix}"
+
+    post_package_strip
+}

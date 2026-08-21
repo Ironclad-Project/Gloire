@@ -1,0 +1,30 @@
+#! /bin/sh
+
+from_source=oss
+skip_pkg_check=yes
+revision=1
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs oss gtk3"
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    make -f Makefile.ironclad ossxmix \
+        CC="${OS_TRIPLET}-gcc" \
+        HOSTCC="cc" \
+        PKG_CONFIG="${OS_TRIPLET}-pkg-config" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        CPPFLAGS="${TARGET_CPPFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        prefix="${prefix}" \
+        -j${parallelism}
+}
+
+package() {
+    make -f Makefile.ironclad install-ossxmix \
+        DESTDIR="${dest_dir}" \
+        prefix="${prefix}"
+
+    post_package_strip
+}

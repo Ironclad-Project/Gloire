@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=5.0.1
-revision=2
+version=5.0.2
+revision=1
 tarball_url="https://ftp.gnu.org/gnu/screen/screen-${version}.tar.gz"
-tarball_blake2b="ce8478718903ea4f9f7d5de2c77008cee304fef1065f3d564844844cb3ba7acb88bfe2cda051cecee0f034b19ea4e52a0fcc1549f9339eac33e7748ab59cd0f5"
+tarball_blake2b="b9a5b90e84f5a2ae50dcc245686f57b654eef84b9f8580e3c36d21e337cb6c4690060e1b4ce11ae6804709aa2083c13c954b931f1e87d2835647539d75e89d64"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 

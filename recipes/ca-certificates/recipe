@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/recipes/nss/recipe" && echo "${version}")"
-revision=5
+revision=6
 make_ca_version=1.16.1
 tarball_url="https://github.com/lfs-book/make-ca/archive/v${make_ca_version}/make-ca-${make_ca_version}.tar.gz"
 tarball_blake2b="f054fe6e96b74bfc02038e9dc4dd09628a22b75711f692a346c4952a6fa07456b63cff7863d3c11feddeb1ef37b1b786934e2713008b808570da8443e978ece3"

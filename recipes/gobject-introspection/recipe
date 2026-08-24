@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.86.0
-revision=1
+revision=2
 git_url="https://gitlab.gnome.org/GNOME/gobject-introspection.git"
 commit=0f1412500b7d9039510b7b36b07c9f8ba0809bfa
 imagedeps="libpython3-dev gobject-introspection"

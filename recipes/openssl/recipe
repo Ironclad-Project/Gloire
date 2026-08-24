@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.6.1
+version=4.0.1
 revision=1
 tarball_url="https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
-tarball_blake2b="da949967d40ca9e17baf1bedded5080e37bce2dfc187f2a46f80ec01e708f9d550d055ef8557812135c4a1081b8f3477c5d4dbe46e0f39a9b696a7dbdc6b769a"
+tarball_blake2b="8c5e1d97165d8e74f6ab41adf75c8f1a60a38b511163d0cdd054b27280538681d308385ce9a6fe2230aed7e412436419f864876e57538738e13eed77d520d5cd"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib"
 

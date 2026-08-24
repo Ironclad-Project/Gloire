@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.60.7
-revision=1
+revision=2
 tarball_url="https://github.com/void-linux/xbps/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="63229a75b5b582efe5b7a181baa166c0b3b1fabf93f65024e9cea8b613cff023268680fece28c5105eca426a3ff3d57d485d9ab1c7193b992ef6e03fe14e9b2c"
 hostdeps="gcc pkg-config"

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=19beta2
-revision=4
+version=19beta3
+revision=1
 tarball_url="https://ftp.postgresql.org/pub/source/v${version}/postgresql-${version}.tar.bz2"
-tarball_blake2b="28753aef951e3bd1ecf36808d7f0b669ef1cccbc5a35c9ce78289945639dfc2f9d781c661919d70782b620757ccfcd66b37c33d95423f882fc39c1053ab2fe3b"
+tarball_blake2b="ac52e4db1e922acd678c0e29845ee1aa8ed79b8e0a0ee842165f36e5989aff401f6c54d63c37ae05c82592c380d3dd46a09f64b80104e6e72956eee61bdb818d"
 imagedeps="binutils"
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib openssl zstd libxml2 lz4 llvm-libs curl"

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.28.3
-revision=8
-git_url="https://github.com/mate-desktop/atril.git"
-commit=64bcc359e333135e72af2cc410373d8523b73c09
+version=1.28.6
+revision=1
+tarball_url="https://github.com/mate-desktop/atril/releases/download/v${version}/atril-${version}.tar.xz"
+tarball_blake2b="711ce8c54c09726253237b3cc54cdc1e4b57f8d25be41d42b6db605379fd9662053df611cc7cbd018647567caca74335e008f72a72ed09bf51c3f63adfbbad35"
 imagedeps="libglib2.0-dev-bin itstool libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core poppler glib2 libxml2 mate-desktop zlib gdk-pixbuf gtk3 libice libsm libx11 cairo pango caja libtiff libarchive"

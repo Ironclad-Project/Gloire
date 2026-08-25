@@ -1,0 +1,94 @@
+# Gloire Porting Guidelines
+
+1. Similar recipes should follow the same style as one another. Example: all
+autotools ones should be largely similar, likewise for CMake and Meson ones.
+Exceptions are made for packages using custom build systems, but plain make
+packages usually also follow similar designs, but have to account for things
+like flags passing, which may differ, support for out-of-tree builds, which may
+be absent, etc...
+
+2. We always strive to build packages out-of-tree, which is Jinx's default
+expected behaviour, but when support for out-of-tree builds is lacking, we use
+the following idiom at `build()` step to create a working copy of the
+source:
+```sh
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    ...
+```
+
+3. We only patch packages when absolutely necessary. Useless patches should not
+exist. Each hunk of a package's patches should serve a specific Gloire/Ironclad
+related purpose, ranging from adding Gloire/Ironclad support to a package, to
+fixing the code/build system so it works with the system, to fixing the code so
+it works with the system. What is not welcome: patches that fix bugs that are
+not Gloire/Ironclad specific or that add feature/functionality, or similar.
+
+4. The dependencies should be only and exclusively the one needed to build the
+package with the required feature set, and only those that the package directly
+depends on, not transitive ones, which will automatically be resolved by Jinx.
+We have been largely basing our dependencies list on what Arch Linux does as
+a reliable reference.
+
+5. Final packages ought to have their target executable and libraries stripped.
+This is currently easily achieved by running the `post_package_strip` function
+at the end of the `package()` step.
+
+6. This is an important one: target packages should be ensured to be built
+using the set of `TARGET_{C,CXX,CPP,LD}FLAGS`. Likewise, host packages should
+be ensured to be built using the set of `HOST_{C,CXX,CPP,LD}FLAGS`. Functions
+that handle commonly used build systems such as `autotools_configure`,
+`meson_configure`, and `cmake_configure` should already handle this
+automatically, though this isn't always guaranteed, especially with poorly
+written autotools packages. For packages using plain `make` or other custom
+build systems, the way to properly apply the flags is per-recipe. Patches that
+allow the flags to apply properly are welcome. The `CFLAGS` should apply to all
+C objects built, the `CXXFLAGS` to the C++ objects, the `CPPFLAGS` to both, and
+the `LDFLAGS` should be applied to the link step alongside the `{C,CXX}FLAGS`.
+The flags should be ensured to be placed in such way that they are not
+overridden by unimportant flags by the package's build system, e.g. `-g -O3`.
+If the latter requires a patch to achieve, that patch is welcome.
+
+7. Libraries should be built with a proper soname and symlinks as needed. Some
+packages build their libraries without a proper soname, in which case it is
+suggested to use a `imagedep` of `patchelf` to patch the soname in manually.
+(See, for example, the `ncurses` recipe).
+
+8. About `imagedeps`, these should NEVER be libraries that tools may link to,
+as they are not resolved when, e.g., a host tool is pulled in, and it will fail
+to work. `imagedeps` should usually be programs only, and should only be used
+when absolutely necessary. Though that said, exceptions are made if the library
+is needed by the package itself to build a build-time ONLY tool.
+
+9. Static libraries should not be created for packages outside `core-libs` and
+its dependencies. If a build system doesn't provide a way to disable the
+creation of static libraries, removing them manually is acceptable. Exception
+can and should be made if the static library is part of a package's functioning
+and not merely a static version of an already shipped shared library.
+
+10. Some packages will install stuff into a `/sysroot` directory inside their
+`DESTDIR`. This is wrong and should not happen. The package should be
+configured such that this does not happen where possible, else patching, or,
+as a last resort, modifying the recipe to manually move/remove those files is
+acceptable.
+
+11. Similar to #10, packages should not contain internal references to
+`/sysroot`, but this is significantly harder to evaluate, especially in cases
+where it's just debug stuff or an unrelated `/sysroot` string of text. So treat
+this more as a general guideline than as a hard rule.
+
+12. About build systems: the general preference order when a package provides
+more than 1 is Meson -> CMake -> Autotools -> anything else. But some packages
+are quirky and they only maintain properly one of their build systems, which
+may not be one that agrees with our order. In that case, it is fine to use the
+best maintained build system.
+
+13. About when to use tarballs vs. Git repositories as sources: the rule is
+that if upstream provides "manually" generated tarballs intended for use by
+distro maintainers, we prefer those. That excludes e.g. autogenerated GitHub,
+cgit, ... tar archives. If these "manually" generated tarballs are not
+available then we build from the Git repository, from a specific version tag.
+
+14. About package naming, we tend to and should follow what Arch Linux names
+its packages. Exceptions should be properly justified.

@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="4"
+jinx_minor_ver="6"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -808,7 +808,7 @@ do_tarball_fetch() {
         make_temp
         local download_path="${tmp}"
 
-        curl -L -o "${download_path}" "${tarball_url}"
+        curl -f -L -o "${download_path}" "${tarball_url}"
         mv "${download_path}" "${tarball_path}"
     fi
 
@@ -1916,7 +1916,9 @@ cmd_download_for() {
             || die "$0: failed to download ${pkg_file} from ${repo_url}"
 
         # Verify SHA256 against repodata
-        local pkg_name="${pkg_file%%-[0-9]*}"
+        local pkg_name="${pkg_file%.${arch}.xbps}"
+        local pkg_name="${pkg_name%-*}"
+        local pkg_name="$(printf '%s' "${pkg_name}" | sed 's/[.[\*^$\\]/\\&/g')"
         local expected_sha256="$(sed -n "/<key>${pkg_name}<\\/key>/,/<key>filename-sha256<\\/key>/{
             /<key>filename-sha256<\\/key>/{n;s/.*<string>\\(.*\\)<\\/string>.*/\\1/p;}
         }" "${index_plist}")"

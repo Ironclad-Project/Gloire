@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=6.6
-revision=1
+revision=2
 tarball_url="https://github.com/ThomasDickey/ncurses-snapshots/archive/refs/tags/v6_6.tar.gz"
 tarball_blake2b="736b7b46f5f9e16f983ba7d0e5073c84c22db23984eeaf90905ad952c6720726832606c2c39cf64ed6ddbd3744979f245f1ed797c11f1e48e2218077eec96f11"
 imagedeps="build-essential ncurses-bin patchelf"

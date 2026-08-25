@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=9.0.0
-revision=4
+revision=5
 tarball_url="https://archive.mesa3d.org/demos/mesa-demos-${version}.tar.xz"
 tarball_blake2b="426211886344e88616670f0da8c71385e0ab86fd7dab60c7a477b165f33d2f7bd5fd9297f1f67c78e60fed5c98ab8851c1bd4ae92a6b0b486fd158196b109eb0"
 hostdeps="gcc pkg-config"

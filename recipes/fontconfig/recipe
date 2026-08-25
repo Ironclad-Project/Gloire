@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.18.3
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/fontconfig/fontconfig.git"
 commit=0f236723a3c26bd9745e32ba2b3ee21e5f809295
 imagedeps="gperf"

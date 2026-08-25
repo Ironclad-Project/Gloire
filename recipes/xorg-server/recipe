@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=21.1.24
-revision=2
+revision=3
 git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
 commit=65d790bd208ec380b196eb98f144abb0b32e334d
 hostdeps="gcc pkg-config"

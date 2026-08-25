@@ -2,7 +2,7 @@
 
 repology_id=libisoburn
 version=1.5.8.pl02
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/xorriso/xorriso-${version}.tar.gz"
 tarball_blake2b="3e15af0ec6082c590c6f13454783c277ff5439e7457e1ef90143f5406c71e6afbadc74b6765b5d5d833541171fec6b164376068b8ca44d0de298ec9ef420b4e2"
 imagedeps="gperf"

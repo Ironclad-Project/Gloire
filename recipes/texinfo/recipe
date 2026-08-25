@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=7.3
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/texinfo/texinfo-${version}.tar.xz"
 tarball_blake2b="e9c17aec5ebf9d22eb22b40a06a24de675fca6d511f448170983d474b0906e23c25a00b75907b260abf66e660aefa6d6af928a1785bcf9b2099a0e791aac7025"
 source_imagedeps="build-essential"

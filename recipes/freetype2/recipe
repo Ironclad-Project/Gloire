@@ -2,7 +2,7 @@
 
 repology_id=freetype
 version=2.14.3
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/freetype/freetype.git"
 commit=0a0221a1347e2f1e07c395263540026e9a0aa7c7
 hostdeps="gcc pkg-config"

@@ -2,7 +2,7 @@
 
 repology_id=fonts:noto
 version=2026.08.01
-revision=1
+revision=2
 git_url="https://github.com/notofonts/notofonts.github.io"
 commit=113d8e66a13a47d514be6c07e616842258982f42
 

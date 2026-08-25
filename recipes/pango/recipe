@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.58.2
-revision=1
+revision=2
 tarball_url="https://gitlab.gnome.org/GNOME/pango/-/archive/${version}/pango-${version}.tar.gz"
 tarball_blake2b="24b870b42cb1c7c1e2f164a3ee543851f9fce5a4d9c75c47602ce6cc11d07e0271fa3d0d1b1d55f4a9c01bf9265790b7da8ba74fda9b36fa13dec0b2a819c13c"
 imagedeps="libglib2.0-dev"

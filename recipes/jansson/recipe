@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.15.1
-revision=1
+revision=2
 tarball_url="https://github.com/akheron/jansson/releases/download/v${version}/jansson-${version}.tar.gz"
 tarball_blake2b="690b84c8c93a6b1c3be58b5ed030445bf970ab8c8c3cc19b38e0c94df3f33f5fc1a401e5b48785ad1fa5bb534701ac0f85087d9e1ad383a735f56ce27f56fd89"
 hostdeps="gcc pkg-config"

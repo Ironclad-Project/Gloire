@@ -2,7 +2,7 @@
 
 repology_id=xfontsel
 version=1.1.2
-revision=1
+revision=2
 tarball_url="https://www.x.org/pub/individual/app/xfontsel-${version}.tar.xz"
 tarball_blake2b="c9a4b56975987488d142b5f095f77e972c0802de7ec80aa862c0b71d16c2eca1a3bb27eaaaf2691f70b83063f2d6ab4343caabecde3c470b37ea5acff1e4d190"
 hostdeps="gcc pkg-config"

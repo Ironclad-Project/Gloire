@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=24
+revision=25
 source_dir="base-files"
 
 package() {

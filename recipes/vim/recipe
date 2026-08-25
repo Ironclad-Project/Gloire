@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=9.2.1000
-revision=1
+revision=2
 tarball_url="https://github.com/vim/vim/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="4e180a5721516422d3b75936f902a432f46dcf0f60832722db2a5bde1909ed53164b1318d77a026b229243b5d0e2b1e6f8897a95779e8a43f6546aacad10fc99"
 hostdeps="gcc pkg-config"

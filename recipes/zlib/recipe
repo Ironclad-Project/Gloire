@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.2
-revision=2
+revision=3
 tarball_url="https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="21bcccda24d5868b9268e9f7a0fb125ff284cd07f8c708c021dd2702a48852447d4b1bc1e64480cf4d04539ef1ae99225fbde4f63894727a5edcfcd00f21c5e9"
 imagedeps="patchelf"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=6.0.2
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/xorg/lib/libxfixes.git"
 commit=70d5b0e37f8a759f3dbc218f22954347ceed094a
 hostdeps="gcc pkg-config"

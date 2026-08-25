@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.48
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git"
 commit=cf8d1151bb4c9ef5b895828d0e6dd7860c0833e0
 hostdeps="gcc pkg-config"

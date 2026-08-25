@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.8.0
-revision=1
+revision=2
 tarball_url="https://github.com/libffi/libffi/releases/download/v${version}/libffi-${version}.tar.gz"
 tarball_blake2b="589f87f79ea637dbddd00db3e320090f17855da5b1669a42b154f1c61bcafd1e8a964738d25b424c95ba5e148565df4b7379800ba42f40149c74d749f4f4b096"
 hostdeps="gcc pkg-config"

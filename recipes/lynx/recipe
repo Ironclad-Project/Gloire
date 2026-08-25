@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.9.3
-revision=4
+revision=5
 tarball_url="https://invisible-mirror.net/archives/lynx/tarballs/lynx${version}.tar.bz2"
 tarball_blake2b="8183507ac372d4349988a091ac320fe45a19e9b771a7a737ff4126eccfb220d20eca8d6873c0804091629663059519d223635468572362b221f30531078b3d24"
 imagedeps="build-essential"

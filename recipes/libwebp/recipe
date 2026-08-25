@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.6.0
-revision=3
+revision=4
 git_url="https://github.com/webmproject/libwebp.git"
 commit=4fa21912338357f89e4fd51cf2368325b59e9bd9
 hostdeps="gcc pkg-config"

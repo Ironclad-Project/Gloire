@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=6.1.3
-revision=1
+revision=2
 tarball_url="https://sourceforge.net/projects/giflib/files/giflib-${version}.tar.gz"
 tarball_blake2b="763f45f02be5ae16d0c97170fa9312d1888db44e82d9204a16c7098589c0e3ca3129b51de1172f0d424230955b83224ebe259d5025e412df81ef6e1bc633eedd"
 imagedeps="imagemagick"

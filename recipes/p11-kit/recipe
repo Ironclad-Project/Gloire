@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.26.5
-revision=1
+revision=2
 tarball_url="https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz"
 tarball_blake2b="3588e4abeca13450c8228b4e104942b459c86fa5bf07fd391b895ff99694e37a20562462fd3e5290dce79a45a16cc821da4ed86d9d4446beb1305d4638421589"
 hostdeps="gcc pkg-config"

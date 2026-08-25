@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.10
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/sed/sed-${version}.tar.xz"
 tarball_blake2b="6decea38a3e6eb3b672af2380ec3f32759b60350dba528d28a57b74806db33208baed69a8497d423bc7626105930e3e9c9ea68f68b8bcd4a3270f2d8922a2487"
 hostdeps="gcc pkg-config"

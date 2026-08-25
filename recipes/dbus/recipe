@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.16.2
-revision=3
+revision=4
 git_url="https://gitlab.freedesktop.org/dbus/dbus.git"
 commit=958bf9db2100553bcd2fe2a854e1ebb42e886054
 hostdeps="gcc pkg-config"

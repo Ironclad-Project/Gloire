@@ -2,7 +2,7 @@
 
 repology_id=xwininfo
 version=1.1.7
-revision=1
+revision=2
 tarball_url="https://www.x.org/pub/individual/app/xwininfo-${version}.tar.xz"
 tarball_blake2b="6b360f5c91072b878296dd20fd5c840fe366a54bf1487d614556d8baaae46dbe72127a1563a8f92eda5f36e8c6acd195eb3558c0621961e1ff19ea9f34c47430"
 hostdeps="gcc pkg-config"

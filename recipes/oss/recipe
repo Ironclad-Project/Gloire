@@ -2,7 +2,7 @@
 
 _version=4.2-build2020
 version=${_version//-build/.}
-revision=1
+revision=2
 repology_id=oss4
 repology_version=${_version}
 tarball_url="http://www.opensound.com/developer/sources/stable/gpl/oss-v${_version}-src-gpl.tar.bz2"

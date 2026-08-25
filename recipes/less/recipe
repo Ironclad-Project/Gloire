@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=704
-revision=1
+revision=2
 tarball_url="https://www.greenwoodsoftware.com/less/less-${version}.tar.gz"
 tarball_blake2b="490b5ea9006cec85b8a44f19bfc47f99da7394664e4dc4ed37fb9610c42d9fbe206a702540aaa04fe9b3320e0672522fb740ad189c835aa5a4580da4175fae71"
 hostdeps="gcc pkg-config"

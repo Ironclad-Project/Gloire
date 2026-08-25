@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=12.2.0
-revision=1
+revision=2
 tarball_url="https://github.com/fmtlib/fmt/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="5dfb2eb6087a7442477a64c6d0ec5de8b27ca5768cb3330b51980085547553eed9a736ac2983d7d249f41655a8183aa45ead3f9289cd157f76f6fbe33c7920de"
 hostdeps="gcc pkg-config"

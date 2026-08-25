@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.6.26
-revision=1
+revision=2
 tarball_url="https://github.com/libexif/libexif/releases/download/v${version}/libexif-${version}.tar.bz2"
 tarball_blake2b="db29fe7095d8e44a47ba0e87f5f245498352c06192b85962e72d507cc979138cfb07ed4c0f22cfe3ea3e120e7ee9463f8d8a66a14952459822c38b262bf7a042"
 hostdeps="gcc pkg-config"

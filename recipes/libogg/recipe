@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.6
-revision=2
+revision=3
 git_url="https://github.com/xiph/ogg.git"
 commit=be05b13e98b048f0b5a0f5fa8ce514d56db5f822
 hostdeps="gcc pkg-config"

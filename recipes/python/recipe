@@ -1,11 +1,11 @@
 #! /bin/sh
 
 repology_srcname=python
-_major_version=3.13
-version=${_major_version}.11
-revision=2
+_major_version=3.14
+version=${_major_version}.7
+revision=1
 tarball_url="https://www.python.org/ftp/python/${version}/Python-${version}.tar.xz"
-tarball_blake2b="6c9c4dddcda36a0210155b759c01101b0429b17622d76a50881533b454335298e9f71ba300710afea2039425a08e4e1ea7eab27a18dc871950c3a32ad93ce663"
+tarball_blake2b="7d6988f906a402dbfc87b690f228b5fc53de024602bb459360e0482c1e323e212c71ff389b2c37bcc35248df9d9aa3bf710d3745484048cce7d4a41e5b3ea937"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 xz zlib openssl ncurses readline gdbm libexpat libffi"
 

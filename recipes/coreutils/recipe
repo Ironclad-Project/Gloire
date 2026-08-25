@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=9.11
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/coreutils/coreutils-${version}.tar.xz"
 tarball_blake2b="bea602b60824724bddd53ef7a232292ddb99f9b940ebedc30bd42f9b2f3d4763e7ea6c1d76c556413261b8c0bba7b1adbb4a5f6619ff3c9bdbe80d05a12ebd86"
 hostdeps="gcc pkg-config"

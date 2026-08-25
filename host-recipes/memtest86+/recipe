@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=7.20
-revision=1
+revision=2
 tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="f53570e9364f7fc15c946d925b449139f72bdfab6e2c69e40f7edf6aa034c6b46e40194d32eb56122365b6badc199ed9eeb8f3281d1908adb85495ffd25ea5f7"
 hostdeps="gcc"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.21
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/mailutils/mailutils-${version}.tar.xz"
 tarball_blake2b="395da966e7a290a53665a79f7984185cd73583c599d3b7d05a6b4ec1113fcaab5e526a3323cef36e75fa0eb0f26efdfb4f5874d1dbd633ee9a0a025a9e219140"
 hostdeps="gcc pkg-config"

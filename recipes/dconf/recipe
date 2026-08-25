@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.49.0
-revision=2
+revision=3
 git_url="https://gitlab.gnome.org/GNOME/dconf.git"
 commit=a6b86bd66d3b42d8cfeacc2cc71a4fc78abadb71
 imagedeps="libglib2.0-dev"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=43.3
-revision=3
+revision=4
 git_url="https://gitlab.gnome.org/GNOME/libwnck.git"
 commit=75e56cf1d7ef1edd61516bdf25bf7fdee8b935f3
 imagedeps="libglib2.0-dev"

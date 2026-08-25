@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=14.3.1
-revision=1
+revision=2
 tarball_url="https://github.com/harfbuzz/harfbuzz/releases/download/${version}/harfbuzz-${version}.tar.xz"
 tarball_blake2b="67e74266c83797a42d8c8a92a63e9958eb666989b4a47874155603371f101732544c4d6dc82aa9bf719229af61461ab87995fc6df7fcfa3e594bf562817b9339"
 hostdeps="gcc pkg-config"

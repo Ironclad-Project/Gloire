@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.20.1
-revision=1
+revision=2
 tarball_url="https://web.archive.org/web/20260601215216if_/https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v${version}/iso-codes-v${version}.tar.gz"
 tarball_blake2b="b3c4c53ae90ccd5baa66977bb42f10406fe50df34cd29f02ac9e77264543f6c4d5004e7d29bafc086bd05d437a26465c65e0308853c3e84a26042535d1449651"
 hostdeps="gcc pkg-config"

@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=15
+revision=16
 git_url="https://codeberg.org/Ironclad/gcon.git"
 commit=478d3286e4c75d6c3031512766fbb8cf3df83fbc
 hostdeps="gcc pkg-config"

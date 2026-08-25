@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=78.3
-revision=3
+revision=4
 tarball_url="https://github.com/unicode-org/icu/releases/download/release-${version}/icu4c-${version}-sources.tgz"
 tarball_blake2b="31cd41d900f7be20eafab42304e9369fa2074cd4e91c2808887db7013c639aa2e0e5c3c7a139d10e18d3300ea6094e10c2d9fc325678b6e986a11ed9181f4b0c"
 source_imagedeps="build-essential pkg-config"

@@ -2,7 +2,7 @@
 
 repology_id=tree-steve-baker
 version=2.3.2
-revision=1
+revision=2
 tarball_url="https://gitlab.com/OldManProgrammer/unix-tree/-/archive/${version}/unix-tree-${version}.tar.gz"
 tarball_blake2b="c2f4d899852b8c02fc89ca476c2c58012779c9415042a3cf84f1a80c2b1abdf7f2b681cc04b01cb0b7993525625da5506f6db54829d1a1ac03da1cdb35bbf062"
 hostdeps="gcc"

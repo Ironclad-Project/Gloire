@@ -3,7 +3,7 @@
 version=16.2.0
 tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="ab3ffe16e042da767f3f1eac170da518d6d7de3b0f92e068f79e3bf25fdc0bdf56eea0cd586bd4b9b6e9baebadd110c2ebd77b75c99c45853814f4bea5a98ef0"
-revision=1
+revision=2
 hostdeps="gcc pkg-config"
 deps="core-libs binutils zlib gmp mpfr mpc gettext"
 imagedeps="build-essential"

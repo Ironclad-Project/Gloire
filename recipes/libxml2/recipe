@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.15.3
-revision=1
+revision=2
 tarball_url="https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${version}/libxml2-v${version}.tar.gz"
 tarball_blake2b="118454ed4ea904a74ba7fab7d529b0823835c0b38b57bec2de1b72d386f9818f90119e0b794d0743a92f562f9ced2552616ecaaaf6ffd35baa41deaefd2199be"
 hostdeps="gcc pkg-config"

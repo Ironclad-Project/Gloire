@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.19.1
-revision=2
+revision=3
 tarball_url="https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz"
 tarball_blake2b="a96e449304ec9ba08d2793ec2d3770e0e546db8ff1d82ba8f61c252ea5116054114a9dfd4bf515d850024e4eccee40a8ece42fb481c079eba0a9586f968f70c3"
 hostdeps="gcc pkg-config"

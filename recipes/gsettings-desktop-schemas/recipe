@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=50.1
-revision=1
+revision=2
 tarball_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas/-/archive/${version}/gsettings-desktop-schemas-${version}.tar.gz"
 tarball_blake2b="d2b9d6c857a33f9c2725131711969d6f3bc86a69264a28e33f4294eac0a6f25dec25807799fcb99a598e397aed1e747de3369e9bab9625490ae73e220d71e0db"
 imagedeps="libglib2.0-dev"

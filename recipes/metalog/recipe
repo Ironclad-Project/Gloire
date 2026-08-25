@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=20260221
-revision=1
+revision=2
 tarball_url="https://github.com/hvisage/metalog/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="b5394cf88768411aaa303b2c8ce49d6340d71d4b3f7ee934b6caf792d5a279361c545e1dd98df30d82c6e3efd9ff313c9208bdcd5184d54d44c79c8a4dbbab19"
 source_deps="autoconf-archive"

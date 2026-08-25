@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.7
-revision=1
+revision=2
 tarball_url="https://www.x.org/archive/individual/lib/libXext-${version}.tar.gz"
 tarball_blake2b="2cfd0aaa93b8e45d994337a700636d39ef1599b3b83ab0c3af61a80373fe70d5cd9ac17bb391871ec3d47850e4888f6d5ef8447a2634f248163e1cc529524a34"
 hostdeps="gcc pkg-config"

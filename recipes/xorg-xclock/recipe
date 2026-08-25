@@ -2,7 +2,7 @@
 
 repology_id=xclock
 version=1.2.1
-revision=1
+revision=2
 tarball_url="https://xorg.freedesktop.org/archive/individual/app/xclock-${version}.tar.gz"
 tarball_blake2b="280543acac24c0e20346072e56c7d9087cf72455b5a38383de1af44e667080c131426384abf6d219c30e56e53bc95d825053d460582143003837be3b9c08e3f8"
 hostdeps="gcc pkg-config"

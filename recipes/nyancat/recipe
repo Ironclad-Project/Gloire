@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.5.2
-revision=1
+revision=2
 tarball_url="https://github.com/klange/nyancat/archive/refs/tags/${version}.tar.gz"
 tarball_blake2b="4c197c7d630edc7184b57fd2b33fb422a69120e2db2994bc326e772278bca9fa1cc8a837da747bc7a9114090d43133ad48e22ed3319fc92485f82c1e7b5e67b9"
 hostdeps="gcc pkg-config"

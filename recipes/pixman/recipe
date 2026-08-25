@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.46.4
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/pixman/pixman.git"
 commit=9cc163c9da0fb4da430641715313d95a6ec466d9
 hostdeps="gcc pkg-config"

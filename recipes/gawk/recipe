@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=5.4.1
-revision=1
+revision=2
 tarball_url="https://ftp.gnu.org/gnu/gawk/gawk-${version}.tar.xz"
 tarball_blake2b="8bd7913c268a66e3f9eca6bed8d7b8fe23c75148c932d186c5e35429dc12f331f960e0fbb5d62d4675ff47f369f63c92db5b3214303edab3a868f0071dd0c4c1"
 hostdeps="gcc pkg-config"

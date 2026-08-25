@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=autoconf-archive
-revision=1
+revision=2
 
 package() {
     mkdir -p "${dest_dir}${prefix}"/share/aclocal

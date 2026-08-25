@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.80.1
-revision=3
+revision=4
 tarball_url="https://download.gnome.org/sources/glib-networking/2.80/glib-networking-${version}.tar.xz"
 tarball_blake2b="04df4d08a6d43cbd8ca9409aa566f72c9ef1041a098d6e9468f5345d78af96e5d85ade68f735f95acc8fe784467b9475bb9b51686d3316e523123639774bf6aa"
 imagedeps="libglib2.0-bin"

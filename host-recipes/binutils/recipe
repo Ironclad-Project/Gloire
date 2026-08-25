@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=binutils
-revision=1
+revision=2
 imagedeps="build-essential"
 hostdeps="pkg-config"
 

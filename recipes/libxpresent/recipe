@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.0.2
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/xorg/lib/libxpresent.git"
 commit=4d92149372461bf575e8a09b1064a2884c38c3aa
 hostdeps="gcc pkg-config"

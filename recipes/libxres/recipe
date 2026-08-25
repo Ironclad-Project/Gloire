@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.2.3
-revision=1
+revision=2
 git_url="https://gitlab.freedesktop.org/xorg/lib/libxres.git"
 commit=30c789e5065f7af7d6a03c09e3ceb073ed810bdd
 hostdeps="gcc pkg-config"

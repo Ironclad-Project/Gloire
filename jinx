@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="6"
+jinx_minor_ver="7"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -81,8 +81,8 @@ declare -A NOCHOWN_SHA256=(
     [s390x]=749beba8f4b72338e4b7769e0ed69a2f448e7cdc963cfd1d0a18d679c2f61ba2
 )
 
-debootstrap_version=1.0.143
-debootstrap_sha256sum=15652a91eb1cf04c24c485bbaaf36e0528132bded8475820344a8129c7eaca01
+debootstrap_version=1.0.144
+debootstrap_sha256sum=a35b2180d48d981a6db8602706bd229e65514503768933c0f797c66927c76631
 
 die() {
     echo "$1" 1>&2
@@ -2429,7 +2429,7 @@ reinit_container() {
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
         LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
-            --foreign sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
+            --foreign --variant=minbase sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
     "
 
     local dir
@@ -2456,7 +2456,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     # Fix permissions of files
     find "$JINX_CACHE_DIR/sets/.image" -perm 000 -exec chmod 755 {} + 2>/dev/null
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 curl diffutils findutils gawk git grep gzip lzip patch sed tar xz-utils zstd ${JINX_BASE_PACKAGES-}
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 ca-certificates curl diffutils findutils gawk git grep gzip lzip netbase patch procps sed tar xz-utils zstd ${JINX_BASE_PACKAGES-}
 
     if [[ -n ${JINX_CMAKE_PLATFORM-} ]]; then
         cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/

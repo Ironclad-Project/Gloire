@@ -1,20 +1,17 @@
 #! /bin/sh
 
-version=1.4.4
-revision=6
+version=1.4.6
+revision=1
 tarball_url="https://github.com/taisei-project/taisei/releases/download/v${version}/taisei-${version}.tar.xz"
-tarball_blake2b="8dcd65265062f510e407494ab977a1f2d98937fef3657fb61cc582f8ec855dc8402c79fa059a9ceff52e45a0ff50fde810d72c3a1b270ed64824d6dcb42ab983"
+tarball_blake2b="f183a220c2282ddca763643ce0c9715b0a88ed2bfc7832552656ce551aace001180beb3592bb3258448d89b12aa969bf7dc5b371df084f262c789dbf371a9820"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl"
+deps="core-libs freetype2 libpng sdl2-compat libwebp zlib cglm openssl libunibreak opusfile"
 
 configure() {
     meson_configure \
         -Ddocs=disabled \
-        -Da_default=null \
-        -Db_lto=false \
-        -Da_sdl=disabled \
-        -Dvfs_zip=disabled
+        -Db_lto=false
 }
 
 build() {

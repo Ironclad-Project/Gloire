@@ -1,0 +1,26 @@
+#! /bin/sh
+
+version=1.6.1
+revision=1
+tarball_url="https://downloads.xiph.org/releases/opus/opus-${version}.tar.gz"
+tarball_blake2b="dda8fb4e30e5f22d2b37616902892dcc715a2886150ab54f67d61a90c60a03afee05fb7b56a0d88355db007bb4d72c8bd6de3d874a49767318a5bba115b1a613"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+configure() {
+    meson_configure \
+      -Dasm=disabled \
+      -Dcustom-modes=true \
+      -Ddeep-plc=enabled \
+      -Ddred=enabled \
+      -Dosce=enabled
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+    post_package_strip
+}

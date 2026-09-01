@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="9"
+jinx_minor_ver="10"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -2487,7 +2487,7 @@ Acquire::Check-Valid-Until "0";' >> "$JINX_CACHE_DIR/sets/.image/etc/apt/apt.con
     # Fix permissions of files
     find "$JINX_CACHE_DIR/sets/.image" -perm 000 -exec chmod 755 {} + 2>/dev/null
 
-    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 ca-certificates curl diffutils findutils gawk git grep gzip lzip netbase patch procps sed tar xz-utils zstd ${JINX_BASE_PACKAGES-}
+    run_in_container1 "$JINX_CACHE_DIR/sets/.image" apt-get install -y bash bzip2 ca-certificates curl diffutils findutils gawk git grep gzip lzip netbase patch procps sed tar unzip xz-utils zstd ${JINX_BASE_PACKAGES-}
 
     if [[ -n ${JINX_CMAKE_PLATFORM-} ]]; then
         cp "${base_dir}/${JINX_CMAKE_PLATFORM}" "${JINX_CACHE_DIR}"/sets/.image/usr/share/cmake-*/Modules/Platform/

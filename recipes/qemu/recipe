@@ -1,10 +1,10 @@
 #! /bin/sh
 
 version=11.1.0
-revision=2
+revision=3
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_blake2b="bdcbd99067718c13186ed5f63bf6a7434e5f3acd455410ec029a0bbed45eb0fdcc9f9a3474af33e4e159137f2cf66b704998eda2c386297d73957fe26fba9722"
-imagedeps="build-essential python3-venv python3-sphinx python3-sphinx-rtd-theme"
+imagedeps="build-essential python3-venv python3-qemu-qmp python3-wheel python3-pip libglib2.0-dev python3-sphinx python3-sphinx-rtd-theme"
 hostdeps="gcc pkg-config"
 deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman libjpeg-turbo libpng zlib bzip2 zstd vte cairo gdk-pixbuf libx11 libxkbcommon gnutls libtasn1 curl"
 

@@ -1,8 +1,8 @@
 diff --git qemu-clean/block/file-posix.c qemu-workdir/block/file-posix.c
-index 827ffa7..12698eb 100644
+index 3c985da..2ef19f4 100644
 --- qemu-clean/block/file-posix.c
 +++ qemu-workdir/block/file-posix.c
-@@ -125,6 +125,8 @@
+@@ -118,6 +118,8 @@
  #endif
  #endif
  
@@ -12,7 +12,7 @@ index 827ffa7..12698eb 100644
  #ifndef O_DIRECT
  #define O_DIRECT O_DSYNC
 diff --git qemu-clean/chardev/char-serial.c qemu-workdir/chardev/char-serial.c
-index 0a68b4b..a429e8f 100644
+index 0c73baf..9fc293b 100644
 --- qemu-clean/chardev/char-serial.c
 +++ qemu-workdir/chardev/char-serial.c
 @@ -34,6 +34,9 @@
@@ -26,10 +26,10 @@ index 0a68b4b..a429e8f 100644
  #endif
  
 diff --git qemu-clean/configure qemu-workdir/configure
-index 274a778..db8b00f 100755
+index 6ddfe4b..c8afaaf 100755
 --- qemu-clean/configure
 +++ qemu-workdir/configure
-@@ -343,7 +343,9 @@ int main(void) { return 0; }
+@@ -348,7 +348,9 @@ int main(void) { return 0; }
  EOF
  }
  
@@ -41,10 +41,10 @@ index 274a778..db8b00f 100755
  elif check_define _WIN32 ; then
    host_os=windows
 diff --git qemu-clean/include/gdbstub/syscalls.h qemu-workdir/include/gdbstub/syscalls.h
-index d63228e..62c57e1 100644
+index a095591..629baf8 100644
 --- qemu-clean/include/gdbstub/syscalls.h
 +++ qemu-workdir/include/gdbstub/syscalls.h
-@@ -41,9 +41,10 @@
+@@ -43,9 +43,10 @@
  #define GDB_EUNKNOWN       9999
  
  /* For gdb file i/o remote protocol lseek whence. */
@@ -59,10 +59,10 @@ index d63228e..62c57e1 100644
  /* For gdb file i/o stat/fstat. */
  typedef uint32_t gdb_mode_t;
 diff --git qemu-clean/meson.build qemu-workdir/meson.build
-index b7db736..3f753a5 100644
+index 49a5baf..647970b 100644
 --- qemu-clean/meson.build
 +++ qemu-workdir/meson.build
-@@ -903,7 +903,7 @@ if get_option('hvf').allowed()
+@@ -910,7 +910,7 @@ if get_option('nitro').allowed() and host_os == 'linux'
  endif
  
  nvmm = not_found
@@ -71,7 +71,7 @@ index b7db736..3f753a5 100644
    nvmm = cc.find_library('nvmm', required: get_option('nvmm'))
    if nvmm.found()
      accelerators += 'CONFIG_NVMM'
-@@ -2562,6 +2562,7 @@ config_host_data.set('CONFIG_PASST', enable_passt)
+@@ -2489,6 +2489,7 @@ config_host_data.set('CONFIG_PASST', enable_passt)
  config_host_data.set('CONFIG_SLIRP', slirp.found())
  config_host_data.set('CONFIG_SNAPPY', snappy.found())
  config_host_data.set('CONFIG_SOLARIS', host_os == 'sunos')

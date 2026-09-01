@@ -1,0 +1,21 @@
+diff --git xorg-xrandr-clean/meson.build xorg-xrandr-workdir/meson.build
+index cd62c10..b07aca2 100644
+--- xorg-xrandr-clean/meson.build
++++ xorg-xrandr-workdir/meson.build
+@@ -70,16 +70,6 @@ executable(
+   install: true
+ )
+ 
+-custom_target(
+-  'xkeystone',
+-  input: ['nickle.sh', 'keystone.5c'],
+-  output: 'xkeystone',
+-  command: ['cat', '@INPUT@'],
+-  capture: true,
+-  install: true,
+-  install_dir: get_option('bindir'),
+-  install_mode: 'rwxr-xr-x',
+-)
+ 
+ # Man page
+ prog_sed = find_program('sed')

@@ -1,40 +1,109 @@
+diff --git mate-control-center-clean/capplets/display/meson.build mate-control-center-workdir/capplets/display/meson.build
+index 2679097..a2a2f9c 100644
+--- mate-control-center-clean/capplets/display/meson.build
++++ mate-control-center-workdir/capplets/display/meson.build
+@@ -49,12 +49,21 @@ i18n.merge_file(
+   install_dir: mcc_desktopdir
+ )
+ 
+-policy = 'org.mate.randr.policy'
+-
+-i18n.merge_file(
+-  input: policy + '.in',
+-  output: policy,
+-  po_dir: po_dir,
+-  install: true,
+-  install_dir: mcc_policydir,
+-)
++# The org.mate.randr.policy POLKIT POLICY is not built: polkit is not packaged for
++# Gloire (no recipe), NO built package ships anything under /usr/share/polkit-1/actions,
++# and this same file is why capplets/system-info and capplets/time-admin are disabled
++# above. Note the build cannot produce it here in any case -- `msgfmt --xml` locates the
++# translatable attributes through polkit's OWN /usr/share/gettext/its/polkit.its, which
++# is absent from the build image, and upstream's autotools build uses the identical
++# `msgfmt --xml --template` rule (capplets/display/Makefile.am:40), so this is not a
++# meson-vs-autotools difference. mate-display-properties-install-systemwide itself still
++# builds and ships; only its pkexec authorisation file is gone.
++# policy = 'org.mate.randr.policy'
++#
++# i18n.merge_file(
++#   input: policy + '.in',
++#   output: policy,
++#   po_dir: po_dir,
++#   install: true,
++#   install_dir: mcc_policydir,
++# )
 diff --git mate-control-center-clean/capplets/meson.build mate-control-center-workdir/capplets/meson.build
-index 015de1c..775e8f6 100644
+index 015de1c..4e93cf8 100644
 --- mate-control-center-clean/capplets/meson.build
 +++ mate-control-center-workdir/capplets/meson.build
-@@ -3,11 +3,11 @@ subdir('about-me')
- subdir('accessibility/at-properties')
- subdir('appearance')
- subdir('default-applications')
--subdir('display')
-+# subdir('display')
- subdir('keybindings')
+@@ -8,6 +8,6 @@ subdir('keybindings')
  subdir('keyboard')
  subdir('mouse')
  subdir('network')
 -subdir('system-info')
 -subdir('time-admin')
-+# subdir('system-info')
-+# subdir('time-admin')
++# subdir('system-info')  # needs udisks2 and polkit, neither packaged
++# subdir('time-admin')  # needs polkit, not packaged
  subdir('windows')
+diff --git mate-control-center-clean/font-viewer/meson.build mate-control-center-workdir/font-viewer/meson.build
+index 6a85f8a..74f9681 100644
+--- mate-control-center-clean/font-viewer/meson.build
++++ mate-control-center-workdir/font-viewer/meson.build
+@@ -4,10 +4,20 @@ cflags = [
+ ]
+ 
+ libm = cc.find_library('libm', required: false)
++# font-view.c, font-thumbnailer.c and the sushi-font-* sources call the FreeType API
++# directly (FT_Get_Sfnt_Name, FT_Get_First_Char, FT_Done_Face, ...), but this meson
++# build never asks for freetype2. Upstream's own AUTOTOOLS build does, at
++# configure.ac:196 -- PKG_CHECK_MODULES(FONT_VIEWER, $COMMON_MODULES fontconfig
++# freetype2 mate-desktop-2.0) -- so the omission is in the meson port alone. pango.pc
++# keeps freetype2 in Requires.private, so nothing else puts libfreetype on the link
++# line and ld refuses outright: "undefined reference to symbol 'FT_Get_Sfnt_Name' /
++# libfreetype.so.6: error adding symbols: DSO missing from command line".
++freetype_dep = dependency('freetype2')
+ deps = [
+   common_deps,
+   pango_dep,
+   fontconfig_dep,
++  freetype_dep,
+   libm,
+ ]
+ executable(
+diff --git mate-control-center-clean/help/LINGUAS mate-control-center-workdir/help/LINGUAS
+index 460c980..21bdd4b 100644
+--- mate-control-center-clean/help/LINGUAS
++++ mate-control-center-workdir/help/LINGUAS
+@@ -61,6 +61,7 @@ ko
+ ku
+ ku_IQ
+ ky
++la
+ li
+ lt
+ lv
 diff --git mate-control-center-clean/meson.build mate-control-center-workdir/meson.build
-index 60a00ab..01b4f3b 100644
+index 60a00ab..ea4e7bc 100644
 --- mate-control-center-clean/meson.build
 +++ mate-control-center-workdir/meson.build
-@@ -75,9 +75,9 @@ pango_dep = dependency('pango')
+@@ -75,9 +75,12 @@ pango_dep = dependency('pango')
  xcursor_dep = dependency('xcursor')
  dconf_dep = dependency('dconf', version: '>= 0.13.4')
  fontconfig_dep = dependency('fontconfig')
 -gtop_dep = dependency('libgtop-2.0')
 -udisks2_dep = dependency('udisks2')
 -polkit_dep = dependency('polkit-gobject-1')
++# Only the system-info and time-admin capplets use these, and both are disabled
++# in capplets/meson.build: udisks2 and polkit are not packaged for Gloire.
++# (libgtop is packaged, but it is of no use here without the other two.)
 +# gtop_dep = dependency('libgtop-2.0')
 +# udisks2_dep = dependency('udisks2')
 +# polkit_dep = dependency('polkit-gobject-1')
  matekbd_dep = dependency('libmatekbd', version: '>=1.17.0')
  matekbdui_dep = dependency('libmatekbdui', version: '>=1.17.0')
  xklavier_dep = dependency('libxklavier', version: '>= 5.2')
-@@ -104,27 +104,27 @@ common_deps = [
+@@ -104,27 +107,30 @@ common_deps = [
    gtk_dep,
  ]
  
@@ -59,6 +128,9 @@ index 60a00ab..01b4f3b 100644
 -appindicator_dep = dependency('appindicator3-0.1', version: '>= 0.0.13', required: appindicator)
 -ayatana_dep = dependency('ayatana-appindicator3-0.1', version: '>= 0.0.13', required: ayatana)
 -config_h.set('HAVE_UBUNTU_APPINDICATOR', appindicator)
++# Neither libappindicator nor libayatana-appindicator is packaged for Gloire, and
++# typing-break's drwright.c includes one or the other unconditionally, so that
++# capplet is disabled rather than this block being made optional.
 +# enable_libappindicator = get_option('libappindicator')
 +# if enable_libappindicator == 'yes'
 +#   appindicator = true
@@ -83,19 +155,17 @@ index 60a00ab..01b4f3b 100644
  gnome = import('gnome')
  i18n = import('i18n')
  pkg = import('pkgconfig')
-@@ -153,9 +153,9 @@ configure_file(
- subdir('po')
- subdir('man')
+@@ -155,7 +161,8 @@ subdir('man')
  subdir('help')
--subdir('font-viewer')
-+# subdir('font-viewer')
+ subdir('font-viewer')
  subdir('capplets')
 -subdir('typing-break')
-+# subdir('typing-break')
++# subdir('typing-break')  # drwright.c includes libappindicator or
++                         # libayatana-appindicator unconditionally; neither is packaged
  subdir('shell')
  
  gnome.post_install(
-@@ -179,8 +179,8 @@ summary = [
+@@ -179,8 +186,8 @@ summary = [
    '                 project: @0@ @1@'.format(meson.project_name(), meson.project_version()),
    '                  prefix: @0@'.format(mcc_prefix),
    'accountsservice supports: @0@'.format(accounts_dep.found()),

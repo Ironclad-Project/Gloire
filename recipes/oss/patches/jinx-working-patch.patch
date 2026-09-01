@@ -1,9 +1,9 @@
 diff --git oss-workdir/Makefile.ironclad oss-workdir/Makefile.ironclad
 new file mode 100644
-index 0000000..43855b0
+index 0000000..fa14dda
 --- /dev/null
 +++ oss-workdir/Makefile.ironclad
-@@ -0,0 +1,409 @@
+@@ -0,0 +1,408 @@
 +#
 +# Makefile for the Ironclad (Gloire) user land port of Open Sound System.
 +#
@@ -268,7 +268,7 @@ index 0000000..43855b0
 +target/sbin/ossmixd: cmd/ossmixd/ossmixd.c $(GENERATED) target/lib/$(LIBOSSMIX_SONAME)
 +	@mkdir -p target/sbin
 +	@echo "  CCLD    $@"
-+	$(CC) $(ALL_CFLAGS) -o $@ $< -Ltarget/lib -lossmix $(LDFLAGS)
++	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS) -Ltarget/lib -lossmix
 +
 +#
 +# ---------------------------------------------------------------- manual pages
@@ -343,8 +343,7 @@ index 0000000..43855b0
 +target/bin/ossxmix: $(OSSXMIX_SRCS) $(GENERATED)
 +	@mkdir -p target/bin
 +	@echo "  CCLD    $@"
-+	$(CC) $(ALL_CFLAGS) $(OSSXMIX_CFLAGS) $(GTK_CFLAGS) \
-+		-o $@ $(OSSXMIX_SRCS) $(GTK_LIBS) $(LDFLAGS)
++	$(CC) $(ALL_CFLAGS) $(OSSXMIX_CFLAGS) $(GTK_CFLAGS) -o $@ $(OSSXMIX_SRCS) $(LDFLAGS) $(GTK_LIBS)
 +
 +$(eval $(call txt2man_rule,ossxmix,cmd/ossxmix,1,OSS User Commands))
 +

@@ -1,0 +1,14 @@
+diff --git a/sl.1 b/sl.1
+index 2d11159..fc73d6b 100644
+--- a/sl.1
++++ b/sl.1
+@@ -34,9 +34,6 @@ It flies like the galaxy express 999.
+ .B \-G
+ It's French like Oscar.
+ .TP
+-.B \-c
+-C51 appears instead of D51.
+-.TP
+ .B \-<number of cars>
+ Specify the number of cars like `sl -5`.
+ .TP

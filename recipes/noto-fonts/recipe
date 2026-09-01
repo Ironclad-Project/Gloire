@@ -2,9 +2,10 @@
 
 repology_id=fonts:noto
 version=2026.08.01
-revision=2
+revision=3
 git_url="https://github.com/notofonts/notofonts.github.io"
 commit=113d8e66a13a47d514be6c07e616842258982f42
+deps="core-libs fontconfig"
 
 package() {
     cd "${source_dir}"
@@ -12,4 +13,6 @@ package() {
     install -Dm644 "${recipe_dir}"/*.conf -t "${dest_dir}"/usr/share/fontconfig/conf.avail/
     install -d "${dest_dir}"/usr/share/fontconfig/conf.default
     ln -rs "${dest_dir}"/usr/share/fontconfig/conf.avail/* "${dest_dir}"/usr/share/fontconfig/conf.default
+
+    generate_font_cache_hook
 }

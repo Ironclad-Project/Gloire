@@ -1,0 +1,26 @@
+diff --git libxkbcommon-clean/meson.build libxkbcommon-workdir/meson.build
+index 2066cbc..5100cd7 100644
+--- libxkbcommon-clean/meson.build
++++ libxkbcommon-workdir/meson.build
+@@ -57,16 +57,11 @@ add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
+ # misconfigured setups.
+ # Try both un- and versioned pkg-config (xkeyboard-config < 2.45).
+ XKB_LEGACY_ROOT = ''
+-foreach v: ['-2', '']
+-    xkeyboard_config_dep = dependency(f'xkeyboard-config@v@', required: false)
+-    if xkeyboard_config_dep.found()
+-        XKB_LEGACY_ROOT = xkeyboard_config_dep.get_variable(
+-            pkgconfig: 'xkb_base',
+-            default_value: ''
+-        )
+-        break
+-    endif
+-endforeach
++# Gloire/Ironclad: do NOT take this from xkeyboard-config's pkg-config variable.
++# DFLT_XKB_LEGACY_ROOT is compiled in and used as a RUNTIME include path, but
++# pkg-config prefixes a cross build's variables with the sysroot, so the value
++# would ship as /sysroot/usr/share/X11/xkb -- a directory that does not exist on
++# the target. The prefix-based fallback below yields the correct path.
+ if XKB_LEGACY_ROOT == ''
+     # Fallback to the legacy X11 directory
+     XKB_LEGACY_ROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'

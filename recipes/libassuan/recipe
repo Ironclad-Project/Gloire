@@ -1,0 +1,31 @@
+#! /bin/sh
+
+version=3.0.0
+revision=1
+tarball_url="https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-${version}.tar.bz2"
+tarball_blake2b="c86f7d62413c6f7a228deb47abe0388790a7c0e3c89b5ee7a7a72f72bea6502d5cbe199b10f06efc885af6fefab358dbe0e61a6f798493dcfcc63df0cfacdb55"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs libgpg-error texinfo"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+        GPGRT_CONFIG="${sysroot}${prefix}/bin/gpgrt-config" \
+        GPG_ERROR_CONFIG=no \
+    autotools_configure
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+
+    generate_info_hooks
+}

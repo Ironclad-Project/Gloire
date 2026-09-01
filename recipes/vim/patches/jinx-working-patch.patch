@@ -1,10 +1,23 @@
+diff --git vim-clean/src/Makefile vim-workdir/src/Makefile
+index 98baecf..d034c0c 100644
+--- vim-clean/src/Makefile
++++ vim-workdir/src/Makefile
+@@ -2132,7 +2132,7 @@ CCC = $(CCC_NF) $(ALL_CFLAGS)
+ # A shell script is used to try linking without unnecessary libraries.
+ $(VIMTARGET): auto/config.mk $(OBJ) objects/version.o
+ 	@$(BUILD_DATE_MSG)
+-	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
++	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(CFLAGS) $(ALL_LIB_DIRS) $(LDFLAGS) \
+ 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
+ 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+ 		PROG="vim" \
 diff --git vim-clean/src/vim.h vim-workdir/src/vim.h
-index bc1a1d4..d69f927 100644
+index ce402f6..6b4f562 100644
 --- vim-clean/src/vim.h
 +++ vim-workdir/src/vim.h
-@@ -56,7 +56,7 @@
- # error "NeXTSTEP / OPENSTEP support has been deprecated."
- #endif
+@@ -40,7 +40,7 @@
+ #  error configure did not run properly.  Check auto/config.log.
+ # endif
  
 -# if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__) || defined(__GNU__)
 +# if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__) || defined(__GNU__) || defined(__ironclad__)

@@ -1,17 +1,18 @@
 #! /bin/sh
 
 version=1.14
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/gzip/gzip-${version}.tar.xz"
 tarball_blake2b="32f7241bd9f3b7f73a59905a5bc9abf4e360e787f692cbb00ad28d48abee52744846d10c07ce2f7aaa3e66bc4b6ab9cd4f1b8e98854bb7d1ec010ae0d5146932"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs texinfo"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
+        ac_cv_prog_LESS=less \
     autotools_configure
 }
 
@@ -23,4 +24,6 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     post_package_strip
+
+    generate_info_hooks
 }

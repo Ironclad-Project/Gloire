@@ -1,0 +1,14 @@
+diff --git libassuan-clean/configure libassuan-workdir/configure
+index f94b327..7a08347 100755
+--- libassuan-clean/configure
++++ libassuan-workdir/configure
+@@ -14843,6 +14843,9 @@ case "${host}" in
+     *-mingw32*)
+         check_descriptor_passing=no
+         ;;
++    *-*-ironclad*)
++        check_descriptor_passing=no
++        ;;
+ esac
+ 
+ if test $check_descriptor_passing != yes; then

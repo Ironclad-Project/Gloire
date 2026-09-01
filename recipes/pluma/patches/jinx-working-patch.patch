@@ -1,0 +1,15 @@
+diff --git pluma-clean/help/Makefile.in pluma-workdir/help/Makefile.in
+index 06b5b33..448a601 100644
+--- pluma-clean/help/Makefile.in
++++ pluma-workdir/help/Makefile.in
+@@ -344,8 +344,8 @@ HELP_MEDIA = \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 

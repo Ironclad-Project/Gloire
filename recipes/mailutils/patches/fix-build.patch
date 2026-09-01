@@ -1,0 +1,24 @@
+diff -wbBur mailutils-3.20/libmailutils/mailer/progmailer.c mailutils-3.20.my/libmailutils/mailer/progmailer.c
+--- mailutils-3.20/libmailutils/mailer/progmailer.c	2025-01-02 16:36:32.000000000 +0300
++++ mailutils-3.20.my/libmailutils/mailer/progmailer.c	2025-08-01 22:10:47.319312519 +0300
+@@ -45,7 +45,7 @@
+ {
+   int fd;
+   pid_t pid;
+-  void (*sighandler)();
++  void (*sighandler)(int);
+   char *command;
+ };
+ 
+diff -wbBur mailutils-3.20/mh/scan.c mailutils-3.20.my/mh/scan.c
+--- mailutils-3.20/mh/scan.c	2025-01-02 16:36:43.000000000 +0300
++++ mailutils-3.20.my/mh/scan.c	2025-08-01 22:14:18.622643405 +0300
+@@ -200,7 +200,7 @@
+ 	      char *clr = tgetstr ("cl", &buffer);
+ 	      if (clr)
+ 		{
+-		  tputs(clr, 1, (int (*)())putstdout);
++		  tputs(clr, 1, (int (*)(int))putstdout);
+ 		  return;
+ 		}
+ 	    }

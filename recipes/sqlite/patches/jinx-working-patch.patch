@@ -1,0 +1,30 @@
+diff --git sqlite-clean/main.mk sqlite-workdir/main.mk
+index a2979db..f768176 100644
+--- sqlite-clean/main.mk
++++ sqlite-workdir/main.mk
+@@ -437,10 +437,11 @@ T.link.shared = $(T.link) $(LDFLAGS.shlib)
+ # or $(T.link) but not $(B.cc).
+ #
+ LDFLAGS.libsqlite3 = \
++  $(LDFLAGS.configure) \
+   $(LDFLAGS.rpath) $(LDFLAGS.pthread) \
+   $(LDFLAGS.math) $(LDFLAGS.dlopen) \
+   $(LDFLAGS.zlib) $(LDFLAGS.icu) \
+-  $(LDFLAGS.rt) $(LDFLAGS.configure)
++  $(LDFLAGS.rt)
+ 
+ #
+ # $(install-dir.XYZ) = dirs for installation.
+diff --git sqlite-clean/src/os_unix.c sqlite-workdir/src/os_unix.c
+index 927b8eb..57a6fc4 100644
+--- sqlite-clean/src/os_unix.c
++++ sqlite-workdir/src/os_unix.c
+@@ -72,7 +72,7 @@
+ #endif
+ 
+ /* Use pread() and pwrite() if they are available */
+-#if defined(__APPLE__) || defined(__linux__)
++#if defined(__APPLE__) || defined(__linux__) || defined(__ironclad__)
+ # define HAVE_PREAD 1
+ # define HAVE_PWRITE 1
+ #endif

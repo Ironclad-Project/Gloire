@@ -1,11 +1,12 @@
 #! /bin/sh
 
 version=4.20.0
-revision=2
+revision=3
 tarball_url="https://github.com/shadow-maint/shadow/releases/download/${version}/shadow-${version}.tar.gz"
 tarball_blake2b="655aa005401ba0215a8556fe88ed9ed3a070debd2092fd9e7c37582b41ecb2e4abfd34a8fea48bd33d0dcf9b948ff888b29e4301a62c74d823eae93fa2b4d2a7"
 hostdeps="gcc pkg-config"
 deps="core-libs libbsd"
+conf_files="/etc/login.defs"
 
 prepare() {
     autotools_recursive_regen
@@ -13,6 +14,8 @@ prepare() {
 
 configure() {
     autotools_configure \
+        --enable-man \
+        --with-yescrypt \
         --disable-logind
 }
 
@@ -21,11 +24,7 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
-
-    # I cannot get it to not install in sbin so we bring out the jackhammer.
-    mv "${dest_dir}"/usr/sbin/* "${dest_dir}"/usr/bin/
-    rm -rf "${dest_dir}"/usr/sbin
+    DESTDIR="${dest_dir}" make install usbindir="${prefix}/bin"
 
     post_package_strip
 }

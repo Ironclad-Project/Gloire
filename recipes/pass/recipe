@@ -3,13 +3,15 @@
 repology_id=password-store
 repology_srcname=password-store
 version=1.7.4
-revision=7
-tarball_url="https://git.zx2c4.com/password-store/snapshot/password-store-${version}.tar.xz"
-tarball_blake2b=3fe332e52915e0c463938d963a17e1fb9d2be898c383641b7a586b28258f684a68e5e24212f8adf5beca8b14c5f3f343d693c516d570394dd791fd640c7a7950
-deps="core-libs git tree"
+revision=8
+git_url="https://git.zx2c4.com/password-store"
+commit=1078f2514d579178d5df7042c6a790e9c9b731ad
+deps="core-libs gnupg git tree"
 
 package() {
     cp -r "${source_dir}"/. ./
-    make DESTDIR="${dest_dir}" PREFIX="${prefix}" install
+    make DESTDIR="${dest_dir}" PREFIX="${prefix}" WITH_ALLCOMP=yes \
+        PLATFORMFILE=src/platform/ironclad.sh install
+
     post_package_strip
 }

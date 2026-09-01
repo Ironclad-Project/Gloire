@@ -1,0 +1,11 @@
+--- xinit-1.4.4/startx.in	2025-03-09 21:44:26.000000000 +0100
++++ xinit-1.4.4/startx.in.new	2025-03-11 13:46:01.778520965 +0100
+@@ -283,7 +283,7 @@
+     dummy=0
+ 
+     # create a file with auth information for the server. ':0' is a dummy.
+-    xserverauthfile="$HOME/.serverauth.$$"
++    xserverauthfile=`mktemp -p /tmp serverauth.XXXXXXXXXX`
+     trap "rm -f '$xserverauthfile'" HUP INT QUIT ILL TRAP BUS TERM
+     xauth -q -f "$xserverauthfile" << EOF
+ add :$dummy . $mcookie

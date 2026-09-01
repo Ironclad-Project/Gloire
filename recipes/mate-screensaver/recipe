@@ -1,12 +1,12 @@
 #! /bin/sh
 
 version=1.28.1
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/mate-screensaver/releases/download/v${version}/mate-screensaver-${version}.tar.xz"
 tarball_blake2b="2597d7ddbaf286e229e974d2a5b1dbf0255313194705e595e687026ced342dbf436423c2c78b086b267fea66a00bc5acd1514dc2cc55114c3eaa5c167e1896b7"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs gtk3 dbus-glib dconf libmatekbd mate-desktop mate-menus libnotify mate-session-manager mate-panel libxscrnsaver"
+deps="core-libs cairo dbus dbus-glib gdk-pixbuf glib2 gtk3 libmatekbd libnotify libx11 libxext libxklavier libxscrnsaver libxxf86vm mate-desktop mate-menus mate-session-manager mesa pango"
 
 prepare() {
     autotools_recursive_regen
@@ -15,18 +15,11 @@ prepare() {
 configure() {
     autotools_configure \
         --enable-locking \
-        --with-kbd-layout-indicator \
-        --with-xf86gamma-ext \
-        --with-xscreensaverdir=/usr/share/xscreensaver/config \
-        --with-xscreensaverhackdir=/usr/lib/misc/xscreensaver \
+        --with-mit-ext \
+        --with-xscreensaverdir="${prefix}"/share/xscreensaver/config \
+        --with-xscreensaverhackdir="${prefix}"/lib/xscreensaver \
         --without-console-kit \
-        --with-x \
-        --without-elogind \
-        --with-libnotify \
-        --with-libgl \
-        --without-systemd \
-        --disable-debug \
-        --disable-pam
+        --with-libnotify
 }
 
 build() {
@@ -34,10 +27,12 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" make install \
+        dbussessionservicedir="${prefix}"/share/dbus-1/services
 
     chmod +s "${dest_dir}${prefix}"/libexec/mate-screensaver-dialog
 
     post_package_strip
+
     generate_glib_schemas_hook
 }

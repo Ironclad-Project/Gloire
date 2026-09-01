@@ -1,0 +1,41 @@
+diff --git glib-networking-clean/meson.build glib-networking-workdir/meson.build
+index 0cb8296..e050b97 100644
+--- glib-networking-clean/meson.build
++++ glib-networking-workdir/meson.build
+@@ -63,9 +63,9 @@ gio_dep = dependency('gio-2.0')
+ gobject_dep = dependency('gobject-2.0')
+ gmodule_dep = dependency('gmodule-2.0')
+ 
+-gio_module_dir = gio_dep.get_variable('giomoduledir',
+-                                       pkgconfig_define: ['libdir', join_paths(prefix, libdir)])
+-assert(gio_module_dir != '', 'GIO_MODULE_DIR is missing from gio-2.0.pc')
++# pkg-config prefixes path variables with the sysroot when cross-compiling,
++# which is right for finding files but wrong for an install directory.
++gio_module_dir = join_paths(prefix, libdir, 'gio', 'modules')
+ 
+ # *** Checks for LibProxy   ***
+ libproxy_dep = dependency('libproxy-1.0', version: '>= 0.4.16', required: get_option('libproxy'))
+diff --git glib-networking-clean/proxy/libproxy/meson.build glib-networking-workdir/proxy/libproxy/meson.build
+index f516790..c85a358 100644
+--- glib-networking-clean/proxy/libproxy/meson.build
++++ glib-networking-workdir/proxy/libproxy/meson.build
+@@ -11,15 +11,10 @@ configure_file(
+   configuration: service_conf
+ )
+ 
+-service = 'glib-pacrunner.service'
+-
+-configure_file(
+-  input: service + '.in',
+-  output: service,
+-  install: true,
+-  install_dir: join_paths('lib', 'systemd', 'user'),
+-  configuration: service_conf
+-)
++# Gloire: NO systemd UNIT IS BUILT OR INSTALLED. Gloire's init system is epoch and the
++# target carries no systemd, so glib-pacrunner.service is machinery for a system that does
++# not exist here; upstream installs it unconditionally and offers no option. The D-Bus
++# service above STAYS -- we do ship dbus, and that is how the PAC runner is activated.
+ 
+ sources = files(
+   'glibproxyresolver.c',

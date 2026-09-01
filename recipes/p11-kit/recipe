@@ -1,36 +1,28 @@
 #! /bin/sh
 
 version=0.26.5
-revision=2
+revision=3
 tarball_url="https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz"
 tarball_blake2b="3588e4abeca13450c8228b4e104942b459c86fa5bf07fd391b895ff99694e37a20562462fd3e5290dce79a45a16cc821da4ed86d9d4446beb1305d4638421589"
+imagedeps="libtasn1-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs libffi libtasn1 bash-completion"
+deps="core-libs libffi libtasn1"
 
 configure() {
     meson_configure \
+        -Dsystemd=disabled \
+        -Dtest=false \
+        -Dman=true \
         -Dtrust_paths=/etc/pki/anchors \
         -Dbashcompdir=${prefix}/share/bash-completion/completions
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
-
-#    sed '20,$ d' -i "${dest_dir}${prefix}/libexec/p11-kit/trust-extract-compat"
-#
-#    cat >>"${dest_dir}${prefix}/libexec/p11-kit/trust-extract-compat" <<EOF
-## Copy existing anchor modifications to /etc/ssl/local
-#${prefix}/libexec/make-ca/copy-trust-modifications
-#
-## Update trust stores
-#${prefix}/bin/make-ca -r
-#EOF
-#
-#    ln -svf "../libexec/p11-kit/trust-extract-compat" "${dest_dir}${prefix}/bin/update-ca-certificates"
 
     post_package_strip
 }

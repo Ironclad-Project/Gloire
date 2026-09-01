@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.6.58
-revision=2
+revision=3
 tarball_url="https://prdownloads.sourceforge.net/libpng/libpng-${version}.tar.xz"
 tarball_blake2b="51042e8f2b56d469b516db9cbde6d4b6813a62d1b7117898ba32a9a5ac5cd73832c627d7377745e5d5154aade6ec6928fc6b9cd9b96885f64b7ca7df19ca40ec"
 hostdeps="gcc pkg-config"
@@ -19,6 +19,15 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    cp -rp "${source_dir}"/contrib/pngminus ./pngminus
+    make -C pngminus -j${parallelism} png2pnm pnm2png \
+        CC="${OS_TRIPLET}-gcc" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        PNGINC="-I${source_dir} -I$(pwd)" \
+        PNGLIB_SHARED="-L${dest_dir}${prefix}/lib -lpng"
+    install -v -m755 pngminus/png2pnm pngminus/pnm2png "${dest_dir}${prefix}"/bin
 
     post_package_strip
 }

@@ -40,19 +40,6 @@ index d6e3a8b..89a3221 100644
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
-diff --git mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-index d682021..893d1d8 100644
---- mesa-clean/src/gallium/drivers/llvmpipe/lp_texture.c
-+++ mesa-workdir/src/gallium/drivers/llvmpipe/lp_texture.c
-@@ -1841,7 +1841,7 @@ llvmpipe_resource_get_param(struct pipe_screen *screen,
-    default:
-       break;
-    }
--   assert(0);
-+   // assert(0);
-    *value = 0;
-    return false;
- }
 diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
 index 7403724..99e14a2 100644
 --- mesa-clean/src/util/detect_os.h

@@ -1,0 +1,61 @@
+diff --git i/c++/Makefile.in w/c++/Makefile.in
+index f03468bb..502b3e7d 100644
+--- i/c++/Makefile.in
++++ w/c++/Makefile.in
+@@ -120,7 +120,7 @@ SHLIB_LIST	= $(SHLIB_DIRS) \
+ 		-l@FORM_NAME@@ABI_SUFFIX@ \
+ 		-l@MENU_NAME@@ABI_SUFFIX@ \
+ 		-l@PANEL_NAME@@ABI_SUFFIX@ \
+-		-lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++		-lncurses@ABI_SUFFIX@
+ 
+ LIBROOT		= ncurses++
+ 
+@@ -160,7 +160,7 @@ LDFLAGS_DEFAULT	= $(LINK_@DFT_UPR_MODEL@) $(LDFLAGS_@DFT_UPR_MODEL@)
+ 
+ # flags for library built by this makefile
+ LDFLAGS		= $(TEST_ARGS) @LDFLAGS@ \
+-	@LD_MODEL@ $(TEST_LIBS) @LIBS@ $(CXXLIBS)
++	@LIBS@ $(CXXLIBS)
+ 
+ AUTO_SRC	= \
+ 		etip.h
+diff --git i/form/Makefile.in w/form/Makefile.in
+index 753e42fa..c1b1427a 100644
+--- i/form/Makefile.in
++++ w/form/Makefile.in
+@@ -115,7 +115,7 @@ LINK		= $(LIBTOOL_LINK)
+ LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
+ 
+ SHLIB_DIRS	= -L../lib
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
+ 
+ RPATH_LIST	= @RPATH_LIST@
+ RESULTING_SYMS	= @RESULTING_SYMS@
+diff --git i/menu/Makefile.in w/menu/Makefile.in
+index 5f96e76f..b0fb6507 100644
+--- i/menu/Makefile.in
++++ w/menu/Makefile.in
+@@ -115,7 +115,7 @@ LINK		= $(LIBTOOL_LINK)
+ LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
+ 
+ SHLIB_DIRS	= -L../lib
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
+ 
+ RPATH_LIST	= @RPATH_LIST@
+ RESULTING_SYMS	= @RESULTING_SYMS@
+diff --git i/panel/Makefile.in w/panel/Makefile.in
+index 53abc362..f92bdca2 100644
+--- i/panel/Makefile.in
++++ w/panel/Makefile.in
+@@ -117,7 +117,7 @@ LINK		= $(LIBTOOL_LINK)
+ LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
+ 
+ SHLIB_DIRS	= -L../lib
+-SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
++SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
+ 
+ RPATH_LIST	= @RPATH_LIST@
+ RESULTING_SYMS	= @RESULTING_SYMS@

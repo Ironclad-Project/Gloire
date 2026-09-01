@@ -1,26 +1,23 @@
 #! /bin/sh
 
 version=1.5.5
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libXrandr-${version}.tar.gz"
 tarball_blake2b="751120d392e2a9d6182414c2aa87445455635c978cc425c862998ba51b9f2296b4d488bb70fe4d3b9336f40ab61d6cd372ae6ba08d2740a7320188d6283f3c49"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11 libxrender libxext"
 
-prepare() {
-    autotools_recursive_regen
-}
 
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

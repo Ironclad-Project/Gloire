@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.8.13
-revision=3
+revision=4
 tarball_url="https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-${version}.tar.xz"
 tarball_blake2b="80677a45a7c6f892287020e3e6b0add2432f2c64a4c9a649ce889921ac65b44931504ad0682ccc12e4b6d8f94c1a72e35c50673c9d04bd4e327063b812339380"
 hostdeps="gcc pkg-config"
-deps="core-libs libffi libunistring libtasn1 nettle p11-kit zlib brotli zstd libidn2"
+deps="core-libs libunistring libtasn1 nettle p11-kit zlib brotli zstd libidn2 gmp texinfo"
 
 prepare() {
     autotools_recursive_regen
@@ -13,6 +13,9 @@ prepare() {
 
 configure() {
     autotools_configure \
+        --with-brotli \
+        --with-idn \
+        --with-zstd \
         --with-default-trust-store-pkcs11="pkcs11:" \
         --enable-openssl-compatibility
 }
@@ -25,4 +28,6 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     post_package_strip
+
+    generate_info_hooks
 }

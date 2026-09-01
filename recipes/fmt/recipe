@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=12.2.0
-revision=2
-tarball_url="https://github.com/fmtlib/fmt/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="5dfb2eb6087a7442477a64c6d0ec5de8b27ca5768cb3330b51980085547553eed9a736ac2983d7d249f41655a8183aa45ead3f9289cd157f76f6fbe33c7920de"
+revision=3
+zip_url="https://github.com/fmtlib/fmt/releases/download/${version}/fmt-${version}.zip"
+zip_blake2b="63911dfad81be0447b192971e159eaef71f2cb3a9f56aed1a65bd9a248442bc57e60389ff228ceb4ae7faa2353707f306fac87ec174f00499e07ee759290a6ee"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

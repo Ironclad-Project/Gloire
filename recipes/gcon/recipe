@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=16
+revision=17
 git_url="https://codeberg.org/Ironclad/gcon.git"
 commit=478d3286e4c75d6c3031512766fbb8cf3df83fbc
 hostdeps="gcc pkg-config"
@@ -17,7 +17,7 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=0.30
-revision=4
+revision=5
 tarball_url="https://web.archive.org/web/20250920050416if_/http://0pointer.de/lennart/projects/libcanberra/libcanberra-${version}.tar.xz"
 tarball_blake2b="c90c6863738b103c256eeb0907060a0f74b73ef50ac0728d2114aa558a7a1ad7cbae4184860573d3fac0032eba77327a4de94c459b99a81c3dc19da0e98adfda"
 hostdeps="gcc pkg-config"
-deps="core-libs libvorbis gtk3 libtool"
+deps="core-libs glib2 gtk3 libtool libvorbis libx11 oss"
 
 prepare() {
     autotools_recursive_regen
@@ -13,7 +13,6 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --disable-oss \
         --disable-gtk \
         --disable-gstreamer \
         --disable-pulse \

@@ -1,3 +1,21 @@
+diff --git readline-clean/shlib/Makefile.in readline-workdir/shlib/Makefile.in
+index 6039efe..3ec47b4 100644
+--- readline-clean/shlib/Makefile.in
++++ readline-workdir/shlib/Makefile.in
+@@ -176,11 +176,11 @@ unsupported:
+ 
+ $(SHARED_READLINE):	$(SHARED_OBJ)
+ 	$(RM) $@
+-	$(SHOBJ_LD) ${SHOBJ_LDFLAGS} ${SHLIB_XLDFLAGS} -o $@ $(SHARED_OBJ) $(SHLIB_LIBS)
++	$(SHOBJ_LD) ${CFLAGS} ${SHOBJ_LDFLAGS} ${SHLIB_XLDFLAGS} -o $@ $(SHARED_OBJ) $(SHLIB_LIBS)
+ 
+ $(SHARED_HISTORY):	$(SHARED_HISTOBJ) xmalloc.so xfree.so
+ 	$(RM) $@
+-	$(SHOBJ_LD) ${SHOBJ_LDFLAGS} ${SHLIB_XLDFLAGS} -o $@ $(SHARED_HISTOBJ) xmalloc.so xfree.so $(SHLIB_LIBS)
++	$(SHOBJ_LD) ${CFLAGS} ${SHOBJ_LDFLAGS} ${SHLIB_XLDFLAGS} -o $@ $(SHARED_HISTOBJ) xmalloc.so xfree.so $(SHLIB_LIBS)
+ 
+ # Since tilde.c is shared between readline and bash, make sure we compile 
+ # it with the right flags when it's built as part of readline
 diff --git readline-clean/support/shlib-install readline-workdir/support/shlib-install
 index 661355d..65c3880 100755
 --- readline-clean/support/shlib-install
@@ -21,7 +39,7 @@ index 661355d..65c3880 100755
  	${echo} ${RM} ${INSTALLDIR}/$LINK2
  	if [ -z "$uninstall" ]; then
 diff --git readline-clean/support/shobj-conf readline-workdir/support/shobj-conf
-index c3df351..d328222 100644
+index c3df351..206c374 100644
 --- readline-clean/support/shobj-conf
 +++ readline-workdir/support/shobj-conf
 @@ -123,12 +123,12 @@ sunos5*|solaris2*)

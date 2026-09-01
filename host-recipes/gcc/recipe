@@ -4,11 +4,13 @@ version=16.2.0
 tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="ab3ffe16e042da767f3f1eac170da518d6d7de3b0f92e068f79e3bf25fdc0bdf56eea0cd586bd4b9b6e9baebadd110c2ebd77b75c99c45853814f4bea5a98ef0"
 clean_workdirs=no
-revision=2
+revision=3
 imagedeps="build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"
+
 deps="glibc"
+_glibc_version="$(. "${base_dir}/recipes/glibc/recipe" && echo "${version}")"
 
 . "${base_dir}"/build-support/gcc-ada-helpers
 
@@ -26,20 +28,23 @@ prepare() {
 configure() {
     ada_symlink_gnat
 
-    cp -rp "${source_dir}"/. ./
     mkdir -p build && cd build
 
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-        CFLAGS_FOR_TARGET="$TARGET_CFLAGS" \
-        CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS" \
-    ../configure \
+        CFLAGS_FOR_TARGET="$TARGET_CFLAGS -g" \
+        CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS -g" \
+        LDFLAGS_FOR_TARGET="$TARGET_LDFLAGS" \
+    "${source_dir}"/configure \
         --prefix="${prefix}" \
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot}" \
-        --with-glibc-version=2.42 \
+        --with-glibc-version=${_glibc_version} \
         --enable-__cxa_atexit \
+        --disable-fixincludes \
+        --with-gcc-major-version-only \
+        --with-linker-hash-style=gnu \
         --enable-cet=auto \
         --enable-checking=release \
         --enable-clocale=gnu \
@@ -66,10 +71,12 @@ build() {
     ada_symlink_gnat
 
     cd build
+
     make -j${parallelism} all-gcc
     make -j${parallelism} -C gcc cross-gnattools ada.all.cross
 
     make -j${parallelism} all-target-libgcc
+    make -j${parallelism} configure-target-libstdc++-v3 configure-target-libatomic
     make -j${parallelism} all-target-libstdc++-v3
     make -j${parallelism} all-target-libatomic
 }

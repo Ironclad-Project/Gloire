@@ -1,16 +1,18 @@
 #! /bin/sh
 
 version=3.2.0
-revision=2
+revision=3
 tarball_url="https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/libjpeg-turbo-${version}.tar.gz"
 tarball_blake2b="c50c985f8b870ab6467181f69e10f3ec2705cb349613b9178b293f136063e302087832d87f793b3d24ab721a2f5d76271760bd244d0766ab3b8cbe48ebf50cfa"
 imagedeps="nasm"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs zlib"
 
 configure() {
     cmake_configure \
-        -DWITH_JPEG8=ON
+        -DWITH_TESTS=OFF \
+        -DWITH_JPEG8=ON \
+        -DWITH_SYSTEM_ZLIB=ON
 }
 
 build() {
@@ -19,6 +21,8 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    install -Dm644 "${source_dir}"/src/jpegint.h "${dest_dir}${prefix}"/include/jpegint.h
 
     post_package_strip
 }

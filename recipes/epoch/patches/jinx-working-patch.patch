@@ -1,3 +1,16 @@
+diff --git epoch-clean/buildepoch.sh epoch-workdir/buildepoch.sh
+index 7a6fdfd..1b8588b 100755
+--- epoch-clean/buildepoch.sh
++++ epoch-workdir/buildepoch.sh
+@@ -137,7 +137,7 @@ if [ "$#" != "0" ]; then
+ fi
+ 
+ if [ "$NEED_EMPTY_CFLAGS" = "0" ]; then
+-	CFLAGS=$CFLAGS" -std=gnu99 -pedantic -Wall -g -O0 -fstack-protector"
++	CFLAGS=$CFLAGS" -std=gnu99 -pedantic -Wall -g -fstack-protector"
+ fi
+ 
+ if [ "$LDFLAGS" = "" ]; then
 diff --git epoch-clean/src/actions.c epoch-workdir/src/actions.c
 index 92c56e2..8f664c3 100644
 --- epoch-clean/src/actions.c
@@ -134,30 +147,10 @@ index 8130386..66800b7 100644
  #define OSCTL_ENABLE_CTRLALTDEL 0x89abcdef
  
 diff --git epoch-clean/src/modes.c epoch-workdir/src/modes.c
-index b52068c..ae76c97 100644
+index b52068c..5ef8bfe 100644
 --- epoch-clean/src/modes.c
 +++ epoch-workdir/src/modes.c
-@@ -137,6 +137,19 @@ ReturnCode ObjControl(const char *ObjectID, const char *MemBusSignal)
- 	}
- }
- 
-+#include <sys/syscall.h>
-+#include <errno.h>
-+#include <stdint.h>
-+
-+struct procinfo {
-+    char     id[20];
-+    uint16_t id_len;
-+    uint16_t ppid;
-+    uint16_t pid;
-+    uint32_t uid;
-+    uint32_t flags;
-+} __attribute__((packed));
-+
- ReturnCode EmulKillall5(unsigned InSignal)
- { /*Used as the killall5 utility.*/
- 	DIR *ProcDir;
-@@ -144,43 +157,17 @@ ReturnCode EmulKillall5(unsigned InSignal)
+@@ -144,43 +144,17 @@ ReturnCode EmulKillall5(unsigned InSignal)
  	pid_t CurPID;
  	const pid_t OurPID = getpid(), OurSID = getsid(0);
  

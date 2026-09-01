@@ -1,20 +1,23 @@
 #! /bin/sh
 
 version=1.58.2
-revision=2
-tarball_url="https://gitlab.gnome.org/GNOME/pango/-/archive/${version}/pango-${version}.tar.gz"
-tarball_blake2b="24b870b42cb1c7c1e2f164a3ee543851f9fce5a4d9c75c47602ce6cc11d07e0271fa3d0d1b1d55f4a9c01bf9265790b7da8ba74fda9b36fa13dec0b2a819c13c"
-imagedeps="libglib2.0-dev"
+revision=3
+tarball_url="https://download.gnome.org/sources/pango/1.58/pango-${version}.tar.xz"
+tarball_blake2b="234ec97322322326c0e2cd134b35bc7c99bb6bc5f80500f864dc2047c6256f323f0d9cfe379915b31d4befb9419b98dbf7c54ddbf92407ca4c4a446673969616"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin python3-docutils"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 fontconfig freetype2 fribidi cairo libx11 harfbuzz libxft"
+deps="core-libs glib2 fontconfig freetype2 fribidi cairo libx11 libxrender harfbuzz libxft"
 
 configure() {
     meson_configure \
+        -Dlibthai=disabled \
+        -Dman-pages=true \
+        -Dbuild-testsuite=false \
         -Dintrospection=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

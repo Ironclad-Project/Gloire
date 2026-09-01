@@ -1,0 +1,46 @@
+diff --git os-test-clean/misc/GNUmakefile.shared os-test-workdir/misc/GNUmakefile.shared
+index 362796e..0a50463 100644
+--- os-test-clean/misc/GNUmakefile.shared
++++ os-test-workdir/misc/GNUmakefile.shared
+@@ -8,25 +8,28 @@ OUT_PATH = $(OUT_DIRECTORY)/$(OUT_OS)/$(OUT_SUITE)
+ TEST_RESULTS := $(addprefix $(OUT_PATH)/,$(TEST_SOURCES:.c=.out))
+ TEST_ERRORS := $(addprefix $(OUT_PATH)/,$(TEST_SOURCES:.c=.err))
+ 
+ LDFLAGS =
+ EXTRA_LDFLAGS =
+ STD_C17 = -std=c17
+ NO_SHARED_DEFAULT ?= 0
+ 
+-LDFLAGS += -lm
++override LDFLAGS += -lm
+ ifneq ($(OS),Minix)
+-  CFLAGS += -pthread
+-  LDFLAGS += -lpthread
++  override CFLAGS += -pthread
++  override LDFLAGS += -lpthread
+ endif
+ ifneq ($(OS),Haiku)
+ ifneq ($(OS),Minix)
+ ifneq ($(OS),Darwin)
+ ifneq ($(OS),OpenBSD)
+-  LDFLAGS += -lrt
++  override LDFLAGS += -lrt
+ endif
+ endif
+ endif
+ endif
++ifeq ($(OS),ironclad)
++  EXTRA_LDFLAGS += -lcrypt
++endif
+ ifeq ($(OS),AIX)
+   EXTRA_LDFLAGS += -liconv -latomic
+ endif
+@@ -77,7 +94,7 @@ ifeq ($(OS),Sortix)
+   NO_SHARED=1
+ endif
+ ifeq ($(OS),SunOS)
+-  LDFLAGS += -lxnet
++  override LDFLAGS += -lxnet
+   EXTRA_LDFLAGS += -lsocket -latomic
+ endif
+ NO_SHARED ?= $(NO_SHARED_DEFAULT)

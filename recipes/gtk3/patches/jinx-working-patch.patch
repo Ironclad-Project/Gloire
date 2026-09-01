@@ -1,0 +1,17 @@
+diff --git gtk3-clean/gtk/meson.build gtk3-workdir/gtk/meson.build
+index 03677b1..dc91a59 100644
+--- gtk3-clean/gtk/meson.build
++++ gtk3-workdir/gtk/meson.build
+@@ -854,7 +854,11 @@ gtk_deps = [
+ ]
+ 
+ if x11_enabled
+-  x11_data_prefix = dependency('x11').get_variable(pkgconfig: 'prefix')
++  # Gloire/Ironclad: NOT dependency('x11').get_variable(pkgconfig: 'prefix').
++  # pkg-config prefixes a cross build's variables with the sysroot, so that yields
++  # /sysroot/usr and X11_DATA_PREFIX is compiled in as the Compose-file directory --
++  # a path that does not exist on the target, silently breaking Compose sequences.
++  x11_data_prefix = get_option('prefix')
+ 
+   gtk_cargs += [ '-DX11_DATA_PREFIX="@0@"'.format(x11_data_prefix), ]
+   gtk_sources += gtk_use_x11_sources

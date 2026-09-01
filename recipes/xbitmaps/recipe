@@ -1,26 +1,23 @@
 #! /bin/sh
 
 version=1.1.4
-revision=2
+revision=3
 tarball_url="https://www.x.org/pub/individual/data/xbitmaps-${version}.tar.gz"
 tarball_blake2b="0ee8477c227ed5a4c44c55bb485b0da845389e52724e4a28ecab0320a714954b3f2f4ec1210d2200bfa0d661496b7a7a1239aadb1ac37ea1b417e80b150ab613"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros"
+deps="core-libs"
 
-prepare() {
-    autotools_recursive_regen
-}
 
 configure() {
-    autotools_configure
+    meson_configure
 }
 
 build() {
-    make -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

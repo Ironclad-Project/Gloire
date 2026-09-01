@@ -1,31 +1,25 @@
 #! /bin/sh
 
 version=0.84.1
-revision=5
+revision=6
 tarball_url="https://gitlab.gnome.org/api/v4/projects/1893/packages/generic/vte/${version}/vte-${version}.tar.xz"
 tarball_blake2b="4bc482451287faa5194edaee72004d10ec441ed750491b475a6b5b99e5328946d3eee96a992ec33b4b90bda31fe0fac81d8d0f2a7c33c1a7ff2a0030d2e9913c"
-imagedeps="libglib2.0-dev"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs fast_float simdutf fmt gnutls gtk3 cairo fribidi glib2 icu pango pcre2 lz4 libxml2"
+deps="core-libs at-spi2-core cairo fribidi gdk-pixbuf glib2 gnutls gtk3 icu lz4 pango pcre2 simdutf"
+builddeps="fast_float fmt"
 
 configure() {
     meson_configure \
-        -Da11y=true \
-        -Ddebug=false \
+        -Db_ndebug=false \
         -Ddocs=false \
         -Dgir=false \
-        -Dfribidi=true \
-        -Dglade=true \
-        -Dgnutls=true \
-        -Dgtk3=true \
         -Dgtk4=false \
-        -Dicu=true \
-        -D_systemd=false \
         -Dvapi=false
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

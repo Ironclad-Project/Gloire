@@ -59,7 +59,7 @@ mkdir -p iso_root/boot
 # Try to not use fractional sizes (3.X for example) since certain Linux distros
 # like debian struggle to use it.
 if [ -z "$IMAGE_SIZE" ]; then
-    IMAGE_SIZE=500M
+    IMAGE_SIZE=700M
 fi
 if [ -z "$IMAGE_NAME" ]; then
     IMAGE_NAME=gloire.iso
@@ -148,7 +148,7 @@ cp "$CONFIG_TEMP" iso_root/boot/limine.conf
 rm "$CONFIG_TEMP"
 
 # Add init system config.
-$SUDO mkdir mount_dir/etc/epoch
+$SUDO mkdir -p mount_dir/etc/epoch
 $SUDO sh -c "
 cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
 # https://universe2.us/epochconfig.html

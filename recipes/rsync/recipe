@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.5.0
-revision=3
+revision=4
 tarball_url="https://www.samba.org/ftp/rsync/src/rsync-${version}.tar.gz"
 tarball_blake2b="1a0aaddd9555c14e2b026f4ac9aff0c0b7760a5809fc80c7872b382a0b9b4719dcc0d382c0e43439955efd855ffa2dff101c10a86529b88fd380205cc9506179"
 hostdeps="gcc pkg-config"
-deps="core-libs lz4 openssl xxhash zlib zstd"
+deps="core-libs lz4 openssl popt xxhash zlib zstd"
 
 prepare() {
     autotools_recursive_regen
@@ -13,7 +13,10 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --with-included-zlib=no
+        --with-included-zlib=no \
+        --with-included-popt=no \
+        --with-rrsync \
+        --enable-ipv6
 }
 
 build() {

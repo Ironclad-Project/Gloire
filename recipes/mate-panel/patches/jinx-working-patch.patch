@@ -1,0 +1,30 @@
+diff --git mate-panel-clean/help/mate-clock/Makefile.in mate-panel-workdir/help/mate-clock/Makefile.in
+index ff4a133..0d2b8b5 100644
+--- mate-panel-clean/help/mate-clock/Makefile.in
++++ mate-panel-workdir/help/mate-clock/Makefile.in
+@@ -351,8 +351,8 @@ HELP_MEDIA = figures/clock_applet.png
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-panel-clean/help/mate-fish/Makefile.in mate-panel-workdir/help/mate-fish/Makefile.in
+index 2508f68..73150f2 100644
+--- mate-panel-clean/help/mate-fish/Makefile.in
++++ mate-panel-workdir/help/mate-fish/Makefile.in
+@@ -351,8 +351,8 @@ HELP_MEDIA = figures/fish_applet.png
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 

@@ -20,10 +20,10 @@ index a990388..9733285 100644
 -  dependencies: comics_deps,
 -)
 diff --git atril-clean/meson.build atril-workdir/meson.build
-index 8a02b91..5988610 100644
+index 779e08a..fce157b 100644
 --- atril-clean/meson.build
 +++ atril-workdir/meson.build
-@@ -348,7 +348,6 @@ summary = [
+@@ -345,7 +345,6 @@ summary = [
    'desktopdir = @0@'.format(desktopdir),
    'schema_dir = @0@'.format(schema_dir),
    'ENABLE_DBUS = @0@'.format(get_option('enable_dbus')),
@@ -31,3 +31,16 @@ index 8a02b91..5988610 100644
    '',
    'Backends enabled:',
  ]
+diff --git atril-clean/properties/meson.build atril-workdir/properties/meson.build
+index 247abe6..49ccf78 100644
+--- atril-clean/properties/meson.build
++++ atril-workdir/properties/meson.build
+@@ -28,7 +28,7 @@ if gtk_x11.found() and caja_extension.found()
+         include_directories: include_dirs,
+         dependencies: [gtk_x11, caja_extension, libdocument_dep, libevproperties_dep],
+         install: true,
+-        install_dir: caja_extension.get_variable(pkgconfig: 'extensiondir')
++        install_dir: join_paths(prefix, libdir, 'caja', 'extensions-2.0')
+     )
+ 
+     caja_ext_conf = configuration_data()

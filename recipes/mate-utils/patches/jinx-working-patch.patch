@@ -1,0 +1,60 @@
+diff --git mate-utils-clean/baobab/help/Makefile.in mate-utils-workdir/baobab/help/Makefile.in
+index 389e5d7..1b1673e 100644
+--- mate-utils-clean/baobab/help/Makefile.in
++++ mate-utils-workdir/baobab/help/Makefile.in
+@@ -368,8 +368,8 @@ HELP_MEDIA = \
+ @USE_NLS_TRUE@IGNORE_HELP_LINGUAS = 
+ @USE_NLS_FALSE@HELP_LINGUAS = 
+ @USE_NLS_TRUE@HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-@USE_NLS_TRUE@	$(subst /,,$(dir $(wildcard */*.po))) )
++@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++@USE_NLS_TRUE@	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-utils-clean/gsearchtool/help/Makefile.in mate-utils-workdir/gsearchtool/help/Makefile.in
+index bb150ca..5f2cd7b 100644
+--- mate-utils-clean/gsearchtool/help/Makefile.in
++++ mate-utils-workdir/gsearchtool/help/Makefile.in
+@@ -360,8 +360,8 @@ HELP_MEDIA = figures/mate-search-tool_window.png
+ @USE_NLS_TRUE@IGNORE_HELP_LINGUAS = 
+ @USE_NLS_FALSE@HELP_LINGUAS = 
+ @USE_NLS_TRUE@HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-@USE_NLS_TRUE@	$(subst /,,$(dir $(wildcard */*.po))) )
++@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++@USE_NLS_TRUE@	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-utils-clean/logview/help/Makefile.in mate-utils-workdir/logview/help/Makefile.in
+index cadb04c..ae039f2 100644
+--- mate-utils-clean/logview/help/Makefile.in
++++ mate-utils-workdir/logview/help/Makefile.in
+@@ -362,8 +362,8 @@ HELP_MEDIA = \
+ @USE_NLS_TRUE@IGNORE_HELP_LINGUAS = 
+ @USE_NLS_FALSE@HELP_LINGUAS = 
+ @USE_NLS_TRUE@HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-@USE_NLS_TRUE@	$(subst /,,$(dir $(wildcard */*.po))) )
++@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++@USE_NLS_TRUE@	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-utils-clean/mate-dictionary/help/Makefile.in mate-utils-workdir/mate-dictionary/help/Makefile.in
+index 6b7cb55..f13309c 100644
+--- mate-utils-clean/mate-dictionary/help/Makefile.in
++++ mate-utils-workdir/mate-dictionary/help/Makefile.in
+@@ -369,8 +369,8 @@ HELP_MEDIA = \
+ @USE_NLS_TRUE@IGNORE_HELP_LINGUAS = 
+ @USE_NLS_FALSE@HELP_LINGUAS = 
+ @USE_NLS_TRUE@HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-@USE_NLS_TRUE@	$(subst /,,$(dir $(wildcard */*.po))) )
++@USE_NLS_TRUE@	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++@USE_NLS_TRUE@	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 

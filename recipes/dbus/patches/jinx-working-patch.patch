@@ -1,8 +1,21 @@
+diff --git dbus-clean/Doxyfile.in dbus-workdir/Doxyfile.in
+index 750d966..a6439f8 100644
+--- dbus-clean/Doxyfile.in
++++ dbus-workdir/Doxyfile.in
+@@ -16,7 +16,7 @@ BRIEF_MEMBER_DESC      = YES
+ REPEAT_BRIEF           = YES
+ ALWAYS_DETAILED_SEC    = NO
+ FULL_PATH_NAMES        = NO
+-STRIP_FROM_PATH        = 
++STRIP_FROM_PATH        = @top_srcdir@ @top_builddir@
+ INTERNAL_DOCS          = NO
+ STRIP_CODE_COMMENTS    = YES
+ CASE_SENSE_NAMES       = YES
 diff --git dbus-clean/dbus/dbus-sysdeps-unix.c dbus-workdir/dbus/dbus-sysdeps-unix.c
-index 87ba2d8..c4ab364 100644
+index 87ba2d8..12ebf80 100644
 --- dbus-clean/dbus/dbus-sysdeps-unix.c
 +++ dbus-workdir/dbus/dbus-sysdeps-unix.c
-@@ -2589,29 +2589,12 @@ DBusSocket
+@@ -2589,44 +2589,23 @@ DBusSocket
  _dbus_accept  (DBusSocket listen_fd)
  {
    DBusSocket client_fd;
@@ -13,6 +26,8 @@ index 87ba2d8..c4ab364 100644
 -#endif
 -
 -  addrlen = sizeof (addr);
++  /* Ironclad wants a buffer big enough for the full sockaddr_un, and has no
++   * accept4(), so close-on-exec is set on the result by hand. */
 +  struct sockaddr_un addr;
 +  socklen_t addrlen = sizeof (addr);
  
@@ -29,24 +44,27 @@ index 87ba2d8..c4ab364 100644
 -
 -  if (client_fd.fd < 0 && (errno == ENOSYS || errno == EINVAL))
 -#endif
-     {
+-    {
 -      client_fd.fd = accept (listen_fd.fd, &addr, &addrlen);
-+      client_fd.fd = accept (listen_fd.fd, (struct sockaddr *)&addr, &addrlen);
-     }
+-    }
++  client_fd.fd = accept (listen_fd.fd, (struct sockaddr *) &addr, &addrlen);
  
    if (client_fd.fd < 0)
-@@ -2620,14 +2603,6 @@ _dbus_accept  (DBusSocket listen_fd)
+     {
+       if (errno == EINTR)
          goto retry;
      }
- 
+-
 -  _dbus_verbose ("client fd %d accepted\n", client_fd.fd);
 -
 -#ifdef HAVE_ACCEPT4
 -  if (!cloexec_done)
 -#endif
--    {
++  else
+     {
 -      _dbus_fd_set_close_on_exec(client_fd.fd);
--    }
++      _dbus_verbose ("client fd %d accepted\n", client_fd.fd);
++      _dbus_fd_set_close_on_exec (client_fd.fd);
+     }
  
    return client_fd;
- }

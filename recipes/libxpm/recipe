@@ -1,18 +1,19 @@
 #! /bin/sh
 
 version=3.5.19
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libXpm-${version}.tar.gz"
 tarball_blake2b="b6cd9c9289f4e900fe196f1071d92e5dfd4bc84d1b8411bacc0255cf919893f46f9c4ef4d0bce38306760cfd576e7b9e6e5759bd1627fc5cb7711561a965323d"
 hostdeps="gcc pkg-config"
-deps="core-libs libxext libxt"
+deps="core-libs xorg-proto libx11 libxext libxt"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure
+    autotools_configure \
+        --disable-open-zfile
 }
 
 build() {

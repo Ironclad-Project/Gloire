@@ -1,23 +1,64 @@
 #! /bin/sh
 
 version=5.5.1
-revision=2
-tarball_url="https://github.com/lua/lua/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="1b7f4c8d2efaef34a008a52ad513185ddb20bdc4ca053fb82149de2e75c7b442b1c44fdc39d246db0092a015dda6ae1cb847da28758a6aa09ba3253465c8fb91"
-imagedeps="nasm"
+revision=3
+tarball_url="https://www.lua.org/ftp/lua-${version}.tar.gz"
+tarball_blake2b="b3f9ba31a8c33ef564233bb633168246d3e04f44b28f2d16130b14b47fd65a1f3b44bed0e2b7bf773d9526abc2c941db4213b01e95de8af5f523658ec4315bff"
 hostdeps="gcc pkg-config"
 deps="core-libs readline"
 
 build() {
     cp -rp "${source_dir}"/. ./
-    sed -i 's|^#define LUA_ROOT "/usr/local/"$|#define LUA_ROOT "/usr/"|' luaconf.h
 
-    make MYLIBS="-lreadline -lncursesw -ltinfow" CFLAGS="$TARGET_CFLAGS -DLUA_USE_POSIX -DLUA_USE_DLOPEN -DLUA_USE_READLINE" MYLDFLAGS="$TARGET_LDFLAGS" CC=${OS_TRIPLET}-gcc AR="${OS_TRIPLET}-ar rcu" RANLIB=${OS_TRIPLET}-ranlib -j${parallelism}
+    make -j${parallelism} -C src all \
+        V=${version%.*} \
+        R=${version} \
+        CC=${OS_TRIPLET}-gcc \
+        AR="${OS_TRIPLET}-ar rcu" \
+        RANLIB=${OS_TRIPLET}-ranlib \
+        SYSCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN -DLUA_USE_READLINE" \
+        SYSLIBS="-Wl,-E -ldl -lreadline" \
+        MYCFLAGS="${TARGET_CFLAGS}" \
+        MYLDFLAGS="${TARGET_LDFLAGS}"
 }
 
 package() {
-    mkdir -p "${dest_dir}${prefix}"/bin
-    cp lua "${dest_dir}${prefix}"/bin/
+    make install \
+        V=${version%.*} \
+        R=${version} \
+        INSTALL_TOP="${dest_dir}${prefix}" \
+        INSTALL_MAN="${dest_dir}${prefix}"/share/man/man1 \
+        INSTALL_DATA="cp -d" \
+        TO_LIB="liblua.so liblua.so.${version%.*} liblua.so.${version}"
+
+    _pcver=$(echo ${version%.*} | tr -d .)
+    mkdir -p "${dest_dir}${prefix}"/lib/pkgconfig
+    cat > "${dest_dir}${prefix}"/lib/pkgconfig/lua${_pcver}.pc <<EOF
+V=${version%.*}
+R=${version}
+
+prefix=${prefix}
+INSTALL_BIN=\${prefix}/bin
+INSTALL_INC=\${prefix}/include
+INSTALL_LIB=\${prefix}/lib
+INSTALL_MAN=\${prefix}/share/man/man1
+INSTALL_LMOD=\${prefix}/share/lua/\${V}
+INSTALL_CMOD=\${prefix}/lib/lua/\${V}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: Lua
+Description: An Extensible Extension Language
+Version: \${R}
+Requires:
+Libs: -L\${libdir} -llua -lm
+Cflags: -I\${includedir}
+EOF
+    for _alias in lua lua${version%.*} lua-${version%.*}; do
+        ln -sf lua${_pcver}.pc \
+            "${dest_dir}${prefix}"/lib/pkgconfig/${_alias}.pc
+    done
 
     post_package_strip
 }

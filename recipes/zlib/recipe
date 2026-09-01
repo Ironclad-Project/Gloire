@@ -1,35 +1,25 @@
 #! /bin/sh
 
 version=1.3.2
-revision=3
-tarball_url="https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="21bcccda24d5868b9268e9f7a0fb125ff284cd07f8c708c021dd2702a48852447d4b1bc1e64480cf4d04539ef1ae99225fbde4f63894727a5edcfcd00f21c5e9"
-imagedeps="patchelf"
+revision=4
+tarball_url="https://zlib.net/zlib-${version}.tar.xz"
+tarball_blake2b="fd3a6e4c275a925f4814de487075c136e28421ea34ca7f93141781e7a414b392cd849fbf96cfcb24e825441df5f3c64be54276c0f617dc2d5c865d4ab260e83c"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
 configure() {
-        prefix="${prefix}" \
-        CHOST="${OS_TRIPLET}" \
-        CFLAGS="${TARGET_CFLAGS}" \
-        LDFLAGS="${TARGET_LDFLAGS}" \
-    ${source_dir}/configure
+    cmake_configure \
+        -DCMAKE_INSTALL_DOCDIR=share/doc \
+        -DZLIB_BUILD_STATIC=OFF \
+        -DZLIB_BUILD_TESTING=OFF
 }
 
 build() {
-    make -j${parallelism}
+    cmake --build . -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
-
-    # Remove static libraries
-    rm -rf "${dest_dir}${prefix}"/lib/*.a
-
-    # The sonames are completely broken, lets fix that
-    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so.${version}"
-    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so.1"
-    patchelf --set-soname libz.so.1 "${dest_dir}${prefix}/lib/libz.so"
+    DESTDIR="${dest_dir}" cmake --install .
 
     post_package_strip
 }

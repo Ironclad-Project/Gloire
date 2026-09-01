@@ -1,0 +1,13 @@
+diff --git nyancat-clean/src/Makefile nyancat-workdir/src/Makefile
+index 3a5eb75..62276fe 100644
+--- nyancat-clean/src/Makefile
++++ nyancat-workdir/src/Makefile
+@@ -1,7 +1,7 @@
+ OBJECTS = nyancat.o
+ 
+ CC	?=
+-CFLAGS	 ?= -g -Wall -Wextra -std=c99 -pedantic -Wwrite-strings
++override CFLAGS := -g -Wall -Wextra -std=c99 -pedantic -Wwrite-strings $(CFLAGS)
+ CPPFLAGS ?=
+ LDFLAGS  ?=
+ 

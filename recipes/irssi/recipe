@@ -1,23 +1,24 @@
 #! /bin/sh
 
 version=1.4.5
-revision=3
-hostdeps="gcc binutils pkg-config"
-deps="core-libs openssl ncurses glib2"
+revision=4
 tarball_url="https://github.com/irssi/irssi/releases/download/${version}/irssi-${version}.tar.gz"
-tarball_sha512="6569dc786e31f0a9b62a2adf9235b3d168bbf2684a79b7666baacdea3c8e82397c0b2b708cc6e29438d2158d4b323f2de1643794d6a4ed92423dda81800955cf"
+tarball_blake2b="ebf3da0ef26848a33435d1c00a43fb0689ce5b0a41004201596fc04ca49ea7f37c1f7a64cfb4cfd3ffb25c50d2267ade168aa4826f6a2e57697ff95ee9d91899"
+hostdeps="gcc pkg-config"
+deps="core-libs openssl ncurses glib2"
 
 configure() {
-    meson_configure
+    meson_configure \
+        -Dwith-proxy=yes \
+        -Denable-true-color=yes
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
-    generate_glib_schemas_hook
 }

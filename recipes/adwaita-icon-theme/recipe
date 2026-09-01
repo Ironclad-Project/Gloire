@@ -1,19 +1,19 @@
 #! /bin/sh
 
 version=50.0
-revision=4
-tarball_url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/archive/${version}/adwaita-icon-theme-${version}.tar.gz"
-tarball_blake2b="c8fab6b7c8f38f673d3a7a4d281a418b5d54fb5a328a00f64c2ce9a66506c7c8aef4700441e7020fa4e0c2f05f738afc60773f8ed10a0ee0deee5f1f030d5483"
+revision=5
+tarball_url="https://download.gnome.org/sources/adwaita-icon-theme/50/adwaita-icon-theme-${version}.tar.xz"
+tarball_blake2b="7e2c417eb41cbfecd80249e173340080be4510467515ec2811b846d7d5b850c27ae837a089016a02d8043c92c49f558f473d11db46e213012f68f473e66eeadc"
 imagedeps="gtk-update-icon-cache"
 hostdeps="gcc pkg-config"
-deps="core-libs gtk3"
+deps="core-libs hicolor-icon-theme"
 
 configure() {
     meson_configure
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

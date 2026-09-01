@@ -1,0 +1,217 @@
+From 26c647ae5e3d8fcf137b9524bfbfca73cc7dedc8 Mon Sep 17 00:00:00 2001
+From: Carlos Garcia Campos <cgarcia@igalia.com>
+Date: Tue, 24 Feb 2026 11:20:18 +0100
+Subject: [PATCH] Update the content length decimal value when encoding is set
+ to SOUP_ENCODING_CONTENT_LENGTH
+
+Closes #504
+---
+ libsoup/soup-message-headers.c |  40 +++++++++----
+ tests/header-parsing-test.c    | 105 +++++++++++++++++++++++++++++++++
+ 2 files changed, 134 insertions(+), 11 deletions(-)
+
+diff --git a/libsoup/soup-message-headers.c b/libsoup/soup-message-headers.c
+index 34cd2d8f..1ac1d9e8 100644
+--- a/libsoup/soup-message-headers.c
++++ b/libsoup/soup-message-headers.c
+@@ -220,6 +220,11 @@ soup_message_headers_clear (SoupMessageHeaders *hdrs)
+ 
+ 	if (hdrs->uncommon_concat)
+ 		g_hash_table_remove_all (hdrs->uncommon_concat);
++
++        hdrs->encoding = -1;
++        hdrs->content_length = 0;
++        hdrs->expectations = 0;
++        g_clear_pointer (&hdrs->content_type, g_free);
+ }
+ 
+ /**
+@@ -939,6 +944,27 @@ soup_message_headers_foreach (SoupMessageHeaders           *hdrs,
+ 
+ /* Specific headers */
+ 
++static gboolean
++soup_message_headers_update_content_length_encoding (SoupMessageHeaders *hdrs)
++{
++        const char *content_length;
++
++        content_length = soup_message_headers_get_one_common (hdrs, SOUP_HEADER_CONTENT_LENGTH);
++        if (content_length) {
++                char *end;
++
++                hdrs->content_length = g_ascii_strtoull (content_length, &end, 10);
++                if (*end)
++                        hdrs->encoding = SOUP_ENCODING_UNRECOGNIZED;
++                else
++                        hdrs->encoding = SOUP_ENCODING_CONTENT_LENGTH;
++
++                return TRUE;
++        }
++
++        return FALSE;
++}
++
+ /**
+  * SoupEncoding:
+  * @SOUP_ENCODING_UNRECOGNIZED: unknown / error
+@@ -969,7 +995,6 @@ soup_message_headers_foreach (SoupMessageHeaders           *hdrs,
+ SoupEncoding
+ soup_message_headers_get_encoding (SoupMessageHeaders *hdrs)
+ {
+-	const char *content_length;
+         const char *transfer_encoding;
+ 
+ 	g_return_val_if_fail (hdrs, SOUP_ENCODING_UNRECOGNIZED);
+@@ -991,16 +1016,7 @@ soup_message_headers_get_encoding (SoupMessageHeaders *hdrs)
+                 else if (g_ascii_strcasecmp (transfer_encoding, "identity") != 0)
+                         hdrs->encoding = SOUP_ENCODING_UNRECOGNIZED;
+         } else {
+-                content_length = soup_message_headers_get_one_common (hdrs, SOUP_HEADER_CONTENT_LENGTH);
+-                if (content_length) {
+-                        char *end;
+-
+-                        hdrs->content_length = g_ascii_strtoull (content_length, &end, 10);
+-                        if (*end)
+-                                hdrs->encoding = SOUP_ENCODING_UNRECOGNIZED;
+-                        else
+-                                hdrs->encoding = SOUP_ENCODING_CONTENT_LENGTH;
+-                }
++                soup_message_headers_update_content_length_encoding (hdrs);
+         }
+ 
+         if (hdrs->encoding == -1) {
+@@ -1046,6 +1062,8 @@ soup_message_headers_set_encoding (SoupMessageHeaders *hdrs,
+ 
+ 	case SOUP_ENCODING_CONTENT_LENGTH:
+ 		soup_message_headers_remove_common (hdrs, SOUP_HEADER_TRANSFER_ENCODING);
++                if (soup_message_headers_update_content_length_encoding (hdrs))
++                        return;
+ 		break;
+ 
+ 	case SOUP_ENCODING_CHUNKED:
+diff --git a/tests/header-parsing-test.c b/tests/header-parsing-test.c
+index 5a3c92eb..d84c8e2f 100644
+--- a/tests/header-parsing-test.c
++++ b/tests/header-parsing-test.c
+@@ -1548,6 +1548,110 @@ do_append_duplicate_content_length_test (void)
+         soup_message_headers_unref (hdrs);
+ }
+ 
++static void
++do_content_length_test (void)
++{
++        SoupMessageHeaders *hdrs;
++
++        hdrs = soup_message_headers_new (SOUP_MESSAGE_HEADERS_REQUEST);
++
++        /* Add Content-Length using soup_message_headers_append() */
++        soup_message_headers_append (hdrs, "Content-Length", "42");
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "42");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 42);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Add Content-Length using soup_message_headers_set_content_length() */
++        soup_message_headers_set_content_length (hdrs, 24);
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "24");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 24);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Set the encoding before the content length */
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_set_content_length (hdrs, 52);
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "52");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 52);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Set the encoding after the content length */
++        soup_message_headers_set_content_length (hdrs, 25);
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CONTENT_LENGTH);
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "25");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 25);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding before content length using soup_message_headers_append() */
++        soup_message_headers_append (hdrs, "Transfer-Encoding", "chunked");
++        soup_message_headers_append (hdrs, "Content-Length", "84");
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "84");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding before content length using soup_message_headers_append() and soup_message_headers_set_content_length() */
++        soup_message_headers_append (hdrs, "Transfer-Encoding", "chunked");
++        soup_message_headers_set_content_length (hdrs, 48);
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "48");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 48);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding before content length using soup_message_headers_set_encoding() and soup_message_headers_append() */
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_append (hdrs, "Content-Length", "92");
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "92");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding before content length using soup_message_headers_set_encoding() and soup_message_headers_set_content_length() */
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_set_content_length (hdrs, 29);
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "29");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 29);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CONTENT_LENGTH);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding after content length using soup_message_headers_append() */
++        soup_message_headers_append (hdrs, "Content-Length", "21");
++        soup_message_headers_append (hdrs, "Transfer-Encoding", "chunked");
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "21");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding after content length using soup_message_headers_set_content_length() and soup_message_headers_append() */
++        soup_message_headers_set_content_length (hdrs, 12);
++        soup_message_headers_append (hdrs, "Transfer-Encoding", "chunked");
++        g_assert_cmpstr (soup_message_headers_get_one (hdrs, "Content-Length"), ==, "12");
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding after content length using soup_message_headers_append() and soup_message_headers_set_encoding() */
++        soup_message_headers_append (hdrs, "Content-Length", "21");
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CHUNKED);
++        g_assert_null (soup_message_headers_get_one (hdrs, "Content-Length"));
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        /* Set different encoding after content length using soup_message_headers_set_content_length() and soup_message_headers_set_encoding() */
++        soup_message_headers_set_content_length (hdrs, 35);
++        soup_message_headers_set_encoding (hdrs, SOUP_ENCODING_CHUNKED);
++        g_assert_null (soup_message_headers_get_one (hdrs, "Content-Length"));
++        g_assert_cmpint (soup_message_headers_get_content_length (hdrs), ==, 0);
++        g_assert_cmpuint (soup_message_headers_get_encoding (hdrs), ==, SOUP_ENCODING_CHUNKED);
++        soup_message_headers_clear (hdrs);
++
++        soup_message_headers_unref (hdrs);
++}
++
+ int
+ main (int argc, char **argv)
+ {
+@@ -1566,6 +1670,7 @@ main (int argc, char **argv)
+ 	g_test_add_func ("/header-parsing/case-sensitive", do_case_sensitive_header_tests);
+ 	g_test_add_func ("/header-parsing/append-duplicate-host", do_append_duplicate_host_test);
+         g_test_add_func ("/header-parsing/append-duplicate-content-length", do_append_duplicate_content_length_test);
++        g_test_add_func ("/header-parsing/content-length", do_content_length_test);
+ 
+ 	ret = g_test_run ();
+ 
+-- 
+GitLab
+

@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index ac2315e..d0f2853 100644
+index 687e89b..47fb26d 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -45,6 +45,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
@@ -11,7 +11,7 @@ index ac2315e..d0f2853 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -1364,6 +1366,79 @@ elseif(GNU)
+@@ -1395,6 +1397,79 @@ elseif(GNU)
          src/detection/wmtheme/wmtheme_linux.c
          src/detection/camera/camera_nosupport.c
     )
@@ -40,7 +40,7 @@ index ac2315e..d0f2853 100644
 +        src/detection/bluetooth/bluetooth_nosupport.c # We don't do bluetooth yet
 +        src/detection/bluetoothradio/bluetoothradio_nosupport.c # We don't do bluetooth yet
 +        src/detection/codec/codec_linux.c
-+        src/detection/disk/disk_nosupport.c # sysfs and procfs
++        src/detection/disk/disk_ironclad.c # SYS_listmounts
 +        src/detection/dns/dns_linux.c
 +        src/detection/displayserver/linux/displayserver_linux.c
 +        src/detection/displayserver/linux/common.c
@@ -74,7 +74,7 @@ index ac2315e..d0f2853 100644
 +        src/detection/terminalshell/terminalshell_linux.c
 +        src/detection/terminalsize/terminalsize_linux.c
 +        src/detection/poweradapter/poweradapter_nosupport.c
-+        src/detection/processes/processes_nosupport.c # No procfs
++        src/detection/processes/processes_ironclad.c # SYS_listprocs
 +        src/detection/uptime/uptime_linux.c
 +        src/detection/users/users_linux.c
 +        src/detection/wallpaper/wallpaper_linux.c
@@ -84,14 +84,14 @@ index ac2315e..d0f2853 100644
 +        src/detection/wm/wm_linux.c
 +        src/detection/de/de_linux.c
 +        src/detection/sound/sound_linux.c # Won't do anything as no pulseaudio
-+        src/detection/swap/swap_nosupport.c # Reads procfs
++        src/detection/swap/swap_ironclad.c # Ironclad has no swap; reports an empty list
 +        src/detection/wmtheme/wmtheme_linux.c
 +        src/detection/camera/camera_nosupport.c
 +    )
  endif()
  
  if(ENABLE_TRACER)
-@@ -1529,6 +1604,8 @@ elseif(NetBSD)
+@@ -1573,6 +1648,8 @@ elseif(NetBSD)
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
  elseif(Haiku)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
@@ -99,10 +99,10 @@ index ac2315e..d0f2853 100644
 +    target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
  elseif(GNU)
      # On Hurd PATH_MAX is not defined. Set an arbitrary limit as workaround.
-     target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE PATH_MAX=4096 O_PATH=0)
-@@ -1983,6 +2060,10 @@ elseif(Haiku)
-         PRIVATE "be"
+     target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE PATH_MAX=4096 O_PATH=O_NORW)
+@@ -2028,6 +2105,10 @@ elseif(Haiku)
          PRIVATE "gnu"
+         PRIVATE "bsd"
      )
 +elseif(Ironclad)
 +    target_link_libraries(libfastfetch
@@ -112,7 +112,7 @@ index ac2315e..d0f2853 100644
  
  target_include_directories(libfastfetch
 diff --git fastfetch-clean/src/common/impl/FFPlatform_unix.c fastfetch-workdir/src/common/impl/FFPlatform_unix.c
-index 3b9c87d..47df390 100644
+index ec2ef16..de35834 100644
 --- fastfetch-clean/src/common/impl/FFPlatform_unix.c
 +++ fastfetch-workdir/src/common/impl/FFPlatform_unix.c
 @@ -142,6 +142,8 @@ static void getExePath(FFPlatform* platform) {
@@ -169,6 +169,123 @@ index 0000000..7ad301a
 +
 +	return NULL;
 +}
+diff --git fastfetch-workdir/src/detection/disk/disk_ironclad.c fastfetch-workdir/src/detection/disk/disk_ironclad.c
+new file mode 100644
+index 0000000..06f17eb
+--- /dev/null
++++ fastfetch-workdir/src/detection/disk/disk_ironclad.c
+@@ -0,0 +1,111 @@
++
++#include "disk.h"
++#include "common/mallocHelper.h"
++#include "common/strutil.h"
++
++#include <stdlib.h>
++#include <string.h>
++#include <sys/mount.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++
++// Matches Ironclad's Mount_Info (source/userland/userland-syscall.ads). Copied from
++// util-ironclad's src/lsblk.c, which drives the same syscall, rather than re-derived.
++struct ironclad_mountinfo {
++    uint32_t type;
++    uint32_t flags;
++    char     source[20];
++    uint32_t source_length;
++    char     location[20];
++    uint32_t location_length;
++    uint64_t blocksize;
++    uint64_t fragsize;
++    uint64_t sizeinfrags;
++    uint64_t freeblocks;
++    uint64_t freeblocksu;
++    uint64_t inodecount;
++    uint64_t freeinodes;
++    uint64_t freebinodesu;
++    uint64_t maxfile;
++};
++
++static const char* fsName(uint32_t type) {
++    switch (type) {
++        case MNT_EXT:    return "ext";
++        case MNT_FAT:    return "fat";
++        case MNT_DEV:    return "devfs";
++        case MNT_UNPACK: return "unpack";
++        default:         return "unknown";
++    }
++}
++
++const char* ffDetectDisksImpl(FFDiskOptions* options, FFlist* disks) {
++    uint64_t n = 16;
++    FF_AUTO_FREE struct ironclad_mountinfo* buf =
++        malloc(n * sizeof(struct ironclad_mountinfo));
++    if (buf == NULL)
++        return "malloc() failed";
++
++    long ret = syscall(SYS_listmounts, buf, n);
++    if (ret < 0)
++        return "syscall(SYS_listmounts) failed";
++
++    if ((uint64_t) ret > n) {
++        // The kernel reports the real count; grow and ask again.
++        n = (uint64_t) ret;
++        struct ironclad_mountinfo* grown =
++            realloc(buf, n * sizeof(struct ironclad_mountinfo));
++        if (grown == NULL)
++            return "realloc() failed";
++        buf = grown;
++        ret = syscall(SYS_listmounts, buf, n);
++        if (ret < 0)
++            return "syscall(SYS_listmounts) failed";
++        if ((uint64_t) ret > n)
++            ret = (long) n;
++    }
++
++    for (long i = 0; i < ret; ++i) {
++        // The two names are length-counted and NOT terminated.
++        char mountpoint[sizeof(buf[i].location) + 1];
++        char mountFrom[sizeof(buf[i].source) + 1];
++        uint32_t llen = buf[i].location_length, slen = buf[i].source_length;
++
++        if (llen > sizeof(buf[i].location)) llen = sizeof(buf[i].location);
++        if (slen > sizeof(buf[i].source))   slen = sizeof(buf[i].source);
++        memcpy(mountpoint, buf[i].location, llen); mountpoint[llen] = '\0';
++        memcpy(mountFrom,  buf[i].source,   slen); mountFrom[slen]  = '\0';
++
++        if (__builtin_expect(options->folders.length > 0, 0)) {
++            if (!ffStrbufSeparatedContainS(&options->folders, mountpoint, FF_DISK_FOLDER_SEPARATOR))
++                continue;
++        }
++
++        FFDisk* disk = FF_LIST_ADD(FFDisk, *disks);
++
++        // sizeinfrags counts FRAGMENTS, so every figure scales by fragsize.
++        disk->bytesTotal     = buf[i].sizeinfrags * buf[i].fragsize;
++        disk->bytesFree      = buf[i].freeblocks * buf[i].fragsize;
++        disk->bytesAvailable = buf[i].freeblocksu * buf[i].fragsize;
++        disk->bytesUsed      = 0; // filled in by ./disk.c
++
++        disk->filesTotal = (uint32_t) buf[i].inodecount;
++        disk->filesUsed  = (uint32_t) (buf[i].inodecount - buf[i].freeinodes);
++
++        ffStrbufInitS(&disk->mountFrom, mountFrom);
++        ffStrbufInitS(&disk->mountpoint, mountpoint);
++        ffStrbufInitS(&disk->filesystem, fsName(buf[i].type));
++        ffStrbufInit(&disk->name);
++
++        disk->type = ffStrEquals(mountpoint, "/")
++                     ? FF_DISK_VOLUME_TYPE_REGULAR_BIT
++                     : FF_DISK_VOLUME_TYPE_EXTERNAL_BIT;
++        if (buf[i].flags & MS_RDONLY)
++            disk->type |= FF_DISK_VOLUME_TYPE_READONLY_BIT;
++
++        // Ironclad reports no per-filesystem creation time.
++        disk->createTime = 0;
++    }
++
++    return NULL;
++}
 diff --git fastfetch-workdir/src/detection/memory/memory_ironclad.c fastfetch-workdir/src/detection/memory/memory_ironclad.c
 new file mode 100644
 index 0000000..23fd66a
@@ -198,17 +315,59 @@ index 2119349..1574082 100644
  uint32_t ffPackagesGetNix(FFstrbuf* baseDir, const char* dirname);
  #endif
  #ifndef _WIN32
-diff --git fastfetch-clean/src/detection/swap/swap_nosupport.c fastfetch-workdir/src/detection/swap/swap_nosupport.c
-index ebc29b4..5a9b7e2 100644
---- fastfetch-clean/src/detection/swap/swap_nosupport.c
-+++ fastfetch-workdir/src/detection/swap/swap_nosupport.c
-@@ -1,5 +1,5 @@
- #include "swap.h"
- 
--const char* ffDetectSwap(FFSwapResult* swap) {
+diff --git fastfetch-workdir/src/detection/processes/processes_ironclad.c fastfetch-workdir/src/detection/processes/processes_ironclad.c
+new file mode 100644
+index 0000000..9b1d0db
+--- /dev/null
++++ fastfetch-workdir/src/detection/processes/processes_ironclad.c
+@@ -0,0 +1,30 @@
++
++#include "processes.h"
++
++#include <stdlib.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++
++// SYS_listprocs reports how many processes exist even when the buffer is too small,
++// which is exactly the count wanted here -- so unlike util-ironclad's ps.c there is
++// no need to grow the buffer and call twice.
++struct ironclad_procinfo {
++    char     id[20];
++    uint16_t id_len;
++    uint16_t ppid;
++    uint16_t pid;
++    uint32_t uid;
++    uint32_t flags;
++    struct timespec elapsed;
++} __attribute__((packed));
++
++const char* ffDetectProcesses(uint32_t* result) {
++    struct ironclad_procinfo probe;
++    long ret = syscall(SYS_listprocs, &probe, 1);
++
++    if (ret < 0)
++        return "syscall(SYS_listprocs) failed";
++
++    *result = (uint32_t) ret;
++    return NULL;
++}
+diff --git fastfetch-workdir/src/detection/swap/swap_ironclad.c fastfetch-workdir/src/detection/swap/swap_ironclad.c
+new file mode 100644
+index 0000000..19aa13a
+--- /dev/null
++++ fastfetch-workdir/src/detection/swap/swap_ironclad.c
+@@ -0,0 +1,11 @@
++
++#include "swap.h"
++
++// Ironclad has no swap at all -- no swap device, no swap file, no interface to
++// enumerate one. An EMPTY LIST is therefore the accurate answer and is a different
++// statement from "Not supported on this platform": there is nothing to report, not
++// something we cannot read.
 +const char* ffDetectSwap(FFlist* swap) {
-     return "Not supported on this platform";
- }
++    (void) swap;
++    return NULL;
++}
 diff --git fastfetch-clean/src/detection/terminalsize/terminalsize_linux.c fastfetch-workdir/src/detection/terminalsize/terminalsize_linux.c
 index e06f958..db050ee 100644
 --- fastfetch-clean/src/detection/terminalsize/terminalsize_linux.c
@@ -223,7 +382,7 @@ index e06f958..db050ee 100644
  #endif
  
 diff --git fastfetch-clean/src/detection/uptime/uptime_linux.c fastfetch-workdir/src/detection/uptime/uptime_linux.c
-index 75c7768..9739636 100644
+index 9ac7094..95893a7 100644
 --- fastfetch-clean/src/detection/uptime/uptime_linux.c
 +++ fastfetch-workdir/src/detection/uptime/uptime_linux.c
 @@ -5,7 +5,7 @@
@@ -257,9 +416,9 @@ index 75c7768..9739636 100644
 +
      result->uptime = (uint64_t) uptime.tv_sec * 1000 + (uint64_t) uptime.tv_nsec / 1000000;
      result->bootTime = ffTimeGetNow() - result->uptime;
-     return NULL;
+     return nullptr;
 diff --git fastfetch-clean/src/detection/zpool/zpool.c fastfetch-workdir/src/detection/zpool/zpool.c
-index ce7abb3..9a66e5f 100644
+index ebabf45..06181ea 100644
 --- fastfetch-clean/src/detection/zpool/zpool.c
 +++ fastfetch-workdir/src/detection/zpool/zpool.c
 @@ -1,6 +1,6 @@
@@ -271,7 +430,7 @@ index ce7abb3..9a66e5f 100644
      #include "common/kmod.h"
  
 diff --git fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
-index b58d6c9..8a615d0 100644
+index cf5207b..8c1be61 100644
 --- fastfetch-clean/src/options/general.h
 +++ fastfetch-workdir/src/options/general.h
 @@ -15,7 +15,7 @@ typedef struct FFOptionsGeneral {

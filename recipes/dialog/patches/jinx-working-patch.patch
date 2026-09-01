@@ -1,0 +1,26 @@
+diff --git dialog-clean/configure dialog-workdir/configure
+index 7060ef0..1f8456a 100755
+--- dialog-clean/configure
++++ dialog-workdir/configure
+@@ -13025,7 +13025,7 @@ echo "${ECHO_T}$cf_cv_ldflags_search_paths_first" >&6
+ 		fi
+ 		cf_cv_rm_so_locs=yes
+ 		;;
+-	(linux*|gnu*|k*bsd*-gnu)
++	(linux*|gnu*|k*bsd*-gnu|ironclad*)
+ 		if test "$DFT_LWR_MODEL" = "shared" && test -n "$LD_RPATH_OPT" ; then
+ 			LOCAL_LDFLAGS="${LD_RPATH_OPT}\$(LOCAL_LIBDIR)"
+ 			LOCAL_LDFLAGS2="$LOCAL_LDFLAGS"
+diff --git dialog-clean/makefile.in dialog-workdir/makefile.in
+index 130c94d..8c38d2e 100644
+--- dialog-clean/makefile.in
++++ dialog-workdir/makefile.in
+@@ -206,7 +206,7 @@ dialog$o \
+ $(OBJECTS) : $(srcdir)/dialog.h $(srcdir)/dlg_keys.h dlg_config.h VERSION
+ 
+ $(PROG) : $(LIB) dialog$o
+-	$(LINK) -o $@ dialog$o -L. -l@PACKAGE@ $(CFLAGS) $(LDFLAGS) $(LIBS)
++	$(LINK) -o $@ dialog$o $(CFLAGS) $(LDFLAGS) -L. -l@PACKAGE@ $(LIBS)
+ 
+ clean	\
+ distclean \

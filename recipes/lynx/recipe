@@ -1,21 +1,28 @@
 #! /bin/sh
 
 version=2.9.3
-revision=5
+revision=6
 tarball_url="https://invisible-mirror.net/archives/lynx/tarballs/lynx${version}.tar.bz2"
 tarball_blake2b="8183507ac372d4349988a091ac320fe45a19e9b771a7a737ff4126eccfb220d20eca8d6873c0804091629663059519d223635468572362b221f30531078b3d24"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs brotli bzip2 libidn2 ncurses ca-certificates openssl zlib"
+deps="core-libs brotli bzip2 libidn2 ncurses openssl zlib zstd"
+conf_files="/etc/lynx.cfg /etc/lynx.lss"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
+    cp -rp "${source_dir}"/. ./
+
+        configure_script_path=./configure \
     autotools_configure \
-        --with-screen=ncursesw \
-        --with-ssl="${sysroot}"/usr
+        --with-ssl="${sysroot}"/usr \
+        --enable-default-colors \
+        --enable-externs \
+        --enable-ipv6 \
+        --enable-nls
 }
 
 build() {
@@ -24,5 +31,6 @@ build() {
 
 package() {
     make DESTDIR="${dest_dir}" install-full
+
     post_package_strip
 }

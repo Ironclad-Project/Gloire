@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=file
-revision=2
+revision=3
 imagedeps="build-essential"
 
 configure() {
@@ -12,8 +12,8 @@ configure() {
         --prefix=${prefix} \
         --sysconfdir=/etc \
         --localstatedir=/var \
-        --disable-nls \
-        --disable-static
+        --disable-static \
+        --disable-silent-rules
 }
 
 build() {

@@ -1,24 +1,30 @@
 #! /bin/sh
 
 version=2.18.3
-revision=2
-git_url="https://gitlab.freedesktop.org/fontconfig/fontconfig.git"
-commit=0f236723a3c26bd9745e32ba2b3ee21e5f809295
-imagedeps="gperf"
+revision=3
+tarball_url="https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/${version}/fontconfig-${version}.tar.xz"
+tarball_blake2b="33b7d89e7f3d4c43cbd4129e75f9ff2ddd8358aa9e7a9bd72ee72fe64beacbf0ab7e7760c91bc35a77548ffcc367acf7280ea56f002c6d9afa3f0e286831d6b6"
+imagedeps="gperf docbook docbook-utils"
 hostdeps="gcc pkg-config"
-deps="core-libs freetype2 libexpat libxml2"
+deps="core-libs freetype2 libexpat"
+conf_files="/etc/fonts/fonts.conf"
 
 configure() {
     meson_configure \
-        -Dxml-backend=libxml2 \
+        -Ddoc-html=enabled \
+        -Ddoc-pdf=disabled \
+        -Ddoc-txt=disabled \
         -Dtests=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
     post_package_strip
+
+    generate_font_cache_hook -rs
 }

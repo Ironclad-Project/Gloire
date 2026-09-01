@@ -1,12 +1,12 @@
 #! /bin/sh
 
 version=11.1.0
-revision=1
+revision=2
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_blake2b="bdcbd99067718c13186ed5f63bf6a7434e5f3acd455410ec029a0bbed45eb0fdcc9f9a3474af33e4e159137f2cf66b704998eda2c386297d73957fe26fba9722"
-imagedeps="build-essential python3-venv python3-qemu-qmp python3-wheel python3-pip libglib2.0-dev"
+imagedeps="build-essential python3-venv python3-sphinx python3-sphinx-rtd-theme"
 hostdeps="gcc pkg-config"
-deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman libjpeg-turbo bzip2 zstd vte gnutls libtasn1"
+deps="core-libs libnvmm sdl2-compat gtk3 glib2 ncurses pixman libjpeg-turbo libpng zlib bzip2 zstd vte cairo gdk-pixbuf libx11 libxkbcommon gnutls libtasn1 curl"
 
 early_prepare() {
     meson subprojects download
@@ -22,14 +22,17 @@ configure() {
             ;;
     esac
 
-        CFLAGS="${TARGET_CFLAGS} -Wno-error" \
+        CFLAGS="${TARGET_CFLAGS}" \
         LDFLAGS="${TARGET_LDFLAGS}" \
     ./configure \
         -Db_colorout=always \
+        -Ddtc:werror=false \
+        --enable-docs \
         --cross-prefix=${OS_TRIPLET}- \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
         --with-coroutine=sigaltstack \
+        --enable-slirp \
         --disable-tpm \
         $NVMM_FLAG
 }
@@ -37,13 +40,15 @@ configure() {
 build() {
     cd build
 
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     cd build
 
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    rm -f "${dest_dir}${prefix}"/share/man/man8/qemu-pr-helper.8
 
     post_package_strip
 }

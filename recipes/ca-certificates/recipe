@@ -2,13 +2,13 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/recipes/nss/recipe" && echo "${version}")"
-revision=7
-make_ca_version=1.16.1
-tarball_url="https://github.com/lfs-book/make-ca/archive/v${make_ca_version}/make-ca-${make_ca_version}.tar.gz"
-tarball_blake2b="f054fe6e96b74bfc02038e9dc4dd09628a22b75711f692a346c4952a6fa07456b63cff7863d3c11feddeb1ef37b1b786934e2713008b808570da8443e978ece3"
-imagedeps="p11-kit"
+revision=8
+git_url="https://github.com/lfs-book/make-ca.git"
+commit=c52f1373f5d91d8d7078fe129ac28664d3bbd941
+imagedeps="p11-kit openssl"
 hostdeps="gcc pkg-config"
-deps="core-libs nss openssl p11-kit"
+deps="core-libs p11-kit"
+builddeps="nss"
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -25,6 +25,8 @@ package() {
     ln -s "/etc/pki/tls/certs/ca-bundle.crt" "${dest_dir}/etc/ssl/cert.pem"
     ln -s "/etc/pki/tls/certs/ca-bundle.crt" "${dest_dir}/etc/ssl/certs/ca-certificates.crt"
     ln -s "/etc/pki/tls/certs/ca-bundle.crt" "${dest_dir}/etc/ssl/certs/ca-bundle.crt"
+
+    sed -i "s|${dest_dir}||g" "${dest_dir}"/etc/pki/anchors.md5sums
 
     # Remove unneeded systemd timers
     rm -rvf ${dest_dir}${prefix}/lib

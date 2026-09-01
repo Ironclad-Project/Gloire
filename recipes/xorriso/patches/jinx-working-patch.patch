@@ -1,0 +1,54 @@
+diff --git xorriso-clean/Makefile.in xorriso-workdir/Makefile.in
+index 04a324a..61600f6 100644
+--- xorriso-clean/Makefile.in
++++ xorriso-workdir/Makefile.in
+@@ -335,9 +335,7 @@ am__v_texidevnull_0 = > /dev/null
+ am__v_texidevnull_1 = 
+ INFO_DEPS = $(srcdir)/xorriso/xorriso.info \
+ 	$(srcdir)/xorriso/xorrisofs.info \
+-	$(srcdir)/xorriso/xorrecord.info \
+-	$(srcdir)/xorriso/xorriso-tcltk.info \
+-	$(srcdir)/xorriso-dd-target/xorriso-dd-target.info
++	$(srcdir)/xorriso/xorrecord.info
+ am__TEXINFO_TEX_DIR = $(srcdir)
+ DVIS = xorriso/xorriso.dvi xorriso/xorrisofs.dvi xorriso/xorrecord.dvi \
+ 	xorriso/xorriso-tcltk.dvi \
+@@ -778,7 +776,6 @@ xorriso_make_xorriso_1_SOURCES = xorriso/make_xorriso_1.c
+ 
+ # A Proof-of-concept for frontends, and xorriso-dd-target if on Linux kernel
+ bin_SCRIPTS = \
+-	frontend/xorriso-tcltk \
+ 	$(XORRISO_DD_TARGET)
+ 
+ EXTRA_SCRIPTS = xorriso-dd-target/xorriso-dd-target
+@@ -791,16 +788,13 @@ man_MANS = \
+ 	xorriso/xorriso.1 \
+ 	xorriso/xorrisofs.1 \
+ 	xorriso/xorrecord.1 \
+-	xorriso/xorriso-tcltk.1 \
+ 	$(XORRISO_DD_TARGET_MAN)
+ 
+ EXTRA_MANS = xorriso-dd-target/xorriso-dd-target.1
+ info_TEXINFOS = \
+ 	xorriso/xorriso.texi \
+ 	xorriso/xorrisofs.texi \
+-	xorriso/xorrecord.texi \
+-	xorriso/xorriso-tcltk.texi \
+-	xorriso-dd-target/xorriso-dd-target.texi
++	xorriso/xorrecord.texi
+ 
+ 
+ # xorriso-dd-target.texi is hardcoded for now because of
+diff --git xorriso-clean/configure xorriso-workdir/configure
+index 8b42af0..c08aa0b 100755
+--- xorriso-clean/configure
++++ xorriso-workdir/configure
+@@ -12888,7 +12888,7 @@ then
+ 
+ fi
+ 
+-if uname -s | grep '^Linux' >/dev/null
++if echo "$target" | grep 'linux' >/dev/null
+ then
+   XORRISO_DD_TARGET=xorriso-dd-target/xorriso-dd-target
+   XORRISO_DD_TARGET_MAN=xorriso-dd-target/xorriso-dd-target.1

@@ -1,26 +1,25 @@
 #! /bin/sh
 
 version=14.3.1
-revision=2
+revision=3
 tarball_url="https://github.com/harfbuzz/harfbuzz/releases/download/${version}/harfbuzz-${version}.tar.xz"
 tarball_blake2b="67e74266c83797a42d8c8a92a63e9958eb666989b4a47874155603371f101732544c4d6dc82aa9bf719229af61461ab87995fc6df7fcfa3e594bf562817b9339"
+imagedeps="libglib2.0-dev-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs graphite2 glib2 zlib freetype2 cairo icu"
+deps="core-libs graphite2 glib2 zlib freetype2 libpng cairo icu"
 
 configure() {
     meson_configure \
+        -Dchafa=disabled \
+        -Dgpu_demo=disabled \
+        -Ddocs=disabled \
         -Dgraphite2=enabled \
-        -Dglib=enabled \
-        -Dgobject=disabled \
-        -Dicu=enabled \
-        -Dfreetype=enabled \
-        -Dcairo=enabled \
         -Dintrospection=disabled \
         -Dtests=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

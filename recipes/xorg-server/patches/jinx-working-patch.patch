@@ -19,7 +19,7 @@ index fd144db..6eb018c 100644
  
  Bool
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
-index 9c30f00..f259d93 100644
+index 9c30f00..742e68f 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c
 +++ xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
 @@ -10,12 +10,12 @@
@@ -124,17 +124,17 @@ index 4984ccf..bb3e2f8 100644
  
  extern _X_EXPORT char *fbdevHWGetName(ScrnInfoPtr pScrn);
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/meson.build xorg-server-workdir/hw/xfree86/fbdevhw/meson.build
-index f3146f3..9d07524 100644
+index f3146f3..18e2363 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/meson.build
 +++ xorg-server-workdir/hw/xfree86/fbdevhw/meson.build
 @@ -1,4 +1,4 @@
 -if host_machine.system() == 'linux'
-+if host_machine.system() == 'ironclad'
++if host_machine.system() in ['linux', 'ironclad']
      srcs_fbdevhw = 'fbdevhw.c'
  else
      srcs_fbdevhw = 'fbdevhwstub.c'
 diff --git xorg-server-clean/os/utils.c xorg-server-workdir/os/utils.c
-index f0d022f..677c581 100644
+index 008ed04..c705784 100644
 --- xorg-server-clean/os/utils.c
 +++ xorg-server-workdir/os/utils.c
 @@ -1412,7 +1412,7 @@ System(const char *command)
@@ -146,7 +146,7 @@ index f0d022f..677c581 100644
  }
  
  static struct pid {
-@@ -1642,7 +1642,7 @@ Pclose(void *iop)
+@@ -1644,7 +1644,7 @@ Pclose(void *iop)
      }
  #endif
  

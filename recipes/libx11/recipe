@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.8.13
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libX11-${version}.tar.xz"
 tarball_blake2b="1ccb826184ed67d13e254d5cf20a40d2994837ffab6c05c647865927589e4aaa8933b57cc88226a6fb6ac836be88a57087e8f4d447b37b5327993c9f8834e8ea"
 imagedeps="build-essential"
@@ -14,7 +14,8 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --with-keysymdefdir=${sysroot}${prefix}/include/X11
+        --with-keysymdefdir=${sysroot}${prefix}/include/X11 \
+        --disable-xf86bigfont
 }
 
 build() {

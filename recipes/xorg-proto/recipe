@@ -2,18 +2,19 @@
 
 repology_id=xorgproto
 version=2025.1
-revision=2
+revision=3
 tarball_url="https://www.x.org/releases/individual/proto/xorgproto-${version}.tar.xz"
 tarball_blake2b="4202efbfe560afccb5a742f3c64973a4936878ed7ec4259bc31b7317e5cde505666fee2855dd0b6ff169a8da87d0f980dfa65ff58d2ead0aad39f3a94e053903"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros"
+builddeps="xorg-util-macros"
+deps="core-libs"
 
 configure() {
     meson_configure
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

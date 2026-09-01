@@ -1,21 +1,22 @@
 #! /bin/sh
 
 version=1.13.2
-revision=2
+revision=3
 git_url="https://github.com/xkbcommon/libxkbcommon.git"
-commit=1e11d3afe458ad2efe1d081b3185e42d32c80f56
+commit=d1442aaa6b635551182e83c3b55037f4c118c962
 hostdeps="gcc pkg-config"
 deps="core-libs libxcb libxml2 xkeyboard-config"
 
 configure() {
     meson_configure \
         -Dxkb-config-root="$prefix"/share/X11/xkb \
-        -Denable-x11=true \
+        -Dxkb-config-versioned-extensions-path="$prefix"/share/xkeyboard-config-2.d \
+        -Dxkb-config-unversioned-extensions-path="$prefix"/share/xkeyboard-config.d \
         -Denable-wayland=false
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

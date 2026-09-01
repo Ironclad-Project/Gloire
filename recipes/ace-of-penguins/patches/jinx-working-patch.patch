@@ -1,5 +1,5 @@
 diff --git ace-of-penguins-clean/lib/Makefile.in ace-of-penguins-workdir/lib/Makefile.in
-index b92eb13..bfc1fdf 100644
+index b92eb13..74c2e7e 100644
 --- ace-of-penguins-clean/lib/Makefile.in
 +++ ace-of-penguins-workdir/lib/Makefile.in
 @@ -565,10 +565,10 @@ images.c : make-imglib Makefile images.in
@@ -7,11 +7,11 @@ index b92eb13..bfc1fdf 100644
  
  make-imglib : make-imglib.c
 -	$(BUILD_CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(srcdir)/make-imglib.c -o make-imglib -lpng -lz
-+	$(BUILD_CC) $(srcdir)/make-imglib.c -o make-imglib -lpng -lz
++	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) $(srcdir)/make-imglib.c -o make-imglib -lpng -lz
  
  text2c : text2c.c
 -	$(BUILD_CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(srcdir)/text2c.c -o text2c -lpng -lz
-+	$(BUILD_CC) $(srcdir)/text2c.c -o text2c -lpng -lz
++	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) $(srcdir)/text2c.c -o text2c -lpng -lz
  
  # Tell versions [3.59,3.63) of GNU make to not export all variables.
  # Otherwise a system limit (for SysV at least) may be exceeded.
@@ -56,19 +56,23 @@ index 84cda12..7dce691 100644
    }
    while (*next && !isgraph(*next)) next++;
    if (!*next) return 0;
+diff --git ace-of-penguins-clean/lib/table.c ace-of-penguins-workdir/lib/table.c
+index befe696..b53bab0 100644
+--- ace-of-penguins-clean/lib/table.c
++++ ace-of-penguins-workdir/lib/table.c
+@@ -57,7 +57,7 @@ static int ex=0, ey=0, ew=0, eh=0;
+ static int graphics_disabled = 1;
+ 
+ OptionDesc *app_options;
+-OptionDesc *xwin_options;
++extern OptionDesc *xwin_options;
+ static OptionDesc *options[5];
+ 
+ static OptionDesc ace_options[] = {
 diff --git ace-of-penguins-clean/lib/xwin.c ace-of-penguins-workdir/lib/xwin.c
-index e4bcca2..724be23 100644
+index e4bcca2..48d084c 100644
 --- ace-of-penguins-clean/lib/xwin.c
 +++ ace-of-penguins-workdir/lib/xwin.c
-@@ -55,7 +55,7 @@ OptionDesc xwin_options_list[] = {
-   { "-visual", OPTION_INTEGER, &visual_id },
-   { 0, 0, 0 }
- };
--OptionDesc *xwin_options = xwin_options_list;
-+//OptionDesc *xwin_options = xwin_options_list;
- 
- Display *display=0;
- int screen=0;
 @@ -89,10 +89,10 @@ int help_background;
  /* Motif window hints */
  typedef struct

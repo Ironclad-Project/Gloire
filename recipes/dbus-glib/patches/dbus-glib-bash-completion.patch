@@ -1,0 +1,162 @@
+From 484e483d1fb98b56ebd2cb7d73a7f0851f7b4ab5 Mon Sep 17 00:00:00 2001
+From: Koki Fukuda <ko.fu.dev@gmail.com>
+Date: Wed, 5 May 2021 21:59:34 +0900
+Subject: [PATCH] Fix bash completion and its helper
+
+This fixes the following errors:
+* Completion script causing an usage error.
+* Better error handling in helper program in case the bus
+  is inaccessible.
+---
+ dbus/dbus-bash-completion-helper.c | 43 ++++++++++++++++++++++++++++++
+ dbus/dbus-bash-completion.sh.in    |  3 +--
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/dbus/dbus-bash-completion-helper.c b/dbus/dbus-bash-completion-helper.c
+index 6240ed6..2dcae22 100644
+--- a/dbus/dbus-bash-completion-helper.c
++++ b/dbus/dbus-bash-completion-helper.c
+@@ -56,6 +56,11 @@ print_services (DBusConnection *connection)
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_recurse (&iter, &iter_array);
+   while (dbus_message_iter_get_arg_type (&iter_array) != DBUS_TYPE_INVALID)
+@@ -77,6 +82,11 @@ print_services (DBusConnection *connection)
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_recurse (&iter, &iter_array);
+   while (dbus_message_iter_get_arg_type (&iter_array) != DBUS_TYPE_INVALID)
+@@ -86,6 +96,9 @@ print_services (DBusConnection *connection)
+       dbus_message_iter_next (&iter_array);
+     }
+   dbus_message_unref (reply);
++
++ fail:
++  dbus_error_free(&error);
+ }
+ 
+ static gboolean
+@@ -139,6 +152,11 @@ print_objects (DBusConnection *connection, const char *service_name, const char
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_get_basic (&iter, &introspection_xml);
+ 
+@@ -167,6 +185,9 @@ print_objects (DBusConnection *connection, const char *service_name, const char
+   node_info_unref (root);
+ 
+   dbus_message_unref (reply);
++
++ fail:
++  dbus_error_free(&error);
+ }
+ 
+ static gboolean
+@@ -192,6 +213,11 @@ is_object_path_with_interfaces (DBusConnection *connection, const char *service_
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_get_basic (&iter, &introspection_xml);
+ 
+@@ -203,6 +229,9 @@ is_object_path_with_interfaces (DBusConnection *connection, const char *service_
+   node_info_unref (root);
+   dbus_message_unref (reply);
+ 
++ fail:
++  dbus_error_free(&error);
++
+   return ret;
+ }
+ 
+@@ -228,6 +257,11 @@ print_methods (DBusConnection *connection, const char *service_name, const char
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_get_basic (&iter, &introspection_xml);
+ 
+@@ -247,6 +281,9 @@ print_methods (DBusConnection *connection, const char *service_name, const char
+     }
+   node_info_unref (root);
+   dbus_message_unref (reply);
++
++ fail:
++  dbus_error_free(&error);
+ }
+ 
+ static void
+@@ -285,6 +322,11 @@ print_signature (DBusConnection *connection, const char *service_name, const cha
+                                                      -1,
+                                                      &error);
+   dbus_message_unref (message);
++
++  if (reply == NULL) {
++    goto fail;
++  }
++
+   dbus_message_iter_init (reply, &iter);
+   dbus_message_iter_get_basic (&iter, &introspection_xml);
+ 
+@@ -324,6 +366,7 @@ print_signature (DBusConnection *connection, const char *service_name, const cha
+   node_info_unref (root);
+   dbus_message_unref (reply);
+  fail:
++  dbus_error_free(&error);
+   g_free (method_name);
+   g_free (interface_name);
+ }
+diff --git a/dbus/dbus-bash-completion.sh.in b/dbus/dbus-bash-completion.sh.in
+index a7751da..e582438 100644
+--- a/dbus/dbus-bash-completion.sh.in
++++ b/dbus/dbus-bash-completion.sh.in
+@@ -5,7 +5,6 @@
+ ################################################################################
+ 
+ __dbus_send() {
+-    local IFS=$'\n'
+     local cur="${COMP_WORDS[COMP_CWORD]}"
+ 
+     # --name=value style option
+@@ -13,7 +12,7 @@ __dbus_send() {
+         cur=${cur/*=/}
+     fi
+ 
+-    COMPREPLY=($(compgen -W "$(@libexecdir@/dbus-bash-completion-helper dbus-send ${COMP_WORDS[@]:0})" -- $cur))
++    COMPREPLY=($(compgen -W "$(@libexecdir@/dbus-bash-completion-helper dbus-send "${COMP_LINE}")" -- $cur))
+ }
+ 
+ ################################################################################
+-- 
+GitLab
+

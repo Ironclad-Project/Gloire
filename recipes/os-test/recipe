@@ -2,12 +2,12 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=11
+revision=12
 git_url="https://gitlab.com/sortix/os-test.git"
 commit=ec05ef048b20caf61afe5b7c0ff5212c6dd2a505
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs make sed"
+deps="core-libs make"
 
 configure() {
     cp -rp "${source_dir}/." ./
@@ -18,16 +18,30 @@ build() {
     make all -j${parallelism} \
         OS=ironclad \
         CC=${OS_TRIPLET}-gcc \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
         CC_FOR_BUILD=cc \
-        CFLAGS_FOR_BUILD="-pthread"
+        CFLAGS_FOR_BUILD="${HOST_CFLAGS}" \
+        LDFLAGS_FOR_BUILD="${HOST_LDFLAGS}"
     make misc/html -j${parallelism} \
         OS=ironclad \
         CC=${OS_TRIPLET}-gcc \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
         CC_FOR_BUILD=${OS_TRIPLET}-gcc \
-        CFLAGS_FOR_BUILD="-pthread"
+        CFLAGS_FOR_BUILD="${TARGET_CFLAGS}" \
+        LDFLAGS_FOR_BUILD="${TARGET_LDFLAGS}"
 }
 
 package() {
+    rm -f misc/namespace
+
     mkdir -p "${dest_dir}${prefix}/share/os-test"
     cp -rp . "${dest_dir}${prefix}/share/os-test/"
+
+    for f in $(find "${dest_dir}${prefix}/share/os-test" -type f); do
+        if file "$f" | grep 'not stripped' >/dev/null; then
+            ${OS_TRIPLET}-strip "$f"
+        fi
+    done
 }

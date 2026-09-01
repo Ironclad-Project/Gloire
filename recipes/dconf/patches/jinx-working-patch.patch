@@ -1,3 +1,33 @@
+diff --git dconf-clean/meson.build dconf-workdir/meson.build
+index 997149a..20c1735 100644
+--- dconf-clean/meson.build
++++ dconf-workdir/meson.build
+@@ -45,8 +45,10 @@ gio_dep = dependency('gio-2.0', version: gio_req_version)
+ gio_unix_dep = dependency('gio-unix-2.0', version: gio_req_version)
+ glib_dep = dependency('glib-2.0', version: '>= 2.67.4')
+ 
+-gio_module_dir = gio_dep.get_variable(pkgconfig: 'giomoduledir', pkgconfig_define: ['libdir', dconf_libdir])
+-dbus_session_service_dir = dependency('dbus-1').get_variable(pkgconfig: 'session_bus_services_dir', pkgconfig_define: ['datadir', dconf_datadir])
++# pkg-config prefixes path variables with the sysroot when cross-compiling,
++# which is right for finding files but wrong for an install directory.
++gio_module_dir = join_paths(dconf_libdir, 'gio', 'modules')
++dbus_session_service_dir = join_paths(dconf_datadir, 'dbus-1', 'services')
+ 
+ systemd_userunitdir = get_option('systemduserunitdir')
+ 
+@@ -68,11 +70,7 @@ have_bash = bash.found() # For completion scripts
+ enable_bash_completion = get_option('bash_completion')
+ if enable_bash_completion
+   bash_completion_dep = dependency('bash-completion')
+-  completions_dir = bash_completion_dep.get_variable(
+-    pkgconfig: 'completionsdir',
+-    # bash-completion 2.10 changed the substitutions
+-    pkgconfig_define: bash_completion_dep.version().version_compare('>= 2.10') ? ['datadir', dconf_datadir] : ['prefix', dconf_prefix],
+-  )
++  completions_dir = join_paths(dconf_datadir, 'bash-completion', 'completions')
+ endif
+ 
+ configure_file(
 diff --git dconf-clean/service/meson.build dconf-workdir/service/meson.build
 index a2045e5..f6c9e32 100644
 --- dconf-clean/service/meson.build

@@ -2,7 +2,9 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=10
-deps="marco caja atril pluma mate-desktop mate-screensaver mate-themes mate-calc
-mate-icon-theme mate-utils mate-common mate-menus mate-settings-daemon
-mate-control-center mate-panel mate-terminal"
+revision=11
+
+deps="core-libs
+caja marco mate-control-center mate-desktop mate-icon-theme mate-menus
+mate-panel mate-session-manager mate-settings-daemon mate-themes
+atril eom mate-calc mate-screensaver mate-terminal mate-utils pluma"

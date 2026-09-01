@@ -1,16 +1,7 @@
 diff --git xxhash-clean/Makefile xxhash-workdir/Makefile
-index 5b7b8ff..85b8aa2 100644
+index 5b7b8ff..4bf6446 100644
 --- xxhash-clean/Makefile
 +++ xxhash-workdir/Makefile
-@@ -43,7 +43,7 @@ DEBUGFLAGS+=-Wall -Wextra -Wconversion -Wcast-qual -Wcast-align -Wshadow \
-             -Wstrict-prototypes -Wundef -Wpointer-arith -Wformat-security \
-             -Wvla -Wformat=2 -Winit-self -Wfloat-equal -Wwrite-strings \
-             -Wredundant-decls -Wstrict-overflow=2
--CFLAGS += $(DEBUGFLAGS) $(MOREFLAGS)
-+override CFLAGS += $(DEBUGFLAGS) $(MOREFLAGS)
- FLAGS   = $(CFLAGS) $(CPPFLAGS)
- XXHSUM_VERSION = $(LIBVER)
- UNAME := $(shell uname)
 @@ -114,16 +114,16 @@ xxhsum: CPPFLAGS += -DXXHSUM_DISPATCH=1
  xxhsum: xxh_x86dispatch.o
  endif
@@ -31,17 +22,7 @@ index 5b7b8ff..85b8aa2 100644
  
  xxhash.o: xxhash.c xxhash.h
  xxhsum.o: $(XXHSUM_SRC_DIR)/xxhsum.c $(XXHSUM_HEADERS) \
-@@ -147,15 +147,15 @@ libxxhash.a: ARFLAGS = rcs
- libxxhash.a: xxhash.o
- 	$(AR) $(ARFLAGS) $@ $^
- 
--$(LIBXXH): LDFLAGS += -shared
-+$(LIBXXH): override LDFLAGS += -shared
- ifeq (,$(filter Windows%,$(OS)))
--$(LIBXXH): CFLAGS += -fPIC
-+$(LIBXXH): override CFLAGS += -fPIC
- endif
- ifeq ($(LIBXXH_DISPATCH),1)
+@@ -155,7 +155,7 @@ ifeq ($(LIBXXH_DISPATCH),1)
  $(LIBXXH): xxh_x86dispatch.c
  endif
  $(LIBXXH): xxhash.c
@@ -50,3 +31,12 @@ index 5b7b8ff..85b8aa2 100644
  	ln -sf $@ libxxhash.$(SHARED_EXT_MAJOR)
  	ln -sf $@ libxxhash.$(SHARED_EXT)
  
+@@ -539,7 +539,7 @@ lint-unicode:
+ # =========================================================
+ # make install is validated only for the following targets
+ # =========================================================
+-ifneq (,$(filter Linux Darwin GNU/kFreeBSD GNU Haiku OpenBSD FreeBSD NetBSD DragonFly SunOS CYGWIN% , $(UNAME)))
++ifneq (,$(filter Linux Darwin GNU/kFreeBSD GNU Haiku Ironclad OpenBSD FreeBSD NetBSD DragonFly SunOS CYGWIN% , $(UNAME)))
+ 
+ DESTDIR     ?=
+ # directory variables: GNU conventions prefer lowercase

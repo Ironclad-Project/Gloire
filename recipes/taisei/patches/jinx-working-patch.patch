@@ -1,0 +1,12 @@
+diff --git taisei-clean/src/vfs/platform_paths/meson.build taisei-workdir/src/vfs/platform_paths/meson.build
+index 57d855b..ae1bcc1 100644
+--- taisei-clean/src/vfs/platform_paths/meson.build
++++ taisei-workdir/src/vfs/platform_paths/meson.build
+@@ -10,6 +10,7 @@ endif
+ vfs_platform_paths_src += files('storage_sdl.c')
+ 
+ xdg_systems = [
++    'ironclad',
+     'linux',
+     'freebsd',
+     'openbsd',

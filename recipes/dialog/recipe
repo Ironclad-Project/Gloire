@@ -3,7 +3,7 @@
 _version=1.3-20260721
 version=${_version//-/.}
 repology_version=${_version//-/_}
-revision=2
+revision=3
 tarball_url="https://invisible-mirror.net/archives/dialog/dialog-${_version}.tgz"
 tarball_blake2b="39810f45337bb7b5df297f58cd5a13f3350d32d73ca2192624ea22203afb837c0777484af6f400ee7ee36291163f1e5a14cd777281249878577580badd3cfd19"
 hostdeps="gcc pkg-config"
@@ -14,8 +14,13 @@ prepare() {
 }
 
 configure() {
+    cp -rp "${source_dir}"/. ./
+
+        configure_script_path=./configure \
     autotools_configure \
-      --with-ncursesw
+        --enable-nls \
+        --with-shared \
+        --with-ncursesw
 }
 
 build() {
@@ -23,6 +28,9 @@ build() {
 }
 
 package() {
-    make DESTDIR="${dest_dir}" install
+    make DESTDIR="${dest_dir}" install install-full
+
+    sed -i 's/ -ffile-prefix-map=[^ ]*//g' "${dest_dir}${prefix}"/bin/dialog-config
+
     post_package_strip
 }

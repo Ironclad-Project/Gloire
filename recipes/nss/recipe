@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.127
-revision=4
+revision=5
 fixed_version=$(echo ${version} | sed 's/\./_/g')
 tarball_url="https://archive.mozilla.org/pub/security/nss/releases/NSS_${fixed_version}_RTM/src/nss-${version}.tar.gz"
 tarball_blake2b="b8c8261f53fad16b1eae94a683e94c5f914bc507638e247ed2ba82c5e91dc6f051e1122105de7c341bd345df576907bec55de50ac345d22ed713bca684851258"
-imagedeps="build-essential gcc libnspr4-dev"
+imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs nspr p11-kit sqlite zlib"
 
@@ -21,7 +21,6 @@ build() {
     # First, build a host version of nsinstall.
         CC=gcc \
         BUILD_OPT=1 \
-        NSPR_INCLUDE_DIR=/usr/include/nspr \
         USE_SYSTEM_ZLIB=1 \
         ZLIB_LIBS=-lz \
         NSS_ENABLE_WERROR=0 \
@@ -70,9 +69,15 @@ package() {
     cd nss
 
     install -v -m755 -d "${dest_dir}${prefix}/bin"
-    install -v -m755 dist/Linux*/bin/certutil "${dest_dir}${prefix}"/bin
-    # install -v -m755 dist/Linux*/bin/nss-config "${dest_dir}${prefix}"/bin
-    install -v -m755 dist/Linux*/bin/pk12util "${dest_dir}${prefix}"/bin
+    for tool in certutil cmsutil crlutil modutil pk12util shlibsign \
+                signtool signver ssltap symkeyutil; do
+        install -v -m755 dist/Linux*/bin/${tool} "${dest_dir}${prefix}"/bin
+    done
+
+    install -v -m755 config/nss-config "${dest_dir}${prefix}"/bin
+    install -v -m755 -d "${dest_dir}${prefix}/lib/pkgconfig"
+    install -v -m644 config/nss.pc "${dest_dir}${prefix}"/lib/pkgconfig
+    ln -s nss.pc "${dest_dir}${prefix}"/lib/pkgconfig/mozilla-nss.pc
 
     install -v -m755 -d "${dest_dir}${prefix}/lib"
     install -v -m755 dist/Linux*/lib/*.so "${dest_dir}${prefix}"/lib
@@ -81,8 +86,10 @@ package() {
     install -v -m644 dist/public/nss/* "${dest_dir}${prefix}/include/nss"
     install -v -m644 dist/private/nss/* "${dest_dir}${prefix}/include/nss"
 
-    install -v -m755 -d "${dest_dir}${prefix}/lib/pkgconfig"
-    # install -v -m644 dist/Linux*/lib/pkgconfig/nss.pc "${dest_dir}${prefix}/lib/pkgconfig"
+    install -v -m755 -d "${dest_dir}${prefix}/share/man/man1"
+    for page in certutil cmsutil crlutil modutil pk12util signtool signver ssltap; do
+        install -v -m644 doc/nroff/${page}.1 "${dest_dir}${prefix}"/share/man/man1
+    done
 
     # Install the certificate data
     install -v -m755 -d "${dest_dir}${prefix}/share/nss"

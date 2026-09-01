@@ -2,16 +2,19 @@
 
 version=8.21.0
 fixed_version=$(echo ${version} | sed 's/\./_/g')
-revision=6
+revision=7
 tarball_url="https://github.com/curl/curl/releases/download/curl-${fixed_version}/curl-${version}.tar.xz"
 tarball_blake2b="230989e586a592b2aee768a1a6d48f1c8247e4d26afd0787a94f45faa9fbebcda5c9a8e2b739fb5a2ada151c13b09a8e2319825e9314fcc894377f24e92d338f"
 hostdeps="gcc pkg-config"
-deps="core-libs ca-certificates openssl zlib zstd libpsl libidn2 brotli nghttp2"
+deps="core-libs openssl zlib zstd libpsl libidn2 brotli libnghttp2"
 
 configure() {
     cmake_configure \
+        -DCURL_LIBCURL_SOVERSION=ON \
         -DENABLE_THREADED_RESOLVER=ON \
         -DCURL_USE_OPENSSL=ON \
+        -DCURL_DISABLE_LDAP=ON \
+        -DCURL_DISABLE_LDAPS=ON \
         -DCURL_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
 }
 
@@ -21,6 +24,10 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    sed -Ei "s|/sysroot(/)?|/|g" "${dest_dir}${prefix}"/lib/cmake/CURL/*.cmake
+
+    sed -i "s|/usr/local/bin/${OS_TRIPLET}-gcc|gcc|" "${dest_dir}${prefix}"/bin/curl-config
 
     post_package_strip
 }

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.23.3
-revision=2
+revision=3
 tarball_url="https://github.com/rockdaboot/libpsl/releases/download/${version}/libpsl-${version}.tar.gz"
 tarball_blake2b="c569106cf1b9d3d8a21acddbf905378e186f732d9075f6287868dc3da15bf737e74af4c16faf81182f5bdb88d557973e0ae331a1342fbb15972a1adce99459c6"
 hostdeps="gcc pkg-config"
@@ -9,11 +9,12 @@ imagedeps="build-essential"
 deps="core-libs libidn2 libunistring"
 
 configure() {
-    meson_configure
+    meson_configure \
+        -Dtests=false
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

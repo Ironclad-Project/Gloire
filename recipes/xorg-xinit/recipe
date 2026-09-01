@@ -2,18 +2,22 @@
 
 repology_id=xinit
 version=1.4.4
-revision=3
+revision=4
 tarball_url="https://www.x.org/releases/individual/app/xinit-${version}.tar.xz"
 tarball_blake2b="54da6f5d31658a228987d4e3a17636bb5f3a36bc7067dfc8bcbe35c2944831e320edd7a92b172a55b2db41d6d757b22cfa2b712beb9d17c8f39d539a4294ba23"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 xorg-xauth xorg-xmodmap xorg-xrdb"
+deps="core-libs libx11 openssl xorg-xauth xorg-xmodmap xorg-xrdb"
+conf_files="/etc/X11/xinit/xinitrc"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure
+        ac_cv_path_MCOOKIE="" \
+        ac_cv_path_OPENSSL="${prefix}"/bin/openssl \
+    autotools_configure \
+        --with-xinitdir=/etc/X11/xinit
 }
 
 build() {

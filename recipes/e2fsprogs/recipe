@@ -1,12 +1,13 @@
 #! /bin/sh
 
 version=1.47.4
-revision=2
-tarball_url="https://github.com/tytso/e2fsprogs/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="065bae5f04f6ac66edc92c138e3cfea11a511aea02e8f95c2e739546fba539a65404dec5cc58282a5a6de44f7b5418f48107042e382a13dfb134f01cdd5b18e8"
+revision=3
+tarball_url="https://cdn.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v${version}/e2fsprogs-${version}.tar.xz"
+tarball_blake2b="ae190e773a83c12a0ab438e13911a5a3f8a25da68373a0911eaddf0a979debcc5a15c22fc7d6fbaed43659c1fc1276e6a345d2f6a73a4ab92e730f177fe40cdb"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs texinfo"
+conf_files="/etc/mke2fs.conf"
 
 prepare() {
     autotools_recursive_regen
@@ -18,14 +19,15 @@ configure() {
 }
 
 build() {
-    make -j${parallelism}
+    make -j${parallelism} V=1
 }
 
 package() {
     DESTDIR="${dest_dir}" make install
 
-    # Remove static libraries.
     rm -v "${dest_dir}${prefix}/lib"/*.a
 
     post_package_strip
+
+    generate_info_hooks
 }

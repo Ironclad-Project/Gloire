@@ -1,0 +1,41 @@
+diff --git bzip2-clean/Makefile bzip2-workdir/Makefile
+index f8a1772..f16dec1 100644
+--- bzip2-clean/Makefile
++++ bzip2-workdir/Makefile
+@@ -18,10 +18,10 @@ SHELL=/bin/sh
+ CC=gcc
+ AR=ar
+ RANLIB=ranlib
+-LDFLAGS=
++override LDFLAGS := $(LDFLAGS)
+ 
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+-CFLAGS=-Wall -Winline -O2 -g $(BIGFILES)
++override CFLAGS := -Wall -Winline -g $(BIGFILES) $(CFLAGS)
+ 
+ # Where you want it installed when you do 'make install'
+ PREFIX=/usr/local
+diff --git bzip2-clean/Makefile-libbz2_so bzip2-workdir/Makefile-libbz2_so
+index fb0f230..06fa645 100644
+--- bzip2-clean/Makefile-libbz2_so
++++ bzip2-workdir/Makefile-libbz2_so
+@@ -24,7 +24,7 @@
+ SHELL=/bin/sh
+ CC=gcc
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+-CFLAGS=-fpic -fPIC -Wall -Winline -O2 -g $(BIGFILES)
++override CFLAGS := -fpic -fPIC -Wall -Winline -g $(BIGFILES) $(CFLAGS)
+ 
+ OBJS= blocksort.o  \
+       huffman.o    \
+@@ -35,8 +35,8 @@ OBJS= blocksort.o  \
+       bzlib.o
+ 
+ all: $(OBJS)
+-	$(CC) -shared -Wl,-soname -Wl,libbz2.so.1.0 -o libbz2.so.1.0.8 $(OBJS)
+-	$(CC) $(CFLAGS) -o bzip2-shared bzip2.c libbz2.so.1.0.8
++	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Wl,-soname -Wl,libbz2.so.1.0 -o libbz2.so.1.0.8 $(OBJS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2-shared bzip2.c libbz2.so.1.0.8
+ 	rm -f libbz2.so.1.0
+ 	ln -s libbz2.so.1.0.8 libbz2.so.1.0
+ 

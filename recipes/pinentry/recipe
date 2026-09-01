@@ -1,0 +1,38 @@
+#! /bin/sh
+
+version=1.3.3
+revision=1
+tarball_url="https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-${version}.tar.bz2"
+tarball_blake2b="d907056dfdc2830d41983601ce73df8650c7329bf12d22b5462c2f81921fa3aa8695ae4c420aba8bdef257a34ab502d8c22bb730fb5d713cf59c317f767bee35"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs libassuan libgpg-error ncurses texinfo"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+        GPGRT_CONFIG="${sysroot}${prefix}/bin/gpgrt-config" \
+        GPG_ERROR_CONFIG=no \
+    autotools_configure \
+        --enable-pinentry-tty \
+        --enable-pinentry-curses \
+        --enable-fallback-curses \
+        --disable-pinentry-emacs \
+        --disable-pinentry-gnome3 \
+        --disable-pinentry-qt \
+        --disable-libsecret
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    post_package_strip
+
+    generate_info_hooks
+}

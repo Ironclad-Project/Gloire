@@ -1,20 +1,23 @@
 #! /bin/sh
 
 version=2.47
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="329cae8792c500c71d8cce03aab127e8d77f1d409f74872082e64df5163e5c730fe585f8f9c21905cb6227cae18e6675ae4caed653223a26b5d9d4fdb90910ea"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs zlib zstd"
+deps="core-libs zlib zstd texinfo"
 
 prepare() {
+    checked_subst 's/\ndevelopment=true\n/\ndevelopment=false\n/' bfd/development.sh
+
     autotools_recursive_regen
 }
 
 configure() {
     autotools_configure \
         --target=${OS_TRIPLET} \
+        --with-sysroot= \
         --with-build-sysroot=${sysroot} \
         --enable-separate-code \
         --enable-cet \
@@ -25,6 +28,7 @@ configure() {
         --enable-new-dtags \
         --enable-plugins \
         --enable-relro \
+        --enable-targets=x86_64-pep \
         --enable-threads \
         --disable-werror \
         --with-pic \
@@ -36,13 +40,11 @@ build() {
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" make tooldir="${prefix}" install
 
-    # Remove unnecessary directory
-    rm -rf "${dest_dir}${prefix}"/${OS_TRIPLET}
-
-    # Remove static libraries
-    rm -rf "${dest_dir}${prefix}"/lib/*.a
+    rm -f "${dest_dir}${prefix}"/share/man/man1/{dlltool,windres,windmc}.1
 
     post_package_strip
+
+    generate_info_hooks
 }

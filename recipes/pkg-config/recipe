@@ -2,7 +2,7 @@
 
 repology_id=pkgconf
 version=3.0.6
-revision=2
+revision=3
 tarball_url="https://distfiles.ariadne.space/pkgconf/pkgconf-${version}.tar.xz"
 tarball_blake2b="14c9924a945e8e8a8e2aadee9f7bde307ba90bcb96db60437d641f81e0752214f49ba6d6423f671a2ada2a383e558e8d96ff6820cf641e14cd2f4439892e97b9"
 hostdeps="gcc pkg-config"
@@ -13,13 +13,14 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     ln -s pkgconf "${dest_dir}${prefix}"/bin/pkg-config
+    ln -s pkgconf.1 "${dest_dir}${prefix}"/share/man/man1/pkg-config.1
 
     post_package_strip
 }

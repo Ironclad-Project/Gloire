@@ -1,23 +1,21 @@
 #! /bin/sh
 
 version=2.15.3
-revision=2
-tarball_url="https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${version}/libxml2-v${version}.tar.gz"
-tarball_blake2b="118454ed4ea904a74ba7fab7d529b0823835c0b38b57bec2de1b72d386f9818f90119e0b794d0743a92f562f9ced2552616ecaaaf6ffd35baa41deaefd2199be"
+revision=3
+tarball_url="https://download.gnome.org/sources/libxml2/2.15/libxml2-${version}.tar.xz"
+tarball_blake2b="2ff478b46a40957386cd1ed0627bfc0f2433f47e786f20db3942304c90289adaeb1d9c3f12665df312b86cfac42f8e4dbc18e965bf90018f93c230b9b862df66"
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib"
 
 configure() {
     meson_configure \
         -Dpython=disabled \
-        -Dhistory=enabled \
         -Dicu=enabled \
-        -Dreadline=enabled \
-        -Dzlib=enabled
+        -Dlegacy=enabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

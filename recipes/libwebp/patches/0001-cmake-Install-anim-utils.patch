@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
+Date: Sat, 21 Dec 2024 04:35:07 +0100
+Subject: [PATCH] cmake: Install anim utils
+
+See: https://gitlab.archlinux.org/archlinux/packaging/packages/libwebp/-/merge_requests/1
+---
+ CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 39d3d8f6af7f..03beba9b2b25 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -763,22 +763,24 @@ if(WEBP_BUILD_ANIM_UTILS)
+     webpdemux
+     ${WEBP_DEP_GIF_LIBRARIES})
+   target_include_directories(anim_diff PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
++  install(TARGETS anim_diff RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+   # anim_dump
+   include_directories(${WEBP_DEP_IMG_INCLUDE_DIRS} ${WEBP_DEP_GIF_INCLUDE_DIRS})
+   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "ANIM_DUMP_SRCS"
+                     "anim_dump")
+   add_executable(anim_dump ${ANIM_DUMP_SRCS})
+   target_link_libraries(
+     anim_dump
+     exampleutil
+     imagedec
+     imageenc
+     imageioutil
+     webp
+     webpdemux
+     ${WEBP_DEP_GIF_LIBRARIES})
+   target_include_directories(anim_dump PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
++  install(TARGETS anim_dump RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ endif()
+ 
+ if(WEBP_BUILD_FUZZTEST)

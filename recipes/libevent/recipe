@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.1.13
-revision=3
+revision=4
 tarball_url="https://github.com/libevent/libevent/releases/download/release-${version}-stable/libevent-${version}-stable.tar.gz"
 tarball_blake2b="f18ecdc37e2caa6a5862719f3a6a4120c86573c1a9719ecc2f432bc4d013d574964defff6c3cf2e187d5c8b7f07c11fd3967b3d72b892169d18fb8e4a9a4de5a"
 hostdeps="gcc pkg-config"
@@ -13,6 +13,7 @@ configure() {
         -DEVENT__DISABLE_BENCHMARK=ON \
         -DEVENT__DISABLE_TESTS=ON \
         -DEVENT__DISABLE_REGRESS=ON \
+        -DEVENT__DOXYGEN=ON \
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 }
 
@@ -22,6 +23,10 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    sed -Ei "s|/sysroot(/)?|/|g;s|/base_dir|/usr/src|g;s|/build_dir|/usr/src|g" \
+        "${dest_dir}${prefix}"/lib/pkgconfig/*.pc \
+        "${dest_dir}${prefix}"/lib/cmake/libevent/*.cmake
 
     post_package_strip
 }

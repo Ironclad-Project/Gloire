@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=1.0.2
-revision=2
-git_url="https://gitlab.freedesktop.org/xorg/lib/libxpresent.git"
-commit=4d92149372461bf575e8a09b1064a2884c38c3aa
+revision=3
+tarball_url="https://www.x.org/archive/individual/lib/libXpresent-${version}.tar.xz"
+tarball_blake2b="b68e95b0c84e16272e82b7795aec2a1b37248de7c3b247637f72c60df3c6f5812012ec0f01f6b1b45a5371a0d0bd6a384039f448fc3528181da447c197783cac"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11 libxext libxfixes libxrandr"
 
@@ -12,7 +12,7 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

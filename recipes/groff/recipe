@@ -1,20 +1,18 @@
 #! /bin/sh
 
 version=1.23.0
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/groff/groff-${version}.tar.gz"
 tarball_blake2b="9fc5a2302f034761a17f0639a04b82c536ba8a7db15b062dd736e0011fc5a27fddcaf035af128d09f06762825d9bb965e8f5561e4be7a9fea3fe86ca5f6cb2dd"
-imagedeps="groff"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs texinfo"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17"
+    autotools_configure
 }
 
 build() {
@@ -24,10 +22,16 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
+    ln -sv eqn "${dest_dir}${prefix}"/bin/geqn
+    ln -sv tbl "${dest_dir}${prefix}"/bin/gtbl
+    ln -sv soelim "${dest_dir}${prefix}"/bin/zsoelim
+
     rm -f "${dest_dir}${prefix}/lib/charset.alias"
 
     # Move documentation to the correct location
     mv ${dest_dir}${prefix}/share/doc/groff-${version} ${dest_dir}${prefix}/share/doc/groff
 
     post_package_strip
+
+    generate_info_hooks
 }

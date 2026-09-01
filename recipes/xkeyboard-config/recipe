@@ -1,19 +1,20 @@
 #! /bin/sh
 
 version=2.48
-revision=2
-git_url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git"
-commit=cf8d1151bb4c9ef5b895828d0e6dd7860c0833e0
+revision=3
+tarball_url="https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-${version}.tar.xz"
+tarball_blake2b="3200801ed54cc9ec28790053fa3311429e9fbce4607cda67f1f2991b4f0764df0dc35c4f880541833644ba9a4aba075792ce3dd26c54a2539312d8c6bbb75a54"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-xkbcomp"
+deps="core-libs"
 
 configure() {
     meson_configure \
+        -Dcompat-rules=true \
         -Dxorg-rules-symlinks=true
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

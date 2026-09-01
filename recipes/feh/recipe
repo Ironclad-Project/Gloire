@@ -1,11 +1,12 @@
 #! /bin/sh
 
 version=3.12.2
-revision=7
+revision=8
 tarball_url="https://feh.finalrewind.org/feh-${version}.tar.bz2"
 tarball_blake2b="5ffb5bd57340523ec12f4f900f92704fc67570438638b48ce15b034bc36ce9b02fbccad600da785a5d4e3660dd7f46e0e48d09dfbaec0d347439fc041949ca10"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxt libpng imlib2 curl libxinerama"
+deps="core-libs curl file hicolor-icon-theme imlib2 libexif libpng libx11 libxinerama"
+builddeps="libxt"
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -13,7 +14,11 @@ build() {
         CC=${OS_TRIPLET}-gcc \
         CFLAGS="${TARGET_CFLAGS}" \
         LDFLAGS="${TARGET_LDFLAGS}" \
-    make PREFIX="${prefix}" -j${parallelism}
+    make PREFIX="${prefix}" -j${parallelism} \
+        exif=1 \
+        help=1 \
+        magic=1 \
+        stat64=1
 }
 
 package() {

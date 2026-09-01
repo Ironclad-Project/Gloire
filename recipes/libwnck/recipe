@@ -1,23 +1,22 @@
 #! /bin/sh
 
 version=43.3
-revision=4
-git_url="https://gitlab.gnome.org/GNOME/libwnck.git"
-commit=75e56cf1d7ef1edd61516bdf25bf7fdee8b935f3
-imagedeps="libglib2.0-dev"
+revision=5
+tarball_url="https://download.gnome.org/sources/libwnck/43/libwnck-${version}.tar.xz"
+tarball_blake2b="ecce2a705d0775ca0c8f5941c8ce97217897f21ae89b06c58c49fa0f0482a2dbfc3c045c3038dc4fa89bbf44496f342cbf2d561a772363e1435866fb6452f6f8"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 gtk3"
+deps="core-libs at-spi2-core cairo gdk-pixbuf glib2 gtk3 libx11 libxrender libxres pango"
 
 configure() {
     meson_configure \
-        -Dinstall_tools=true \
         -Dstartup_notification=disabled \
         -Dintrospection=disabled \
         -Dgtk_doc=false
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

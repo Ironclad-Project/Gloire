@@ -1,0 +1,21 @@
+diff --git less-clean/Makefile.in less-workdir/Makefile.in
+index da8011c..d707418 100644
+--- less-clean/Makefile.in
++++ less-workdir/Makefile.in
+@@ -68,13 +68,13 @@ endif
+ all: less$(EXEEXT) lesskey$(EXEEXT) lessecho$(EXEEXT)
+ 
+ less$(EXEEXT): ${OBJ}
+-	${CC} ${LDFLAGS} -o $@ ${OBJ} ${LIBS}
++	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJ} ${LIBS}
+ 
+ lesskey$(EXEEXT): lesskey.${O} lesskey_parse.${O} xbuf.${O} version.${O}
+-	${CC} ${LDFLAGS} -o $@ lesskey.${O} lesskey_parse.${O} xbuf.${O} version.${O} ${LIBS}
++	${CC} ${CFLAGS} ${LDFLAGS} -o $@ lesskey.${O} lesskey_parse.${O} xbuf.${O} version.${O} ${LIBS}
+ 
+ lessecho$(EXEEXT): lessecho.${O} version.${O}
+-	${CC} ${LDFLAGS} -o $@ lessecho.${O} version.${O} ${LIBS}
++	${CC} ${CFLAGS} ${LDFLAGS} -o $@ lessecho.${O} version.${O} ${LIBS}
+ 
+ charset.${O}: compose.uni ubin.uni wide.uni
+ 

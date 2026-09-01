@@ -1,25 +1,26 @@
 #! /bin/sh
 
 version=1.28.2
-revision=5
+revision=6
 tarball_url="https://github.com/mate-desktop/mate-desktop/releases/download/v${version}/mate-desktop-${version}.tar.xz"
 tarball_blake2b="f9a136087d1b4d009c1349ecc15edffbb23dfae2124c985070b294151c7234f098141a2a0380a6dfead48b4cffb2481a18d131f5bc0ef2e50fcf4e98329ded39"
-imagedeps="libglib2.0-dev"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 dconf cairo libx11 libxrandr gtk3 iso-codes gdk-pixbuf"
+deps="core-libs glib2 dconf cairo libx11 libxrandr gtk3 at-spi2-core iso-codes gdk-pixbuf"
 
 configure() {
     meson_configure \
-        -Dmate-about=true
+        -Dstartup-notification=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
+
     generate_glib_schemas_hook
 }

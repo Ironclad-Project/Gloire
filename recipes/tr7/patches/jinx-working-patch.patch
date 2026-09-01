@@ -1,7 +1,16 @@
 diff --git tr7-clean/Makefile tr7-workdir/Makefile
-index d0308a7..cda8bd9 100644
+index d0308a7..13a76c7 100644
 --- tr7-clean/Makefile
 +++ tr7-workdir/Makefile
+@@ -34,7 +34,7 @@ DFLAGS = -g
+ FFLAGS =
+ EFLAGS =
+ MFLAGS = '-DVERSION="${VERSION}"'
+-LDFLAGS = -Wl,--gc-sections,-z,relro,-z,now
++override LDFLAGS := -Wl,--gc-sections,-z,relro,-z,now $(LDFLAGS)
+ # Detect darwin linker, which is not compatible with gnu linker
+ ifneq ($(findstring PROJECT,$(shell $(LD) -v 2>&1)),)
+ 	LDFLAGS = -Wl,-dead_strip,-pie
 @@ -53,10 +53,10 @@ BINDIR = $(PREFIX)/bin
  LIBDIR = $(PREFIX)/lib
  INCDIR = $(PREFIX)/include
@@ -11,10 +20,19 @@ index d0308a7..cda8bd9 100644
  
  # default targets
 -ALL = $(LIBSTA) $(TR7I) tags
-+ALL = $(LIBSO) $(TR7I) tags
++ALL = $(LIBSO) $(TR7I)
  
  # uncomment below to compile shared library
  #ALL += $(LIBSO)
+@@ -69,7 +69,7 @@ ALL = $(LIBSTA) $(TR7I) tags
+ #FFLAGS += -DDUMP_LAMBDAS=1
+ 
+ # set CFLAGS now
+-CFLAGS := $(CFLAGS) $(SFLAGS) $(GFLAGS) $(WFLAGS) $(OFLAGS) $(DFLAGS) $(FFLAGS) $(EFLAGS) $(MFLAGS)
++override CFLAGS := $(SFLAGS) $(GFLAGS) $(WFLAGS) $(OFLAGS) $(DFLAGS) $(FFLAGS) $(EFLAGS) $(MFLAGS) $(CFLAGS)
+ 
+ # rules
+ all: $(ALL)
 @@ -81,10 +81,10 @@ libtr7.so: $(LIBSO)
  	$(LN) -sf $(LIBSO) libtr7.so
  

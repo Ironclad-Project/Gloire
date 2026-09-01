@@ -1,12 +1,12 @@
 #! /bin/sh
 
 version=2.13.1
-revision=2
+revision=3
 tarball_url="https://download.savannah.nongnu.org/releases/man-db/man-db-${version}.tar.xz"
 tarball_blake2b="f0f61bbd91992e2be8343459addca4bb9892ad4887756a1e58e8dccf71d30fd4bfd105739f1c730d7e73088825508566c9c29e74a59d78453055db25c7a929c6"
-imagedeps="groff"
 hostdeps="gcc pkg-config"
-deps="core-libs bash gdbm groff less libpipeline zlib"
+deps="core-libs gdbm groff less libpipeline zlib"
+conf_files="/etc/man_db.conf"
 
 prepare() {
     autotools_recursive_regen
@@ -15,6 +15,10 @@ prepare() {
 configure() {
     autotools_configure \
         --disable-setuid \
+        --enable-cache-owner=root \
+        --enable-mandirs=GNU \
+        --with-sections="1 1p n l 8 3 3p 0 0p 2 3type 5 4 9 6 7" \
+        --with-db=gdbm \
         --with-systemdtmpfilesdir= \
         --with-systemdsystemunitdir= \
         --with-pager=${prefix}/bin/less

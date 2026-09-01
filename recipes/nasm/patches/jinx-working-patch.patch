@@ -1,0 +1,13 @@
+diff --git nasm-clean/doc/Makefile.in nasm-workdir/doc/Makefile.in
+index 8fdfdeb..b8f18f1 100644
+--- nasm-clean/doc/Makefile.in
++++ nasm-workdir/doc/Makefile.in
+@@ -98,7 +98,7 @@ RDSRC = $(RUNPERL) $(srcdir)/rdsrc.pl -I$(srcdir) -M$(@F).dep
+ 
+ $(htmltarget): $(ALLSRCS) rdsrc.pl
+ 	$(RM_F) html/*.html
+-	$(RDSRC) -ohtml html $<
++	$(RDSRC) -ohtml html $(notdir $<)
+ 
+ nasmdoc.dip: $(ALLSRCS) rdsrc.pl
+ 	$(RDSRC) dip $<

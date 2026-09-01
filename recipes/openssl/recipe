@@ -1,11 +1,12 @@
 #! /bin/sh
 
 version=4.0.1
-revision=2
+revision=3
 tarball_url="https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
 tarball_blake2b="8c5e1d97165d8e74f6ab41adf75c8f1a60a38b511163d0cdd054b27280538681d308385ce9a6fe2230aed7e412436419f864876e57538738e13eed77d520d5cd"
 hostdeps="gcc pkg-config"
-deps="core-libs zlib"
+deps="core-libs zlib brotli zstd"
+conf_files="/etc/ssl/openssl.cnf"
 
 configure() {
         CC=${OS_TRIPLET}-gcc \
@@ -20,7 +21,10 @@ configure() {
         --libdir=lib \
         ${OS_TRIPLET} \
         shared \
-        zlib-dynamic \
+        enable-zlib \
+        enable-brotli \
+        enable-zstd \
+        enable-ec_nistp_64_gcc_128 \
         no-afalgeng
 }
 
@@ -32,7 +36,10 @@ package() {
     # Disable installing static libraries.
     sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
 
-    DESTDIR="${dest_dir}" make DESTDIR="${dest_dir}" MANSUFFIX=ssl install
+    make DESTDIR="${dest_dir}" MANSUFFIX=ssl install
+
+    grep -rl '\.\./\.\./\.\./base_dir/sources/openssl/' "${dest_dir}" \
+        | xargs -r sed -i 's|\.\./\.\./\.\./base_dir/sources/openssl/||g'
 
     post_package_strip
 }

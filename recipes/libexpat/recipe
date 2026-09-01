@@ -3,7 +3,7 @@
 repology_id=expat
 version=2.8.3
 fixed_version=$(echo ${version} | sed 's/\./_/g')
-revision=2
+revision=3
 tarball_url="https://github.com/libexpat/libexpat/releases/download/R_${fixed_version}/expat-${version}.tar.gz"
 tarball_blake2b="e4189c5374d52647211af1e2c017af56ca6851dcfd1ba1c356be59912b27b016f5321feab36f2bf26873d263dee65637573031608c18f052d9b1b8671112fe13"
 hostdeps="gcc pkg-config"

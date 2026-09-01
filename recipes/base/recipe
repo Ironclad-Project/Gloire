@@ -2,19 +2,18 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=17
+revision=18
 
-# Very base packages.
-deps="base-files ironclad tzdata xbps"
+deps="core-libs base-files bash ironclad xbps"
 
 # Standard POSIX tools that are expected on POSIX system scripting.
 deps+=" coreutils file findutils gawk grep util-ironclad sed tar shadow"
 
 # Standard linux toolset that we provide for some semblance of normalcy.
-deps+=" pciutils xz bzip2 bzip3 gzip gettext zstd"
+deps+=" pciutils xz bzip2 gzip gettext zstd"
 
 # Distro requirements for booting and installing packages.
-deps+=" epoch gcon xbps"
+deps+=" epoch gcon"
 
 # Internet utilities
 deps+=" ca-certificates"

@@ -1,0 +1,13 @@
+diff --git rsync-clean/configure.sh rsync-workdir/configure.sh
+index 239bf78..c6a6811 100755
+--- rsync-clean/configure.sh
++++ rsync-workdir/configure.sh
+@@ -7412,7 +7412,7 @@ CXXFLAGS=`echo "$CXXFLAGS" | sed 's/-g //'`
+ 
+ if test x"$enable_roll_simd" = x""; then
+     case "$host_os" in
+-	*linux*) ;;
++	*linux* | *ironclad*) ;;
+ 	*) enable_roll_simd=no ;;
+     esac
+ fi

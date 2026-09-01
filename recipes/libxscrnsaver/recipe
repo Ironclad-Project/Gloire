@@ -1,18 +1,18 @@
 #! /bin/sh
 
 version=1.2.5
-revision=2
-git_url="https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver.git"
-commit=60c957ba8a727d01b376da0142aef7e18aa86fe1
+revision=3
+tarball_url="https://www.x.org/archive/individual/lib/libXScrnSaver-${version}.tar.xz"
+tarball_blake2b="a57683c7af842dccc9eda77d9b3e0887aad4e93aec95e1537a3886bd8646af9f1fe64bb59de2d6c4c13fff04842daabc7fd86caff3c6d92ddd090291ce489707"
 hostdeps="gcc pkg-config"
-deps="core-libs libxext libx11"
+deps="core-libs xorg-proto libx11 libxext"
 
 configure() {
     meson_configure
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

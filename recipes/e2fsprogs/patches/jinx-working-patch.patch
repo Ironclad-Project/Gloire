@@ -1,0 +1,26 @@
+diff --git e2fsprogs-clean/MCONFIG.in e2fsprogs-workdir/MCONFIG.in
+index d66e2f3..4c83da7 100644
+--- e2fsprogs-clean/MCONFIG.in
++++ e2fsprogs-workdir/MCONFIG.in
+@@ -100,7 +100,7 @@ ALL_CFLAGS_SHLIB = $(CPPFLAGS) $(SANITIZER_CFLAGS) $(CFLAGS_SHLIB) $(PTHREAD_CFL
+ ALL_CFLAGS_STLIB = $(CPPFLAGS) $(SANITIZER_CFLAGS) $(CFLAGS_STLIB) $(PTHREAD_CFLAGS) $(CFLAGS_WARN) @DEFS@ $(LOCAL_CFLAGS)
+ LDFLAGS = $(SANITIZER_LDFLAGS) $(PTHREAD_CFLAGS) @LDFLAGS@
+ LDFLAGS_SHLIB = $(SANITIZER_LDFLAGS) $(PTHREAD_CFLAGS) @LDFLAGS_SHLIB@
+-ALL_LDFLAGS = $(LDFLAGS) @LDFLAG_DYNAMIC@ $(LOCAL_LDFLAGS)
++ALL_LDFLAGS = $(ALL_CFLAGS) $(LDFLAGS) @LDFLAG_DYNAMIC@ $(LOCAL_LDFLAGS)
+ LDFLAGS_STATIC = $(SANITIZER_LDFLAGS) $(PTHREAD_CFLAGS) @LDFLAGS_STATIC@
+ BUILD_CFLAGS = $(SANITIZER_CFLAGS) @BUILD_CFLAGS@
+ BUILD_LDFLAGS = $(SANITIZER_LDFLAGS) @BUILD_LDFLAGS@
+diff --git e2fsprogs-clean/lib/Makefile.elf-lib e2fsprogs-workdir/lib/Makefile.elf-lib
+index f850f3d..5b43f03 100644
+--- e2fsprogs-clean/lib/Makefile.elf-lib
++++ e2fsprogs-workdir/lib/Makefile.elf-lib
+@@ -24,7 +24,7 @@ image:		$(ELF_LIB)
+ 
+ $(ELF_LIB): $(OBJS)
+ 	$(E) "	GEN_ELF_SOLIB $(ELF_LIB)"
+-	$(Q) (cd elfshared; $(CC) -o $(ELF_LIB) \
++	$(Q) (cd elfshared; $(CC) $(ALL_CFLAGS_SHLIB) -o $(ELF_LIB) \
+ 		-L$(top_builddir)/../lib $(LDFLAGS_SHLIB) -fPIC -shared \
+ 		-Wl,-soname,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
+ 	$(Q) $(MV) elfshared/$(ELF_LIB) .

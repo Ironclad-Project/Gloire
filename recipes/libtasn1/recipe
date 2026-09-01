@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=4.21.0
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/libtasn1/libtasn1-${version}.tar.gz"
 tarball_blake2b="0dc478a6be6cbfb26264f1d92361f02f384ee01d54ee3822805d660f9eeef65e37562e8daea3c2b21adb8033296a1eea8d33ab0dae37e6c2b42644c03fcdb7ac"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs texinfo"
 
 prepare() {
     autotools_recursive_regen
@@ -13,8 +13,7 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --disable-gtk-doc \
-        --disable-doc
+        --disable-gtk-doc
 }
 
 build() {
@@ -22,9 +21,11 @@ build() {
 }
 
 package() {
-    DESTDIR=${dest_dir} make install
+    DESTDIR="${dest_dir}" make install
 
-    DESTDIR=${dest_dir} make -C doc/reference install-data-local
+    DESTDIR="${dest_dir}" make -C doc/reference install-data-local
 
     post_package_strip
+
+    generate_info_hooks
 }

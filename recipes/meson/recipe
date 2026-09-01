@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.12.0
-revision=3
+revision=4
 tarball_url="https://github.com/mesonbuild/meson/releases/download/${version}/meson-${version}.tar.gz"
 tarball_blake2b="41d06e300bd549958179e81c0ba3c494912652f8851ef34214de05db42e32fe793cd42f09ef08a8f44e4340649508ed9dc5071daba9dda81df0efa9669022251"
 imagedeps="python3-build python3-installer"
@@ -21,6 +21,9 @@ package() {
         --destdir="${dest_dir}" \
         --prefix="${prefix}" \
         dist/*.whl
+
+    mv "${dest_dir}${prefix}"/lib/python3/dist-packages \
+       "${dest_dir}${prefix}"/lib/python3/site-packages
 
     post_package_strip
 }

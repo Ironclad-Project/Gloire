@@ -1,18 +1,19 @@
 #! /bin/sh
 
 version=0.20
-revision=2
-git_url="https://gitlab.freedesktop.org/xdg/xdg-user-dirs.git"
-commit=cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
+revision=3
+tarball_url="https://user-dirs.freedesktop.org/releases/xdg-user-dirs-${version}.tar.xz"
+tarball_blake2b="f279c9c5585ea39e0c6637a14c67e34af518aad0709f885cd2df876628b7669117ea1122b9fc222c1372890d2879a347e6f7e1a1c16fa8291ecd773af0ec90fa"
 hostdeps="gcc pkg-config"
 deps="core-libs"
+conf_files="/etc/xdg/user-dirs.conf /etc/xdg/user-dirs.defaults"
 
 configure() {
     meson_configure
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

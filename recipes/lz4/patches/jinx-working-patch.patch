@@ -1,0 +1,14 @@
+diff --git lz4-clean/programs/util.c lz4-workdir/programs/util.c
+index 170b5a7..5d50746 100644
+--- lz4-clean/programs/util.c
++++ lz4-workdir/programs/util.c
+@@ -133,7 +133,8 @@ int UTIL_countCores(void)
+     return numCores;
+ }
+ 
+-#elif defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__CYGWIN__)
++#elif defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__CYGWIN__) \
++ || defined(__ironclad__)
+ 
+ /* Use POSIX sysconf
+  * see: man 3 sysconf */

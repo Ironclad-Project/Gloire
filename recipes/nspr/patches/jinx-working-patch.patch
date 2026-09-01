@@ -1,3 +1,29 @@
+diff --git nspr-clean/nspr/config/rules.mk nspr-workdir/nspr/config/rules.mk
+index 8f3f926..9ae2aee 100644
+--- nspr-clean/nspr/config/rules.mk
++++ nspr-workdir/nspr/config/rules.mk
+@@ -324,7 +324,7 @@ ifdef MOZ_PROFILE_GENERATE
+ 	touch -t `date +%Y%m%d%H%M.%S -d "now+5seconds"` pgo.relink
+ endif	# MOZ_PROFILE_GENERATE
+ else	# WINNT && !GCC
+-	$(MKSHLIB) $(OBJS) $(RES) $(LDFLAGS) $(WRAP_LDFLAGS) $(EXTRA_LIBS)
++	$(MKSHLIB) $(CFLAGS) $(OBJS) $(RES) $(LDFLAGS) $(WRAP_LDFLAGS) $(EXTRA_LIBS)
+ endif	# WINNT && !GCC
+ endif	# AIX 4.1
+ ifdef ENABLE_STRIP
+diff --git nspr-clean/nspr/pr/include/md/_linux.cfg nspr-workdir/nspr/pr/include/md/_linux.cfg
+index f92f1b4..1ef3b21 100644
+--- nspr-clean/nspr/pr/include/md/_linux.cfg
++++ nspr-workdir/nspr/pr/include/md/_linux.cfg
+@@ -22,6 +22,8 @@
+ #define PR_AF_INET6 28  /* same as AF_INET6 */
+ #elif defined(__GNU__)
+ #define PR_AF_INET6 26  /* same as AF_INET6 */
++#elif defined(__ironclad__)
++#define PR_AF_INET6 2   /* same as AF_INET6 */
+ #else
+ #define PR_AF_INET6 10  /* same as AF_INET6 */
+ #endif
 diff --git nspr-clean/nspr/pr/src/md/unix/uxrng.c nspr-workdir/nspr/pr/src/md/unix/uxrng.c
 index fb914a2..9674cfb 100644
 --- nspr-clean/nspr/pr/src/md/unix/uxrng.c
@@ -11,3 +37,16 @@ index fb914a2..9674cfb 100644
  #include <sys/types.h>
  #include <sys/stat.h>
  #include <fcntl.h>
+diff --git nspr-clean/nspr/pr/src/misc/prsystem.c nspr-workdir/nspr/pr/src/misc/prsystem.c
+index 66ed10c..cbfede9 100644
+--- nspr-clean/nspr/pr/src/misc/prsystem.c
++++ nspr-workdir/nspr/pr/src/misc/prsystem.c
+@@ -243,7 +243,7 @@ PR_GetPhysicalMemorySize(void)
+ {
+     PRUint64 bytes = 0;
+ 
+-#if defined(LINUX) || defined(SOLARIS)
++#if defined(LINUX) || defined(SOLARIS) || defined(__ironclad__)
+ 
+     long pageSize = sysconf(_SC_PAGESIZE);
+     long pageCount = sysconf(_SC_PHYS_PAGES);

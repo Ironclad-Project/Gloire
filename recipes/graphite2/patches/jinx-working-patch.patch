@@ -1,0 +1,13 @@
+diff --git graphite2-clean/src/CMakeLists.txt graphite2-workdir/src/CMakeLists.txt
+index 4194e25..2a96ef0 100644
+--- graphite2-clean/src/CMakeLists.txt
++++ graphite2-workdir/src/CMakeLists.txt
+@@ -84,7 +84,7 @@ set_target_properties(graphite2 PROPERTIES  PUBLIC_HEADER "${GRAPHITE_HEADERS}"
+                                             LT_VERSION_REVISION ${GRAPHITE_API_REVISION}
+                                             LT_VERSION_AGE ${GRAPHITE_API_AGE})
+ 
+-if  (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
++if  (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Ironclad")
+     set_target_properties(graphite2 PROPERTIES
+         COMPILE_FLAGS   "-Wall -Wextra -Wno-unknown-pragmas -Wendif-labels -Wshadow -Wctor-dtor-privacy -Wnon-virtual-dtor -fno-rtti -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden"
+         LINK_FLAGS      "-nodefaultlibs ${GRAPHITE_LINK_FLAGS}"

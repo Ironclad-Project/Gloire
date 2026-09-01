@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.02
-revision=2
+revision=3
 tarball_url="https://www.nasm.us/pub/nasm/releasebuilds/${version}/nasm-${version}.tar.xz"
 tarball_blake2b="616a807e7ab126a1223618a457266b6f00ee3f212cbb11027125ce3ecf3beebaa935cd96e3f9640cc46d99659ad19c9d6506bf5e5a062718b203cc62f8a217fe"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs zlib"
 
 prepare() {
     autotools_recursive_regen
@@ -16,11 +16,16 @@ configure() {
 }
 
 build() {
-    make -j${parallelism}
+    make -j${parallelism} EXTRA_LDFLAGS="${TARGET_LDFLAGS}"
+
+    make -j${parallelism} doc/warnings.src doc/perlbreq.src doc/pptok.src
+    make -j${parallelism} -C doc html
 }
 
 package() {
     DESTDIR="${dest_dir}" make install
+
+    DESTDIR="${dest_dir}" make -C doc install_html
 
     post_package_strip
 }

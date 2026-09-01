@@ -2,33 +2,19 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=25
+revision=26
 source_dir="base-files"
+deps="core-libs"
+conf_files="/etc/group /etc/locale.conf /etc/locale.gen /etc/nsswitch.conf /etc/passwd"
+conf_files="${conf_files} /etc/profile /etc/resolv.conf /etc/shadow"
+conf_files="${conf_files} /home/user/.bash_profile /home/user/.bashrc"
 
 package() {
     cp -r ${source_dir}/. "${dest_dir}"/
 
-    cat <<'EOF' >"${dest_dir}"/INSTALL
-#! /bin/sh
-
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
-
-ACTION="$1"
-
-case "${ACTION}" in
-pre)
-    ;;
-post)
-    chown -R 1000:1000 home/user
-
-    chmod 750 root
-    chmod 777 tmp
-    chmod 777 run
-    chmod 710 home/user
-    ;;
-esac
-
-exit 0
-EOF
-    chmod +x "${dest_dir}"/INSTALL
+    install_hook_add 'chown -R 1000:1000 home/user' \
+                     'chmod 750 root' \
+                     'chmod 777 tmp' \
+                     'chmod 777 run' \
+                     'chmod 710 home/user'
 }

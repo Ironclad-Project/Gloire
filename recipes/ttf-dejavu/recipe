@@ -2,16 +2,18 @@
 
 repology_id=fonts:dejavu
 version=2.37
-revision=2
+revision=3
 tarball_url="https://sourceforge.net/projects/dejavu/files/dejavu/${version}/dejavu-fonts-ttf-${version}.tar.bz2"
 tarball_blake2b="d8614907887f20967fc7c75cb33b636a0eb5c682a076ccc7aef09f4ac243507afc005ef90d0b2aeee6a4a6a1ff3d5ce4fac0d1722a382525b3883ef53cdec26a"
-deps="core-libs"
-
-build() {
-    cp -r ${source_dir}/. ./
-}
+deps="core-libs fontconfig"
 
 package() {
-    mkdir -p "${dest_dir}${prefix}/share/fonts/truetype"
-    cp -r ttf/* "${dest_dir}${prefix}/share/fonts/truetype/"
+    install -Dm644 "${source_dir}"/ttf/*.ttf -t "${dest_dir}${prefix}"/share/fonts/TTF
+    install -Dm644 "${source_dir}"/fontconfig/*.conf \
+        -t "${dest_dir}${prefix}"/share/fontconfig/conf.avail
+    install -d "${dest_dir}${prefix}"/share/fontconfig/conf.default
+    ln -rs "${dest_dir}${prefix}"/share/fontconfig/conf.avail/* \
+        "${dest_dir}${prefix}"/share/fontconfig/conf.default
+
+    generate_font_cache_hook
 }

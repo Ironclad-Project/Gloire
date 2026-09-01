@@ -2,26 +2,24 @@
 
 repology_id=xrdb
 version=1.2.3
-revision=2
+revision=3
 tarball_url="https://www.x.org/releases/individual/app/xrdb-${version}.tar.xz"
 tarball_blake2b="40816165f081860862e72252b7f4d6159c6cfc21bcf5a500676bff6590e9c19560a2168acc60f906eefa201a966b71868f9d8dbb091fbb7df78de51509befb8c"
 hostdeps="gcc pkg-config"
 deps="core-libs libx11 libxmu"
 
-prepare() {
-    autotools_recursive_regen
-}
 
 configure() {
-    autotools_configure
+    meson_configure \
+        -Dcpp="${prefix}"/bin/cpp
 }
 
 build() {
-    make -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

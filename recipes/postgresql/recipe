@@ -1,23 +1,50 @@
 #! /bin/sh
 
-version=19beta3
-revision=3
+version=18.6
+revision=4
 tarball_url="https://ftp.postgresql.org/pub/source/v${version}/postgresql-${version}.tar.bz2"
-tarball_blake2b="ac52e4db1e922acd678c0e29845ee1aa8ed79b8e0a0ee842165f36e5989aff401f6c54d63c37ae05c82592c380d3dd46a09f64b80104e6e72956eee61bdb818d"
+tarball_blake2b="657fd161eb581608cf73f6f649b6a35dbf034ff64c578c17f94d49c72ac9cd8ea7280425dd24ba4d7550c044bfebe78f0ebc534a1df4cfe2b634a6e4f765aa51"
 imagedeps="binutils"
 hostdeps="gcc pkg-config"
-deps="core-libs icu readline zlib openssl zstd libxml2 lz4 llvm-libs curl"
+deps="core-libs icu readline zlib openssl zstd libxml2 libxslt lz4 e2fsprogs"
 
 configure() {
-    meson_configure
+    meson_configure \
+        -Duuid=e2fs \
+        -Drpath=false \
+        -Dsystem_tzdata="${prefix}"/share/zoneinfo \
+        -Dtap_tests=disabled \
+        -Dbonjour=disabled \
+        -Dbsd_auth=disabled \
+        -Ddocs_pdf=disabled \
+        -Dgssapi=disabled \
+        -Dlibcurl=disabled \
+        -Dldap=disabled \
+        -Dlibnuma=disabled \
+        -Dliburing=disabled \
+        -Dpam=disabled \
+        -Dplperl=disabled \
+        -Dplpython=disabled \
+        -Dpltcl=disabled \
+        -Dselinux=disabled \
+        -Dsystemd=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
+
+    meson compile --verbose -j${parallelism} docs
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    DESTDIR="${dest_dir}" meson compile --verbose install-docs
+
+    rm -f "${dest_dir}${prefix}"/lib/libpq.a \
+          "${dest_dir}${prefix}"/lib/libecpg.a \
+          "${dest_dir}${prefix}"/lib/libecpg_compat.a \
+          "${dest_dir}${prefix}"/lib/libpgtypes.a
 
     post_package_strip
 }

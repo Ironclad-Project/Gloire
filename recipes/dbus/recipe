@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=1.16.2
-revision=4
-git_url="https://gitlab.freedesktop.org/dbus/dbus.git"
-commit=958bf9db2100553bcd2fe2a854e1ebb42e886054
+revision=5
+tarball_url="https://dbus.freedesktop.org/releases/dbus/dbus-${version}.tar.xz"
+tarball_blake2b="ddca8abdd5df70b24d51293a262cda3f9e69681b31ae8bb560a6286ca6f2dc0c420dc5322a61bb142a77b2b5f86bdafcc6bf84b0d78af9610af7a78763b8b8fb"
 hostdeps="gcc pkg-config"
 deps="core-libs libexpat libx11"
 
@@ -20,11 +20,16 @@ configure() {
         -Dkqueue=disabled \
         -Dlaunchd=disabled \
         -Dsystemd=disabled \
+        -Dducktype_docs=disabled \
+        -Dqt_help=disabled \
+        -Depoll=disabled \
+        -Dinotify=disabled \
+        -Dx11_autolaunch=disabled \
         -Dmodular_tests=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
@@ -34,23 +39,6 @@ package() {
 
     post_package_strip
 
-    cat <<'EOF' >"${dest_dir}"/INSTALL
-#! /bin/sh
-
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
-
-ACTION="$1"
-
-case "${ACTION}" in
-pre)
-    ;;
-post)
-    mkdir -p /var/lib/dbus
-    dbus-uuidgen --ensure >/var/lib/dbus/machine-id
-    ;;
-esac
-
-exit 0
-EOF
-    chmod +x "${dest_dir}"/INSTALL
+    install_hook_add 'mkdir -p /var/lib/dbus' \
+                     'dbus-uuidgen --ensure >/var/lib/dbus/machine-id'
 }

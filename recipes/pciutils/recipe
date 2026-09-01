@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.15.0
-revision=2
+revision=3
 tarball_url="https://github.com/pciutils/pciutils/releases/download/v${version}/pciutils-${version}.tar.gz"
 tarball_blake2b="29d3d38be6a3b8abce8db86e9160fc27ce966375f2ea441dff20cad9d7f7dfebe42a17d6054a406ed0d52035ad9c9071837e0e7650c954ff1c84514554f6c34f"
 hostdeps="gcc pkg-config"
@@ -10,17 +10,45 @@ deps="core-libs"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    make lib/config.mk OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET}
+    make lib/config.mk \
+        OPT="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        CC=${OS_TRIPLET}-gcc \
+        PREFIX="${prefix}" \
+        SBINDIR="${prefix}"/bin \
+        MANDIR="${prefix}"/share/man \
+        SHARED=yes \
+        ZLIB=no \
+        DNS=yes \
+        HOST=${OS_TRIPLET}
 
-    make OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET}
+    make -j${parallelism} \
+        OPT="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        CC=${OS_TRIPLET}-gcc \
+        PREFIX="${prefix}" \
+        SBINDIR="${prefix}"/bin \
+        MANDIR="${prefix}"/share/man \
+        SHARED=yes \
+        ZLIB=no \
+        DNS=yes \
+        HOST=${OS_TRIPLET}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install PREFIX="${prefix}" OPT="${TARGET_CFLAGS}" CC=${OS_TRIPLET}-gcc SHARED=yes DNS=no HOST=${OS_TRIPLET} STRIP=""
-
-    mkdir -p "${dest_dir}${prefix}/bin"
-    mv -v "${dest_dir}${prefix}/sbin/"* "${dest_dir}${prefix}/bin/"
-    rm -rfv "${dest_dir}${prefix}/sbin"
+    make install install-lib \
+        DESTDIR="${dest_dir}" \
+        OPT="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}" \
+        CC=${OS_TRIPLET}-gcc \
+        PREFIX="${prefix}" \
+        SBINDIR="${prefix}"/bin \
+        MANDIR="${prefix}"/share/man \
+        SHARED=yes \
+        ZLIB=no \
+        DNS=yes \
+        HOST=${OS_TRIPLET} \
+        STRIP=""
 
     post_package_strip
 }

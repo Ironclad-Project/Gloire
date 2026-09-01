@@ -1,0 +1,165 @@
+diff --git mate-applets-clean/accessx-status/docs/Makefile.in mate-applets-workdir/accessx-status/docs/Makefile.in
+index 635b5f6..9813ac7 100644
+--- mate-applets-clean/accessx-status/docs/Makefile.in
++++ mate-applets-workdir/accessx-status/docs/Makefile.in
+@@ -351,8 +351,8 @@ HELP_MEDIA = figures/accessx_bounce-keys.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/battstat/docs/Makefile.in mate-applets-workdir/battstat/docs/Makefile.in
+index ab4608a..6fe89e8 100644
+--- mate-applets-clean/battstat/docs/Makefile.in
++++ mate-applets-workdir/battstat/docs/Makefile.in
+@@ -346,8 +346,8 @@ HELP_MEDIA = figures/battstat-applet-expanded.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/charpick/help/Makefile.in mate-applets-workdir/charpick/help/Makefile.in
+index fa74888..b69d02d 100644
+--- mate-applets-clean/charpick/help/Makefile.in
++++ mate-applets-workdir/charpick/help/Makefile.in
+@@ -344,8 +344,8 @@ HELP_MEDIA = figures/charpalette_applet.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/cpufreq/help/Makefile.in mate-applets-workdir/cpufreq/help/Makefile.in
+index 13b723b..0688328 100644
+--- mate-applets-clean/cpufreq/help/Makefile.in
++++ mate-applets-workdir/cpufreq/help/Makefile.in
+@@ -350,8 +350,8 @@ HELP_MEDIA = figures/cpufreq-100.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/drivemount/help/Makefile.in mate-applets-workdir/drivemount/help/Makefile.in
+index 9a06af1..bab736c 100644
+--- mate-applets-clean/drivemount/help/Makefile.in
++++ mate-applets-workdir/drivemount/help/Makefile.in
+@@ -346,8 +346,8 @@ HELP_MEDIA = figures/drivemount-applet_eject.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/geyes/docs/Makefile.in mate-applets-workdir/geyes/docs/Makefile.in
+index ed55f7d..d3a8b8c 100644
+--- mate-applets-clean/geyes/docs/Makefile.in
++++ mate-applets-workdir/geyes/docs/Makefile.in
+@@ -341,8 +341,8 @@ HELP_MEDIA = figures/geyes_applet.png
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/mateweather/docs/Makefile.in mate-applets-workdir/mateweather/docs/Makefile.in
+index 6a986c1..9686a22 100644
+--- mate-applets-clean/mateweather/docs/Makefile.in
++++ mate-applets-workdir/mateweather/docs/Makefile.in
+@@ -355,8 +355,8 @@ HELP_MEDIA = figures/mateweather_applet.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/multiload/docs/Makefile.in mate-applets-workdir/multiload/docs/Makefile.in
+index bd47975..53e298f 100644
+--- mate-applets-clean/multiload/docs/Makefile.in
++++ mate-applets-workdir/multiload/docs/Makefile.in
+@@ -343,8 +343,8 @@ HELP_MEDIA = figures/multiload-preferences.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/netspeed/help/Makefile.in mate-applets-workdir/netspeed/help/Makefile.in
+index d800b70..284b5ec 100644
+--- mate-applets-clean/netspeed/help/Makefile.in
++++ mate-applets-workdir/netspeed/help/Makefile.in
+@@ -351,8 +351,8 @@ HELP_MEDIA = \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/stickynotes/docs/Makefile.in mate-applets-workdir/stickynotes/docs/Makefile.in
+index d24f14e..a2d0916 100644
+--- mate-applets-clean/stickynotes/docs/Makefile.in
++++ mate-applets-workdir/stickynotes/docs/Makefile.in
+@@ -346,8 +346,8 @@ HELP_MEDIA = figures/stickynote-right-menu-lock.png \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 
+diff --git mate-applets-clean/trashapplet/docs/Makefile.in mate-applets-workdir/trashapplet/docs/Makefile.in
+index b907dc0..20a4f90 100644
+--- mate-applets-clean/trashapplet/docs/Makefile.in
++++ mate-applets-workdir/trashapplet/docs/Makefile.in
+@@ -341,8 +341,8 @@ HELP_MEDIA = figures/trash-applet.png
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ all: all-am
+ 

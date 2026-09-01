@@ -1,19 +1,24 @@
 #! /bin/sh
 
 version=1.10.0
-revision=2
+revision=3
 tarball_url="https://github.com/lz4/lz4/releases/download/v${version}/lz4-${version}.tar.gz"
 tarball_blake2b="c87a939b748b0449e4f1869579ebc109704aa89e8699b6029217f6786c351d1b0329580dd3a955fe509efb113f29aecbafc83084d65d153f5d43610f4840a819"
+imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
 configure() {
         meson_source_dir="${source_dir}"/build/meson \
-    meson_configure
+    meson_configure \
+        -Dcontrib=true \
+        -Dossfuzz=false \
+        -Dexamples=true \
+        -Dprograms=true
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

@@ -1,0 +1,18 @@
+Avoid leaking current data on generated file for Ada.
+
+[MODIFIED FOR GLOIRE] paths given an a/ b/ prefix so the patch applies at -p1, which is what
+jinx and recipes/gcc's prepare() use; the diff itself is unchanged from Arch's.
+
+Index: gcc/ada/gcc-interface/Makefile.in
+===================================================================
+--- a/gcc/ada/gcc-interface/Makefile.in	(revision 268977)
++++ b/gcc/ada/gcc-interface/Makefile.in	(working copy)
+@@ -2407,6 +2407,7 @@ $(RTSDIR)/s-oscons.ads: ../stamp-gnatlib
+ 	    $(OSCONS_CPP) ; \
+ 	    $(OSCONS_EXTRACT) ; \
+ 	    ../bldtools/oscons/xoscons s-oscons)
++	touch -r $(fsrcpfx)ada/gsocket.h $@
+ 
+ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-oscons.ads
+ 	test -f $(RTSDIR)/s-oscons.ads || exit 1
+

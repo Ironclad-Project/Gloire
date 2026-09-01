@@ -1,0 +1,214 @@
+diff --git openssh-clean/Makefile.in openssh-workdir/Makefile.in
+index e9503e7..3d4ad2b 100644
+--- openssh-clean/Makefile.in
++++ openssh-workdir/Makefile.in
+@@ -221,50 +221,50 @@ libssh.a: $(LIBSSH_OBJS)
+ 	$(RANLIB) $@
+ 
+ ssh$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHOBJS)
+-	$(LD) -o $@ $(SSHOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(GSSLIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(GSSLIBS) $(CHANNELLIBS)
+ 
+ sshd$(EXEEXT): libssh.a	$(LIBCOMPAT) $(SSHDOBJS)
+-	$(LD) -o $@ $(SSHDOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHDOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(CHANNELLIBS)
+ 
+ sshd-session$(EXEEXT): libssh.a	$(LIBCOMPAT) $(SSHD_SESSION_OBJS)
+-	$(LD) -o $@ $(SSHD_SESSION_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(GSSLIBS) $(K5LIBS) $(CHANNELLIBS) $(LIBWTMPDB)
++	$(LD) $(CFLAGS) -o $@ $(SSHD_SESSION_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(GSSLIBS) $(K5LIBS) $(CHANNELLIBS) $(LIBWTMPDB)
+ 
+ sshd-auth$(EXEEXT): libssh.a $(LIBCOMPAT) $(SSHD_AUTH_OBJS)
+-	$(LD) -o $@ $(SSHD_AUTH_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(GSSLIBS) $(K5LIBS) $(CHANNELLIBS) $(LIBWTMPDB)
++	$(LD) $(CFLAGS) -o $@ $(SSHD_AUTH_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS) $(GSSLIBS) $(K5LIBS) $(CHANNELLIBS) $(LIBWTMPDB)
+ 
+ scp$(EXEEXT): $(LIBCOMPAT) libssh.a $(SCP_OBJS)
+-	$(LD) -o $@ $(SCP_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++	$(LD) $(CFLAGS) -o $@ $(SCP_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+ ssh-add$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHADD_OBJS)
+-	$(LD) -o $@ $(SSHADD_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHADD_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
+ 
+ ssh-agent$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHAGENT_OBJS)
+-	$(LD) -o $@ $(SSHAGENT_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHAGENT_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
+ 
+ ssh-keygen$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHKEYGEN_OBJS)
+-	$(LD) -o $@ $(SSHKEYGEN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHKEYGEN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
+ 
+ ssh-keysign$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHKEYSIGN_OBJS)
+-	$(LD) -o $@ $(SSHKEYSIGN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHKEYSIGN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
+ 
+ ssh-pkcs11-helper$(EXEEXT): $(LIBCOMPAT) libssh.a $(P11HELPER_OBJS)
+-	$(LD) -o $@ $(P11HELPER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(P11HELPER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS)
+ 
+ ssh-sk-helper$(EXEEXT): $(LIBCOMPAT) libssh.a $(SKHELPER_OBJS)
+-	$(LD) -o $@ $(SKHELPER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(LIBS) $(LIBFIDO2) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SKHELPER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(LIBS) $(LIBFIDO2) $(CHANNELLIBS)
+ 
+ ssh-keyscan$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHKEYSCAN_OBJS)
+-	$(LD) -o $@ $(SSHKEYSCAN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS) $(CHANNELLIBS)
++	$(LD) $(CFLAGS) -o $@ $(SSHKEYSCAN_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS) $(CHANNELLIBS)
+ 
+ sftp-server$(EXEEXT): $(LIBCOMPAT) libssh.a $(SFTPSERVER_OBJS)
+-	$(LD) -o $@ $(SFTPSERVER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS)
++	$(LD) $(CFLAGS) -o $@ $(SFTPSERVER_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS)
+ 
+ sftp$(EXEEXT): $(LIBCOMPAT) libssh.a $(SFTP_OBJS)
+-	$(LD) -o $@ $(SFTP_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(LIBEDIT)
++	$(LD) $(CFLAGS) -o $@ $(SFTP_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(LIBEDIT)
+ 
+ # test driver for the loginrec code - not built by default
+ logintest: logintest.o $(LIBCOMPAT) libssh.a loginrec.o
+-	$(LD) -o $@ logintest.o $(LDFLAGS) loginrec.o -lopenbsd-compat -lssh $(LIBS)
++	$(LD) $(CFLAGS) -o $@ logintest.o $(LDFLAGS) loginrec.o -lopenbsd-compat -lssh $(LIBS)
+ 
+ # compile libssh objects with -fPIC for use in the sk_libfido2 shared library
+ LIBSSH_PIC_OBJS=$(LIBSSH_OBJS:.o=.lo)
+@@ -606,7 +606,7 @@ UNITTESTS_TEST_SSHBUF_OBJS=\
+ 
+ regress/unittests/sshbuf/test_sshbuf$(EXEEXT): ${UNITTESTS_TEST_SSHBUF_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHBUF_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHBUF_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -620,7 +620,7 @@ UNITTESTS_TEST_SSHKEY_OBJS=\
+ 
+ regress/unittests/sshkey/test_sshkey$(EXEEXT): ${UNITTESTS_TEST_SSHKEY_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHKEY_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHKEY_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -631,7 +631,7 @@ UNITTESTS_TEST_SSHSIG_OBJS=\
+ 
+ regress/unittests/sshsig/test_sshsig$(EXEEXT): ${UNITTESTS_TEST_SSHSIG_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHSIG_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SSHSIG_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -640,7 +640,7 @@ UNITTESTS_TEST_BITMAP_OBJS=\
+ 
+ regress/unittests/bitmap/test_bitmap$(EXEEXT): ${UNITTESTS_TEST_BITMAP_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_BITMAP_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_BITMAP_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -652,7 +652,7 @@ UNITTESTS_TEST_AUTHOPT_OBJS=\
+ regress/unittests/authopt/test_authopt$(EXEEXT): \
+     ${UNITTESTS_TEST_AUTHOPT_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_AUTHOPT_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_AUTHOPT_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -662,7 +662,7 @@ UNITTESTS_TEST_CONVERSION_OBJS=\
+ regress/unittests/conversion/test_conversion$(EXEEXT): \
+     ${UNITTESTS_TEST_CONVERSION_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_CONVERSION_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_CONVERSION_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -674,7 +674,7 @@ UNITTESTS_TEST_KEX_OBJS=\
+ 
+ regress/unittests/kex/test_kex$(EXEEXT): ${UNITTESTS_TEST_KEX_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_KEX_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_KEX_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -686,7 +686,7 @@ UNITTESTS_TEST_HOSTKEYS_OBJS=\
+ regress/unittests/hostkeys/test_hostkeys$(EXEEXT): \
+     ${UNITTESTS_TEST_HOSTKEYS_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_HOSTKEYS_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_HOSTKEYS_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -696,7 +696,7 @@ UNITTESTS_TEST_MATCH_OBJS=\
+ regress/unittests/match/test_match$(EXEEXT): \
+     ${UNITTESTS_TEST_MATCH_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_MATCH_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_MATCH_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -711,7 +711,7 @@ UNITTESTS_TEST_CRYPTO_OBJS=\
+ regress/unittests/crypto/test_crypto$(EXEEXT): \
+     ${UNITTESTS_TEST_CRYPTO_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_CRYPTO_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_CRYPTO_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -730,7 +730,7 @@ UNITTESTS_TEST_MISC_OBJS=\
+ regress/unittests/misc/test_misc$(EXEEXT): \
+     ${UNITTESTS_TEST_MISC_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_MISC_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_MISC_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -743,7 +743,7 @@ UNITTESTS_TEST_SERVCONF_OBJS=\
+ regress/unittests/servconf/test_servconf$(EXEEXT): \
+     ${UNITTESTS_TEST_SERVCONF_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SERVCONF_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_SERVCONF_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -753,7 +753,7 @@ UNITTESTS_TEST_UTF8_OBJS=\
+ regress/unittests/utf8/test_utf8$(EXEEXT): \
+     ${UNITTESTS_TEST_UTF8_OBJS} \
+     regress/unittests/test_helper/libtest_helper.a libssh.a
+-	$(LD) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_UTF8_OBJS) \
++	$(LD) $(CFLAGS) -o $@ $(LDFLAGS) $(UNITTESTS_TEST_UTF8_OBJS) \
+ 	    regress/unittests/test_helper/libtest_helper.a \
+ 	    -lssh -lopenbsd-compat -lssh -lopenbsd-compat $(TESTLIBS)
+ 
+@@ -779,7 +779,7 @@ SSH_VERIFY_ATTESTATION_OBJS=\
+ ssh-verify-attestation: regress/misc/ssh-verify-attestation/ssh-verify-attestation$(EXEEXT)
+ 
+ regress/misc/ssh-verify-attestation/ssh-verify-attestation$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSH_VERIFY_ATTESTATION_OBJS)
+-	$(LD) -o $@ $(SSH_VERIFY_ATTESTATION_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS) $(LIBFIDO2)
++	$(LD) $(CFLAGS) -o $@ $(SSH_VERIFY_ATTESTATION_OBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(CHANNELLIBS) $(LIBFIDO2)
+ 
+ 
+ regress-binaries: regress-prep $(LIBCOMPAT) \
+diff --git openssh-clean/configure openssh-workdir/configure
+index 504d8fc..64bf921 100755
+--- openssh-clean/configure
++++ openssh-workdir/configure
+@@ -20944,7 +20944,12 @@ if test "x$sandbox_arg" != "xno"; then
+ # NOFILES so check that both work before enabling the rlimit sandbox.
+     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if select and/or poll works with descriptor rlimit" >&5
+ printf %s "checking if select and/or poll works with descriptor rlimit... " >&6; }
+-    if test "$cross_compiling" = yes
++    if test -n "${select_works_with_rlimit}"
++then :
++  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${select_works_with_rlimit} (preset)" >&5
++printf "%s\n" "${select_works_with_rlimit} (preset)" >&6; }
++
++elif test "$cross_compiling" = yes
+ then :
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross compiling: assuming no" >&5
+ printf "%s\n" "$as_me: WARNING: cross compiling: assuming no" >&2;}

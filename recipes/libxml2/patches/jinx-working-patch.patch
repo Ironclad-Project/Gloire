@@ -1,0 +1,15 @@
+diff --git libxml2-clean/doc/Doxyfile libxml2-workdir/doc/Doxyfile
+index f1b17d9..a1f6e0d 100644
+--- libxml2-clean/doc/Doxyfile
++++ libxml2-workdir/doc/Doxyfile
+@@ -1,7 +1,9 @@
+ PROJECT_NAME           = libxml2
+ OUTPUT_DIRECTORY       = $(BUILD_ROOT)doc
+ STRIP_FROM_PATH        = $(SOURCE_ROOT)include/libxml \
+-                         $(BUILD_ROOT)include/libxml
++                         $(BUILD_ROOT)include/libxml \
++                         $(SOURCE_ROOT) \
++                         $(BUILD_ROOT)
+ JAVADOC_AUTOBRIEF      = YES
+ OPTIMIZE_OUTPUT_FOR_C  = YES
+ EXTRACT_LOCAL_CLASSES  = NO

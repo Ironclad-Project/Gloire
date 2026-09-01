@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=2026c
-revision=2
+revision=3
 tarball_url="https://data.iana.org/time-zones/releases/tzdata${version}.tar.gz"
 tarball_blake2b="53a759b9081736b5daba8574b2f6a6852fcd0fbb85237d90e5c589f4126a445a9fbbf338383fc14cee09fa4bb38b546a8285adcbdd944d93eb7e1242cae8feda"
 imagedeps="tzdata"
-hostdeps="gcc binutils"
+hostdeps="gcc"
 deps="glibc libgcc libstdc++ libatomic"
 
 early_prepare() {
@@ -20,13 +20,13 @@ prepare() {
 }
 
 build() {
-    cp -rp ${source_dir}/. ./
+    cp -rp "${source_dir}"/. ./
 
-    make \
-        CC="$OS_TRIPLET-gcc" \
-        AR="$OS_TRIPLET-ar" \
-        CFLAGS="$TARGET_CFLAGS" \
-        LDFLAGS="$TARGET_LDFLAGS"
+    make -j${parallelism} \
+        CC="${OS_TRIPLET}-gcc" \
+        AR="${OS_TRIPLET}-ar" \
+        CFLAGS="${TARGET_CFLAGS}" \
+        LDFLAGS="${TARGET_LDFLAGS}"
 }
 
 package() {

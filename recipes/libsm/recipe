@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.2.6
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libSM-${version}.tar.gz"
 tarball_blake2b="90bb1c08acc213cf0fbb766505d3f0973dab0ac989d1c76e88ef26a6cfedeeb27a7db06f8d3a794514888bcbc9998939978ffb4371ede330f8b98f3cb48b7a1b"
 hostdeps="gcc pkg-config"

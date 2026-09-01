@@ -3,10 +3,12 @@
 version=16.2.0
 tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 tarball_blake2b="ab3ffe16e042da767f3f1eac170da518d6d7de3b0f92e068f79e3bf25fdc0bdf56eea0cd586bd4b9b6e9baebadd110c2ebd77b75c99c45853814f4bea5a98ef0"
-revision=2
+revision=3
 hostdeps="gcc pkg-config"
-deps="core-libs binutils zlib gmp mpfr mpc gettext"
+deps="core-libs binutils gmp mpc mpfr zlib zstd texinfo"
+builddeps="gettext"
 imagedeps="build-essential"
+_glibc_version="$(. "${base_dir}/recipes/glibc/recipe" && echo "${version}")"
 
 prepare() {
     for i in "${base_dir}"/host-recipes/gcc/patches/*; do
@@ -25,15 +27,14 @@ configure() {
         CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS" \
         LDFLAGS_FOR_TARGET="$TARGET_LDFLAGS" \
         --target=${OS_TRIPLET} \
-        --with-sysroot=/ \
+        --with-sysroot= \
         --with-build-sysroot=${sysroot} \
-        --with-glibc-version=2.42 \
+        --with-glibc-version=${_glibc_version} \
         --enable-__cxa_atexit \
         --enable-cet=auto \
         --enable-checking=release \
         --enable-clocale=gnu \
         --with-linker-hash-style=gnu \
-        --enable-linker-build-id \
         --enable-default-pie \
         --enable-default-ssp \
         --enable-gnu-indirect-function \
@@ -43,9 +44,10 @@ configure() {
         --enable-linker-build-id \
         --enable-languages=c,c++,fortran,lto \
         --enable-lto \
+        --disable-fixincludes \
+        --with-gcc-major-version-only \
         --disable-multilib \
         --enable-plugin \
-        --enable-shared \
         --enable-host-shared \
         --enable-threads=posix \
         --disable-libssp \
@@ -73,8 +75,7 @@ package() {
     chmod +x "${dest_dir}${prefix}"/bin/c99
     chmod +x "${dest_dir}${prefix}"/bin/f77
 
-    # Remove static libraries
-    rm -rf "${dest_dir}${prefix}"/lib/*.a
-
     post_package_strip
+
+    generate_info_hooks
 }

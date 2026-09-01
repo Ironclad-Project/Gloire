@@ -1,21 +1,24 @@
 #! /bin/sh
 
 version=10.5p1
-revision=3
+revision=4
 tarball_url="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${version}.tar.gz"
 tarball_blake2b="8e8be4e4aff6b5f16e19f85b994fcc9b7679021cf639fad4323dc15f6bc0041b45370024a5f51065e2a92d965428cf3787323957f2c41f4d27fc1146dc3690cf"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib openssl"
+conf_files="/etc/ssh/ssh_config /etc/ssh/sshd_config"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
+        select_works_with_rlimit=yes \
         ossh_cv_utmpx_h_has_ut_addr=no \
     autotools_configure \
         --sysconfdir=/etc/ssh \
         --disable-strip \
+        --disable-lastlog \
         --with-privsep-user=nobody \
         --with-privsep-path=${prefix}/share/empty.sshd \
         --with-default-path=${prefix}/local/sbin:${prefix}/local/bin:${prefix}/bin \
@@ -33,6 +36,11 @@ package() {
     install -v -d "${dest_dir}"/run
 
     DESTDIR="${dest_dir}" make install
+
+    install -v -m755 "${source_dir}"/contrib/ssh-copy-id "${dest_dir}${prefix}"/bin
+    install -v -m755 "${source_dir}"/contrib/findssl.sh "${dest_dir}${prefix}"/bin
+    install -v -m644 "${source_dir}"/contrib/ssh-copy-id.1 \
+        "${dest_dir}${prefix}"/share/man/man1
 
     post_package_strip
 }

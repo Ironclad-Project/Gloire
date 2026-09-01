@@ -1,0 +1,46 @@
+diff --git jwm-clean/example.jwmrc jwm-workdir/example.jwmrc
+index 088f991..a56e4d8 100644
+--- jwm-clean/example.jwmrc
++++ jwm-workdir/example.jwmrc
+@@ -126,22 +126,22 @@
+          for icons in multiple paths.
+       -->
+     <IconPath>
+-      /usr/local/share/icons/Tango/scalable/actions
++      /usr/share/icons/Tango/scalable/actions
+     </IconPath>
+     <IconPath>
+-      /usr/local/share/icons/Tango/scalable/apps
++      /usr/share/icons/Tango/scalable/apps
+     </IconPath>
+     <IconPath>
+-      /usr/local/share/icons/Tango/scalable/places
++      /usr/share/icons/Tango/scalable/places
+     </IconPath>
+     <IconPath>
+-      /usr/local/share/icons/Tango/scalable/status
++      /usr/share/icons/Tango/scalable/status
+     </IconPath>
+     <IconPath>
+-      /usr/local/share/icons/Tango/scalable/mimetypes
++      /usr/share/icons/Tango/scalable/mimetypes
+     </IconPath>
+     <IconPath>
+-      /usr/local/share/jwm
++      /usr/share/jwm
+     </IconPath>
+ 
+     <!-- Virtual Desktops -->
+diff --git jwm-clean/src/Makefile.in jwm-workdir/src/Makefile.in
+index 1119ddd..90050d9 100644
+--- jwm-clean/src/Makefile.in
++++ jwm-workdir/src/Makefile.in
+@@ -31,7 +31,7 @@ uninstall:
+ 	rm -f $(BINDIR)/$(EXE)
+ 
+ $(EXE): $(OBJECTS)
+-	$(CC) -o $(EXE) $(OBJECTS) $(LDFLAGS)
++	$(CC) $(CFLAGS) -o $(EXE) $(OBJECTS) $(LDFLAGS)
+ 
+ .c.o:
+ 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $<

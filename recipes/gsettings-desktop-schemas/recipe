@@ -1,10 +1,10 @@
 #! /bin/sh
 
 version=50.1
-revision=2
-tarball_url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas/-/archive/${version}/gsettings-desktop-schemas-${version}.tar.gz"
-tarball_blake2b="d2b9d6c857a33f9c2725131711969d6f3bc86a69264a28e33f4294eac0a6f25dec25807799fcb99a598e397aed1e747de3369e9bab9625490ae73e220d71e0db"
-imagedeps="libglib2.0-dev"
+revision=3
+tarball_url="https://download.gnome.org/sources/gsettings-desktop-schemas/50/gsettings-desktop-schemas-${version}.tar.xz"
+tarball_blake2b="4bc50151b7a397d0ad1a4197b1c0a05932f4bc44fce90489816448c224295eecc5c27ca5f661db5e1ab3fba84e3ae3294d0aa03dcf5fa3175254de9e5061bc45"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs glib2"
 
@@ -18,7 +18,7 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
@@ -28,5 +28,6 @@ package() {
     rm "${dest_dir}${prefix}"/share/glib-2.0/schemas/gschemas.compiled
 
     post_package_strip
+
     generate_glib_schemas_hook
 }

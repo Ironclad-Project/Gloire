@@ -2,16 +2,12 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/host-recipes/gcc/recipe" && echo ${version})"
-revision=2
+revision=3
 hostdeps="gcc pkg-config"
 imagedeps="build-essential"
 deps="glibc libgcc"
 
-. "${base_dir}"/build-support/gcc-ada-helpers
-
 package() {
-    ada_symlink_gnat
-
     cd "${build_dir}"/host-builds/gcc/build
 
     rm -rf tmp_libstdc++_dir
@@ -23,8 +19,31 @@ package() {
     # Remove it.
     rm -fv tmp_libstdc++_dir/usr/local/${OS_TRIPLET}/lib/libgcc*
 
+    make -C ${OS_TRIPLET}/libstdc++-v3/doc doc-man-doxygen
+
+    ls ${OS_TRIPLET}/libstdc++-v3/doc/doxygen/man/man3/*.3 >/dev/null
+
+    DESTDIR="$(realpath tmp_libstdc++_dir)" \
+        make -C ${OS_TRIPLET}/libstdc++-v3/doc doc-install-man
+
     mkdir -p "${dest_dir}${prefix}"
 
     cp -r tmp_libstdc++_dir/usr/local/share "${dest_dir}${prefix}"/
     cp -r tmp_libstdc++_dir/usr/local/${OS_TRIPLET}/* "${dest_dir}${prefix}"/
+
+    for _gdbpy in "${dest_dir}${prefix}"/lib/libstdc++.so.*-gdb.py; do
+        [ -f "${_gdbpy}" ] || continue
+        sed -i -e "s|/usr/local/${OS_TRIPLET}/lib/\.\./lib|${prefix}/lib|g" \
+               -e "s|/usr/local/share|${prefix}/share|g" "${_gdbpy}"
+        if grep -q /usr/local "${_gdbpy}"; then
+            echo "*** libstdc++: ${_gdbpy} still names /usr/local after rewriting:" >&2
+            grep -n /usr/local "${_gdbpy}" >&2
+            exit 1
+        fi
+        grep -q "^libdir = '${prefix}/lib'\$" "${_gdbpy}" || {
+            echo "*** libstdc++: ${_gdbpy} libdir was not rewritten as expected:" >&2
+            grep -n '^libdir' "${_gdbpy}" >&2
+            exit 1
+        }
+    done
 }

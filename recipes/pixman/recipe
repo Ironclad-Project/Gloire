@@ -1,18 +1,34 @@
 #! /bin/sh
 
 version=0.46.4
-revision=2
-git_url="https://gitlab.freedesktop.org/pixman/pixman.git"
-commit=9cc163c9da0fb4da430641715313d95a6ec466d9
+revision=3
+tarball_url="https://cairographics.org/releases/pixman-${version}.tar.gz"
+tarball_blake2b="03c074c8ed1e0d9ebacb2aacd9f6ef41c3ee6a8a22aa50863a3fe5ef28127dab22a5f5ef52add3c600d1ec309af86c7abfd0b1130e113df082f0b848f4827a37"
 hostdeps="gcc pkg-config"
-deps="core-libs libpng"
+deps="core-libs"
 
 configure() {
-    meson_configure
+    SIMD_FLAGS="-Dloongson-mmi=disabled -Dvmx=disabled -Dmips-dspr2=disabled"
+    SIMD_FLAGS="${SIMD_FLAGS} -Darm-simd=disabled -Dneon=disabled -Da64-neon=disabled"
+    case "${JINX_ARCH}" in
+        x86_64)
+            SIMD_FLAGS="${SIMD_FLAGS} -Drvv=disabled"
+            ;;
+        *)
+            SIMD_FLAGS="${SIMD_FLAGS} -Dmmx=disabled -Dsse2=disabled -Dssse3=disabled"
+            ;;
+    esac
+
+    meson_configure \
+        ${SIMD_FLAGS} \
+        -Dopenmp=disabled \
+        -Dtests=disabled \
+        -Dgtk=disabled \
+        -Dlibpng=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

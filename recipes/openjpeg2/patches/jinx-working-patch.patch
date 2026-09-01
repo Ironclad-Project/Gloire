@@ -1,0 +1,13 @@
+diff --git openjpeg2-clean/doc/Doxyfile.dox.cmake.in openjpeg2-workdir/doc/Doxyfile.dox.cmake.in
+index 439e133..fd538e2 100644
+--- openjpeg2-clean/doc/Doxyfile.dox.cmake.in
++++ openjpeg2-workdir/doc/Doxyfile.dox.cmake.in
+@@ -25,7 +25,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
+ ALWAYS_DETAILED_SEC    = NO
+ INLINE_INHERITED_MEMB  = NO
+ FULL_PATH_NAMES        = NO
+-STRIP_FROM_PATH        = C://
++STRIP_FROM_PATH        = @OPENJPEG_SOURCE_DIR@ @OPENJPEG_BINARY_DIR@
+ STRIP_FROM_INC_PATH    =
+ SHORT_NAMES            = NO
+ JAVADOC_AUTOBRIEF      = YES

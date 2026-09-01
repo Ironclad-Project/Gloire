@@ -3,11 +3,11 @@
 repology_srcname=python
 _major_version=3.14
 version=${_major_version}.7
-revision=1
+revision=2
 tarball_url="https://www.python.org/ftp/python/${version}/Python-${version}.tar.xz"
 tarball_blake2b="7d6988f906a402dbfc87b690f228b5fc53de024602bb459360e0482c1e323e212c71ff389b2c37bcc35248df9d9aa3bf710d3745484048cce7d4a41e5b3ea937"
 hostdeps="gcc pkg-config"
-deps="core-libs bzip2 xz zlib openssl ncurses readline gdbm libexpat libffi"
+deps="core-libs bzip2 xz zlib zstd openssl ncurses readline gdbm libexpat libffi sqlite e2fsprogs"
 
 prepare() {
     autotools_recursive_regen
@@ -24,11 +24,13 @@ configure() {
         --disable-optimizations \
         --enable-ipv6 \
         --with-system-expat \
+        --with-dbmliborder=gdbm:ndbm \
         --enable-loadable-sqlite-extensions \
         --without-ensurepip \
         --with-tzpath=${prefix}/share/zoneinfo \
         --with-build-python=python3 \
-        --without-static-libpython
+        --without-static-libpython \
+        --disable-test-modules
 }
 
 build() {
@@ -43,9 +45,27 @@ package() {
     ln -sfv pydoc3 "${dest_dir}${prefix}"/bin/pydoc
     ln -sfv idle3 "${dest_dir}${prefix}"/bin/idle
 
+    ln -sfv python${_major_version}.1 "${dest_dir}${prefix}"/share/man/man1/python.1
+
     mv "${dest_dir}${prefix}"/lib/python${_major_version} "${dest_dir}${prefix}"/lib/python3
 
     ln -sfv python3 "${dest_dir}${prefix}"/lib/python${_major_version}
+
+    for _f in "${dest_dir}${prefix}"/bin/python${_major_version}-config \
+              "${dest_dir}${prefix}"/lib/python3/_sysconfigdata__ironclad_.py \
+              "${dest_dir}${prefix}"/lib/python3/_sysconfig_vars__ironclad_.json \
+              "${dest_dir}${prefix}"/lib/python3/config-${_major_version}/Makefile \
+              "${dest_dir}${prefix}"/lib/python3/config-${_major_version}/config.c; do
+        sed -i -e "s|/usr/local/bin/${OS_TRIPLET}-|${OS_TRIPLET}-|g" \
+               -e "s| -ffile-prefix-map=[^ '\"]*||g" \
+               -e "s| -I/base_dir/sources/python/Include||g" \
+               -e "s|/base_dir/sources/python/|/usr/src/|g" "${_f}"
+    done
+
+    rm -f "${dest_dir}${prefix}"/lib/python3/__pycache__/_sysconfigdata__ironclad_.*.pyc
+    python3 -m compileall -q -o 0 -o 1 -o 2 \
+        -d "${prefix}/lib/python${_major_version}" \
+        "${dest_dir}${prefix}"/lib/python3/_sysconfigdata__ironclad_.py
 
     post_package_strip
 }

@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
+Date: Sun, 23 Aug 2026 16:51:42 +0200
+Subject: [PATCH] Remove extra Segoe UI fonts from system-ui
+
+The Symbol font interferes with emoji presentation in some situations,
+such as GitHub in Firefox. I also don't see a good reason to consider
+the Historic font a "System UI" font.
+---
+ conf.d/45-latin.conf | 8 --------
+ conf.d/60-latin.conf | 2 --
+ 2 files changed, 10 deletions(-)
+
+diff --git a/conf.d/45-latin.conf b/conf.d/45-latin.conf
+index 53158c767f30..b0be78558611 100644
+--- a/conf.d/45-latin.conf
++++ b/conf.d/45-latin.conf
+@@ -297,13 +297,5 @@
+ 		<family>Segoe UI</family>
+ 		<default><family>system-ui</family></default>
+ 	</alias>
+-	<alias>
+-		<family>Segoe UI Historic</family>
+-		<default><family>system-ui</family></default>
+-	</alias>
+-	<alias>
+-		<family>Segoe UI Symbol</family>
+-		<default><family>system-ui</family></default>
+-	</alias>
+ 
+ </fontconfig>
+diff --git a/conf.d/60-latin.conf b/conf.d/60-latin.conf
+index 6233ea28c25d..03837901e2b3 100644
+--- a/conf.d/60-latin.conf
++++ b/conf.d/60-latin.conf
+@@ -81,8 +81,6 @@
+ 			<family>Cantarell</family>
+ 			<family>Noto Sans UI</family>
+ 			<family>Segoe UI</family>
+-			<family>Segoe UI Historic</family>
+-			<family>Segoe UI Symbol</family>
+ 			<family>Noto Sans</family><!-- fallback -->
+ 		</prefer>
+ 	</alias>

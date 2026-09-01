@@ -1,8 +1,8 @@
-diff --git gcc-host-workdir/gcc/config/i386/ironclad-gnu.h gcc-host-workdir/gcc/config/i386/ironclad-gnu.h
+diff --git gcc-workdir/gcc/config/i386/ironclad-gnu.h gcc-workdir/gcc/config/i386/ironclad-gnu.h
 new file mode 100644
 index 0000000..aa69dd2
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/i386/ironclad-gnu.h
++++ gcc-workdir/gcc/config/i386/ironclad-gnu.h
 @@ -0,0 +1,8 @@
 +
 +#define GNU_USER_LINK_EMULATION32 "elf_i386"
@@ -12,11 +12,11 @@ index 0000000..aa69dd2
 +#define GLIBC_DYNAMIC_LINKER32 "/lib/ld-ironclad-i386.so.2"
 +#define GLIBC_DYNAMIC_LINKER64 "/lib/ld-ironclad-x86-64.so.2"
 +#define GLIBC_DYNAMIC_LINKERX32 "/lib/ld-ironclad-x32.so.2"
-diff --git gcc-host-workdir/gcc/config/i386/t-ironclad64 gcc-host-workdir/gcc/config/i386/t-ironclad64
+diff --git gcc-workdir/gcc/config/i386/t-ironclad64 gcc-workdir/gcc/config/i386/t-ironclad64
 new file mode 100644
 index 0000000..b3385f4
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/i386/t-ironclad64
++++ gcc-workdir/gcc/config/i386/t-ironclad64
 @@ -0,0 +1,26 @@
 +# Copyright (C) 2002-2025 Free Software Foundation, Inc.
 +#
@@ -44,11 +44,11 @@ index 0000000..b3385f4
 +MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-ironclad-gnu)
 +MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-ironclad-gnu)
 +MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-ironclad-gnux32)
-diff --git gcc-host-workdir/gcc/config/ironclad-gnu.h gcc-host-workdir/gcc/config/ironclad-gnu.h
+diff --git gcc-workdir/gcc/config/ironclad-gnu.h gcc-workdir/gcc/config/ironclad-gnu.h
 new file mode 100644
 index 0000000..fa37434
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/ironclad-gnu.h
++++ gcc-workdir/gcc/config/ironclad-gnu.h
 @@ -0,0 +1,15 @@
 +
 +#define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
@@ -65,11 +65,11 @@ index 0000000..fa37434
 +#define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
 +#define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64
 +#define GNU_USER_DYNAMIC_LINKERX32     GLIBC_DYNAMIC_LINKERX32
-diff --git gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h
+diff --git gcc-workdir/gcc/config/riscv/ironclad-gnu.h gcc-workdir/gcc/config/riscv/ironclad-gnu.h
 new file mode 100644
 index 0000000..2a6d09e
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/riscv/ironclad-gnu.h
++++ gcc-workdir/gcc/config/riscv/ironclad-gnu.h
 @@ -0,0 +1,28 @@
 +#define TARGET_OS_CPP_BUILTINS()	\
 +  do {					\
@@ -99,20 +99,20 @@ index 0000000..2a6d09e
 +        "-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} " \
 +    "%{static:-static} " \
 +    "%{static-pie:-static -pie --no-dynamic-linker -z text}}"
-diff --git gcc-host-workdir/gcc/config/riscv/t-ironclad gcc-host-workdir/gcc/config/riscv/t-ironclad
+diff --git gcc-workdir/gcc/config/riscv/t-ironclad gcc-workdir/gcc/config/riscv/t-ironclad
 new file mode 100644
 index 0000000..9ca91e1
 --- /dev/null
-+++ gcc-host-workdir/gcc/config/riscv/t-ironclad
++++ gcc-workdir/gcc/config/riscv/t-ironclad
 @@ -0,0 +1,4 @@
 +# Ironclad uses /lib for all libraries (no /lib64).
 +
 +MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib,$(MULTILIB_DIRNAMES))
 +MULTIARCH_DIRNAME := $(call if_multiarch,riscv64-ironclad-gnu)
-diff --git gcc-host-clean/gcc/config.build gcc-host-workdir/gcc/config.build
+diff --git gcc-clean/gcc/config.build gcc-workdir/gcc/config.build
 index 0eed252..8b28aae 100644
---- gcc-host-clean/gcc/config.build
-+++ gcc-host-workdir/gcc/config.build
+--- gcc-clean/gcc/config.build
++++ gcc-workdir/gcc/config.build
 @@ -45,7 +45,7 @@
  build_xm_file=
  build_xm_defines=
@@ -122,10 +122,10 @@ index 0eed252..8b28aae 100644
  build_file_translate=
  
  # System-specific settings.
-diff --git gcc-host-clean/gcc/config.gcc gcc-host-workdir/gcc/config.gcc
-index 8fe9961..e797d7c 100644
---- gcc-host-clean/gcc/config.gcc
-+++ gcc-host-workdir/gcc/config.gcc
+diff --git gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
+index 7434217..523ac05 100644
+--- gcc-clean/gcc/config.gcc
++++ gcc-workdir/gcc/config.gcc
 @@ -938,7 +938,7 @@ case ${target} in
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
@@ -215,7 +215,7 @@ index 8fe9961..e797d7c 100644
          ;;
  *-*-linux* | *-*-gnu*)
  	case ${target} in
-@@ -6270,6 +6286,9 @@ case ${target} in
+@@ -6302,6 +6318,9 @@ case ${target} in
  	visium-*-*)
  		target_cpu_default2="TARGET_CPU_$with_cpu"
  		;;
@@ -225,10 +225,10 @@ index 8fe9961..e797d7c 100644
  	x86_64-*-gnu*)
  		tmake_file="$tmake_file i386/t-gnu64"
  		;;
-diff --git gcc-host-clean/gcc/cp/module.cc gcc-host-workdir/gcc/cp/module.cc
-index a7245aa..8918fa4 100644
---- gcc-host-clean/gcc/cp/module.cc
-+++ gcc-host-workdir/gcc/cp/module.cc
+diff --git gcc-clean/gcc/cp/module.cc gcc-workdir/gcc/cp/module.cc
+index dcd8e77..a586629 100644
+--- gcc-clean/gcc/cp/module.cc
++++ gcc-workdir/gcc/cp/module.cc
 @@ -1698,8 +1698,10 @@ elf_in::defrost (const char *name)
  	      set_error (errno);
  	  else
@@ -251,10 +251,10 @@ index a7245aa..8918fa4 100644
  
    hdr.buffer = (char *)mapping;
  #else
-diff --git gcc-host-clean/libcpp/Makefile.in gcc-host-workdir/libcpp/Makefile.in
+diff --git gcc-clean/libcpp/Makefile.in gcc-workdir/libcpp/Makefile.in
 index ba4b44b..e3e0b41 100644
---- gcc-host-clean/libcpp/Makefile.in
-+++ gcc-host-workdir/libcpp/Makefile.in
+--- gcc-clean/libcpp/Makefile.in
++++ gcc-workdir/libcpp/Makefile.in
 @@ -32,10 +32,10 @@ AUTOCONF = @AUTOCONF@
  AUTOHEADER = @AUTOHEADER@
  CATALOGS = $(patsubst %,po/%,@CATALOGS@)
@@ -277,10 +277,10 @@ index ba4b44b..e3e0b41 100644
  LIBICONV = @LIBICONV@
  LIBINTL = @LIBINTL@
  PACKAGE = @PACKAGE@
-diff --git gcc-host-clean/libgcc/config.host gcc-host-workdir/libgcc/config.host
+diff --git gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
 index ac10ccc..23d0283 100644
---- gcc-host-clean/libgcc/config.host
-+++ gcc-host-workdir/libgcc/config.host
+--- gcc-clean/libgcc/config.host
++++ gcc-workdir/libgcc/config.host
 @@ -297,7 +297,7 @@ case ${host} in
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
@@ -310,10 +310,41 @@ index ac10ccc..23d0283 100644
  riscv*-*-freebsd*)
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff --git gcc-host-clean/libstdc++-v3/configure.host gcc-host-workdir/libstdc++-v3/configure.host
+diff --git gcc-clean/libstdc++-v3/configure gcc-workdir/libstdc++-v3/configure
+index bc9dce5..6bcd640 100755
+--- gcc-clean/libstdc++-v3/configure
++++ gcc-workdir/libstdc++-v3/configure
+@@ -21486,7 +21486,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+       vxworks*)
+         ac_has_nanosleep=yes
+         ;;
+-      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
++      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | ironclad*)
+         # Don't use link test for freestanding library, in case gcc_no_link=yes
+         if test x"$is_hosted" = xyes; then
+           # Versions of glibc before 2.17 needed -lrt for clock_gettime.
+@@ -54759,7 +54759,7 @@ fi
+   if test "x${with_libstdcxx_zoneinfo}" = xyes; then
+     # Pick a default when no specific path is set.
+     case "$target_os" in
+-      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
++      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | ironclad*)
+ 	# Not all distros ship tzdata.zi in this dir.
+ 	zoneinfo_dir="/usr/share/zoneinfo"
+ 	;;
+@@ -55277,7 +55277,7 @@ $as_echo "#define HAVE_FWRITE_UNLOCKED 1" >>confdefs.h
+ 
+       # Check for Glibc-specific FILE members and <stdio_ext.h> extensions.
+       case "${target_os}" in
+-	gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
++	gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | ironclad*)
+ 	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FILE::_IO_write_ptr and <stdio_ext.h>" >&5
+ $as_echo_n "checking for FILE::_IO_write_ptr and <stdio_ext.h>... " >&6; }
+ 	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+diff --git gcc-clean/libstdc++-v3/configure.host gcc-workdir/libstdc++-v3/configure.host
 index ff97216..6480f60 100644
---- gcc-host-clean/libstdc++-v3/configure.host
-+++ gcc-host-workdir/libstdc++-v3/configure.host
+--- gcc-clean/libstdc++-v3/configure.host
++++ gcc-workdir/libstdc++-v3/configure.host
 @@ -268,7 +268,7 @@ case "${host_os}" in
    linux-musl*)
      os_include_dir="os/generic"
@@ -323,10 +354,10 @@ index ff97216..6480f60 100644
      if [ "$uclibc" = "yes" ]; then
        os_include_dir="os/uclibc"
      elif [ "$bionic" = "yes" ]; then
-diff --git gcc-host-clean/libstdc++-v3/include/bits/ios_base.h gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+diff --git gcc-clean/libstdc++-v3/include/bits/ios_base.h gcc-workdir/libstdc++-v3/include/bits/ios_base.h
 index 103540b..f96ba18 100644
---- gcc-host-clean/libstdc++-v3/include/bits/ios_base.h
-+++ gcc-host-workdir/libstdc++-v3/include/bits/ios_base.h
+--- gcc-clean/libstdc++-v3/include/bits/ios_base.h
++++ gcc-workdir/libstdc++-v3/include/bits/ios_base.h
 @@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  
    enum _Ios_Seekdir
@@ -336,3 +367,16 @@ index 103540b..f96ba18 100644
        _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
        _S_end = _GLIBCXX_STDIO_SEEK_END,
        _S_ios_seekdir_end __attribute__((__unused__)) = 1L << 16
+diff --git gcc-clean/libstdc++-v3/src/Makefile.in gcc-workdir/libstdc++-v3/src/Makefile.in
+index 811d0a5..323d38f 100644
+--- gcc-clean/libstdc++-v3/src/Makefile.in
++++ gcc-workdir/libstdc++-v3/src/Makefile.in
+@@ -667,7 +667,7 @@ CXXLINK = \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+ 	--mode=link $(CXX) \
+ 	$(VTV_CXXLINKFLAGS) \
+-	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) \
++	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+ 	$(LTLDFLAGS) $(LTLIBICONV) \
+ 	-o $@
+ 

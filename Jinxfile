@@ -2,21 +2,27 @@
 
 JINX_MAJOR_VER=0.10
 JINX_DEBIAN_SNAPSHOT=20260825T082248Z
-JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext groff m4 make meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
+JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext groff itstool m4 make meson ninja-build perl python3 texinfo unzip w3m which xmlto xsltproc"
 JINX_CMAKE_PLATFORM=build-support/Ironclad.cmake
 JINX_REPO_URL="https://gloire-repo.ironclad-os.org/xbps-pkgs/${JINX_ARCH}"
 
 HOST_CFLAGS="-O2 -pipe -fstack-clash-protection -Wp,-D_FORTIFY_SOURCE=3"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
-HOST_CPPFLAGS=""
 HOST_LDFLAGS="-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now"
 
 TARGET_CFLAGS="$HOST_CFLAGS"
 TARGET_CXXFLAGS="$HOST_CXXFLAGS"
-TARGET_CPPFLAGS="$HOST_CPPFLAGS"
 TARGET_LDFLAGS="$HOST_LDFLAGS"
 
+TARGET_CFLAGS="$TARGET_CFLAGS -ffile-prefix-map=/base_dir=/usr/src -ffile-prefix-map=/build_dir=/usr/src -ffile-prefix-map=/sysroot= -ffile-prefix-map=../../../base_dir=/usr/src"
+TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/base_dir=/usr/src -ffile-prefix-map=/build_dir=/usr/src -ffile-prefix-map=/sysroot= -ffile-prefix-map=../../../base_dir=/usr/src"
+
+TARGET_CFLAGS="$TARGET_CFLAGS -ffile-prefix-map=/usr/local/lib/gcc=/usr/lib/gcc"
+TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/usr/local/lib/gcc=/usr/lib/gcc"
+
 OS_TRIPLET=${JINX_ARCH}-ironclad-gnu
+
+TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/usr/local/${OS_TRIPLET}/include=/usr/include"
 
 case "${JINX_ARCH}" in
     x86_64)
@@ -50,25 +56,76 @@ post_package_strip() {
     done
 }
 
+_install_hook_actions=""
+_remove_hook_actions=""
+
+_write_hook() {
+    {
+        printf '#! /bin/sh\n\n'
+        printf 'export PATH="/usr/bin"\n\n'
+        printf 'ACTION="$1"\n\n'
+        printf 'case "${ACTION}" in\n'
+        if [ "$1" = pre ]; then
+            printf 'pre)\n%s    ;;\npost)\n    ;;\n' "$3"
+        else
+            printf 'pre)\n    ;;\npost)\n%s    ;;\n' "$3"
+        fi
+        printf 'esac\n\nexit 0\n'
+    } >"${dest_dir}/$2"
+    chmod +x "${dest_dir}/$2"
+}
+
+_indent_actions() {
+    for _ia in "$@"; do
+        printf '%s\n' "${_ia}" | sed -e 's/^/    /' -e 's/^  *$//'
+    done
+}
+
+install_hook_add() {
+    _install_hook_actions="${_install_hook_actions}$(_indent_actions "$@")
+"
+    _write_hook post INSTALL "${_install_hook_actions}"
+}
+
+remove_hook_add() {
+    _remove_hook_actions="${_remove_hook_actions}$(_indent_actions "$@")
+"
+    _write_hook pre REMOVE "${_remove_hook_actions}"
+}
+
 generate_glib_schemas_hook() {
-    cat <<'EOF' >"${dest_dir}"/INSTALL
-#! /bin/sh
+    install_hook_add 'glib-compile-schemas /usr/share/glib-2.0/schemas/ >/dev/null'
+}
 
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+generate_info_hooks() {
+    _gih_list=""
+    for _gih in "${dest_dir}${prefix}"/share/info/*.info \
+                "${dest_dir}${prefix}"/share/info/*.info.gz; do
+        [ -e "${_gih}" ] || continue
+        _gih_list="${_gih_list} ${prefix}/share/info/$(basename "${_gih}")"
+    done
+    [ -n "${_gih_list}" ] || return 0
+    install_hook_add "for _f in${_gih_list}; do
+    install-info \"\${_f}\" ${prefix}/share/info/dir >/dev/null 2>&1 || true
+done"
+    remove_hook_add "for _f in${_gih_list}; do
+    install-info --delete \"\${_f}\" ${prefix}/share/info/dir >/dev/null 2>&1 || true
+done"
+}
 
-ACTION="$1"
+generate_info_catchall_hook() {
+    install_hook_add "for _f in ${prefix}/share/info/*.info ${prefix}/share/info/*.info.gz; do
+    [ -e \"\${_f}\" ] || continue
+    install-info \"\${_f}\" ${prefix}/share/info/dir >/dev/null 2>&1 || true
+done"
+}
 
-case "${ACTION}" in
-pre)
-    ;;
-post)
-    glib-compile-schemas /usr/share/glib-2.0/schemas/ >/dev/null
-    ;;
-esac
+generate_font_cache_hook() {
+    install_hook_add "fc-cache ${1:--s} >/dev/null 2>&1 || true"
+}
 
-exit 0
-EOF
-    chmod +x "${dest_dir}"/INSTALL
+generate_mime_database_hook() {
+    install_hook_add "update-mime-database ${prefix}/share/mime >/dev/null 2>&1 || true"
 }
 
 autotools_configure() {
@@ -98,6 +155,10 @@ autotools_configure_noflags() {
         --disable-static \
         --enable-shared \
         --disable-malloc0returnsnull \
+        --disable-tests \
+        --disable-debug \
+        --disable-rpath \
+        --disable-silent-rules \
         "$@"
 }
 
@@ -106,7 +167,7 @@ checked_subst() {
     sed -z -E -e "$1" "$2" >"$tmpfile"
     if cmp -s "$2" "$tmpfile"; then
         rm -f "$2".checked_subst
-        if [ "$3" = no_die ]; then
+        if [ "${3-}" = no_die ]; then
             return 1
         else
             die "*** substitution '$1' failed for file '$2'"
@@ -152,6 +213,19 @@ autotools_recursive_regen() {
             checked_subst 's/(kopensolaris\*-gnu)/\1 | ironclad*-gnu/g' "$f"
         done
     fi
+
+    for f in $(grep -rlI '$compiler_flags'); do
+        if grep -qE '\\?\$predep_objects \\?\$libobjs \\?\$deplibs \\?\$postdep_objects \\?\$compiler_flags' "$f"; then
+            checked_subst 's/(\\?)\$predep_objects (\\?)\$libobjs (\\?)\$deplibs (\\?)\$postdep_objects (\\?)\$compiler_flags/\1$predep_objects \2$libobjs \5$compiler_flags \3$deplibs \4$postdep_objects/g' "$f"
+        fi
+        if grep -qE '\\?\$libobjs \\?\$deplibs \\?\$compiler_flags' "$f"; then
+            checked_subst 's/(\\?)\$libobjs (\\?)\$deplibs (\\?)\$compiler_flags/\1$libobjs \3$compiler_flags \2$deplibs/g' "$f"
+        fi
+    done
+
+    if ! [ -z "$(grep -rlIE '(\\?\$predep_objects \\?\$libobjs \\?\$deplibs \\?\$postdep_objects|\\?\$libobjs \\?\$deplibs) \\?\$compiler_flags')" ]; then
+        die "*** Failed to fix libtool link order :3 ***"
+    fi
 }
 
 meson_configure() {
@@ -175,7 +249,9 @@ meson_configure_noflags() {
         --sbindir=bin \
         --buildtype=release \
         --wrap-mode=nodownload \
+        --auto-features=enabled \
         -Ddefault_library=shared \
+        -Db_ndebug=true \
         "$@"
 }
 
@@ -184,6 +260,9 @@ cmake_configure() {
         CXXFLAGS="$TARGET_CXXFLAGS" \
         LDFLAGS="$TARGET_LDFLAGS" \
     cmake_configure_noflags \
+        -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$TARGET_LDFLAGS" \
+        -DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$TARGET_LDFLAGS" \
+        -DCMAKE_MODULE_LINKER_FLAGS_RELEASE="$TARGET_LDFLAGS" \
         "$@"
 }
 
@@ -200,9 +279,14 @@ cmake_configure_noflags() {
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_INSTALL_SBINDIR=bin \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
+        -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
         -DBUILD_SHARED_LIBS=ON \
         -DBUILD_STATIC_LIBS=OFF \
         -DENABLE_STATIC=OFF \
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_SKIP_INSTALL_RPATH=ON \
+        -DCMAKE_VERBOSE_MAKEFILE=ON \
         -DPKG_CONFIG_EXECUTABLE="/usr/local/bin/$OS_TRIPLET-pkg-config" \
         -DCMAKE_COLOR_DIAGNOSTICS=ON \
         -GNinja \

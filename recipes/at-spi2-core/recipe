@@ -1,27 +1,30 @@
 #! /bin/sh
 
 version=2.60.6
-revision=2
-tarball_url="https://gitlab.gnome.org/GNOME/at-spi2-core/-/archive/${version}/at-spi2-core-${version}.tar.gz"
-tarball_blake2b="d0a1dfbb4c8363d462e3c9105f3212b6587fdbb98fd47f8787f726f34ea5d93fcc13e79f34b2b1e88a3bfcc6a646945df49e9658c60da2576da0c97cd84d3fc3"
-imagedeps="libglib2.0-dev"
+revision=3
+tarball_url="https://download.gnome.org/sources/at-spi2-core/2.60/at-spi2-core-${version}.tar.xz"
+tarball_blake2b="f88b4ac1e84a151d925b55c45a9747ae0ad598e432e2128a03ffd6d08e68242bc3b67d1214a14f6234f51193da24ff3a6c1ec081b52a07d87a74f66bc99ef73e"
+imagedeps="libglib2.0-dev-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs bash dbus glib2 gsettings-desktop-schemas libx11 libxi libxkbcommon libxml2 libxtst"
+deps="core-libs dbus glib2 gsettings-desktop-schemas libx11 libxi libxtst"
+builddeps="libxml2"
 
 configure() {
     meson_configure \
-        -Dsystemd_user_dir=/remove_later \
+        -Dpython.platlibdir="${prefix}/lib/python3/site-packages" \
+        -Dpython.purelibdir="${prefix}/lib/python3/site-packages" \
+        -Ddefault_bus=dbus-daemon \
+        -Duse_systemd=false \
+        -Dgtk2_atk_adaptor=false \
         -Dintrospection=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
-
-    rm -rv "${dest_dir}"/remove_later
 
     post_package_strip
 }

@@ -1,0 +1,65 @@
+From 241f7ae5f857b0c9bab7866b79b4e47587126b96 Mon Sep 17 00:00:00 2001
+From: Jörn Heusipp <osmanx@problemloesungsmaschine.de>
+Date: Wed, 16 Oct 2024 12:53:40 +0200
+Subject: Revert broken part of commit 5b0d43b767bf3f800f97892905b6d1ba50150f1a
+
+This commit breaks AX_CXX_COMPILE_STDCXX noext/ext option handling, which
+caused
+"AX_CXX_COMPILE_STDCXX(20, [noext], [optional])"
+to result in
+"checking whether g++ supports C++20 features with -std=gnu++20... yes"
+which is not the desired outcome when using "noext".
+It should check for "-std=c++20" instead for "-std=gnu++20", as it did before.
+
+See
+<https://github.com/autoconf-archive/autoconf-archive/pull/300#issuecomment-2416443298>
+and
+<https://github.com/autoconf-archive/autoconf-archive/commit/5b0d43b767bf3f800f97892905b6d1ba50150f1a#commitcomment-147999469>
+.
+---
+ m4/ax_cxx_compile_stdcxx.m4 | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/m4/ax_cxx_compile_stdcxx.m4 b/m4/ax_cxx_compile_stdcxx.m4
+index 7ec3378..25645c3 100644
+--- a/m4/ax_cxx_compile_stdcxx.m4
++++ b/m4/ax_cxx_compile_stdcxx.m4
+@@ -36,7 +36,7 @@
+ #   Copyright (c) 2016, 2018 Krzesimir Nowak <qdlacz@gmail.com>
+ #   Copyright (c) 2019 Enji Cooper <yaneurabeya@gmail.com>
+ #   Copyright (c) 2020 Jason Merrill <jason@redhat.com>
+-#   Copyright (c) 2021 Jörn Heusipp <osmanx@problemloesungsmaschine.de>
++#   Copyright (c) 2021, 2024 Jörn Heusipp <osmanx@problemloesungsmaschine.de>
+ #   Copyright (c) 2015, 2022, 2023, 2024 Olly Betts
+ #
+ #   Copying and distribution of this file, with or without modification, are
+@@ -44,7 +44,7 @@
+ #   and this notice are preserved.  This file is offered as-is, without any
+ #   warranty.
+ 
+-#serial 23
++#serial 24
+ 
+ dnl  This macro is based on the code from the AX_CXX_COMPILE_STDCXX_11 macro
+ dnl  (serial version number 13).
+@@ -77,7 +77,7 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
+       ac_success=yes
+     fi])
+ 
+-  m4_if([$2], [noext], [dnl
++  m4_if([$2], [noext], [], [dnl
+   if test x$ac_success = xno; then
+     for alternative in ${ax_cxx_compile_alternatives}; do
+       switch="-std=gnu++${alternative}"
+@@ -101,7 +101,7 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
+     done
+   fi])
+ 
+-  m4_if([$2], [ext], [dnl
++  m4_if([$2], [ext], [], [dnl
+   if test x$ac_success = xno; then
+     dnl HP's aCC needs +std=c++11 according to:
+     dnl http://h21007.www2.hp.com/portal/download/files/unprot/aCxx/PDF_Release_Notes/769149-001.pdf
+-- 
+cgit v1.2.3
+

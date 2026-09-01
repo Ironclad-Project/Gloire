@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=2.44
-revision=2
+revision=3
 git_url="https://codeberg.org/Ironclad/glibc.git"
-commit=77a690d4da1e65a711c83e9dc1531d6df146fe5c
+commit=1cec94f3227feae56fae252614e43b0f10ca53b7
 hostdeps="bootstrap-gcc pkg-config"
 
 prepare() {
@@ -12,8 +12,16 @@ prepare() {
 
 configure() {
     # glibc handles fortify internally via --enable-fortify-source.
-    # Remove any -D_FORTIFY_SOURCE from TARGET_CFLAGS to avoid conflicts.
     TARGET_CFLAGS="${TARGET_CFLAGS//-Wp,-D_FORTIFY_SOURCE=?/}"
+    TARGET_CXXFLAGS="${TARGET_CXXFLAGS//-Wp,-D_FORTIFY_SOURCE=?/}"
+
+    TARGET_CFLAGS="${TARGET_CFLAGS} -g"
+    TARGET_CXXFLAGS="${TARGET_CXXFLAGS} -g"
+
+    for _m in /base_dir=/usr/src /build_dir=/usr/src /sysroot= /usr/local/lib/gcc=/usr/lib/gcc; do
+        TARGET_CFLAGS="${TARGET_CFLAGS} -fdebug-prefix-map=${_m}"
+        TARGET_CXXFLAGS="${TARGET_CXXFLAGS} -fdebug-prefix-map=${_m}"
+    done
 
     echo "slibdir=${prefix}/lib" >> configparms
     echo "rtlddir=${prefix}/lib" >> configparms
@@ -40,22 +48,6 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
-    cat <<'EOF' >"${dest_dir}"/INSTALL
-#! /bin/sh
-
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
-
-ACTION="$1"
-
-case "${ACTION}" in
-pre)
-    ;;
-post)
-    locale-gen
-    ;;
-esac
-
-exit 0
-EOF
-    chmod +x "${dest_dir}"/INSTALL
+    install_hook_add 'locale-gen'
+    generate_info_hooks
 }

@@ -1,19 +1,18 @@
 #! /bin/sh
 
 version=4.15.2
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/sharutils/sharutils-${version}.tar.xz"
 tarball_blake2b="e2acae027679ebdf723ecae6f243608f501f5c24685a19223dd27580ccf76bc7d38905a9d202b30cf2633e5580d727821398f1162b170233f03c17f3da683917"
 hostdeps="gcc pkg-config"
-deps="core-libs"
+deps="core-libs texinfo"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17 -fcommon"
+    autotools_configure
 }
 
 build() {
@@ -24,4 +23,6 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     post_package_strip
+
+    generate_info_hooks
 }

@@ -1,28 +1,31 @@
 #! /bin/sh
 
 from_host_source=gcc
-revision=3
+revision=4
 imagedeps="build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"
+_glibc_version="$(. "${base_dir}/recipes/glibc/recipe" && echo "${version}")"
 
 configure() {
-    cp -rp "${source_dir}"/. ./
-
     mkdir -p build && cd build
 
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-        CFLAGS_FOR_TARGET="$TARGET_CFLAGS" \
-        CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS" \
-    ../configure \
+        CFLAGS_FOR_TARGET="$TARGET_CFLAGS -g" \
+        CXXFLAGS_FOR_TARGET="$TARGET_CXXFLAGS -g" \
+        LDFLAGS_FOR_TARGET="$TARGET_LDFLAGS" \
+    "${source_dir}"/configure \
         --prefix="${prefix}" \
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot}" \
-        --with-glibc-version=2.42 \
+        --with-glibc-version=${_glibc_version} \
         --with-newlib \
         --without-headers \
+        --disable-fixincludes \
+        --with-gcc-major-version-only \
+        --with-linker-hash-style=gnu \
         --enable-checking=release \
         --enable-default-pie \
         --enable-default-ssp \

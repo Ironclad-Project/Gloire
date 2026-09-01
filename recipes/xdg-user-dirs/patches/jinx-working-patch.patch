@@ -1,0 +1,41 @@
+diff --git xdg-user-dirs-clean/data/meson.build xdg-user-dirs-workdir/data/meson.build
+index b863807..f8a9df5 100644
+--- xdg-user-dirs-clean/data/meson.build
++++ xdg-user-dirs-workdir/data/meson.build
+@@ -9,17 +9,9 @@ install_data('xdg-user-dirs.desktop',
+   install_dir: xdg_autostart_dir
+ )
+ 
+-if systemd_dep.found()
+-  systemd_user_unit_dir = systemd_dep.get_variable(pkgconfig: 'systemduserunitdir')
+-else
+-  systemd_user_unit_dir = get_option('prefix') / 'lib' / 'systemd' / 'user'
+-endif
+-
+-configure_file(
+-  input: 'xdg-user-dirs.service.in',
+-  output: '@BASENAME@',
+-  configuration: {
+-    'bindir': get_option('prefix') / get_option('bindir'),
+-  },
+-  install_dir: systemd_user_unit_dir,
+-)
++# Gloire: NO systemd UNIT IS BUILT OR INSTALLED. Gloire's init system is epoch and the
++# target carries no systemd at all, so this unit is machinery for a system that does not
++# exist here. Upstream offers no option for it -- `systemd_dep` only chose the DIRECTORY,
++# defaulting to ${prefix}/lib/systemd/user when systemd is absent, and installed the unit
++# unconditionally -- so the generation, the directory computation and the `systemd_dep`
++# lookup in the top-level meson.build all go together rather than leaving dead code here.
+diff --git xdg-user-dirs-clean/meson.build xdg-user-dirs-workdir/meson.build
+index a5e3996..1ebb495 100644
+--- xdg-user-dirs-clean/meson.build
++++ xdg-user-dirs-workdir/meson.build
+@@ -22,8 +22,6 @@ else
+   libintl_dep = cc.find_library('intl', required: true)
+ endif
+ 
+-systemd_dep = dependency('systemd', required: false)
+-
+ #
+ # Configuration data
+ #

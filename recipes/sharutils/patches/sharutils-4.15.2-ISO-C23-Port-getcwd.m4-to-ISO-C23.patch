@@ -1,0 +1,22 @@
+From c6b3af7a1e9119e08a640d9cd93dcb0c984149ee Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Wed, 5 Mar 2025 10:13:08 +0100
+Subject: [PATCH 2/3] ISO C23: Port getcwd.m4 to ISO C23
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+[MODIFIED FOR GLOIRE] retargeted from m4/getcwd.m4 onto the generated configure, since
+we build from the shipped tarball and never run autoreconf.
+
+--- a/configure
++++ b/configure
+@@ -14581,7 +14581,7 @@ else
+ #         include <direct.h>
+ #        endif
+ #        ifndef getcwd
+-         char *getcwd ();
++         char *getcwd (char *buf, size_t size);
+ #        endif
+ 
+ int

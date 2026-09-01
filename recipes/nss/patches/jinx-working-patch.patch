@@ -249,6 +249,19 @@ index 0000000..483926b
 +Libs: -L@libdir@ -lnss@NSS_MAJOR_VERSION@ -lnssutil@NSS_MAJOR_VERSION@ -lsmime@NSS_MAJOR_VERSION@ -lssl@NSS_MAJOR_VERSION@ -lsoftokn@NSS_MAJOR_VERSION@
 +Cflags: -I${includedir}
 +
+diff --git nss-clean/nss/coreconf/Linux.mk nss-workdir/nss/coreconf/Linux.mk
+index dcb4324..6355fa2 100644
+--- nss-clean/nss/coreconf/Linux.mk
++++ nss-workdir/nss/coreconf/Linux.mk
+@@ -151,7 +151,7 @@ ifdef USE_PTHREADS
+ endif
+ 
+ DSO_CFLAGS		= -fPIC
+-DSO_LDOPTS		= -shared $(ARCHFLAG) -Wl,--gc-sections
++DSO_LDOPTS		= -shared $(ARCHFLAG) -Wl,--gc-sections $(XCFLAGS) $(LDFLAGS)
+ # The linker on Red Hat Linux 7.2 and RHEL 2.1 (GNU ld version 2.11.90.0.8)
+ # incorrectly reports undefined references in the libraries we link with, so
+ # we don't use -z defs there.
 diff --git nss-clean/nss/lib/dbm/src/h_page.c nss-workdir/nss/lib/dbm/src/h_page.c
 index 3cc9c99..47c0f7c 100644
 --- nss-clean/nss/lib/dbm/src/h_page.c
@@ -262,10 +275,10 @@ index 3cc9c99..47c0f7c 100644
  #if !defined(_WIN32) && !defined(_WINDOWS) && !defined(macintosh)
  #include <unistd.h>
 diff --git nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/softoken/sdb.c
-index 8b5ce70..7a2e56e 100644
+index 477c453..52ede7f 100644
 --- nss-clean/nss/lib/softoken/sdb.c
 +++ nss-workdir/nss/lib/softoken/sdb.c
-@@ -37,7 +37,7 @@
+@@ -38,7 +38,7 @@
  #elif defined(XP_UNIX)
  #include <unistd.h>
  #endif
@@ -274,7 +287,7 @@ index 8b5ce70..7a2e56e 100644
  #include <linux/magic.h>
  #include <sys/vfs.h>
  #endif
-@@ -2272,7 +2272,7 @@ sdb_init(char *dbname, char *table, sdbDataType type, int *inUpdate,
+@@ -2276,7 +2276,7 @@ sdb_init(char *dbname, char *table, sdbDataType type, int *inUpdate,
      }
  
      if (checkFSType) {

@@ -3,11 +3,12 @@
 _version=8.3
 _patch=3
 version=${_version}.${_patch}
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/readline/readline-${_version}.tar.gz"
 tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
 hostdeps="gcc pkg-config"
-deps="core-libs ncurses"
+deps="core-libs ncurses texinfo"
+conf_files="/etc/inputrc"
 
 _get_patch() {
     TMP_PATCH=$(mktemp)
@@ -37,11 +38,15 @@ configure() {
 }
 
 build() {
-    make SHLIB_LIBS="-lncursesw -ltinfow" -j${parallelism}
+    make SHLIB_LIBS=-lncurses -j${parallelism}
 }
 
 package() {
     make install DESTDIR="${dest_dir}"
+    make install-examples DESTDIR="${dest_dir}"
     install -Dm644 "${recipe_dir}"/inputrc "${dest_dir}"/etc/inputrc
+
     post_package_strip
+
+    generate_info_hooks
 }

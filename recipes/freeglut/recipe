@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.8.0
-revision=3
-git_url="https://github.com/freeglut/freeglut.git"
-commit=3db1649ce1f5e42f1338b51e3fa14849be547d5d
+revision=4
+tarball_url="https://github.com/freeglut/freeglut/releases/download/v${version}/freeglut-${version}.tar.gz"
+tarball_blake2b="a1b31f53de54deb1803f1b307074bd97e21aef79aca996ca779b22bcbd27f80b0376a4da86fe68929c34e0ed351f5bb5aa10677d21f1a434aaeeb202355795da"
 hostdeps="gcc pkg-config"
-deps="core-libs libxi mesa glu"
+deps="core-libs libx11 libxi libxrandr libxxf86vm mesa glu"
 
 configure() {
     cmake_configure \
@@ -19,6 +19,10 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    sed -Ei "s|/sysroot(/)?|/|g" "${dest_dir}${prefix}"/lib/cmake/FreeGLUT/*.cmake
+
+    ln -s glut.pc "${dest_dir}${prefix}"/lib/pkgconfig/freeglut.pc
 
     post_package_strip
 }

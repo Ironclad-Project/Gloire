@@ -1,14 +1,13 @@
 diff --git libxcb-clean/configure libxcb-workdir/configure
-index 33f5d89..3fd3b66 100755
+index 33f5d89..30b74b4 100755
 --- libxcb-clean/configure
 +++ libxcb-workdir/configure
-@@ -21028,7 +21028,7 @@ fi
+@@ -21027,7 +21027,7 @@ printf "%s\n" "yes" >&6; }
+ fi
  NEEDED="xau >= 0.99.2"
  case $host_os in
- linux*|darwin*|solaris*|dragonfly*|freebsd*|netbsd*) ;;
--     *) NEEDED="$NEEDED pthread-stubs" ;;
-+     *) NEEDED="$NEEDED" ;;
+-linux*|darwin*|solaris*|dragonfly*|freebsd*|netbsd*) ;;
++linux*|darwin*|solaris*|dragonfly*|freebsd*|netbsd*|ironclad*) ;;
+      *) NEEDED="$NEEDED pthread-stubs" ;;
  esac
  
- pkg_failed=no
-

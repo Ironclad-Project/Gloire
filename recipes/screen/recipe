@@ -1,11 +1,12 @@
 #! /bin/sh
 
 version=5.0.2
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/screen/screen-${version}.tar.gz"
 tarball_blake2b="b9a5b90e84f5a2ae50dcc245686f57b654eef84b9f8580e3c36d21e337cb6c4690060e1b4ce11ae6804709aa2083c13c954b931f1e87d2835647539d75e89d64"
 hostdeps="gcc pkg-config"
-deps="core-libs ncurses"
+deps="core-libs ncurses texinfo"
+conf_files="/etc/screenrc"
 
 prepare() {
     autotools_recursive_regen
@@ -19,8 +20,11 @@ configure() {
         configure_script_path=./configure \
     autotools_configure \
         --disable-pam \
+        --enable-telnet \
+        --enable-utmp \
         --enable-socket-dir=/run/screen \
         --with-pty-group=5 \
+        --with-pty-mode=0620 \
         --with-system_screenrc=/etc/screenrc
 }
 
@@ -35,4 +39,6 @@ package() {
     install -Dm 644 etc/etcscreenrc "${dest_dir}"/etc/screenrc
 
     post_package_strip
+
+    generate_info_hooks
 }

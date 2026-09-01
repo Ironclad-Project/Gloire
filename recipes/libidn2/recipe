@@ -1,18 +1,19 @@
 #! /bin/sh
 
 version=2.3.8
-revision=2
+revision=3
 tarball_url="https://ftp.gnu.org/gnu/libidn/libidn2-${version}.tar.gz"
 tarball_blake2b="8b34975a5a469353ac960ade97d0b67080e811c0d0eb7b11dcb6a4b352753da59b17c812bab8c969877bfe027fc3de0a36b7c6b75942811f17938b676238fb3d"
 hostdeps="gcc pkg-config"
-deps="core-libs libunistring"
+deps="core-libs libunistring texinfo"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure
+    autotools_configure \
+        --with-libunistring-prefix="${sysroot}${prefix}"
 }
 
 build() {
@@ -22,5 +23,10 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
+    sed -i 's|-L/sysroot/usr/lib|-L/usr/lib|g' \
+        "${dest_dir}${prefix}"/lib/pkgconfig/libidn2.pc
+
     post_package_strip
+
+    generate_info_hooks
 }

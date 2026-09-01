@@ -1,15 +1,16 @@
 #! /bin/sh
 
 version=3.8.9
-revision=2
+revision=3
 tarball_url="https://github.com/libarchive/libarchive/releases/download/v${version}/libarchive-${version}.tar.gz"
 tarball_blake2b="26de23f0faf867897359c1bf02edfdbb3988633b93be5c0da7f85f88dc5447b32dadb2485e4a29ef35d7b2fadc7d3966871c71b0054c1dbcea4d23f663db604b"
 hostdeps="gcc pkg-config"
-deps="core-libs bzip2 libexpat libxml2 xz zlib zstd"
+deps="core-libs bzip2 libxml2 lz4 openssl xz zlib zstd"
 
 configure() {
     cmake_configure \
-        -DENABLE_TEST=OFF
+        -DENABLE_TEST=OFF \
+        -DENABLE_NETTLE=OFF
 }
 
 build() {
@@ -19,7 +20,8 @@ build() {
 package() {
     DESTDIR="${dest_dir}" cmake --install .
 
-    # Remove static libraries
+    sed -Ei "s|/sysroot(/)?|/|g" "${dest_dir}${prefix}"/lib/pkgconfig/*.pc
+
     rm -v "${dest_dir}${prefix}/lib/libarchive.a"
 
     post_package_strip

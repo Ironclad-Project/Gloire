@@ -1,0 +1,22 @@
+diff --git cal-clean/src/makefile.unx cal-workdir/src/makefile.unx
+index e938382..3395b49 100644
+--- cal-clean/src/makefile.unx
++++ cal-workdir/src/makefile.unx
+@@ -14,7 +14,7 @@ CC=gcc
+ 
+ # Using -Wall will create some warnings on SunOS that can be ignored.
+ # CFLAGS=-O2 -Wall -DUNIX -DUSE_REMINDER -DPREFIX=$(DEFAULT_DATA_DIR)
+-CFLAGS=-O2 -Wall -DUNIX -DUSE_REMINDER
++override CFLAGS := -Wall -DUNIX -DUSE_REMINDER $(CFLAGS)
+ 
+ BINDIR=/usr/bin
+ MANDIR=/usr/man
+@@ -22,7 +22,7 @@ MANDIR=/usr/man
+ default: cal
+ 
+ cal     : cal.c
+-	$(CC) $(CFLAGS) -o cal cal.c
++	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o cal cal.c
+ 
+ cal.man : cal.1
+ 	nroff -man cal.1 | col > cal.man

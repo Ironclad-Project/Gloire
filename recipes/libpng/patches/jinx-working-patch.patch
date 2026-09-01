@@ -1,0 +1,25 @@
+diff --git libpng-clean/contrib/pngminus/Makefile libpng-workdir/contrib/pngminus/Makefile
+index 4bba079..3c68933 100644
+--- libpng-clean/contrib/pngminus/Makefile
++++ libpng-workdir/contrib/pngminus/Makefile
+@@ -40,16 +40,16 @@ pnm2png.o: pnm2png.c
+ 	$(CC) -c $(CPPFLAGS) $(CFLAGS) pnm2png.c
+ 
+ png2pnm$(EXEEXT): png2pnm.o
+-	$(LD) $(LDFLAGS) -o png2pnm$(EXEEXT) png2pnm.o $(LIBS_SHARED) -lm
++	$(LD) $(CFLAGS) $(LDFLAGS) -o png2pnm$(EXEEXT) png2pnm.o $(LIBS_SHARED) -lm
+ 
+ pnm2png$(EXEEXT): pnm2png.o
+-	$(LD) $(LDFLAGS) -o pnm2png$(EXEEXT) pnm2png.o $(LIBS_SHARED) -lm
++	$(LD) $(CFLAGS) $(LDFLAGS) -o pnm2png$(EXEEXT) pnm2png.o $(LIBS_SHARED) -lm
+ 
+ png2pnm-static$(EXEEXT): png2pnm.o
+-	$(LD) $(LDFLAGS) -o png2pnm-static$(EXEEXT) png2pnm.o $(LIBS_STATIC) -lm
++	$(LD) $(CFLAGS) $(LDFLAGS) -o png2pnm-static$(EXEEXT) png2pnm.o $(LIBS_STATIC) -lm
+ 
+ pnm2png-static$(EXEEXT): pnm2png.o
+-	$(LD) $(LDFLAGS) -o pnm2png-static$(EXEEXT) pnm2png.o $(LIBS_STATIC) -lm
++	$(LD) $(CFLAGS) $(LDFLAGS) -o pnm2png-static$(EXEEXT) pnm2png.o $(LIBS_STATIC) -lm
+ 
+ clean:
+ 	$(RM) png2pnm.o

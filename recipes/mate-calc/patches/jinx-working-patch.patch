@@ -1,0 +1,15 @@
+diff --git mate-calc-clean/help/Makefile.in mate-calc-workdir/help/Makefile.in
+index a1b4099..03b1747 100644
+--- mate-calc-clean/help/Makefile.in
++++ mate-calc-workdir/help/Makefile.in
+@@ -294,8 +294,8 @@ HELP_FILES = absolute.page \
+ # Add linguas to be ignored, e.g. IGNORE_HELP_LINGUAS = ca de es fr
+ IGNORE_HELP_LINGUAS = 
+ HELP_LINGUAS = $(if $(IGNORE_HELP_LINGUAS), \
+-	$(filter-out $(IGNORE_HELP_LINGUAS),$(subst /,,$(dir $(wildcard */*.po)))), \
+-	$(subst /,,$(dir $(wildcard */*.po))) )
++	$(filter-out $(IGNORE_HELP_LINGUAS),$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po))))), \
++	$(notdir $(patsubst %/,%,$(dir $(wildcard $(srcdir)/*/*.po)))) )
+ 
+ DISTCLEANFILES = \
+ 	Makefile.in

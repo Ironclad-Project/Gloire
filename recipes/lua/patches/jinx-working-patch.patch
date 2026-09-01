@@ -1,0 +1,33 @@
+diff --git lua-clean/src/Makefile lua-workdir/src/Makefile
+index 229ce6d..7b0a198 100644
+--- lua-clean/src/Makefile
++++ lua-workdir/src/Makefile
+@@ -7,7 +7,7 @@
+ PLAT= guess
+ 
+ CC= gcc -std=gnu99
+-CFLAGS= -O2 -Wall -Wextra $(SYSCFLAGS) $(MYCFLAGS)
++CFLAGS= -O2 -Wall -Wextra -fPIC $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+@@ -62,16 +62,16 @@ $(LUA_A): $(BASE_O)
+ 	$(RANLIB) $@
+ 
+ $(LUA_SO): $(CORE_O) $(LIB_O)
+-	$(CC) -shared -ldl -Wl,-soname,$(LUA_SO).$(V) -o $@.$(R) $? -lm $(MYLDFLAGS)
++	$(CC) -shared $(CFLAGS) $(MYLDFLAGS) -Wl,-soname,$(LUA_SO).$(V) -o $@.$(R) $? -ldl -lm
+ 	ln -sf $(LUA_SO).$(R) $(LUA_SO).$(V)
+ 	ln -sf $(LUA_SO).$(R) $(LUA_SO)
+ 
+ 
+ $(LUA_T): $(LUA_O) $(LUA_A)
+-	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
++	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+ 
+ $(LUAC_T): $(LUAC_O) $(LUA_A)
+-	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
++	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+ 
+ test:
+ 	./$(LUA_T) -v

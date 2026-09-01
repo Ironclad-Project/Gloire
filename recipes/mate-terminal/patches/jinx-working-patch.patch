@@ -1,0 +1,12 @@
+diff --git mate-terminal-clean/help/LINGUAS mate-terminal-workdir/help/LINGUAS
+index 9936acc..1e1b2eb 100644
+--- mate-terminal-clean/help/LINGUAS
++++ mate-terminal-workdir/help/LINGUAS
+@@ -54,6 +54,7 @@ is
+ it
+ ja
+ ka
++kab
+ kk
+ kn
+ ko

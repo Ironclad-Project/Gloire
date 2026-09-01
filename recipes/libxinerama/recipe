@@ -1,18 +1,18 @@
 #! /bin/sh
 
 version=1.1.6
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libXinerama-${version}.tar.gz"
 tarball_blake2b="0bcfe78eaf4e377756c0c217835d103e9cf173716329c580cbae1124be332ec936cac1017c5d4a22521b3faacfec4fef2cc5d2700e13875736aaf00b3545ba53"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxext xorg-util-macros xorg-proto"
+deps="core-libs libx11 libxext xorg-proto"
 
 configure() {
     meson_configure
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

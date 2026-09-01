@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.3
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libxshmfence-${version}.tar.gz"
 tarball_blake2b="22191b13b00fca8717c81c43b77102b8cc720c81057ea8a3355404b61bcbd049a6f58c9ad0f9cf93c4d3e9a387795b5c206f3fc563dfe4c5061b042bc49569ff"
 hostdeps="gcc pkg-config"

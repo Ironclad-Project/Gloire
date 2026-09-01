@@ -2,11 +2,14 @@
 
 repology_id=fonts:noto-emoji
 version=2.051
-revision=2
-tarball_url="https://github.com/googlefonts/noto-emoji/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="0ecdbaef706410fb15fac9aefb0f408f62d6b0bea5fd2bce04237f2e6eac65805d19429c613824a8aa8d57c9abf6be7b5e4d77221f794a3e3b4110fe5f2e96e2"
+revision=3
+git_url="https://github.com/googlefonts/noto-emoji.git"
+commit=8998f5dd683424a73e2314a8c1f1e359c19e8742
+deps="core-libs fontconfig"
 
 package() {
     cd "${source_dir}"
     install -Dm644 fonts/NotoColorEmoji.ttf -t "${dest_dir}"/usr/share/fonts/noto
+
+    generate_font_cache_hook
 }

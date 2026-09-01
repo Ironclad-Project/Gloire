@@ -1,23 +1,18 @@
 #! /bin/sh
 
 version=3.4.14
-revision=3
+revision=4
 tarball_url="https://github.com/libsdl-org/SDL/releases/download/release-${version}/SDL3-${version}.tar.gz"
 tarball_blake2b="34467023af7f178c57bc13e2c9c3522e9c4edb15acf9dbef91f52c1deb5bc2223b63ccf5f87f402541be2dacc1f3fdc008713ac9c94b44be05b1ddcccbc87902"
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxext libxcursor libxi libxfixes libxkbcommon libxrandr libxrender libxxf86vm mesa"
+deps="core-libs libx11 libxext libxcursor libxi libxfixes libxrandr libxscrnsaver libxtst mesa oss dbus fribidi"
 
 configure() {
     cmake_configure \
-        -DSDL_ALTIVEC=OFF \
-        -DSDL_X11_XSCRNSAVER=OFF \
-        -DSDL_X11_XTEST=OFF \
-        -DSDL_DISKAUDIO=OFF \
         -DSDL_OPENGL=ON \
         -DSDL_OPENGLES=ON \
         -DSDL_PTHREADS=ON \
-        -DSDL_PTHREADS_SEM=OFF \
-        -DSDL_OSS=OFF \
+        -DSDL_OSS=ON \
         -DSDL_ALSA=OFF \
         -DSDL_JACK=OFF \
         -DSDL_PULSEAUDIO=OFF \

@@ -1,29 +1,27 @@
 #! /bin/sh
 
 version=21.1.24
-revision=3
-git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
-commit=65d790bd208ec380b196eb98f144abb0b32e334d
+revision=4
+tarball_url="https://www.x.org/archive/individual/xserver/xorg-server-${version}.tar.xz"
+tarball_blake2b="58d2fb73d77f32466c7d38831034bed3a9a3e832de7a5e53f2d7c70267924407467158c5acb85b27d84b70a43c812c272cc00d9b7f54f83b69be1704c172e1bd"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus"
+deps="core-libs xorg-proto libxfont2 libxcvt libxau libxdmcp nettle pixman xorg-xkbcomp xkeyboard-config"
+builddeps="xorg-util-macros xtrans xcb-proto libxcb xcb-util libxkbfile libxshmfence"
 
 configure() {
     meson_configure \
+        -Dxf86-input-inputtest=false \
         -Dxkb_bin_dir=${prefix}/bin \
         -Dxkb_dir=${prefix}/share/X11/xkb \
         -Dxkb_output_dir=/var/lib/xkb \
-        -Ddefault_font_path=${prefix}/share/fonts/X11 \
+        -Ddefault_font_path=${prefix}/share/fonts/misc,${prefix}/share/fonts/TTF,${prefix}/share/fonts/OTF,${prefix}/share/fonts/Type1,${prefix}/share/fonts/100dpi,${prefix}/share/fonts/75dpi \
         -Dxorg=true \
-        -Dxv=true \
         -Dxvfb=true \
+        -Dxcsecurity=true \
         -Dxephyr=false \
         -Dxnest=false \
         -Dsuid_wrapper=false \
         -Dpciaccess=false \
-        -Ddpms=false \
-        -Dscreensaver=true \
-        -Dxres=false \
-        -Dxvmc=false \
         -Dsystemd_logind=false \
         -Dsecure-rpc=false \
         -Dudev=false \
@@ -39,10 +37,14 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    install -Dm644 "${source_dir}"/xkb/README.compiled \
+        "${dest_dir}"/var/lib/xkb/README.compiled
+
     post_package_strip
 }

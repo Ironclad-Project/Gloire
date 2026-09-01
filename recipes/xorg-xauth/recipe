@@ -2,7 +2,7 @@
 
 repology_id=xauth
 version=1.1.5
-revision=2
+revision=3
 tarball_url="https://www.x.org/releases/individual/app/xauth-${version}.tar.xz"
 tarball_blake2b="fff8682da13b8447f6c54fa4231873f5e0c8716db1f184cf2e61a1d6d4e034093b266f2a6fd08e875ac22ce7a5104792cbf4b6b0591d8b4facb825c1dc7a4d3e"
 hostdeps="gcc pkg-config"

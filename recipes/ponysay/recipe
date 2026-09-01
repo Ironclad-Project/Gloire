@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=3.0.3
-revision=3
+revision=4
 git_url="https://github.com/erkin/ponysay.git"
 commit=5bcde318f714873a63189d2a750adb28a3f82839
 hostdeps="gcc pkg-config"
-deps="core-libs bash python"
+deps="core-libs python texinfo"
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -27,4 +27,6 @@ package() {
         --without-man-compression
 
     post_package_strip
+
+    generate_info_hooks
 }

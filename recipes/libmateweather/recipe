@@ -1,12 +1,12 @@
 #! /bin/sh
 
 version=1.28.2
-revision=6
+revision=7
 tarball_url="https://github.com/mate-desktop/libmateweather/releases/download/v${version}/libmateweather-${version}.tar.xz"
 tarball_blake2b="2b08a95f00195734aad1c4bc9a67fe685a5bd9dcdea2572664644a399a1369c83335d76799ceacd6b53ca707ccb21a74f9a7abe535a36ef68957c5acbc245d43"
 imagedeps="libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 libxml2 libsoup tzdata gtk3"
+deps="core-libs gdk-pixbuf glib2 gtk3 hicolor-icon-theme libsoup3 libxml2"
 
 prepare() {
     autotools_recursive_regen
@@ -14,9 +14,8 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --enable-locations-compression \
-        --disable-all-translations-in-one-xml \
-        --disable-icon-update
+        CFLAGS="${TARGET_CFLAGS} -D_GNU_SOURCE" \
+        --enable-locations-compression
 }
 
 build() {
@@ -27,5 +26,6 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     post_package_strip
+
     generate_glib_schemas_hook
 }

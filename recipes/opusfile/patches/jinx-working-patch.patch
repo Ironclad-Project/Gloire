@@ -1,0 +1,14 @@
+diff --git opusfile-clean/doc/Doxyfile.in opusfile-workdir/doc/Doxyfile.in
+index d0b229c..236df49 100644
+--- opusfile-clean/doc/Doxyfile.in
++++ opusfile-workdir/doc/Doxyfile.in
+@@ -20,3 +20,9 @@ HAVE_DOT               = @HAVE_DOT@
+ PROJECT_LOGO           = @top_srcdir@/doc/opus_logo.svg
+ 
+ FULL_PATH_NAMES        = NO
++
++# STRIP_FROM_PATH is required even with FULL_PATH_NAMES = NO: doxygen's default
++# strip path is the directory it is RUN from, which for an out-of-tree build is
++# the build directory and shares no prefix with the sources, so nothing is
++# stripped and a directory page is published per level of the absolute path.
++STRIP_FROM_PATH        = @top_srcdir@ @top_builddir@

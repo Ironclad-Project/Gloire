@@ -2,10 +2,10 @@
 
 from_source=oss
 skip_pkg_check=yes
-revision=2
+revision=3
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs oss gtk3"
+deps="core-libs oss gtk3 cairo gdk-pixbuf glib2"
 
 build() {
     cp -rp "${source_dir}"/. ./
@@ -15,7 +15,6 @@ build() {
         HOSTCC="cc" \
         PKG_CONFIG="${OS_TRIPLET}-pkg-config" \
         CFLAGS="${TARGET_CFLAGS}" \
-        CPPFLAGS="${TARGET_CPPFLAGS}" \
         LDFLAGS="${TARGET_LDFLAGS}" \
         prefix="${prefix}" \
         -j${parallelism}

@@ -1,18 +1,23 @@
 #! /bin/sh
 
 version=3.53.4
-revision=2
-tarball_url="https://sqlite.org/2026/sqlite-autoconf-3530300.tar.gz"
-tarball_blake2b="61ee1a88258fdfed02c51c9b0302a0eb27e58b90b5285be6e89753293f1662caa0a7d6de586bdfd72ddeffe166a0704702bed99040d2998674b22289718f3935"
+revision=3
+zip_url="https://sqlite.org/2026/sqlite-src-3530400.zip"
+zip_blake2b="a1b84251781a41a4605e4de211984e3a402d2f259ffec318c354f874fb1529c874ad32a3a0f6d2426193cce5f777a4c56c8dd49911530154b66e7f73be7c88a7"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs readline zlib"
+
+_tools="dbdump dbhash dbtotxt index_usage showdb showjournal showshm showstat4 \
+        showwal sqldiff sqlite3_expert sqlite3_rsync"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
+    TARGET_CFLAGS="${TARGET_CFLAGS//_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+
     "${source_dir}/configure" \
         --host=${OS_TRIPLET} \
         --prefix=${prefix} \
@@ -23,21 +28,40 @@ configure() {
         --libdir=${prefix}/lib \
         --soname=legacy \
         --disable-static \
+        --disable-rpath \
+        --disable-tcl \
         --enable-shared \
+        --enable-fts3 \
         --enable-fts4 \
         --enable-fts5 \
+        --enable-rtree \
+        --enable-session \
         --enable-readline \
         --with-readline-header=${sysroot}${prefix}/include/readline/readline.h \
-        CFLAGS="$TARGET_CFLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_SECURE_DELETE=1" \
-        LDFLAGS="$TARGET_LDFLAGS"
+        CFLAGS="${TARGET_CFLAGS} \
+            -DSQLITE_ENABLE_COLUMN_METADATA=1 \
+            -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 \
+            -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+            -DSQLITE_ENABLE_FTS3_PARENTHESIS \
+            -DSQLITE_SECURE_DELETE=1 \
+            -DSQLITE_ENABLE_STMTVTAB \
+            -DSQLITE_ENABLE_STAT4 \
+            -DSQLITE_ENABLE_MATH_FUNCTIONS \
+            -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
+            -DSQLITE_MAX_EXPR_DEPTH=10000" \
+        LDFLAGS="${TARGET_LDFLAGS}"
 }
 
 build() {
     make -j${parallelism}
+
+    make -j${parallelism} ${_tools}
 }
 
 package() {
     DESTDIR="${dest_dir}" make install
+
+    install -v -m755 ${_tools} "${dest_dir}${prefix}"/bin
 
     post_package_strip
 }

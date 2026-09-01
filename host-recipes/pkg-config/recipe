@@ -1,23 +1,29 @@
 #! /bin/sh
 
 from_source=pkg-config
-revision=2
+revision=3
 imagedeps="build-essential"
 
 configure() {
         CFLAGS="$HOST_CFLAGS" \
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
-    "${source_dir}"/configure \
-        --prefix="${prefix}"
+    meson setup "${source_dir}" \
+        --prefix="${prefix}" \
+        --libdir=lib \
+        --sbindir=bin \
+        --buildtype=release \
+        --wrap-mode=nodownload \
+        -Ddefault_library=shared \
+        -Db_ndebug=true
 }
 
 build() {
-    make -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
     mkdir -p "${dest_dir}${prefix}/share/pkgconfig/personality.d"
     cat <<EOF >"${dest_dir}${prefix}/share/pkgconfig/personality.d/${OS_TRIPLET}.personality"
 Triplet: ${OS_TRIPLET}

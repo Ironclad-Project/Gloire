@@ -2,18 +2,21 @@
 
 repology_id=font-util
 version=1.4.2
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/font/font-util-${version}.tar.xz"
 tarball_blake2b="816c4b593e8be71807a253f19e7f7e40a28bd82f283f7a396937ba12d624eb395b9b7c7bfe3bb39c40755d6b27fb64d79f286bf38e87b3258178b648f1d0c2ba"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros"
+deps="core-libs"
+builddeps="xorg-util-macros"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure
+    autotools_configure \
+        --with-fontrootdir="${prefix}"/share/fonts \
+        --with-mapdir="${prefix}"/share/fonts/util
 }
 
 build() {

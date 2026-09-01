@@ -1,0 +1,37 @@
+From 5c4fa6859800a9dbcfbb4c5c192c71006880defc Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Fri, 4 Jul 2025 19:34:33 +0000
+Subject: [PATCH 1/2] Initial plan
+
+
+From 9ebc88468fb023d6532427947c8196772ac929f4 Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Fri, 4 Jul 2025 19:44:22 +0000
+Subject: [PATCH 2/2] Fix invalid escape sequence in balloon.py docstring
+
+Co-authored-by: jcpsimmons <6600962+jcpsimmons@users.noreply.github.com>
+---
+ src/__main__.py | 0
+ src/balloon.py  | 4 ++--
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+ mode change 100644 => 100755 src/__main__.py
+
+diff --git a/src/__main__.py b/src/__main__.py
+old mode 100644
+new mode 100755
+diff --git a/src/balloon.py b/src/balloon.py
+index 0f1909e4d..3fa10ef2b 100644
+--- a/src/balloon.py
++++ b/src/balloon.py
+@@ -43,9 +43,9 @@ def __init__(self, link, linkmirror, linkcross, ww, ee, nw, nnw, n, nne, ne, nee
+         '''
+         Constructor
+         
+-        @param  link:str        The \-directional balloon line character
++        @param  link:str        The \\-directional balloon line character
+         @param  linkmirror:str  The /-directional balloon line character
+-        @param  linkcross:str   The /-directional balloon crossing a \-directional ballonon line character
++        @param  linkcross:str   The /-directional balloon crossing a \\-directional ballonon line character
+         @param  ww:str          See the info manual
+         @param  ee:str          See the info manual
+         @param  nw:list<str>    See the info manual

@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=1.12.6
-revision=3
+revision=4
 tarball_url="https://downloads.sourceforge.net/enlightenment/imlib2-${version}.tar.xz"
 tarball_blake2b="785c5b9168252df7947d0fc83f31be08ab9736473890460be23cb83e3953910684d0e3659c117dfde16c5224285f5f83f0cc57a8b2f6e3792e818744b126c786"
 hostdeps="gcc pkg-config"
-deps="core-libs bzip2 freetype2 libjpeg-turbo libpng libtiff libxext xz libwebp libraw giflib"
+deps="core-libs bzip2 freetype2 giflib libjpeg-turbo libpng libraw libtiff libwebp libx11 libxcb libxext openjpeg2 xz zlib"
 
 prepare() {
     autotools_recursive_regen

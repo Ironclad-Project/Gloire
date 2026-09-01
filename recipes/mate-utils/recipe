@@ -1,12 +1,12 @@
 #! /bin/sh
 
 version=1.28.1
-revision=2
+revision=3
 tarball_url="https://github.com/mate-desktop/mate-utils/releases/download/v${version}/mate-utils-${version}.tar.xz"
 tarball_blake2b="2c620b587ea74acb2b0521e7a5300ef448293fc90cad1c712f141c846ce884edc729c3816da5199bfe6146de4043a22322f09514860b905894d0745d3d05875f"
-imagedeps="itstool libglib2.0-dev-bin libglib2.0-bin"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs libgtop gtk3 libcanberra libice libsm mate-panel"
+deps="core-libs at-spi2-core cairo gdk-pixbuf glib2 gtk3 libcanberra libgtop libice libsm libx11 libxext mate-desktop mate-panel pango zlib"
 
 prepare() {
     autotools_recursive_regen
@@ -14,11 +14,6 @@ prepare() {
 
 configure() {
     autotools_configure \
-        --enable-zlib \
-        --enable-debug=minimum \
-        --with-x \
-        --enable-gdict-applet \
-        --enable-nls \
         --disable-disk_image_mounter
 }
 
@@ -29,6 +24,10 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
+    sed -i 's|/base_dir/sources/mate-utils/||g' \
+        "${dest_dir}${prefix}"/include/mate-dict/gdict/gdict-enum-types.h
+
     post_package_strip
+
     generate_glib_schemas_hook
 }

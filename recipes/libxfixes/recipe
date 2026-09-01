@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=6.0.2
-revision=2
-git_url="https://gitlab.freedesktop.org/xorg/lib/libxfixes.git"
-commit=70d5b0e37f8a759f3dbc218f22954347ceed094a
+revision=3
+tarball_url="https://www.x.org/archive/individual/lib/libXfixes-${version}.tar.xz"
+tarball_blake2b="5f397bc8a2161ba94168a1af86c373f970037c28a404510622f417a848e8cf2130016ccd7c06e1bb02af771ad218d50bd132249b87ecc1c9a850775d2eb85e51"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11"
 
@@ -12,7 +12,7 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

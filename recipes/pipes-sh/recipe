@@ -1,16 +1,17 @@
 #! /bin/sh
 
 version=1.3.0
-revision=2
+revision=3
 git_url="https://github.com/pipeseroni/pipes.sh.git"
 commit=65481cb6b6f8bebc11077192c111a419b70625aa
-deps="bash"
+deps="core-libs"
 
 build() {
-    cp -r ${source_dir}/. ./
+    cp -rp "${source_dir}"/. ./
 }
 
 package() {
     make DESTDIR="${dest_dir}" PREFIX="${prefix}" install
+
     post_package_strip
 }

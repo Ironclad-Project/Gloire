@@ -1,0 +1,40 @@
+#! /bin/sh
+
+version=2.4.9
+revision=1
+tarball_url="https://www.gnupg.org/ftp/gcrypt/gnupg/gnupg-${version}.tar.bz2"
+tarball_blake2b="5bbd278c570d3e389ab26dd37e1adac6c1b19f9bd369ebf30d75f48d0ab901c6f5fe4e4713b763f57b9e74efab654186ebff1a968348b0b9f70c82618b4b3b62"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs libgpg-error libgcrypt libassuan libksba npth zlib bzip2 sqlite readline gnutls pinentry texinfo"
+
+prepare() {
+    autotools_recursive_regen
+}
+
+configure() {
+        GPGRT_CONFIG="${sysroot}${prefix}/bin/gpgrt-config" \
+        GPG_ERROR_CONFIG=no \
+    autotools_configure \
+        --enable-g13 \
+        --enable-large-secmem \
+        --disable-ldap \
+        --disable-ccid-driver \
+        --disable-tpm2d \
+        --disable-scdaemon
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" make install
+
+    ln -s gpg "${dest_dir}${prefix}"/bin/gpg2
+    ln -s gpgv "${dest_dir}${prefix}"/bin/gpgv2
+
+    post_package_strip
+
+    generate_info_hooks
+}

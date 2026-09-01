@@ -1,0 +1,13 @@
+diff --git screen-clean/Makefile.in screen-workdir/Makefile.in
+index b64a288..9909593 100644
+--- screen-clean/Makefile.in
++++ screen-workdir/Makefile.in
+@@ -64,7 +64,7 @@ TESTSTANDALONE := tests/test-detach-cli
+ all:	screen
+ 
+ screen: $(OFILES)
+-	$(CC) $(LDFLAGS) -o $@ $(OFILES) $(LIBS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OFILES) $(LIBS)
+ 
+ .c.o:
+ 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@

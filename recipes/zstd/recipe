@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.5.7
-revision=4
+revision=5
 tarball_url="https://github.com/facebook/zstd/releases/download/v${version}/zstd-${version}.tar.gz"
 tarball_blake2b="ef6bcf13bbb79edce2de21ef4860b01dcb4d2dd47ebd03657d5331c3bb1a207ef128e99ed907a32e787dca7bb51df225ebd8abb2097d03d02c003ca713e1e271"
 hostdeps="gcc pkg-config"
@@ -13,7 +13,7 @@ configure() {
         -DZSTD_ZLIB_SUPPORT=ON \
         -DZSTD_LZMA_SUPPORT=ON \
         -DZSTD_LZ4_SUPPORT=ON \
-        -DZSTD_BUILD_CONTRIB=OFF \
+        -DZSTD_BUILD_CONTRIB=ON \
         -DZSTD_BUILD_STATIC=OFF \
         -DZSTD_BUILD_TESTS=OFF \
         -DZSTD_PROGRAMS_LINK_SHARED=ON
@@ -25,6 +25,9 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
+
+    install -Dm644 "${source_dir}"/doc/zstd_manual.html \
+        "${dest_dir}${prefix}"/share/doc/zstd/zstd_manual.html
 
     post_package_strip
 }

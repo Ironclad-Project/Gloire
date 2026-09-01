@@ -1,21 +1,19 @@
 #! /bin/sh
 
 version=2.0.9
-revision=2
+revision=3
 tarball_url="https://www.x.org/archive/individual/lib/libXfont2-${version}.tar.gz"
 tarball_blake2b="fdc2ffe6b3d664b0c07a8a2dbb1d757ca13c8a880787b1c52e1f54749a75d6474b8808b58d36041b431452ba32e397851efff6f89af7aa3235287b4d2a84338a"
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros xorg-proto libx11 xtrans freetype2 fontconfig bzip2 libfontenc zlib"
+deps="core-libs xorg-proto freetype2 libfontenc zlib"
+builddeps="xorg-util-macros xtrans"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
-    autotools_configure \
-        --with-bzip2 \
-        --disable-devel-docs \
-        --disable-selective-werror
+    autotools_configure
 }
 
 build() {

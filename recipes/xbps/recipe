@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=0.60.7
-revision=3
-tarball_url="https://github.com/void-linux/xbps/archive/refs/tags/${version}.tar.gz"
-tarball_blake2b="63229a75b5b582efe5b7a181baa166c0b3b1fabf93f65024e9cea8b613cff023268680fece28c5105eca426a3ff3d57d485d9ab1c7193b992ef6e03fe14e9b2c"
+revision=4
+git_url="https://github.com/void-linux/xbps.git"
+commit=34e6a1a1a9917c881246ef538e312a3fc0228ed2
 hostdeps="gcc pkg-config"
 deps="core-libs libarchive openssl zlib"
 
@@ -28,7 +28,6 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
-    # Remove static libraries
     rm "${dest_dir}${prefix}"/lib/*.a
 
     # Change architecture for the main repository as needed.

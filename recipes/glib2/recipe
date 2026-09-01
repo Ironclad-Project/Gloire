@@ -2,7 +2,7 @@
 
 repology_id=glib
 version=2.88.3
-revision=2
+revision=3
 tarball_url="https://download.gnome.org/sources/glib/2.88/glib-${version}.tar.xz"
 tarball_blake2b="8c291c0c05e2bf1dc7c5ca7d077f7d87ea7d81eff56de80991001c113718fe314db771f8901a26b21dace763a9d9898cccf6d4c11462372e594b6b39cdf4b95c"
 imagedeps="python3-docutils"
@@ -14,17 +14,26 @@ configure() {
         -Dglib_debug=disabled \
         -Dman-pages=enabled \
         -Dsysprof=disabled \
+        -Dtests=false \
         -Dintrospection=disabled \
-        -Dxattr=false
+        -Dxattr=false \
+        -Ddtrace=disabled \
+        -Dsystemtap=disabled \
+        -Dselinux=disabled \
+        -Dlibelf=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
+    sed -i 's|\.\./\.\./\.\./base_dir/sources/glib2/||g' \
+        "${dest_dir}${prefix}"/share/man/man1/gi-decompile-typelib.1
+
     post_package_strip
+
     generate_glib_schemas_hook
 }

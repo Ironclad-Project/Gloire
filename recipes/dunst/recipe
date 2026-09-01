@@ -1,18 +1,21 @@
 #! /bin/sh
 
 version=1.13.2
-revision=4
+revision=5
 git_url="https://github.com/dunst-project/dunst.git"
 commit=312ed56fbcdc84823c99f21008467561394a8eb1
 hostdeps="gcc pkg-config"
-deps="core-libs libx11 libxt libxext libxmu libxrender libxi libxcb dbus pango gdk-pixbuf libxscrnsaver libxinerama libnotify"
+deps="core-libs cairo glib2 pango gdk-pixbuf libx11 libxext libxinerama libxrandr libxscrnsaver libnotify dbus"
+conf_files="/etc/xdg/dunst/dunstrc"
 
 configure() {
-    meson_configure
+    meson_configure \
+        -Dwayland=disabled \
+        -Dsystemd=disabled
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {

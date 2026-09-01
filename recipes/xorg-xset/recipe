@@ -2,27 +2,25 @@
 
 repology_id=xset
 version=1.2.6
-revision=2
+revision=3
 tarball_url="https://www.x.org/pub/individual/app/xset-${version}.tar.xz"
 tarball_blake2b="6d0df9c342cd6bc22b081c2ddb9057474736ed5446b84b9a843479327028bfe612703a98c32ba32572ffb3067decd8a27340729bfafd58e893e274a0d0d06aed"
 hostdeps="gcc pkg-config"
-deps="core-libs libxmu"
+deps="core-libs libx11 libxext libxmu"
 
-prepare() {
-    autotools_recursive_regen
-}
 
 configure() {
-    autotools_configure \
-        --without-fontcache
+    meson_configure \
+        -Dfontcache=disabled \
+        -Dxf86misc=disabled
 }
 
 build() {
-    make -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
-    DESTDIR="${dest_dir}" make install
+    DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
 }

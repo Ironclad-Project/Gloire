@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=6.6
-revision=2
-tarball_url="https://github.com/ThomasDickey/ncurses-snapshots/archive/refs/tags/v6_6.tar.gz"
-tarball_blake2b="736b7b46f5f9e16f983ba7d0e5073c84c22db23984eeaf90905ad952c6720726832606c2c39cf64ed6ddbd3744979f245f1ed797c11f1e48e2218077eec96f11"
+revision=3
+tarball_url="https://invisible-mirror.net/archives/ncurses/ncurses-${version}.tar.gz"
+tarball_blake2b="8863ce3091fc72f23d12fe5913ea07c783e907cd8454b1c2b782f3e6bb91110cbfc4c52b8f0404eabd0d2041211183614e9d7f125ef8deeb23237b031f61fca0"
 imagedeps="build-essential ncurses-bin patchelf"
 hostdeps="gcc pkg-config"
 deps="core-libs"
@@ -15,6 +15,9 @@ prepare() {
 configure() {
         cf_cv_func_nanosleep=yes \
     autotools_configure \
+        --disable-root-access \
+        --disable-root-environ \
+        --disable-setuid-environ \
         --enable-widec \
         --enable-pc-files \
         --with-shared \
@@ -23,8 +26,10 @@ configure() {
         --without-normal \
         --without-debug \
         --with-manpage-format=normal \
+        --without-manpage-renames \
         --with-pkg-config-libdir=${prefix}/lib/pkgconfig \
-        --with-termlib \
+        --with-versioned-syms \
+        --with-xterm-kbs=del \
         --without-ada
 }
 
@@ -35,19 +40,26 @@ build() {
 package() {
     make install DESTDIR="${dest_dir}"
 
-    for lib in ncurses ncurses++ form panel menu tinfo; do
+    for lib in ncurses ncurses++ form panel menu; do
        rm -vf                    "${dest_dir}${prefix}"/lib/lib${lib}.so
        echo "INPUT(-l${lib}w)" > "${dest_dir}${prefix}"/lib/lib${lib}.so
        ln -sfv ${lib}w.pc        "${dest_dir}${prefix}"/lib/pkgconfig/${lib}.pc
        # Set library soname
-       patchelf --set-soname lib${lib}w.so "${dest_dir}${prefix}"/lib/lib${lib}w.so
+       patchelf --set-soname lib${lib}w.so.${version%%.*} "${dest_dir}${prefix}"/lib/lib${lib}w.so
     done
     rm -vf                     "${dest_dir}${prefix}"/lib/libcursesw.so
     echo "INPUT(-lncursesw)" > "${dest_dir}${prefix}"/lib/libcursesw.so
     ln -sfv libncurses.so      "${dest_dir}${prefix}"/lib/libcurses.so
 
-    # Remove static libraries
-    rm -rf "${dest_dir}${prefix}"/lib/*.a
+    for lib in tic tinfo; do
+       ln -sfv libncursesw.so                "${dest_dir}${prefix}"/lib/lib${lib}.so
+       ln -sfv libncursesw.so.${version%%.*} "${dest_dir}${prefix}"/lib/lib${lib}.so.${version%%.*}
+       ln -sfv ncursesw.pc                   "${dest_dir}${prefix}"/lib/pkgconfig/${lib}.pc
+    done
+
+    sed -i 's|/base_dir/sources/ncurses/||g' \
+        "${dest_dir}${prefix}"/include/curses.h \
+        "${dest_dir}${prefix}"/share/man/man5/terminfo.5
 
     post_package_strip
 }

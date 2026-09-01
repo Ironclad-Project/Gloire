@@ -1,10 +1,10 @@
 #! /bin/sh
 
 version=4.40
-revision=2
+revision=3
 tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
 tarball_blake2b="91fcb301f001068190c9a0e0c792d7decb46bc56c26a7f2b0001aa4b322c71d2bfaecfa7f3467befb7ec1dfecd31694f164cdc3f1c49abcc30c3859896e3f1ac"
-imagedeps="build-essential gcc"
+imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 
@@ -23,13 +23,11 @@ configure() {
         HOST_CC="gcc" \
         HOST_CFLAGS="${HOST_CFLAGS}" \
         HOST_CXXFLAGS="${HOST_CXXFLAGS}" \
-        HOST_CPPFLAGS="${HOST_CPPFLAGS}" \
         HOST_LDFLAGS="${HOST_LDFLAGS}" \
         CROSS_COMPILE=1 \
         configure_script_path="${source_dir}/nspr/configure" \
     autotools_configure \
-        --enable-optimize \
-        --with-mozilla \
+        --enable-optimize=no \
         --with-pthreads \
         --enable-64bit
 }
@@ -40,6 +38,9 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" make install
+    ln -s nspr.pc "${dest_dir}${prefix}"/lib/pkgconfig/mozilla-nspr.pc
+
+    rm -r "${dest_dir}${prefix}"/include/nspr/md
 
     post_package_strip
 }

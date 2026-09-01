@@ -34,25 +34,15 @@ index 2fc854e..320ea32 100644
  # OpenBSD:
  #CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
 diff --git st-clean/st.c st-workdir/st.c
-index 8e57991..7705bd4 100644
+index 8e57991..f5b8483 100644
 --- st-clean/st.c
 +++ st-workdir/st.c
-@@ -16,17 +19,12 @@
- #include <termios.h>
- #include <unistd.h>
- #include <wchar.h>
-+#include <sys/ttydefaults.h>
- 
+@@ -20,7 +20,7 @@
  #include "st.h"
  #include "win.h"
  
 -#if   defined(__linux)
++#if   defined(__linux) || defined(__ironclad__)
   #include <pty.h>
--#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
-- #include <util.h>
--#elif defined(__FreeBSD__) || defined(__DragonFly__)
-- #include <libutil.h>
--#endif
- 
- /* Arbitrary sizes */
- #define UTF_INVALID   0xFFFD
+ #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+  #include <util.h>

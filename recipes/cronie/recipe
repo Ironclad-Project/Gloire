@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.7.2
-revision=2
+revision=3
 tarball_url="https://github.com/cronie-crond/cronie/releases/download/cronie-${version}/cronie-${version}.tar.gz"
 tarball_blake2b="8e426fd0e279bc6a98a4f31dff867b66c87fe0629aca12b4b85557d0162b58aabf5b9789f0b36af417a92bdffa721e2309e125e9b07bfa21aee53aa1135294c7"
 hostdeps="gcc pkg-config"
@@ -13,7 +13,7 @@ prepare() {
 
 configure() {
     autotools_configure \
-        CFLAGS="$TARGET_CFLAGS -std=gnu17"
+        --enable-anacron
 }
 
 build() {

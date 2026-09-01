@@ -1,16 +1,13 @@
 #! /bin/sh
 
 version=0.49.0
-revision=3
-git_url="https://gitlab.gnome.org/GNOME/dconf.git"
-commit=a6b86bd66d3b42d8cfeacc2cc71a4fc78abadb71
-imagedeps="libglib2.0-dev"
+revision=4
+tarball_url="https://download.gnome.org/sources/dconf/0.49/dconf-${version}.tar.xz"
+tarball_blake2b="eb2ba8b00225dc612aecffa8d37a5251764e4b71232a92de97b4d6f02d1074a7c7b8b7230e2f254c852b836ddd910bdea02cef4ec4177102268ca8bc8e95129e"
+imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs dbus glib2 bash-completion"
-
-early_prepare() {
-    git submodule update --init --recursive
-}
+deps="core-libs dbus glib2"
+builddeps="bash-completion"
 
 configure() {
     meson_configure \
@@ -18,7 +15,7 @@ configure() {
 }
 
 build() {
-    meson compile -j${parallelism}
+    meson compile --verbose -j${parallelism}
 }
 
 package() {
@@ -26,22 +23,5 @@ package() {
 
     post_package_strip
 
-    cat <<'EOF' >"${dest_dir}"/INSTALL
-#! /bin/sh
-
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
-
-ACTION="$1"
-
-case "${ACTION}" in
-pre)
-    ;;
-post)
-    gio-querymodules /usr/lib/gio/modules/ >/dev/null
-    ;;
-esac
-
-exit 0
-EOF
-    chmod +x "${dest_dir}"/INSTALL
+    install_hook_add 'gio-querymodules /usr/lib/gio/modules/ >/dev/null'
 }

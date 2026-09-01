@@ -1,9 +1,9 @@
 #! /bin/sh
 
 version=7.20
-revision=2
-tarball_url="https://github.com/memtest86plus/memtest86plus/archive/refs/tags/v${version}.tar.gz"
-tarball_blake2b="f53570e9364f7fc15c946d925b449139f72bdfab6e2c69e40f7edf6aa034c6b46e40194d32eb56122365b6badc199ed9eeb8f3281d1908adb85495ffd25ea5f7"
+revision=3
+git_url="https://github.com/memtest86plus/memtest86plus.git"
+commit=52c6c64d57b0cf3edc0aa963bbe9a4e0e6f51883
 hostdeps="gcc"
 imagedeps="nasm build-essential mtools dosfstools xorriso"
 

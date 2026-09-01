@@ -1,0 +1,13 @@
+diff --git libxklavier-clean/configure libxklavier-workdir/configure
+index 86eae59..119b279 100755
+--- libxklavier-clean/configure
++++ libxklavier-workdir/configure
+@@ -15149,7 +15149,7 @@ $as_echo_n "checking whether iso-codes exists... " >&6; }
+ if $PKG_CONFIG iso-codes > /dev/null ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+-   iso_codes_prefix=`$PKG_CONFIG --variable=prefix iso-codes`
++   iso_codes_prefix="${prefix}"
+    iso_codes_pkgconfig=iso-codes
+    have_iso_codes=yes
+ else

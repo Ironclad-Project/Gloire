@@ -1,20 +1,23 @@
 #! /bin/sh
 
 version=1.12.2
-revision=2
+revision=3
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${version}.tar.gz"
 tarball_blake2b="6fca78f709dc15ba7c1b017954434f75f8445a144e7417cd02b11b12d1078569eda892020939e6be3090c76fcf4dc6a9b2648d86c4f5497b5b7cbbf24695f1bc"
-imagedeps="build-essential libgpg-error-dev"
+imagedeps="build-essential"
 hostdeps="gcc pkg-config"
-deps="core-libs libgpg-error"
+deps="core-libs libgpg-error texinfo"
 
 prepare() {
     autotools_recursive_regen
 }
 
 configure() {
+        GPGRT_CONFIG="${sysroot}${prefix}/bin/gpgrt-config" \
+        GPG_ERROR_CONFIG=no \
     autotools_configure \
-        --with-libgpg-error-prefix="${sysroot}${prefix}"
+        --with-libgpg-error-prefix="${sysroot}${prefix}" \
+        --disable-padlock-support
 }
 
 build() {
@@ -25,4 +28,6 @@ package() {
     DESTDIR="${dest_dir}" make install
 
     post_package_strip
+
+    generate_info_hooks
 }

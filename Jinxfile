@@ -22,6 +22,15 @@ TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/usr/local/lib/gcc=/usr/lib/
 
 OS_TRIPLET=${JINX_ARCH}-ironclad-gnu
 
+case "${JINX_ARCH}" in
+    x86_64)  OS_TRIPLET_RUST=x86_64-unknown-ironclad-gnu ;;
+    riscv64) OS_TRIPLET_RUST=riscv64gc-unknown-ironclad-gnu ;;
+esac
+
+# rustc already emits --as-needed, -O1, -z relro/now, -z noexecstack, --eh-frame-hdr.
+HOST_RUSTFLAGS="-C force-frame-pointers=yes -C link-arg=-Wl,--sort-common"
+TARGET_RUSTFLAGS="$HOST_RUSTFLAGS"
+
 TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/usr/local/${OS_TRIPLET}/include=/usr/include"
 
 case "${JINX_ARCH}" in
@@ -29,12 +38,128 @@ case "${JINX_ARCH}" in
         TARGET_CFLAGS="$TARGET_CFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
         TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
         TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-z,pack-relative-relocs"
+        TARGET_RUSTFLAGS="$TARGET_RUSTFLAGS -C link-arg=-Wl,-z,pack-relative-relocs"
         ;;
     riscv64)
         TARGET_CFLAGS="$TARGET_CFLAGS -march=rv64gc -mabi=lp64d"
         TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=rv64gc -mabi=lp64d"
         ;;
 esac
+
+# Apply build-support/rust-patches/<crate>.patch to every fetched copy of a crate.
+# Each patch names the versions it covers in a `# rust-patch-versions:` header.
+cargo_patch_crates() {
+    for _cpc_patch in "${base_dir}"/build-support/rust-patches/*.patch; do
+        [ -e "${_cpc_patch}" ] || continue
+
+        _cpc_crate=${_cpc_patch##*/}
+        _cpc_crate=${_cpc_crate%.patch}
+        _cpc_globs=$(sed -n 's/^# rust-patch-versions:[[:space:]]*//p' "${_cpc_patch}")
+        _cpc_hits=0
+
+        for _cpc_root in "$@"; do
+            for _cpc_dir in "${_cpc_root}"/${_cpc_crate}-[0-9]*; do
+                [ -d "${_cpc_dir}" ] || continue
+
+                _cpc_ver=${_cpc_dir##*/}
+                _cpc_ver=${_cpc_ver#${_cpc_crate}-}
+
+                if ! _cargo_patch_covers "${_cpc_ver}" "${_cpc_globs}"; then
+                    echo "*** rust-patches: ${_cpc_crate} ${_cpc_ver} is outside ${_cpc_crate}.patch's declared versions (${_cpc_globs}) - skipped"
+                    continue
+                fi
+
+                echo "*** rust-patches: applying ${_cpc_crate}.patch to ${_cpc_ver}"
+                ( cd "${_cpc_dir}" && patch --no-backup-if-mismatch -p1 <"${_cpc_patch}" ) \
+                    || die "*** rust-patches: ${_cpc_crate}.patch does not apply to ${_cpc_ver} (${_cpc_dir})"
+                cargo_checksum_refresh "${_cpc_dir}"
+                _cpc_hits=$((_cpc_hits + 1))
+
+                # A registry crate takes its dependencies from the index, not from
+                # the Cargo.toml on disk, so a manifest patch needs a path source.
+                if grep -q '^+++ b/Cargo.toml$' "${_cpc_patch}" \
+                        && [ ! -f "${_cpc_dir}/.cargo-checksum.json" ]; then
+                    if [ -d ".jinx-cargo-patched/${_cpc_crate}" ]; then
+                        die "*** rust-patches: two versions of ${_cpc_crate} need a manifest patch; [patch.crates-io] can carry only one"
+                    fi
+                    mkdir -p .jinx-cargo-patched
+                    cp -rp "${_cpc_dir}" ".jinx-cargo-patched/${_cpc_crate}"
+                    echo "*** rust-patches: staged ${_cpc_crate} ${_cpc_ver} for [patch.crates-io] (its patch changes Cargo.toml)"
+                fi
+            done
+        done
+
+        if [ "${_cpc_hits}" -eq 0 ]; then
+            echo "*** rust-patches: no copy of ${_cpc_crate} to patch"
+        fi
+    done
+}
+
+_cargo_patch_covers() {
+    [ -z "$2" ] && return 0
+    for _cpv_glob in $2; do
+        case "$1" in ${_cpv_glob}) return 0 ;; esac
+    done
+    return 1
+}
+
+# cargo refuses a directory source that no longer matches its .cargo-checksum.json.
+cargo_checksum_refresh() {
+    [ -f "$1/.cargo-checksum.json" ] || return 0
+
+    python3 - "$1" <<'PYEOF'
+import hashlib, json, os, sys
+
+root = sys.argv[1]
+path = os.path.join(root, ".cargo-checksum.json")
+doc = json.load(open(path))
+files = doc.get("files")
+if not files:
+    sys.exit(0)
+
+def sha(p):
+    with open(p, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+for rel in list(files):
+    full = os.path.join(root, rel)
+    if os.path.exists(full):
+        files[rel] = sha(full)
+    else:
+        del files[rel]
+
+# a patch may add a file, which has to be listed too
+for dirpath, _, names in os.walk(root):
+    for name in names:
+        full = os.path.join(dirpath, name)
+        rel = os.path.relpath(full, root)
+        if rel == ".cargo-checksum.json" or rel.startswith(".cargo-ok"):
+            continue
+        files.setdefault(rel, sha(full))
+
+with open(path, "w") as f:
+    json.dump(doc, f, separators=(",", ":"))
+PYEOF
+}
+
+cargo_configure() {
+    mkdir -p .cargo
+    : >.cargo/config.toml
+
+    if [ -d .jinx-cargo-patched ]; then
+        echo "[patch.crates-io]" >>.cargo/config.toml
+        for _cc_crate in .jinx-cargo-patched/*; do
+            [ -d "${_cc_crate}" ] || continue
+            echo "${_cc_crate##*/} = { path = \"$(pwd)/${_cc_crate}\" }" >>.cargo/config.toml
+        done
+        echo >>.cargo/config.toml
+    fi
+
+    cat >>.cargo/config.toml <<EOF
+[target.${OS_TRIPLET_RUST}]
+linker = "${OS_TRIPLET}-gcc"
+EOF
+}
 
 post_package_strip() {
     if [ -z "${strip_command-}" ]; then

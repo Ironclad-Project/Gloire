@@ -1,0 +1,43 @@
+# Ironclad has no arm in getrandom's backend dispatch, so it refuses to compile.
+# Joined beside hurd, whose arm calls libc::getrandom(2) directly. Three arms are
+# needed: the dispatch, the errno accessor, and the per-target libc dependency.
+#
+# rust-patch-versions: 0.4.*
+#
+# 0.2.x and 0.3.x are laid out differently and would need their own patch.
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -111,7 +111,7 @@ version = "0.4"
+ version = "6"
+ default-features = false
+ 
+-[target.'cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "hurd", target_os = "illumos", target_os = "cygwin", all(target_os = "horizon", target_arch = "arm")))'.dependencies.libc]
++[target.'cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "hurd", target_os = "ironclad", target_os = "illumos", target_os = "cygwin", all(target_os = "horizon", target_arch = "arm")))'.dependencies.libc]
+ version = "0.2.154"
+ default-features = false
+ 
+diff --git a/src/backends.rs b/src/backends.rs
+index 95547d9..60d1149 100644
+--- a/src/backends.rs
++++ b/src/backends.rs
+@@ -112,6 +112,7 @@ cfg_if! {
+         target_os = "freebsd",
+         target_os = "hurd",
+         target_os = "illumos",
++        target_os = "ironclad",
+         target_os = "cygwin",
+         // Check for target_arch = "arm" to only include the 3DS. Does not
+         // include the Nintendo Switch (which is target_arch = "aarch64").
+diff --git a/src/utils/get_errno.rs b/src/utils/get_errno.rs
+index 1895fc0..e027ee7 100644
+--- a/src/utils/get_errno.rs
++++ b/src/utils/get_errno.rs
+@@ -1,7 +1,7 @@
+ cfg_if! {
+     if #[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "android", target_os = "cygwin"))] {
+         use libc::__errno as errno_location;
+-    } else if #[cfg(any(target_os = "linux", target_os = "emscripten", target_os = "hurd", target_os = "redox", target_os = "dragonfly"))] {
++    } else if #[cfg(any(target_os = "linux", target_os = "emscripten", target_os = "hurd", target_os = "redox", target_os = "dragonfly", target_os = "ironclad"))] {
+         use libc::__errno_location as errno_location;
+     } else if #[cfg(target_os = "illumos")] {
+         use libc::___errno as errno_location;

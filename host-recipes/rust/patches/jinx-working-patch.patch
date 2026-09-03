@@ -1,0 +1,1387 @@
+diff --git rust-workdir/compiler/rustc_target/src/spec/base/ironclad_gnu.rs rust-workdir/compiler/rustc_target/src/spec/base/ironclad_gnu.rs
+new file mode 100644
+index 0000000..6eb0d98
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/base/ironclad_gnu.rs
+@@ -0,0 +1,22 @@
++use crate::spec::{Env, Os, RelroLevel, TargetOptions, cvs};
++
++pub(crate) fn opts() -> TargetOptions {
++    TargetOptions {
++        os: Os::Ironclad,
++        // Ironclad's C library is glibc, so the environment is the same one
++        // x86_64-unknown-linux-gnu uses and the target tuple ends in -gnu.
++        env: Env::Gnu,
++        dynamic_linking: true,
++        families: cvs!["unix"],
++        has_rpath: true,
++        position_independent_executables: true,
++        relro_level: RelroLevel::Full,
++        has_thread_local: true,
++        crt_static_respected: true,
++        // Our glibc implements backtrace(), which is what epoch's crash handler
++        // and zstd's BACKTRACE_ENABLE rely on, so unwind tables are wanted by
++        // default here for the same reason they are on linux.
++        default_uwtable: true,
++        ..Default::default()
++    }
++}
+diff --git rust-clean/compiler/rustc_target/src/spec/base/mod.rs rust-workdir/compiler/rustc_target/src/spec/base/mod.rs
+index 9e7ff62..9da14f4 100644
+--- rust-clean/compiler/rustc_target/src/spec/base/mod.rs
++++ rust-workdir/compiler/rustc_target/src/spec/base/mod.rs
+@@ -14,6 +14,7 @@ pub(crate) mod hermit;
+ pub(crate) mod hurd;
+ pub(crate) mod hurd_gnu;
+ pub(crate) mod illumos;
++pub(crate) mod ironclad_gnu;
+ pub(crate) mod l4re;
+ pub(crate) mod linux;
+ pub(crate) mod linux_gnu;
+diff --git rust-clean/compiler/rustc_target/src/spec/mod.rs rust-workdir/compiler/rustc_target/src/spec/mod.rs
+index 0601f9d..833ad97 100644
+--- rust-clean/compiler/rustc_target/src/spec/mod.rs
++++ rust-workdir/compiler/rustc_target/src/spec/mod.rs
+@@ -1582,6 +1582,9 @@ supported_targets! {
+     ("aarch64-unknown-managarm-mlibc", aarch64_unknown_managarm_mlibc),
+     ("riscv64gc-unknown-managarm-mlibc", riscv64gc_unknown_managarm_mlibc),
+ 
++    ("x86_64-unknown-ironclad-gnu", x86_64_unknown_ironclad_gnu),
++    ("riscv64gc-unknown-ironclad-gnu", riscv64gc_unknown_ironclad_gnu),
++
+     ("i386-apple-ios", i386_apple_ios),
+     ("x86_64-apple-ios", x86_64_apple_ios),
+     ("aarch64-apple-ios", aarch64_apple_ios),
+@@ -1985,6 +1988,7 @@ crate::target_spec_enum! {
+         Hurd = "hurd",
+         Illumos = "illumos",
+         IOs = "ios",
++        Ironclad = "ironclad",
+         L4Re = "l4re",
+         Linux = "linux",
+         LynxOs178 = "lynxos178",
+diff --git rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_ironclad_gnu.rs rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_ironclad_gnu.rs
+new file mode 100644
+index 0000000..4eeec5f
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_ironclad_gnu.rs
+@@ -0,0 +1,24 @@
++use crate::spec::{Arch, CodeModel, LlvmAbi, Target, TargetMetadata, TargetOptions, base};
++
++pub(crate) fn target() -> Target {
++    Target {
++        llvm_target: "riscv64-unknown-ironclad-gnu".into(),
++        metadata: TargetMetadata {
++            description: Some("Ironclad/riscv64".into()),
++            tier: Some(3),
++            host_tools: Some(false),
++            std: Some(true),
++        },
++        pointer_width: 64,
++        data_layout: "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128".into(),
++        arch: Arch::RiscV64,
++        options: TargetOptions {
++            code_model: Some(CodeModel::Medium),
++            cpu: "generic-rv64".into(),
++            features: "+m,+a,+f,+d,+c,+zicsr,+zifencei".into(),
++            llvm_abiname: LlvmAbi::Lp64d,
++            max_atomic_width: Some(64),
++            ..base::ironclad_gnu::opts()
++        },
++    }
++}
+diff --git rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_ironclad_gnu.rs rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_ironclad_gnu.rs
+new file mode 100644
+index 0000000..a8d9674
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_ironclad_gnu.rs
+@@ -0,0 +1,28 @@
++use crate::spec::{
++    Arch, Cc, LinkerFlavor, Lld, StackProbeType, Target, TargetMetadata, base,
++};
++
++pub(crate) fn target() -> Target {
++    let mut base = base::ironclad_gnu::opts();
++    base.cpu = "x86-64".into();
++    base.max_atomic_width = Some(64);
++    base.add_pre_link_args(LinkerFlavor::Gnu(Cc::Yes, Lld::No), &["-m64"]);
++    base.stack_probes = StackProbeType::Inline;
++
++    Target {
++        // Handed straight to LLVM, which resolves `ironclad` through parseOS to
++        // Triple::Ironclad; without that entry it would read as UnknownOS.
++        llvm_target: "x86_64-unknown-ironclad-gnu".into(),
++        metadata: TargetMetadata {
++            description: Some("Ironclad/amd64".into()),
++            tier: Some(3),
++            host_tools: Some(false),
++            std: Some(true),
++        },
++        pointer_width: 64,
++        data_layout:
++            "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128".into(),
++        arch: Arch::X86_64,
++        options: base,
++    }
++}
+diff --git rust-clean/library/std/build.rs rust-workdir/library/std/build.rs
+index 5f2e441..f5231df 100644
+--- rust-clean/library/std/build.rs
++++ rust-workdir/library/std/build.rs
+@@ -50,6 +50,7 @@ fn main() {
+         || target_os == "nto"
+         || target_os == "xous"
+         || target_os == "hurd"
++        || target_os == "ironclad"
+         || target_os == "uefi"
+         || target_os == "teeos"
+         || target_os == "zkvm"
+diff --git rust-clean/library/std/src/fs/tests.rs rust-workdir/library/std/src/fs/tests.rs
+index cdb12cd..3463a59 100644
+--- rust-clean/library/std/src/fs/tests.rs
++++ rust-workdir/library/std/src/fs/tests.rs
+@@ -216,6 +216,7 @@ fn file_test_io_seek_and_write() {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -249,6 +250,7 @@ fn file_lock_multiple_shared() {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -283,6 +285,7 @@ fn file_lock_blocking() {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -314,6 +317,7 @@ fn file_lock_drop() {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+diff --git rust-workdir/library/std/src/os/ironclad/fs.rs rust-workdir/library/std/src/os/ironclad/fs.rs
+new file mode 100644
+index 0000000..5de7a86
+--- /dev/null
++++ rust-workdir/library/std/src/os/ironclad/fs.rs
+@@ -0,0 +1,348 @@
++//! Ironclad-specific extensions to primitives in the [`std::fs`] module.
++//!
++//! [`std::fs`]: crate::fs
++
++#![stable(feature = "metadata_ext", since = "1.1.0")]
++
++use crate::fs::Metadata;
++use crate::sys::AsInner;
++
++/// OS-specific extensions to [`fs::Metadata`].
++///
++/// [`fs::Metadata`]: crate::fs::Metadata
++#[stable(feature = "metadata_ext", since = "1.1.0")]
++pub trait MetadataExt {
++    /// Returns the device ID on which this file resides.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_dev());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_dev(&self) -> u64;
++    /// Returns the inode number.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_ino());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ino(&self) -> u64;
++    /// Returns the file type and mode.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_mode());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mode(&self) -> u32;
++    /// Returns the number of hard links to file.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_nlink());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_nlink(&self) -> u64;
++    /// Returns the user ID of the file owner.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_uid());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_uid(&self) -> u32;
++    /// Returns the group ID of the file owner.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_gid());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_gid(&self) -> u32;
++    /// Returns the device ID that this file represents. Only relevant for special file.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_rdev());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_rdev(&self) -> u64;
++    /// Returns the size of the file (if it is a regular file or a symbolic link) in bytes.
++    ///
++    /// The size of a symbolic link is the length of the pathname it contains,
++    /// without a terminating null byte.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_size());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_size(&self) -> u64;
++    /// Returns the last access time of the file, in seconds since Unix Epoch.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_atime());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_atime(&self) -> i64;
++    /// Returns the last access time of the file, in nanoseconds since [`st_atime`].
++    ///
++    /// [`st_atime`]: Self::st_atime
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_atime_nsec());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_atime_nsec(&self) -> i64;
++    /// Returns the last modification time of the file, in seconds since Unix Epoch.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_mtime());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mtime(&self) -> i64;
++    /// Returns the last modification time of the file, in nanoseconds since [`st_mtime`].
++    ///
++    /// [`st_mtime`]: Self::st_mtime
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_mtime_nsec());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mtime_nsec(&self) -> i64;
++    /// Returns the last status change time of the file, in seconds since Unix Epoch.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_ctime());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ctime(&self) -> i64;
++    /// Returns the last status change time of the file, in nanoseconds since [`st_ctime`].
++    ///
++    /// [`st_ctime`]: Self::st_ctime
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_ctime_nsec());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ctime_nsec(&self) -> i64;
++    /// Returns the "preferred" block size for efficient filesystem I/O.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_blksize());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_blksize(&self) -> u64;
++    /// Returns the number of blocks allocated to the file, 512-byte units.
++    ///
++    /// # Examples
++    ///
++    /// ```no_run
++    /// use std::fs;
++    /// use std::io;
++    /// use std::os::hurd::fs::MetadataExt;
++    ///
++    /// fn main() -> io::Result<()> {
++    ///     let meta = fs::metadata("some_file")?;
++    ///     println!("{}", meta.st_blocks());
++    ///     Ok(())
++    /// }
++    /// ```
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_blocks(&self) -> u64;
++}
++
++#[stable(feature = "metadata_ext", since = "1.1.0")]
++impl MetadataExt for Metadata {
++    fn st_dev(&self) -> u64 {
++        self.as_inner().as_inner().st_dev as u64
++    }
++    fn st_ino(&self) -> u64 {
++        self.as_inner().as_inner().st_ino as u64
++    }
++    fn st_mode(&self) -> u32 {
++        self.as_inner().as_inner().st_mode as u32
++    }
++    fn st_nlink(&self) -> u64 {
++        self.as_inner().as_inner().st_nlink as u64
++    }
++    fn st_uid(&self) -> u32 {
++        self.as_inner().as_inner().st_uid as u32
++    }
++    fn st_gid(&self) -> u32 {
++        self.as_inner().as_inner().st_gid as u32
++    }
++    fn st_rdev(&self) -> u64 {
++        self.as_inner().as_inner().st_rdev as u64
++    }
++    fn st_size(&self) -> u64 {
++        self.as_inner().as_inner().st_size as u64
++    }
++    fn st_atime(&self) -> i64 {
++        self.as_inner().as_inner().st_atim.tv_sec as i64
++    }
++    fn st_atime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_atim.tv_nsec as i64
++    }
++    fn st_mtime(&self) -> i64 {
++        self.as_inner().as_inner().st_mtim.tv_sec as i64
++    }
++    fn st_mtime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_mtim.tv_nsec as i64
++    }
++    fn st_ctime(&self) -> i64 {
++        self.as_inner().as_inner().st_ctim.tv_sec as i64
++    }
++    fn st_ctime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_ctim.tv_nsec as i64
++    }
++    fn st_blksize(&self) -> u64 {
++        self.as_inner().as_inner().st_blksize as u64
++    }
++    fn st_blocks(&self) -> u64 {
++        self.as_inner().as_inner().st_blocks as u64
++    }
++}
+diff --git rust-workdir/library/std/src/os/ironclad/mod.rs rust-workdir/library/std/src/os/ironclad/mod.rs
+new file mode 100644
+index 0000000..ff1e422
+--- /dev/null
++++ rust-workdir/library/std/src/os/ironclad/mod.rs
+@@ -0,0 +1,7 @@
++//! Ironclad-specific definitions
++
++#![stable(feature = "raw_ext", since = "1.1.0")]
++#![forbid(unsafe_op_in_unsafe_fn)]
++
++pub mod fs;
++pub mod raw;
+diff --git rust-workdir/library/std/src/os/ironclad/raw.rs rust-workdir/library/std/src/os/ironclad/raw.rs
+new file mode 100644
+index 0000000..4890585
+--- /dev/null
++++ rust-workdir/library/std/src/os/ironclad/raw.rs
+@@ -0,0 +1,36 @@
++//! Ironclad-specific raw type definitions
++
++#![stable(feature = "raw_ext", since = "1.1.0")]
++#![deprecated(
++    since = "1.8.0",
++    note = "these type aliases are no longer supported by \
++              the standard library, the `libc` crate on \
++              crates.io should be used instead for the correct \
++              definitions"
++)]
++#![allow(deprecated)]
++
++use crate::os::raw::{c_long, c_uint, c_ulong};
++
++// Each of these is MEASURED from Ironclad's own glibc headers rather than
++// carried over from another glibc port: nlink_t is 4 bytes here where hurd's is
++// 8, and blkcnt_t/off_t are signed where hurd declares them u64.
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type blkcnt_t = c_long;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type blksize_t = c_long;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type dev_t = c_ulong;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type ino_t = c_ulong;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type mode_t = c_uint;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type nlink_t = c_uint;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type off_t = c_long;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type time_t = c_long;
++
++#[stable(feature = "pthread_t", since = "1.8.0")]
++pub type pthread_t = c_ulong;
+diff --git rust-clean/library/std/src/os/mod.rs rust-workdir/library/std/src/os/mod.rs
+index 7637440..3865da2 100644
+--- rust-clean/library/std/src/os/mod.rs
++++ rust-workdir/library/std/src/os/mod.rs
+@@ -149,6 +149,8 @@ pub mod horizon;
+ pub mod hurd;
+ #[cfg(target_os = "illumos")]
+ pub mod illumos;
++#[cfg(target_os = "ironclad")]
++pub mod ironclad;
+ #[cfg(target_os = "ios")]
+ pub mod ios;
+ #[cfg(target_os = "l4re")]
+diff --git rust-clean/library/std/src/os/unix/mod.rs rust-workdir/library/std/src/os/unix/mod.rs
+index 78c9572..f1b1eec 100644
+--- rust-clean/library/std/src/os/unix/mod.rs
++++ rust-workdir/library/std/src/os/unix/mod.rs
+@@ -63,6 +63,8 @@ mod platform {
+     pub use crate::os::hurd::*;
+     #[cfg(target_os = "illumos")]
+     pub use crate::os::illumos::*;
++    #[cfg(target_os = "ironclad")]
++    pub use crate::os::ironclad::*;
+     #[cfg(target_os = "l4re")]
+     pub use crate::os::l4re::*;
+     #[cfg(target_os = "linux")]
+diff --git rust-clean/library/std/src/os/unix/net/stream.rs rust-workdir/library/std/src/os/unix/net/stream.rs
+index 30124d9..f945791 100644
+--- rust-clean/library/std/src/os/unix/net/stream.rs
++++ rust-workdir/library/std/src/os/unix/net/stream.rs
+@@ -2,6 +2,7 @@ cfg_select! {
+     any(
+         target_os = "linux", target_os = "android",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "dragonfly", target_os = "freebsd",
+         target_os = "openbsd", target_os = "netbsd",
+         target_os = "solaris", target_os = "illumos",
+diff --git rust-clean/library/std/src/sys/args/unix.rs rust-workdir/library/std/src/sys/args/unix.rs
+index 7a592c2..a1847f9 100644
+--- rust-clean/library/std/src/sys/args/unix.rs
++++ rust-workdir/library/std/src/sys/args/unix.rs
+@@ -82,6 +82,7 @@ pub fn args() -> Args {
+     target_os = "aix",
+     target_os = "nto",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "rtems",
+     target_os = "nuttx",
+ ))]
+diff --git rust-clean/library/std/src/sys/env_consts.rs rust-workdir/library/std/src/sys/env_consts.rs
+index 573f540..361ba18 100644
+--- rust-clean/library/std/src/sys/env_consts.rs
++++ rust-workdir/library/std/src/sys/env_consts.rs
+@@ -136,6 +136,17 @@ pub mod os {
+     pub const EXE_EXTENSION: &str = "elf";
+ }
+ 
++#[cfg(target_os = "ironclad")]
++pub mod os {
++    pub const FAMILY: &str = "unix";
++    pub const OS: &str = "ironclad";
++    pub const DLL_PREFIX: &str = "lib";
++    pub const DLL_SUFFIX: &str = ".so";
++    pub const DLL_EXTENSION: &str = "so";
++    pub const EXE_SUFFIX: &str = "";
++    pub const EXE_EXTENSION: &str = "";
++}
++
+ #[cfg(target_os = "hurd")]
+ pub mod os {
+     pub const FAMILY: &str = "unix";
+diff --git rust-clean/library/std/src/sys/fd/unix.rs rust-workdir/library/std/src/sys/fd/unix.rs
+index c5e8646..43ad858 100644
+--- rust-clean/library/std/src/sys/fd/unix.rs
++++ rust-workdir/library/std/src/sys/fd/unix.rs
+@@ -8,6 +8,7 @@ mod tests;
+     target_os = "l4re",
+     target_os = "android",
+     target_os = "hurd",
++    target_os = "ironclad",
+ )))]
+ use libc::off_t as off64_t;
+ #[cfg(any(
+@@ -15,6 +16,7 @@ use libc::off_t as off64_t;
+     target_os = "linux",
+     target_os = "l4re",
+     target_os = "hurd",
++    target_os = "ironclad",
+ ))]
+ use libc::off64_t;
+ 
+@@ -23,6 +25,7 @@ cfg_select! {
+         all(target_os = "linux", not(target_env = "musl")),
+         target_os = "android",
+         target_os = "hurd",
++        target_os = "ironclad",
+     ) => {
+         // Prefer explicit pread64 for 64-bit offset independently of libc
+         // #[cfg(gnu_file_offset_bits64)].
+@@ -215,6 +218,7 @@ impl FileDesc {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -240,6 +244,7 @@ impl FileDesc {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -394,13 +399,15 @@ impl FileDesc {
+         #[cfg(not(any(
+             all(target_os = "linux", not(target_env = "musl")),
+             target_os = "android",
+-            target_os = "hurd"
++            target_os = "hurd",
++            target_os = "ironclad"
+         )))]
+         use libc::pwrite as pwrite64;
+         #[cfg(any(
+             all(target_os = "linux", not(target_env = "musl")),
+             target_os = "android",
+-            target_os = "hurd"
++            target_os = "hurd",
++            target_os = "ironclad"
+         ))]
+         use libc::pwrite64;
+ 
+@@ -422,6 +429,7 @@ impl FileDesc {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+@@ -447,6 +455,7 @@ impl FileDesc {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "netbsd",
+diff --git rust-clean/library/std/src/sys/fs/unix/dir.rs rust-workdir/library/std/src/sys/fs/unix/dir.rs
+index 094d1bf..355f25f 100644
+--- rust-clean/library/std/src/sys/fs/unix/dir.rs
++++ rust-workdir/library/std/src/sys/fs/unix/dir.rs
+@@ -7,6 +7,7 @@ cfg_select! {
+             target_os = "l4re",
+             target_os = "android",
+             target_os = "hurd",
++            target_os = "ironclad",
+         )
+     ) => {
+         use libc::{open as open64, openat as openat64};
+diff --git rust-clean/library/std/src/sys/fs/unix.rs rust-workdir/library/std/src/sys/fs/unix.rs
+index 9b0ef55..a3fd483 100644
+--- rust-clean/library/std/src/sys/fs/unix.rs
++++ rust-workdir/library/std/src/sys/fs/unix.rs
+@@ -13,13 +13,14 @@ use libc::c_char;
+     target_os = "android",
+     target_os = "fuchsia",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "illumos",
+     target_vendor = "apple",
+ ))]
+ use libc::dirfd;
+ #[cfg(any(target_os = "fuchsia", target_os = "illumos", target_vendor = "apple"))]
+ use libc::fstatat as fstatat64;
+-#[cfg(any(all(target_os = "linux", not(target_env = "musl")), target_os = "hurd"))]
++#[cfg(any(all(target_os = "linux", not(target_env = "musl")), target_os = "hurd", target_os = "ironclad"))]
+ use libc::fstatat64;
+ #[cfg(any(
+     target_os = "aix",
+@@ -41,6 +42,7 @@ use libc::readdir as readdir64;
+     target_os = "freebsd",
+     target_os = "fuchsia",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "illumos",
+     target_os = "l4re",
+     target_os = "linux",
+@@ -51,7 +53,7 @@ use libc::readdir as readdir64;
+     target_os = "wasi",
+ )))]
+ use libc::readdir_r as readdir64_r;
+-#[cfg(any(all(target_os = "linux", not(target_env = "musl")), target_os = "hurd"))]
++#[cfg(any(all(target_os = "linux", not(target_env = "musl")), target_os = "hurd", target_os = "ironclad"))]
+ use libc::readdir64;
+ #[cfg(target_os = "l4re")]
+ use libc::readdir64_r;
+@@ -66,6 +68,7 @@ use libc::{
+     target_os = "l4re",
+     target_os = "android",
+     target_os = "hurd",
++    target_os = "ironclad",
+ )))]
+ use libc::{
+     dirent as dirent64, fstat as fstat64, ftruncate as ftruncate64, lseek as lseek64,
+@@ -74,7 +77,8 @@ use libc::{
+ #[cfg(any(
+     all(target_os = "linux", not(target_env = "musl")),
+     target_os = "l4re",
+-    target_os = "hurd"
++    target_os = "hurd",
++    target_os = "ironclad"
+ ))]
+ use libc::{dirent64, fstat64, ftruncate64, lseek64, lstat64, off64_t, open64, stat64};
+ 
+@@ -407,6 +411,7 @@ fn get_path_from_fd(fd: c_int) -> Option<PathBuf> {
+     target_os = "freebsd",
+     target_os = "fuchsia",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "illumos",
+     target_os = "linux",
+     target_os = "nto",
+@@ -433,6 +438,7 @@ pub struct DirEntry {
+     target_os = "freebsd",
+     target_os = "fuchsia",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "illumos",
+     target_os = "linux",
+     target_os = "nto",
+@@ -459,6 +465,7 @@ struct dirent64_min {
+     target_os = "freebsd",
+     target_os = "fuchsia",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "illumos",
+     target_os = "linux",
+     target_os = "nto",
+@@ -619,6 +626,7 @@ impl FileAttr {
+         target_os = "horizon",
+         target_os = "vita",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "rtems",
+         target_os = "nuttx",
+     )))]
+@@ -646,6 +654,7 @@ impl FileAttr {
+     #[cfg(any(
+         target_os = "horizon",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "nuttx",
+         all(target_os = "vxworks", not(vxworks_lt_25_09))
+     ))]
+@@ -659,6 +668,7 @@ impl FileAttr {
+         target_os = "horizon",
+         target_os = "vita",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "rtems",
+         target_os = "nuttx",
+     )))]
+@@ -686,6 +696,7 @@ impl FileAttr {
+     #[cfg(any(
+         target_os = "horizon",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "nuttx",
+         all(target_os = "vxworks", not(vxworks_lt_25_09))
+     ))]
+@@ -851,6 +862,7 @@ impl Iterator for ReadDir {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "nto",
+@@ -949,6 +961,7 @@ impl Iterator for ReadDir {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "linux",
+         target_os = "nto",
+@@ -1017,6 +1030,7 @@ impl Drop for DirStream {
+             target_os = "nto",
+             target_os = "vita",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "espidf",
+             target_os = "horizon",
+             target_os = "vxworks",
+@@ -1056,6 +1070,7 @@ impl DirEntry {
+             target_os = "android",
+             target_os = "fuchsia",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "illumos",
+             target_vendor = "apple",
+         ),
+@@ -1087,6 +1102,7 @@ impl DirEntry {
+             target_os = "android",
+             target_os = "fuchsia",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "illumos",
+             target_vendor = "apple",
+         )),
+@@ -1142,6 +1158,7 @@ impl DirEntry {
+         target_os = "haiku",
+         target_os = "horizon",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "illumos",
+         target_os = "l4re",
+         target_os = "linux",
+@@ -1207,6 +1224,7 @@ impl DirEntry {
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "wasi",
+     )))]
+     fn name_cstr(&self) -> &CStr {
+@@ -1224,6 +1242,7 @@ impl DirEntry {
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "wasi",
+     ))]
+     fn name_cstr(&self) -> &CStr {
+@@ -1420,6 +1439,7 @@ impl File {
+             target_os = "openbsd",
+             target_os = "nto",
+             target_os = "hurd",
++            target_os = "ironclad",
+         ))]
+         unsafe fn os_datasync(fd: c_int) -> c_int {
+             libc::fdatasync(fd)
+@@ -1434,6 +1454,7 @@ impl File {
+             target_os = "openbsd",
+             target_os = "nto",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_vendor = "apple",
+         )))]
+         unsafe fn os_datasync(fd: c_int) -> c_int {
+@@ -1445,6 +1466,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1471,6 +1493,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1488,6 +1511,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1514,6 +1538,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1531,6 +1556,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1573,6 +1599,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1593,6 +1620,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1635,6 +1663,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1655,6 +1684,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1681,6 +1711,7 @@ impl File {
+         target_os = "freebsd",
+         target_os = "fuchsia",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd",
+diff --git rust-clean/library/std/src/sys/io/error/unix.rs rust-workdir/library/std/src/sys/io/error/unix.rs
+index b10343b..4dca954 100644
+--- rust-clean/library/std/src/sys/io/error/unix.rs
++++ rust-workdir/library/std/src/sys/io/error/unix.rs
+@@ -10,6 +10,7 @@ unsafe extern "C" {
+             target_os = "fuchsia",
+             target_os = "l4re",
+             target_os = "hurd",
++            target_os = "ironclad",
+         ),
+         link_name = "__errno_location"
+     )]
+@@ -160,6 +161,7 @@ pub fn error_string(errno: i32) -> String {
+                 any(
+                     target_os = "linux",
+                     target_os = "hurd",
++                    target_os = "ironclad",
+                     target_env = "newlib",
+                     target_os = "cygwin"
+                 ),
+diff --git rust-clean/library/std/src/sys/net/connection/socket/mod.rs rust-workdir/library/std/src/sys/net/connection/socket/mod.rs
+index 256b99d..3dcd55d 100644
+--- rust-clean/library/std/src/sys/net/connection/socket/mod.rs
++++ rust-workdir/library/std/src/sys/net/connection/socket/mod.rs
+@@ -62,6 +62,7 @@ cfg_select! {
+     any(
+         target_os = "linux", target_os = "android",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "dragonfly", target_os = "freebsd",
+         target_os = "openbsd", target_os = "netbsd",
+         target_os = "solaris", target_os = "illumos",
+diff --git rust-clean/library/std/src/sys/net/connection/socket/unix.rs rust-workdir/library/std/src/sys/net/connection/socket/unix.rs
+index 0471404..ce61796 100644
+--- rust-clean/library/std/src/sys/net/connection/socket/unix.rs
++++ rust-workdir/library/std/src/sys/net/connection/socket/unix.rs
+@@ -71,6 +71,7 @@ impl Socket {
+                 target_os = "freebsd",
+                 target_os = "illumos",
+                 target_os = "hurd",
++                target_os = "ironclad",
+                 target_os = "linux",
+                 target_os = "netbsd",
+                 target_os = "openbsd",
+@@ -120,6 +121,7 @@ impl Socket {
+                     target_os = "illumos",
+                     target_os = "linux",
+                     target_os = "hurd",
++                    target_os = "ironclad",
+                     target_os = "netbsd",
+                     target_os = "openbsd",
+                     target_os = "cygwin",
+@@ -251,6 +253,7 @@ impl Socket {
+                 target_os = "illumos",
+                 target_os = "linux",
+                 target_os = "hurd",
++                target_os = "ironclad",
+                 target_os = "netbsd",
+                 target_os = "openbsd",
+                 target_os = "cygwin",
+diff --git rust-clean/library/std/src/sys/pal/unix/stack_overflow.rs rust-workdir/library/std/src/sys/pal/unix/stack_overflow.rs
+index 3b95189..1065f82 100644
+--- rust-clean/library/std/src/sys/pal/unix/stack_overflow.rs
++++ rust-workdir/library/std/src/sys/pal/unix/stack_overflow.rs
+@@ -31,6 +31,7 @@ impl Drop for Handler {
+         target_os = "linux",
+         target_os = "freebsd",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "macos",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -49,6 +50,7 @@ mod thread_info;
+         target_os = "linux",
+         target_os = "freebsd",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "macos",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -355,6 +357,7 @@ mod imp {
+         target_os = "freebsd",
+         target_os = "netbsd",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "l4re"
+     ))]
+@@ -566,6 +569,7 @@ mod imp {
+         target_os = "android",
+         target_os = "freebsd",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "l4re"
+@@ -602,7 +606,7 @@ mod imp {
+             assert_eq!(libc::pthread_attr_getstack(attr.as_ptr(), &mut stackptr, &mut size), 0);
+ 
+             let stackaddr = stackptr.addr();
+-            ret = if cfg!(any(target_os = "freebsd", target_os = "netbsd", target_os = "hurd")) {
++            ret = if cfg!(any(target_os = "freebsd", target_os = "netbsd", target_os = "hurd", target_os = "ironclad")) {
+                 Some(stackaddr - guardsize..stackaddr)
+             } else if cfg!(all(target_os = "linux", target_env = "musl")) {
+                 Some(stackaddr - guardsize..stackaddr)
+@@ -640,6 +644,7 @@ mod imp {
+         target_os = "linux",
+         target_os = "freebsd",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "macos",
+         target_os = "netbsd",
+         target_os = "openbsd",
+diff --git rust-clean/library/std/src/sys/paths/unix.rs rust-workdir/library/std/src/sys/paths/unix.rs
+index 544d495..df510b3 100644
+--- rust-clean/library/std/src/sys/paths/unix.rs
++++ rust-workdir/library/std/src/sys/paths/unix.rs
+@@ -255,6 +255,7 @@ pub fn current_exe() -> io::Result<PathBuf> {
+     target_os = "linux",
+     target_os = "cygwin",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "android",
+     target_os = "nuttx",
+     target_os = "emscripten"
+diff --git rust-clean/library/std/src/sys/pipe/unix.rs rust-workdir/library/std/src/sys/pipe/unix.rs
+index bb97e80..3c982d5 100644
+--- rust-clean/library/std/src/sys/pipe/unix.rs
++++ rust-workdir/library/std/src/sys/pipe/unix.rs
+@@ -17,6 +17,7 @@ pub fn pipe() -> io::Result<(Pipe, Pipe)> {
+             target_os = "dragonfly",
+             target_os = "freebsd",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "illumos",
+             target_os = "linux",
+             target_os = "netbsd",
+diff --git rust-clean/library/std/src/sys/random/mod.rs rust-workdir/library/std/src/sys/random/mod.rs
+index 91f72d0..dcd7382 100644
+--- rust-clean/library/std/src/sys/random/mod.rs
++++ rust-workdir/library/std/src/sys/random/mod.rs
+@@ -52,6 +52,7 @@ cfg_select! {
+     any(
+         target_os = "aix",
+         target_os = "hurd",
++        target_os = "ironclad",
+         target_os = "l4re",
+         target_os = "nto",
+     ) => {
+diff --git rust-clean/library/std/src/sys/thread/mod.rs rust-workdir/library/std/src/sys/thread/mod.rs
+index 9816981..fb4c5c5 100644
+--- rust-clean/library/std/src/sys/thread/mod.rs
++++ rust-workdir/library/std/src/sys/thread/mod.rs
+@@ -57,6 +57,7 @@ cfg_select! {
+             target_os = "emscripten",
+             target_os = "redox",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "aix",
+             target_os = "wasi",
+         )))]
+@@ -70,6 +71,7 @@ cfg_select! {
+             target_os = "illumos",
+             target_os = "dragonfly",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "vxworks",
+             target_os = "wasi",
+             target_vendor = "apple",
+@@ -83,6 +85,7 @@ cfg_select! {
+             target_os = "emscripten",
+             target_os = "redox",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "aix",
+             target_os = "wasi",
+         ))]
+@@ -130,6 +133,7 @@ cfg_select! {
+     target_os = "illumos",
+     target_os = "dragonfly",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "vxworks",
+     target_os = "wasi",
+     target_vendor = "apple",
+diff --git rust-clean/library/std/src/sys/thread/unix.rs rust-workdir/library/std/src/sys/thread/unix.rs
+index 2f3ef17..101e5f2 100644
+--- rust-clean/library/std/src/sys/thread/unix.rs
++++ rust-workdir/library/std/src/sys/thread/unix.rs
+@@ -4,6 +4,7 @@
+     target_os = "emscripten",
+     target_os = "redox",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "aix",
+     target_os = "wasi",
+ )))]
+@@ -151,6 +152,7 @@ pub fn available_parallelism() -> io::Result<NonZero<usize>> {
+             target_os = "emscripten",
+             target_os = "fuchsia",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "linux",
+             target_os = "aix",
+             target_vendor = "apple",
+@@ -533,6 +535,7 @@ pub fn sleep(dur: Duration) {
+             target_os = "illumos",
+             target_os = "dragonfly",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "vxworks",
+             target_os = "wasi",
+         ) => {
+@@ -630,6 +633,7 @@ pub fn sleep(dur: Duration) {
+     target_os = "illumos",
+     target_os = "dragonfly",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "vxworks",
+     target_os = "wasi",
+ ))]
+diff --git rust-clean/library/std/src/sys/thread_local/mod.rs rust-workdir/library/std/src/sys/thread_local/mod.rs
+index e88011a..aa6c49b 100644
+--- rust-clean/library/std/src/sys/thread_local/mod.rs
++++ rust-workdir/library/std/src/sys/thread_local/mod.rs
+@@ -63,6 +63,7 @@ pub(crate) mod destructors {
+             target_os = "fuchsia",
+             target_os = "redox",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "netbsd",
+             target_os = "dragonfly"
+         ) => {
+diff --git rust-clean/library/unwind/src/lib.rs rust-workdir/library/unwind/src/lib.rs
+index cce6ca7..96342d3 100644
+--- rust-clean/library/unwind/src/lib.rs
++++ rust-workdir/library/unwind/src/lib.rs
+@@ -209,6 +209,11 @@ cfg_select! {
+ #[link(name = "gcc_s")]
+ unsafe extern "C" {}
+ 
++#[cfg(target_os = "ironclad")]
++#[link(name = "gcc_eh", kind = "static", modifiers = "-bundle", cfg(target_feature = "crt-static"))]
++#[link(name = "gcc_s", cfg(not(target_feature = "crt-static")))]
++unsafe extern "C" {}
++
+ #[cfg(all(target_os = "windows", target_env = "gnu", target_abi = "llvm"))]
+ #[link(name = "unwind", kind = "static", modifiers = "-bundle", cfg(target_feature = "crt-static"))]
+ #[link(name = "unwind", cfg(not(target_feature = "crt-static")))]
+diff --git rust-clean/src/bootstrap/src/core/sanity.rs rust-workdir/src/bootstrap/src/core/sanity.rs
+index c4a6b68..b26cbee 100644
+--- rust-clean/src/bootstrap/src/core/sanity.rs
++++ rust-workdir/src/bootstrap/src/core/sanity.rs
+@@ -37,6 +37,8 @@ pub struct Finder {
+ /// when the newly-bumped stage 0 compiler now knows about the formerly-missing targets.
+ const STAGE0_MISSING_TARGETS: &[&str] = &[
+     // just a dummy comment so the list doesn't get onelined
++    "riscv64gc-unknown-ironclad-gnu",
++    "x86_64-unknown-ironclad-gnu",
+     "x86_64-unknown-linux-gnumsan",
+     "x86_64-unknown-linux-gnutsan",
+ ];
+diff --git rust-clean/src/doc/rustc/src/SUMMARY.md rust-workdir/src/doc/rustc/src/SUMMARY.md
+index cc10f47..dfd415c 100644
+--- rust-clean/src/doc/rustc/src/SUMMARY.md
++++ rust-workdir/src/doc/rustc/src/SUMMARY.md
+@@ -128,6 +128,7 @@
+     - [\*-unknown-helenos](platform-support/helenos.md)
+     - [\*-unknown-hermit](platform-support/hermit.md)
+     - [\*-unknown-freebsd](platform-support/freebsd.md)
++    - [\*-unknown-ironclad-gnu](platform-support/ironclad.md)
+     - [\*-unknown-managarm-mlibc](platform-support/managarm.md)
+     - [\*-unknown-motor](platform-support/motor.md)
+     - [\*-unknown-netbsd\*](platform-support/netbsd.md)
+diff --git rust-workdir/src/doc/rustc/src/platform-support/ironclad.md rust-workdir/src/doc/rustc/src/platform-support/ironclad.md
+new file mode 100644
+index 0000000..a026f46
+--- /dev/null
++++ rust-workdir/src/doc/rustc/src/platform-support/ironclad.md
+@@ -0,0 +1,59 @@
++# `*-unknown-ironclad-gnu`
++
++**Tier: 3**
++
++Targets for the [Ironclad](https://ironclad-os.org) kernel, as shipped by the
++Gloire distribution.
++
++## Target Maintainers
++
++- Gloire/Ironclad project
++
++## Requirements
++
++This target is cross-compiled and supports `std`. It requires an `ironclad`
++module in the `libc` crate, which does not exist upstream and is carried as a
++patch; every type, layout and constant in it is measured from Ironclad's own
++glibc headers rather than adapted from another platform. It generates binaries
++in the ELF format. Currently the `x86_64` and
++`riscv64gc` architectures are supported, matching the architectures the Ironclad
++GCC and LLVM ports themselves support.
++
++Ironclad's C library is glibc, so the target tuple ends in `-gnu`. Note that the
++kernel ABI is **not** Linux's and the two must not be conflated: `SEEK_SET` is
++1 rather than 0, `O_RDONLY` is 1 rather than 0, `AF_INET6` is 2 rather than 10,
++the `errno` values live in a range of their own, and several signal numbers
++differ. Anything that assumes Linux constants will be wrong.
++
++## Building the target
++
++Ironclad support must be present in LLVM; upstream LLVM does not carry it yet,
++so a patched LLVM is required.
++
++Set up your `bootstrap.toml` like this:
++
++```toml
++[llvm]
++download-ci-llvm = false
++
++[build]
++target = ["x86_64-unknown-ironclad-gnu", "x86_64-unknown-linux-gnu"]
++
++[target.x86_64-unknown-linux-gnu]
++llvm-config = "/path/to/ironclad-aware/llvm-config"
++```
++
++## Building Rust programs
++
++Rust does not yet ship pre-compiled artifacts for these targets. To compile for
++them, use `-Zbuild-std` with a nightly compiler, or add the target to a
++`bootstrap.toml` as above.
++
++## Testing
++
++This target does not support running the Rust test suite.
++
++## Cross-compilation toolchains and C code
++
++Compatible C code can be built with the Ironclad GCC or Clang cross toolchains,
++using the `x86_64-ironclad-gnu` or `riscv64-ironclad-gnu` target tuples.
+diff --git rust-clean/src/doc/rustc/src/platform-support.md rust-workdir/src/doc/rustc/src/platform-support.md
+index 26dd6b3..ce79870 100644
+--- rust-clean/src/doc/rustc/src/platform-support.md
++++ rust-workdir/src/doc/rustc/src/platform-support.md
+@@ -403,6 +403,7 @@ target | std | host | notes
+ `riscv64gc-unknown-freebsd` | ? |  | RISC-V FreeBSD
+ `riscv64gc-unknown-fuchsia` | ? |  | RISC-V Fuchsia
+ [`riscv64gc-unknown-hermit`](platform-support/hermit.md) | ✓ |  | RISC-V Hermit
++[`riscv64gc-unknown-ironclad-gnu`](platform-support/ironclad.md) | ✓ |  | RISC-V Ironclad
+ [`riscv64gc-unknown-managarm-mlibc`](platform-support/managarm.md) | ? |  | RISC-V Managarm
+ [`riscv64gc-unknown-netbsd`](platform-support/netbsd.md) | ✓ | ✓ | RISC-V NetBSD
+ [`riscv64gc-unknown-nuttx-elf`](platform-support/nuttx.md) | ✓ |  | RISC-V 64bit with NuttX
+@@ -453,6 +454,7 @@ target | std | host | notes
+ [`x86_64-unknown-hurd-gnu`](platform-support/hurd.md) | ✓ | ✓ | 64-bit GNU/Hurd
+ `x86_64-unknown-l4re-uclibc` | ? |  |
+ [`x86_64-unknown-linux-none`](platform-support/x86_64-unknown-linux-none.md) | * |  | 64-bit Linux with no libc
++[`x86_64-unknown-ironclad-gnu`](platform-support/ironclad.md) | ✓ |  | x86_64 Ironclad
+ [`x86_64-unknown-managarm-mlibc`](platform-support/managarm.md) | ? |  | x86_64 Managarm
+ [`x86_64-unknown-motor`](platform-support/motor.md) | ✓ |  | x86_64 Motor OS
+ [`x86_64-unknown-openbsd`](platform-support/openbsd.md) | ✓ | ✓ | 64-bit OpenBSD
+diff --git rust-clean/src/librustdoc/clean/cfg.rs rust-workdir/src/librustdoc/clean/cfg.rs
+index d6c2278..5e798ce 100644
+--- rust-clean/src/librustdoc/clean/cfg.rs
++++ rust-workdir/src/librustdoc/clean/cfg.rs
+@@ -502,6 +502,7 @@ fn human_readable_target_os(os: Symbol) -> Option<&'static str> {
+         Hurd => "GNU/Hurd",
+         IOs => "iOS",
+         Illumos => "illumos",
++        Ironclad => "Ironclad",
+         L4Re => "L4Re",
+         Linux => "Linux",
+         LynxOs178 => "LynxOS-178",

@@ -1,0 +1,45 @@
+# gix-index reaches for the flattened `st_mtime`/`st_mtime_nsec`. Ironclad's
+# `struct stat` carries `st_atim`/`st_mtim`/`st_ctim` as `timespec`, which is
+# hurd's shape, so we join hurd's arm.
+#
+# rust-patch-versions: 0.55.*
+--- a/src/fs.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/fs.rs	2026-09-03 10:16:28.855917772 +0200
+@@ -57,14 +57,14 @@
+     pub fn modified(&self) -> Option<SystemTime> {
+         #[cfg(unix)]
+         {
+-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
++            #[cfg(not(any(target_os = "aix", target_os = "hurd", target_os = "ironclad")))]
+             let seconds = self.0.st_mtime;
+-            #[cfg(any(target_os = "aix", target_os = "hurd"))]
++            #[cfg(any(target_os = "aix", target_os = "hurd", target_os = "ironclad"))]
+             let seconds = self.0.st_mtim.tv_sec;
+ 
+-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
++            #[cfg(not(any(target_os = "aix", target_os = "hurd", target_os = "ironclad")))]
+             let nanoseconds = self.0.st_mtime_nsec;
+-            #[cfg(any(target_os = "aix", target_os = "hurd"))]
++            #[cfg(any(target_os = "aix", target_os = "hurd", target_os = "ironclad"))]
+             let nanoseconds = self.0.st_mtim.tv_nsec;
+ 
+             // All operating systems treat the seconds as offset from unix epoch, hence it must
+@@ -84,14 +84,14 @@
+     pub fn created(&self) -> Option<SystemTime> {
+         #[cfg(unix)]
+         {
+-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
++            #[cfg(not(any(target_os = "aix", target_os = "hurd", target_os = "ironclad")))]
+             let seconds = self.0.st_ctime;
+-            #[cfg(any(target_os = "aix", target_os = "hurd"))]
++            #[cfg(any(target_os = "aix", target_os = "hurd", target_os = "ironclad"))]
+             let seconds = self.0.st_ctim.tv_sec;
+ 
+-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
++            #[cfg(not(any(target_os = "aix", target_os = "hurd", target_os = "ironclad")))]
+             let nanoseconds = self.0.st_ctime_nsec;
+-            #[cfg(any(target_os = "aix", target_os = "hurd"))]
++            #[cfg(any(target_os = "aix", target_os = "hurd", target_os = "ironclad"))]
+             let nanoseconds = self.0.st_ctim.tv_nsec;
+ 
+             // All operating systems treat the seconds as offset from unix epoch, hence it must

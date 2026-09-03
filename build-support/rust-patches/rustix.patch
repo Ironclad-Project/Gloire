@@ -1,0 +1,401 @@
+# rustix's cfg lists name the platforms that LACK a given Linux constant, and hurd
+# is on them where we are not. Guarded here are the 42 our glibc genuinely does not
+# define; the 31 it does are declared in the libc crate's ironclad module instead.
+#
+# rust-patch-versions: 1.*
+#
+# The one positive list joined is `_Opcode`: our sys/ioctl.h declares
+# `int ioctl (int, unsigned long int, ...)`, so c_ulong is correct.
+--- a/src/backend/libc/fs/syscalls.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/backend/libc/fs/syscalls.rs	2026-09-03 10:14:22.066216020 +0200
+@@ -150,6 +150,7 @@
+         unix,
+         target_env = "gnu",
+         not(target_os = "hurd"),
++        not(target_os = "ironclad"),
+         not(target_os = "freebsd")
+     ))]
+     if oflags.contains(OFlags::TMPFILE) && crate::backend::if_glibc_is_less_than_2_25() {
+@@ -218,6 +219,7 @@
+         unix,
+         target_env = "gnu",
+         not(target_os = "hurd"),
++        not(target_os = "ironclad"),
+         not(target_os = "freebsd")
+     ))]
+     if oflags.contains(OFlags::TMPFILE) && crate::backend::if_glibc_is_less_than_2_25() {
+diff -urN rustix-1.1.4/src/backend/libc/fs/types.rs rustix-mod/src/backend/libc/fs/types.rs
+--- a/src/backend/libc/fs/types.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/backend/libc/fs/types.rs	2026-09-03 10:11:31.374297522 +0200
+@@ -382,7 +382,8 @@
+             target_os = "horizon",
+             target_os = "wasi",
+             target_os = "vita",
+-            solarish
++            solarish,
++            target_os = "ironclad",
+         )))]
+         const ASYNC = bitcast!(c::O_ASYNC);
+ 
+@@ -784,6 +785,7 @@
+             target_os = "haiku",
+             target_os = "hurd",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const KEEP_SIZE = bitcast!(c::FALLOC_FL_KEEP_SIZE);
+         /// `FALLOC_FL_PUNCH_HOLE`
+@@ -794,6 +796,7 @@
+             target_os = "haiku",
+             target_os = "hurd",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const PUNCH_HOLE = bitcast!(c::FALLOC_FL_PUNCH_HOLE);
+         /// `FALLOC_FL_NO_HIDE_STALE`
+@@ -809,6 +812,7 @@
+             target_os = "l4re",
+             target_os = "linux",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const NO_HIDE_STALE = bitcast!(c::FALLOC_FL_NO_HIDE_STALE);
+         /// `FALLOC_FL_COLLAPSE_RANGE`
+@@ -820,6 +824,7 @@
+             target_os = "hurd",
+             target_os = "emscripten",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const COLLAPSE_RANGE = bitcast!(c::FALLOC_FL_COLLAPSE_RANGE);
+         /// `FALLOC_FL_ZERO_RANGE`
+@@ -831,6 +836,7 @@
+             target_os = "hurd",
+             target_os = "emscripten",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const ZERO_RANGE = bitcast!(c::FALLOC_FL_ZERO_RANGE);
+         /// `FALLOC_FL_INSERT_RANGE`
+@@ -842,6 +848,7 @@
+             target_os = "hurd",
+             target_os = "emscripten",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const INSERT_RANGE = bitcast!(c::FALLOC_FL_INSERT_RANGE);
+         /// `FALLOC_FL_UNSHARE_RANGE`
+@@ -853,6 +860,7 @@
+             target_os = "hurd",
+             target_os = "emscripten",
+             target_os = "wasi",
++            target_os = "ironclad",
+         )))]
+         const UNSHARE_RANGE = bitcast!(c::FALLOC_FL_UNSHARE_RANGE);
+ 
+diff -urN rustix-1.1.4/src/backend/libc/io/errno.rs rustix-mod/src/backend/libc/io/errno.rs
+--- a/src/backend/libc/io/errno.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/backend/libc/io/errno.rs	2026-09-03 10:11:31.373416890 +0200
+@@ -56,6 +56,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const ADV: Self = Self(c::EADV);
+     /// `EAFNOSUPPORT`
+@@ -159,6 +160,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const BFONT: Self = Self(c::EBFONT);
+     /// `EBUSY`
+@@ -221,6 +223,7 @@
+         target_os = "hurd",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const DEADLOCK: Self = Self(c::EDEADLOCK);
+     /// `EDESTADDRREQ`
+@@ -249,6 +252,7 @@
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const DOTDOT: Self = Self(c::EDOTDOT);
+     /// `EDQUOT`
+@@ -336,6 +340,7 @@
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const ISNAM: Self = Self(c::EISNAM);
+     /// `EKEYEXPIRED`
+@@ -412,7 +417,8 @@
+         target_os = "hurd",
+         target_os = "l4re",
+         target_os = "vita",
+-        target_os = "wasi"
++        target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const L2NSYNC: Self = Self(c::EL2NSYNC);
+     /// `EL3HLT`
+@@ -438,7 +444,8 @@
+         target_os = "hurd",
+         target_os = "l4re",
+         target_os = "vita",
+-        target_os = "wasi"
++        target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const L3RST: Self = Self(c::EL3RST);
+     /// `ELIBACC`
+@@ -453,6 +460,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const LIBACC: Self = Self(c::ELIBACC);
+     /// `ELIBBAD`
+@@ -480,6 +488,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const LIBEXEC: Self = Self(c::ELIBEXEC);
+     /// `ELIBMAX`
+@@ -494,6 +503,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const LIBMAX: Self = Self(c::ELIBMAX);
+     /// `ELIBSCN`
+@@ -508,6 +518,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const LIBSCN: Self = Self(c::ELIBSCN);
+     /// `ELNRNG`
+@@ -570,6 +581,7 @@
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const NAVAIL: Self = Self(c::ENAVAIL);
+     /// `ENEEDAUTH`
+@@ -726,6 +738,7 @@
+         target_os = "l4re",
+         target_os = "openbsd",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const NOSR: Self = Self(c::ENOSR);
+     /// `ENOSTR`
+@@ -776,6 +789,7 @@
+         target_os = "nto",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const NOTNAM: Self = Self(c::ENOTNAM);
+     /// `ENOTRECOVERABLE`
+@@ -878,6 +892,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const REMCHG: Self = Self(c::EREMCHG);
+     /// `EREMOTE`
+@@ -983,6 +998,7 @@
+         target_os = "l4re",
+         target_os = "vita",
+         target_os = "wasi",
++        target_os = "ironclad",
+     )))]
+     pub const SRMNT: Self = Self(c::ESRMNT);
+     /// `ESTALE`
+diff -urN rustix-1.1.4/src/ioctl/mod.rs rustix-mod/src/ioctl/mod.rs
+--- a/src/ioctl/mod.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/ioctl/mod.rs	2026-09-03 10:11:59.529306536 +0200
+@@ -313,13 +313,14 @@
+ #[cfg(all(not(linux_raw), target_os = "android"))]
+ type _Opcode = c::c_int;
+ 
+-// BSD, Haiku, Hurd, Redox, and Vita use `unsigned long`.
++// BSD, Haiku, Hurd, Ironclad, Redox, and Vita use `unsigned long`.
+ #[cfg(any(
+     bsd,
+     target_os = "redox",
+     target_os = "haiku",
+     target_os = "horizon",
+     target_os = "hurd",
++    target_os = "ironclad",
+     target_os = "vita"
+ ))]
+ type _Opcode = c::c_ulong;
+diff -urN rustix-1.1.4/src/termios/types.rs rustix-mod/src/termios/types.rs
+--- a/src/termios/types.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/termios/types.rs	2026-09-03 10:14:22.065949531 +0200
+@@ -289,7 +289,7 @@
+         const IXOFF = c::IXOFF;
+ 
+         /// `IMAXBEL`
+-        #[cfg(not(any(target_os = "haiku", target_os = "redox")))]
++        #[cfg(not(any(target_os = "haiku", target_os = "redox", target_os = "ironclad")))]
+         const IMAXBEL = c::IMAXBEL;
+ 
+         /// `IUTF8`
+@@ -302,6 +302,7 @@
+             target_os = "haiku",
+             target_os = "hurd",
+             target_os = "redox",
++            target_os = "ironclad",
+         )))]
+         const IUTF8 = c::IUTF8;
+ 
+@@ -325,6 +326,7 @@
+             target_os = "aix",
+             target_os = "netbsd",
+             target_os = "redox",
++            target_os = "ironclad",
+         )))]
+         const OLCUC = c::OLCUC;
+ 
+@@ -460,6 +462,7 @@
+             target_os = "aix",
+             target_os = "haiku",
+             target_os = "redox",
++            target_os = "ironclad",
+         )))]
+         const XTABS = c::XTABS;
+ 
+@@ -570,7 +573,7 @@
+         const CLOCAL = c::CLOCAL;
+ 
+         /// `CRTSCTS`
+-        #[cfg(not(any(target_os = "aix", target_os = "nto", target_os = "redox")))]
++        #[cfg(not(any(target_os = "aix", target_os = "nto", target_os = "redox", target_os = "ironclad")))]
+         const CRTSCTS = c::CRTSCTS;
+ 
+         /// `CMSPAR`
+@@ -583,6 +586,7 @@
+             target_os = "hurd",
+             target_os = "nto",
+             target_os = "redox",
++            target_os = "ironclad",
+         )))]
+         const CMSPAR = c::CMSPAR;
+ 
+@@ -601,23 +605,23 @@
+         const XCASE = c::XCASE;
+ 
+         /// `ECHOCTL`
+-        #[cfg(not(target_os = "redox"))]
++        #[cfg(not(any(target_os = "redox", target_os = "ironclad")))]
+         const ECHOCTL = c::ECHOCTL;
+ 
+         /// `ECHOPRT`
+-        #[cfg(not(any(target_os = "cygwin", target_os = "nto", target_os = "redox")))]
++        #[cfg(not(any(target_os = "cygwin", target_os = "nto", target_os = "redox", target_os = "ironclad")))]
+         const ECHOPRT = c::ECHOPRT;
+ 
+         /// `ECHOKE`
+-        #[cfg(not(target_os = "redox"))]
++        #[cfg(not(any(target_os = "redox", target_os = "ironclad")))]
+         const ECHOKE = c::ECHOKE;
+ 
+         /// `FLUSHO`
+-        #[cfg(not(any(target_os = "nto", target_os = "redox")))]
++        #[cfg(not(any(target_os = "nto", target_os = "redox", target_os = "ironclad")))]
+         const FLUSHO = c::FLUSHO;
+ 
+         /// `PENDIN`
+-        #[cfg(not(any(target_os = "cygwin", target_os = "nto", target_os = "redox")))]
++        #[cfg(not(any(target_os = "cygwin", target_os = "nto", target_os = "redox", target_os = "ironclad")))]
+         const PENDIN = c::PENDIN;
+ 
+         /// `EXTPROC`
+@@ -627,6 +631,7 @@
+             target_os = "haiku",
+             target_os = "nto",
+             target_os = "redox",
++            target_os = "ironclad",
+         )))]
+         const EXTPROC = c::EXTPROC;
+ 
+@@ -1213,6 +1218,7 @@
+         target_os = "haiku",
+         target_os = "hurd",
+         target_os = "nto",
++        target_os = "ironclad",
+     )))]
+     pub const VSWTC: Self = Self(c::VSWTC as usize);
+ 
+@@ -1229,20 +1235,21 @@
+     pub const VEOL: Self = Self(c::VEOL as usize);
+ 
+     /// `VREPRINT`
+-    #[cfg(not(target_os = "haiku"))]
++    #[cfg(not(any(target_os = "haiku", target_os = "ironclad")))]
+     pub const VREPRINT: Self = Self(c::VREPRINT as usize);
+ 
+     /// `VDISCARD`
+-    #[cfg(not(any(target_os = "aix", target_os = "haiku")))]
++    #[cfg(not(any(target_os = "aix", target_os = "haiku", target_os = "ironclad")))]
+     pub const VDISCARD: Self = Self(c::VDISCARD as usize);
+ 
+     /// `VWERASE`
+-    #[cfg(not(any(target_os = "aix", target_os = "haiku")))]
++    #[cfg(not(any(target_os = "aix", target_os = "haiku", target_os = "ironclad")))]
+     pub const VWERASE: Self = Self(c::VWERASE as usize);
+ 
+     /// `VLNEXT`
+-    #[cfg(not(target_os = "haiku"))]
++    #[cfg(not(any(target_os = "haiku", target_os = "ironclad")))]
+     pub const VLNEXT: Self = Self(c::VLNEXT as usize);
++    #[cfg(not(target_os = "ironclad"))]
+ 
+     /// `VEOL2`
+     pub const VEOL2: Self = Self(c::VEOL2 as usize);
+@@ -1323,6 +1330,7 @@
+                 target_os = "haiku",
+                 target_os = "hurd",
+                 target_os = "nto",
++                target_os = "ironclad",
+             )))]
+             Self::VSWTC => write!(f, "VSWTC"),
+             Self::VSTART => write!(f, "VSTART"),
+@@ -1335,14 +1343,15 @@
+                 target_os = "haiku",
+             )))]
+             Self::VEOL => write!(f, "VEOL"),
+-            #[cfg(not(target_os = "haiku"))]
++            #[cfg(not(any(target_os = "haiku", target_os = "ironclad")))]
+             Self::VREPRINT => write!(f, "VREPRINT"),
+-            #[cfg(not(any(target_os = "aix", target_os = "haiku")))]
++            #[cfg(not(any(target_os = "aix", target_os = "haiku", target_os = "ironclad")))]
+             Self::VDISCARD => write!(f, "VDISCARD"),
+-            #[cfg(not(any(target_os = "aix", target_os = "haiku")))]
++            #[cfg(not(any(target_os = "aix", target_os = "haiku", target_os = "ironclad")))]
+             Self::VWERASE => write!(f, "VWERASE"),
+-            #[cfg(not(target_os = "haiku"))]
++            #[cfg(not(any(target_os = "haiku", target_os = "ironclad")))]
+             Self::VLNEXT => write!(f, "VLNEXT"),
++            #[cfg(not(target_os = "ironclad"))]
+             Self::VEOL2 => write!(f, "VEOL2"),
+             #[cfg(any(solarish, target_os = "haiku", target_os = "nto"))]
+             Self::VSWTCH => write!(f, "VSWTCH"),

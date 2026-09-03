@@ -1,0 +1,89 @@
+#! /bin/sh
+
+version=1.96.0
+revision=1
+tarball_url="https://static.rust-lang.org/dist/rustc-${version}-src.tar.xz"
+tarball_blake2b="82dff856ff7be0ef5a54c9197aee222c0e6ab4c1bd9aaaccf74d3b96b3ccaeb3b4894b8734bb68d7619f9411fbe636d27d3d88558177ec4d8f0b0780e4a7bd2e"
+imagedeps="build-essential rustc cargo libssl-dev pkg-config"
+imagerundeps="libssl3t64"
+hostdeps="pkg-config"
+hostrundeps="llvm"
+
+deps="glibc libgcc"
+
+if [ -z "${OS_TRIPLET_RUST}" ]; then
+    echo "*** host:rust: no Ironclad rust target for ${JINX_ARCH}" >&2
+    exit 1
+fi
+
+prepare() {
+    cargo_patch_crates vendor
+}
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    _build_triple=$(/usr/bin/rustc -vV | sed -n 's/^host: //p')
+    if [ -z "${_build_triple}" ]; then
+        echo "*** host:rust: could not determine the build triple from /usr/bin/rustc" >&2
+        exit 1
+    fi
+
+    cat >bootstrap.toml <<EOF
+profile = "dist"
+
+[llvm]
+download-ci-llvm = false
+link-shared = true
+
+[build]
+cargo = "/usr/bin/cargo"
+rustc = "/usr/bin/rustc"
+locked-deps = true
+vendor = true
+docs = false
+extended = true
+tools = ["cargo"]
+target = ["${_build_triple}", "${OS_TRIPLET_RUST}"]
+
+[install]
+prefix = "${prefix}"
+# Relative: prefix.join() with an absolute path would discard the prefix.
+sysconfdir = "etc"
+
+[rust]
+channel = "stable"
+codegen-units = 16
+debuginfo-level = 0
+rpath = false
+deny-warnings = false
+lto = "off"
+codegen-tests = false
+
+[target.${_build_triple}]
+llvm-config = "${prefix}/bin/llvm-config"
+cc = "/usr/bin/gcc"
+cxx = "/usr/bin/g++"
+linker = "/usr/bin/gcc"
+
+# No llvm-config here: a target's would name an LLVM built to RUN on Ironclad.
+[target.${OS_TRIPLET_RUST}]
+cc = "${prefix}/bin/clang"
+cxx = "${prefix}/bin/clang++"
+linker = "${prefix}/bin/clang"
+ar = "${prefix}/bin/${OS_TRIPLET}-ar"
+ranlib = "${prefix}/bin/${OS_TRIPLET}-ranlib"
+EOF
+
+        CFLAGS="$HOST_CFLAGS" \
+        CXXFLAGS="$HOST_CXXFLAGS" \
+        LDFLAGS="$HOST_LDFLAGS" \
+    python3 ./x.py build -j${parallelism} --verbose
+}
+
+package() {
+    DESTDIR="${dest_dir}" python3 ./x.py install -j${parallelism} --verbose
+
+        strip_command=strip \
+    post_package_strip
+}

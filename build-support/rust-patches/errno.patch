@@ -1,0 +1,15 @@
+# The errno crate maps its `errno_location()` to each platform's real symbol with
+# per-target link_name attributes; with no arm for us the link named the literal.
+# Ours is __errno_location.
+#
+# rust-patch-versions: 0.3.*
+--- a/src/unix.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/unix.rs	2026-09-03 10:17:50.064250731 +0200
+@@ -92,6 +92,7 @@
+         any(
+             target_os = "linux",
+             target_os = "hurd",
++            target_os = "ironclad",
+             target_os = "redox",
+             target_os = "dragonfly",
+             target_os = "emscripten",

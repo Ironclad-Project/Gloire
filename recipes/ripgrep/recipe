@@ -1,0 +1,49 @@
+#! /bin/sh
+
+version=15.2.0
+revision=1
+git_url="https://github.com/BurntSushi/ripgrep.git"
+commit=e89fff89ac9af12e8d4ce9d5fd07beb408ca730f
+source_allow_network=yes
+source_hostdeps="rust"
+hostdeps="gcc pkg-config rust"
+imagedeps="build-essential"
+deps="core-libs"
+
+prepare() {
+    CARGO_HOME="${source_dir}/.jinx-cargo-home" cargo fetch --locked
+
+    cargo_patch_crates .jinx-cargo-home/registry/src/*
+}
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    cargo_configure
+
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        RUSTFLAGS="${TARGET_RUSTFLAGS}" \
+    cargo build --release --offline -v --target "${OS_TRIPLET_RUST}"
+
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        RUSTFLAGS="${HOST_RUSTFLAGS}" \
+        CARGO_TARGET_DIR="$(pwd)/host-target" \
+    cargo build --release --offline -v
+}
+
+package() {
+    install -Dm755 "target/${OS_TRIPLET_RUST}/release/rg" "${dest_dir}${prefix}/bin/rg"
+
+    for _t in man complete-bash complete-zsh complete-fish; do
+        ./host-target/release/rg --generate "${_t}" >"generated-${_t}"
+    done
+    install -Dm644 generated-man "${dest_dir}${prefix}/share/man/man1/rg.1"
+    install -Dm644 generated-complete-bash \
+        "${dest_dir}${prefix}/share/bash-completion/completions/rg"
+    install -Dm644 generated-complete-zsh \
+        "${dest_dir}${prefix}/share/zsh/site-functions/_rg"
+    install -Dm644 generated-complete-fish \
+        "${dest_dir}${prefix}/share/fish/vendor_completions.d/rg.fish"
+
+    post_package_strip
+}

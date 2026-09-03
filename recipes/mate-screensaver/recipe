@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.1
-revision=3
+revision=4
 tarball_url="https://github.com/mate-desktop/mate-screensaver/releases/download/v${version}/mate-screensaver-${version}.tar.xz"
 tarball_blake2b="2597d7ddbaf286e229e974d2a5b1dbf0255313194705e595e687026ced342dbf436423c2c78b086b267fea66a00bc5acd1514dc2cc55114c3eaa5c167e1896b7"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

@@ -1,0 +1,51 @@
+#! /bin/sh
+
+from_source=llvm-libs
+revision=1
+imagedeps="build-essential"
+hostdeps="pkg-config"
+hostrundeps="binutils"
+deps="glibc"
+
+configure() {
+        CFLAGS="$HOST_CFLAGS" \
+        CXXFLAGS="$HOST_CXXFLAGS" \
+        LDFLAGS="$HOST_LDFLAGS" \
+    cmake "${source_dir}"/llvm \
+        -DCMAKE_INSTALL_PREFIX="${prefix}" \
+        -DDEFAULT_SYSROOT="${sysroot}" \
+        -DLLVM_DEFAULT_TARGET_TRIPLE=${OS_TRIPLET} \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
+        -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
+        -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$HOST_LDFLAGS" \
+        -DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$HOST_LDFLAGS" \
+        -DCMAKE_MODULE_LINKER_FLAGS_RELEASE="$HOST_LDFLAGS" \
+        -DLLVM_ENABLE_PROJECTS="clang;lld" \
+        -DLLVM_LINK_LLVM_DYLIB=ON \
+        -DLLVM_ENABLE_RTTI=ON \
+        -DLLVM_ENABLE_BINDINGS=OFF \
+        -DLLVM_INCLUDE_BENCHMARKS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_BUILD_TESTS=OFF \
+        -DCMAKE_SKIP_INSTALL_RPATH=ON \
+        -DCMAKE_VERBOSE_MAKEFILE=ON \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -GNinja \
+        -Wno-dev
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    rm -rf "${dest_dir}${prefix}"/lib/*.a
+
+        strip_command=strip \
+    post_package_strip
+}

@@ -1,8 +1,8 @@
 diff --git llvm-libs-clean/clang/lib/Basic/Targets/OSTargets.h llvm-libs-workdir/clang/lib/Basic/Targets/OSTargets.h
-index 0460864..84b47cd 100644
+index 0460864..7d1ca82 100644
 --- llvm-libs-clean/clang/lib/Basic/Targets/OSTargets.h
 +++ llvm-libs-workdir/clang/lib/Basic/Targets/OSTargets.h
-@@ -446,6 +446,36 @@ public:
+@@ -446,6 +446,38 @@ public:
    }
  };
  
@@ -25,6 +25,8 @@ index 0460864..84b47cd 100644
 +public:
 +  IroncladTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
 +      : OSTargetInfo<Target>(Triple, Opts) {
++    this->WIntType = TargetInfo::UnsignedInt;
++
 +    switch (Triple.getArch()) {
 +    default:
 +      break;
@@ -40,30 +42,20 @@ index 0460864..84b47cd 100644
  template <typename Target>
  class LLVM_LIBRARY_VISIBILITY NetBSDTargetInfo : public OSTargetInfo<Target> {
 diff --git llvm-libs-clean/clang/lib/Basic/Targets.cpp llvm-libs-workdir/clang/lib/Basic/Targets.cpp
-index 2632539..04d99ba 100644
+index 2632539..ca7def6 100644
 --- llvm-libs-clean/clang/lib/Basic/Targets.cpp
 +++ llvm-libs-workdir/clang/lib/Basic/Targets.cpp
-@@ -166,6 +166,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+@@ -471,6 +471,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
      case llvm::Triple::Managarm:
-       return std::make_unique<ManagarmTargetInfo<AArch64leTargetInfo>>(Triple,
-                                                                        Opts);
-+    case llvm::Triple::Ironclad:
-+      return std::make_unique<IroncladTargetInfo<AArch64leTargetInfo>>(Triple,
-+                                                                       Opts);
-     case llvm::Triple::NetBSD:
-       return std::make_unique<NetBSDTargetInfo<AArch64leTargetInfo>>(Triple,
-                                                                      Opts);
-@@ -201,6 +204,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
-     case llvm::Triple::NetBSD:
-       return std::make_unique<NetBSDTargetInfo<AArch64beTargetInfo>>(Triple,
+       return std::make_unique<ManagarmTargetInfo<RISCV64TargetInfo>>(Triple,
                                                                       Opts);
 +    case llvm::Triple::Ironclad:
 +      return std::make_unique<IroncladTargetInfo<RISCV64TargetInfo>>(Triple,
 +                                                                     Opts);
+     case llvm::Triple::Hurd:
+       return std::make_unique<HurdTargetInfo<RISCV64TargetInfo>>(Triple, Opts);
      default:
-       return std::make_unique<AArch64beTargetInfo>(Triple, Opts);
-     }
-@@ -660,6 +666,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+@@ -660,6 +663,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
      case llvm::Triple::Managarm:
        return std::make_unique<ManagarmTargetInfo<X86_64TargetInfo>>(Triple,
                                                                      Opts);
@@ -109,26 +101,25 @@ index eb3f9cb..18b3b53 100644
        break;
 diff --git llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
 new file mode 100644
-index 0000000..4c2060c
+index 0000000..dca9e4f
 --- /dev/null
 +++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.cpp
-@@ -0,0 +1,227 @@
-+//===--- Ironclad.h - Ironclad ToolChain Implementations --------*- C++ -*-===//
+@@ -0,0 +1,228 @@
++//===--- Ironclad.cpp - Ironclad ToolChain Implementations ------*- C++ -*-===//
 +//
-+//                     The LLVM Compiler Infrastructure
-+//
-+// This file is distributed under the University of Illinois Open Source
-+// License. See LICENSE.TXT for details.
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 +//
 +//===----------------------------------------------------------------------===//
 +
 +#include "Ironclad.h"
 +#include "Arch/ARM.h"
 +#include "Arch/RISCV.h"
-+#include "CommonArgs.h"
++#include "clang/Driver/CommonArgs.h"
 +#include "clang/Config/config.h"
 +#include "clang/Driver/Driver.h"
-+#include "clang/Driver/Options.h"
++#include "clang/Options/Options.h"
 +#include "clang/Driver/SanitizerArgs.h"
 +#include "llvm/Option/ArgList.h"
 +#include "llvm/Support/Path.h"
@@ -152,8 +143,6 @@ index 0000000..4c2060c
 +  case llvm::Triple::x86_64:
 +    // We don't want this for x32, otherwise it will match x86_64 libs
 +    return "x86_64-ironclad-" + TargetTriple.getEnvironmentName().str();
-+  case llvm::Triple::aarch64:
-+    return "aarch64-ironclad-" + TargetTriple.getEnvironmentName().str();
 +  case llvm::Triple::riscv64:
 +    return "riscv64-ironclad-" + TargetTriple.getEnvironmentName().str();
 +  }
@@ -195,6 +184,8 @@ index 0000000..4c2060c
 +
 +  Generic_GCC::PushPPaths(PPaths);
 +
++  ExtraOpts.push_back("--hash-style=gnu");
++
 +#ifdef ENABLE_LINKER_BUILD_ID
 +  ExtraOpts.push_back("--build-id");
 +#endif
@@ -224,6 +215,12 @@ index 0000000..4c2060c
 +
 +bool Ironclad::HasNativeLLVMSupport() const { return true; }
 +
++bool Ironclad::isPIEDefault(const llvm::opt::ArgList &Args) const { return true; }
++
++Tool *Ironclad::buildStaticLibTool() const {
++  return new tools::gnutools::StaticLibTool(*this);
++}
++
 +Tool *Ironclad::buildLinker() const {
 +  return new tools::gnutools::Linker(*this);
 +}
@@ -240,14 +237,12 @@ index 0000000..4c2060c
 +
 +std::string Ironclad::getDynamicLinker(const ArgList &Args) const {
 +  switch (getTriple().getArch()) {
-+  case llvm::Triple::aarch64:
-+    return "/usr/lib/ld.so";
-+  case llvm::Triple::riscv64: {
-+    return "/usr/lib/ld.so";
-+ 
-+  }
++  case llvm::Triple::riscv64:
++    return "/lib/ld-ironclad-riscv64.so.2";
 +  case llvm::Triple::x86_64:
-+    return "/usr/lib/ld.so";
++    if (getTriple().isX32())
++      return "/lib/ld-ironclad-x32.so.2";
++    return "/lib/ld-ironclad-x86-64.so.2";
 +  default:
 +    llvm_unreachable("unsupported architecture");
 +  }
@@ -258,7 +253,7 @@ index 0000000..4c2060c
 +  const Driver &D = getDriver();
 +  std::string SysRoot = computeSysRoot();
 +
-+  if (DriverArgs.hasArg(clang::driver::options::OPT_nostdinc))
++  if (DriverArgs.hasArg(options::OPT_nostdinc))
 +    return;
 +
 +  if (!DriverArgs.hasArg(options::OPT_nostdlibinc))
@@ -315,10 +310,8 @@ index 0000000..4c2060c
 +  if (!GCCInstallation.isValid())
 +    return;
 +
-+  StringRef TripleStr = GCCInstallation.getTriple().str();
-+
 +  // Try generic GCC detection.
-+  Generic_GCC::addGCCLibStdCxxIncludePaths(DriverArgs, CC1Args, TripleStr);
++  Generic_GCC::addGCCLibStdCxxIncludePaths(DriverArgs, CC1Args);
 +}
 +
 +SanitizerMask Ironclad::getSupportedSanitizers() const {
@@ -342,10 +335,10 @@ index 0000000..4c2060c
 +}
 diff --git llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
 new file mode 100644
-index 0000000..8fcac48
+index 0000000..f69b5b0
 --- /dev/null
 +++ llvm-libs-workdir/clang/lib/Driver/ToolChains/Ironclad.h
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,58 @@
 +//===--- Ironclad.h - Ironclad ToolChain Implementations --------*- C++ -*-===//
 +//
 +//                     The LLVM Compiler Infrastructure
@@ -372,6 +365,8 @@ index 0000000..8fcac48
 +
 +  bool HasNativeLLVMSupport() const override;
 +
++  bool isPIEDefault(const llvm::opt::ArgList &Args) const override;
++
 +  std::string getMultiarchTriple(const Driver &D,
 +                                 const llvm::Triple &TargetTriple,
 +                                 StringRef SysRoot) const override;
@@ -393,6 +388,7 @@ index 0000000..8fcac48
 +
 +protected:
 +  Tool *buildAssembler() const override;
++  Tool *buildStaticLibTool() const override;
 +  Tool *buildLinker() const override;
 +};
 +
@@ -415,17 +411,19 @@ index 5971b75..a2bb8e1 100644
  #elif defined(_AIX)
  #include <sys/machine.h>
 diff --git llvm-libs-clean/llvm/include/llvm/TargetParser/Triple.h llvm-libs-workdir/llvm/include/llvm/TargetParser/Triple.h
-index 9c83abe..171da6d 100644
+index 9c83abe..e887dd0 100644
 --- llvm-libs-clean/llvm/include/llvm/TargetParser/Triple.h
 +++ llvm-libs-workdir/llvm/include/llvm/TargetParser/Triple.h
-@@ -218,6 +218,7 @@ public:
-     Lv2, // PS3
-     MacOSX,
-     Managarm,
+@@ -252,7 +252,8 @@ public:
+     Serenity,
+     Vulkan, // Vulkan SPIR-V
+     CheriotRTOS,
+-    LastOSType = CheriotRTOS
 +    Ironclad,
-     NetBSD,
-     OpenBSD,
-     Solaris,
++    LastOSType = Ironclad
+   };
+   enum EnvironmentType {
+     UnknownEnvironment,
 @@ -892,6 +893,8 @@ public:
  
    bool isOSManagarm() const { return getOS() == Triple::Managarm; }
@@ -489,7 +487,7 @@ index c6e79af..9867bb6 100644
  //=== WARNING: Implementation here must contain only generic UNIX code that
  //===          is guaranteed to work on *all* UNIX variants.
 diff --git llvm-libs-clean/llvm/lib/TargetParser/Triple.cpp llvm-libs-workdir/llvm/lib/TargetParser/Triple.cpp
-index a4f9dd4..ac8c856 100644
+index a4f9dd4..77e86da 100644
 --- llvm-libs-clean/llvm/lib/TargetParser/Triple.cpp
 +++ llvm-libs-workdir/llvm/lib/TargetParser/Triple.cpp
 @@ -314,6 +314,8 @@ StringRef Triple::getOSTypeName(OSType Kind) {
@@ -501,3 +499,11 @@ index a4f9dd4..ac8c856 100644
    case Mesa3D: return "mesa3d";
    case NVCL: return "nvcl";
    case NetBSD: return "netbsd";
+@@ -718,6 +720,7 @@ static Triple::OSType parseOS(StringRef OSName) {
+       .StartsWith("lv2", Triple::Lv2)
+       .StartsWith("macos", Triple::MacOSX)
+       .StartsWith("managarm", Triple::Managarm)
++      .StartsWith("ironclad", Triple::Ironclad)
+       .StartsWith("netbsd", Triple::NetBSD)
+       .StartsWith("openbsd", Triple::OpenBSD)
+       .StartsWith("solaris", Triple::Solaris)

@@ -2,7 +2,7 @@
 
 from_source=libtiff
 bootstrap_pkg=yes
-revision=1
+revision=2
 hostdeps="gcc pkg-config"
 deps="core-libs freeglut mesa libjpeg-turbo zlib zstd xz"
 

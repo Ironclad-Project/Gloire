@@ -2,7 +2,7 @@
 
 repology_id=tiff
 version=4.7.2
-revision=4
+revision=5
 tarball_url="http://download.osgeo.org/libtiff/tiff-${version}.tar.gz"
 tarball_blake2b="01d6c593fa0403472bfb7db4beb046d8da6014ce8670b2d81f38744f87df3d519d75a515006c98c878a02eee8f80d7b6bc006470ebc9433f5681562a3adba45a"
 hostdeps="gcc pkg-config"

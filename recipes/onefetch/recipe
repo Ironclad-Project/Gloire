@@ -1,0 +1,54 @@
+#! /bin/sh
+
+version=2.28.1
+revision=1
+git_url="https://github.com/o2sh/onefetch.git"
+commit=9beb80329cf2e5bd784270f668139f0bafb48e2b
+source_allow_network=yes
+source_hostdeps="rust"
+hostdeps="gcc pkg-config rust"
+imagedeps="build-essential"
+deps="core-libs zstd"
+
+prepare() {
+    CARGO_HOME="${source_dir}/.jinx-cargo-home" cargo fetch --locked
+
+    cargo_patch_crates .jinx-cargo-home/registry/src/*
+}
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    cargo_configure
+
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        RUSTFLAGS="${TARGET_RUSTFLAGS}" \
+        PKG_CONFIG="${OS_TRIPLET}-pkg-config" \
+        PKG_CONFIG_ALLOW_CROSS=1 \
+        ZSTD_SYS_USE_PKG_CONFIG=1 \
+    cargo build --release --offline -v --all-features --target "${OS_TRIPLET_RUST}"
+
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        RUSTFLAGS="${HOST_RUSTFLAGS}" \
+        CARGO_TARGET_DIR="$(pwd)/host-target" \
+    cargo build --release --offline -v --all-features
+}
+
+package() {
+    install -Dm755 "target/${OS_TRIPLET_RUST}/release/onefetch" \
+        "${dest_dir}${prefix}/bin/onefetch"
+
+    install -Dm644 docs/onefetch.1 "${dest_dir}${prefix}/share/man/man1/onefetch.1"
+
+    ./host-target/release/onefetch --generate bash >completions-bash
+    ./host-target/release/onefetch --generate fish >completions-fish
+    ./host-target/release/onefetch --generate zsh  >completions-zsh
+    install -Dm644 completions-bash \
+        "${dest_dir}${prefix}/share/bash-completion/completions/onefetch"
+    install -Dm644 completions-fish \
+        "${dest_dir}${prefix}/share/fish/vendor_completions.d/onefetch.fish"
+    install -Dm644 completions-zsh \
+        "${dest_dir}${prefix}/share/zsh/site-functions/_onefetch"
+
+    post_package_strip
+}

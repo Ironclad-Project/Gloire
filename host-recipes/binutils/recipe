@@ -23,6 +23,7 @@ configure() {
         --enable-relro \
         --enable-threads \
         --disable-nls \
+        --disable-silent-rules \
         --disable-werror \
         --with-pic
 }

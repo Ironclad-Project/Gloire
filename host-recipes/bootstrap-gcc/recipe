@@ -47,6 +47,7 @@ configure() {
         --disable-multilib \
         --disable-nls \
         --disable-shared \
+        --disable-silent-rules \
         --disable-threads
 }
 

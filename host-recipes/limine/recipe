@@ -22,7 +22,8 @@ configure() {
         TOOLCHAIN_FOR_TARGET=${OS_TRIPLET}- \
         $X86_FLAGS \
         --enable-uefi-${JINX_ARCH} \
-        --enable-uefi-cd
+        --enable-uefi-cd \
+        --disable-silent-rules
 }
 
 build() {

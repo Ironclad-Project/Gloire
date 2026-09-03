@@ -16,7 +16,8 @@ configure() {
         CXXFLAGS="$HOST_CXXFLAGS" \
         LDFLAGS="$HOST_LDFLAGS" \
     "${source_dir}"/configure \
-        --prefix="${prefix}"
+        --prefix="${prefix}" \
+        --disable-silent-rules
 }
 
 build() {

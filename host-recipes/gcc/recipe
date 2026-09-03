@@ -64,6 +64,7 @@ configure() {
         --enable-threads=posix \
         --disable-libssp \
         --disable-libstdcxx-pch \
+        --disable-silent-rules \
         --disable-werror
 }
 

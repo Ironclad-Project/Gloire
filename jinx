@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="13"
+jinx_minor_ver="14"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -584,6 +584,22 @@ get_hostdeps_file_for_topo() {
     done
 }
 
+get_source_deps() {
+    # Source-level deps of recipe $1 in $2, as '<source_hostdeps>|<source_deps>'.
+    # A recipe using from_source/from_host_source borrows them from the recipe
+    # owning the source; source_hostdeps always resolve in host-recipes/ and
+    # source_deps in recipes/, whichever namespace the source recipe lives in.
+    (
+        eval "$(include_recipe "${base_dir}/$2/$1")"
+
+        if [[ -n ${from_source} ]]; then
+            eval "$(include_recipe "${base_dir}/${_from_source_dir}/${from_source}")"
+        fi
+
+        echo "${source_hostdeps}|${source_deps}"
+    )
+}
+
 get_builddeps_file() {
     local deps_to_do=""
 
@@ -1028,6 +1044,9 @@ local imagedeps="${source_imagedeps}"
 local hostdeps="${source_hostdeps}"
 local deps="${source_deps}"
 local allow_network="${source_allow_network}"
+local builddeps=
+local hostrundeps=
+local binpkgdeps=
 EOF
 }
 
@@ -1313,6 +1332,31 @@ do_package() {
     cd "${base_dir}"
 }
 
+source_is_pinned() {
+    # Does any recipe sharing source $1 (rooted at $2) keep its build directory?
+    # Such a directory was configured out of tree and still names the source as
+    # srcdir, so reaping it would leave the tree unusable. Only a recipe assigning
+    # clean_workdirs keeps one, which is what grep narrows to.
+    local _src="$1"
+    local _root="$2"
+
+    local _rec _id
+    for _rec in $(grep -rl 'clean_workdirs' --include=recipe \
+                       "${base_dir}"/recipes "${base_dir}"/host-recipes || true); do
+        _id=$(
+            eval "$(include_recipe "${_rec%/recipe}")"
+            [[ ${clean_workdirs} == no ]] || exit 0
+            echo "${_sources_root}/${from_source:-${name}}"
+        )
+
+        if [[ ${_id} == "${_root}/${_src}" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 clean_sources() {
     force_remove "${base_dir}"/${_sources_root}/$1
     force_remove "${base_dir}"/${_sources_root}/$1-clean
@@ -1540,16 +1584,17 @@ do_host_pkg() {
         if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/host-builds/$1
 
+            # Only the recipe that owns a source may reap it; a from_source
+            # recipe borrows a tree the owner and other borrowers still need.
             if [[ -z ${from_source} ]]; then
                 eval "$(source_source_recipe "$1" host-recipes)"
-            else
-                eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")"
-            fi
 
-            eval "$(get_real_source_dir)"
+                eval "$(get_real_source_dir)"
 
-            if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]]; then
-                clean_sources "${name}"
+                if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]] \
+                   && ! source_is_pinned "${name}" "${_sources_root}"; then
+                    clean_sources "${name}"
+                fi
             fi
         fi
     fi
@@ -1653,16 +1698,17 @@ do_pkg() {
         if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/builds/$1
 
+            # Only the recipe that owns a source may reap it; a from_source
+            # recipe borrows a tree the owner and other borrowers still need.
             if [[ -z ${from_source} ]]; then
                 eval "$(source_source_recipe "$1" recipes)"
-            else
-                eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")"
-            fi
 
-            eval "$(get_real_source_dir)"
+                eval "$(get_real_source_dir)"
 
-            if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]]; then
-                clean_sources "${name}"
+                if [[ ${is_sourceless_package} != true && ${is_local_package} != true ]] \
+                   && ! source_is_pinned "${name}" "${_sources_root}"; then
+                    clean_sources "${name}"
+                fi
             fi
         fi
     fi
@@ -1853,22 +1899,27 @@ cmd_dry_run() {
         collected[$node]=1
 
         local pair edges="" d
+        local nsdir rpkg
         if [[ ${node} == host/* ]]; then
-            [[ -f "${base_dir}/host-recipes/${node#host/}/recipe" ]] \
-                || die "$0: host recipe '${node#host/}' not found"
-            local pair=$(eval "$(include_recipe "${base_dir}/host-recipes/${node#host/}")" \
-                && echo "${hostdeps} ${hostrundeps} ${source_hostdeps}|${deps} ${builddeps} ${source_deps}")
+            local nsdir=host-recipes
+            local rpkg="${node#host/}"
+            [[ -f "${base_dir}/host-recipes/${rpkg}/recipe" ]] \
+                || die "$0: host recipe '${rpkg}' not found"
         else
-            [[ -f "${base_dir}/recipes/${node}/recipe" ]] \
-                || die "$0: recipe '${node}' not found"
-            local pair=$(eval "$(include_recipe "${base_dir}/recipes/${node}")" \
-                && echo "${hostdeps} ${hostrundeps} ${source_hostdeps}|${deps} ${builddeps} ${source_deps}")
+            local nsdir=recipes
+            local rpkg="${node}"
+            [[ -f "${base_dir}/recipes/${rpkg}/recipe" ]] \
+                || die "$0: recipe '${rpkg}' not found"
         fi
 
-        for d in ${pair%%|*}; do
+        local pair=$(eval "$(include_recipe "${base_dir}/${nsdir}/${rpkg}")" \
+            && echo "${hostdeps} ${hostrundeps}|${deps} ${builddeps}")
+        local srcpair=$(get_source_deps "${rpkg}" "${nsdir}")
+
+        for d in ${pair%%|*} ${srcpair%%|*}; do
             local edges="${edges} host/${d}"
         done
-        for d in ${pair#*|}; do
+        for d in ${pair#*|} ${srcpair#*|}; do
             local edges="${edges} ${d}"
         done
 
@@ -1928,15 +1979,24 @@ cmd_download_for() {
         done
     done
 
-    # Collect transitive deps. For normal recipes the relevant edges are
-    # deps+builddeps; for host recipes they are hostdeps+hostrundeps.
+    # Collect transitive deps. Nothing is built here, so the only edges that
+    # matter are the ones xbps itself records in a binary package: deps and
+    # binpkgdeps for a normal recipe, hostrundeps for a host one, exactly what
+    # do_pkg and do_host_pkg hand to 'xbps-create -D'. Build-time edges
+    # (builddeps, hostdeps, and anything the source step needs) are irrelevant.
     local -A pkg_deps
+    local -A bootstrap
     for pkg in $(cd "${base_dir}/${recipes_dir}" && echo *); do
+        local info
         if [[ ${recipes_dir} == recipes ]]; then
-            pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" && echo "${deps} ${builddeps} ${source_deps} ${binpkgdeps}")
+            info=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" \
+                && echo "${bootstrap_pkg}|${deps} ${binpkgdeps}")
         else
-            pkg_deps[$pkg]=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" && echo "${hostdeps} ${hostrundeps} ${source_hostdeps}")
+            info=$(eval "$(include_recipe "${base_dir}/${recipes_dir}/${pkg}")" \
+                && echo "|${hostrundeps}")
         fi
+        bootstrap[$pkg]="${info%%|*}"
+        pkg_deps[$pkg]="${info#*|}"
     done
 
     local -A collected
@@ -1947,7 +2007,11 @@ cmd_download_for() {
         collected[$pkg]=1
         local dep
         for dep in ${pkg_deps[$pkg]}; do
-            [[ -n $dep ]] && collect_all_deps "$dep"
+            [[ -n $dep ]] || continue
+            # do_pkg keeps a bootstrap package out of what it records, so
+            # nothing downloaded will ever ask xbps to resolve one.
+            [[ ${bootstrap[$dep]-} == yes ]] && continue
+            collect_all_deps "$dep"
         done
     }
 
@@ -2284,6 +2348,12 @@ cmd_revbump() {
             local rdeps_line="${depinfo%%$'\n'*}"
             local rhost_line="${depinfo#*$'\n'}"
             local rhost_line="${rhost_line%%$'\n'*}"
+
+            # Preparing the source is part of building the package, so what the
+            # source step needs is a revbump edge just like what the build does.
+            local srcpair="$(get_source_deps "${pkg}" "${nsdir}")"
+            local rhost_line="${rhost_line} ${srcpair%%|*}"
+            local rdeps_line="${rdeps_line} ${srcpair#*|}"
 
             local d
             for d in ${rdeps_line}; do

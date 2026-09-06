@@ -42,8 +42,8 @@ export LC_COLLATE=C
 
 umask 0022
 
-jinx_major_ver="0.10"
-jinx_minor_ver="14"
+jinx_major_ver="0.11"
+jinx_minor_ver="0"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -498,7 +498,7 @@ topo_sort() {
     local _node _deps
     while IFS=: read -r _node _deps; do
         [[ -z $_node ]] && continue
-        # first occurrence wins (matches awk's previous exit-on-first-match)
+        # first occurrence wins
         [[ -n ${_graph[$_node]+x} ]] || _graph[$_node]=$_deps
     done <<<"$1"
 
@@ -727,6 +727,16 @@ prepare_container() {
         mkdir -p "${container_pkgs}"
 
         local _imagerundep
+        case "${recipe_dir}" in
+            # A host recipe's own imagerundeps go into its own build image too,
+            # mirroring how its own hostrundeps are installed into its own
+            # container: a host build routinely runs what it just built.
+            */host-recipes/*)
+                for _imagerundep in ${imagerundeps}; do
+                    imagedeps="${imagedeps} ${_imagerundep}"
+                done
+                ;;
+        esac
         for hostdep in "${!_hostdeps_collected[@]}"; do
             for _imagerundep in $(eval "$(include_recipe "${base_dir}/host-recipes/${hostdep}")" && echo "${imagerundeps}"); do
                 imagedeps="${imagedeps} ${_imagerundep}"
@@ -1046,6 +1056,7 @@ local deps="${source_deps}"
 local allow_network="${source_allow_network}"
 local builddeps=
 local hostrundeps=
+local imagerundeps=
 local binpkgdeps=
 EOF
 }
@@ -2329,8 +2340,9 @@ cmd_revbump() {
     # Bump the revision of every recipe that depends, directly or
     # transitively, on the given package(s). Targets and dependents may be
     # normal recipes or host recipes (selected with the 'host:' prefix).
-    # 'deps'/'builddeps' resolve in recipes/, 'hostdeps'/'hostrundeps' in
-    # host-recipes/, so the graph spans both namespaces.
+    # 'deps'/'builddeps' and 'source_deps' resolve in recipes/,
+    # 'hostdeps'/'hostrundeps' and 'source_hostdeps' in host-recipes/, so the
+    # graph spans both namespaces.
     if [[ -z ${1-} ]]; then
         die "$0: revbump requires at least one package name"
     fi

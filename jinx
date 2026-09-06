@@ -43,7 +43,7 @@ export LC_COLLATE=C
 umask 0022
 
 jinx_major_ver="0.10"
-jinx_minor_ver="11"
+jinx_minor_ver="12"
 
 jinx_version="${jinx_major_ver}.${jinx_minor_ver}"
 
@@ -187,7 +187,7 @@ if [[ $script_dir == . || -z $script_dir ]]; then
     if [[ $0 == */* ]]; then
         script_dir=.
     else
-        script_dir="$(dirname "$(which "${script_name}")")"
+        script_dir="$(dirname "$(command -v "${script_name}")")"
     fi
 fi
 script_dir="$(cd "${script_dir}" && pwd -P)"
@@ -208,13 +208,20 @@ case "$1" in
         ;;
 esac
 
-if [[ -z ${JINX_PARALLELISM} ]]; then
-    max_threads_by_mem=$(( ((($(LC_ALL=C free | awk '/^Mem:/{print $2}') + 1048575) / 1048576) + 1) / 2 ))
-    parallelism="$(nproc 2>/dev/null || echo 1)"
-    parallelism=$(( parallelism < max_threads_by_mem ? parallelism : max_threads_by_mem ))
-else
-    parallelism="$JINX_PARALLELISM"
-fi
+compute_parallelism() {
+    if [[ -n ${JINX_PARALLELISM} ]]; then
+        echo "${JINX_PARALLELISM}"
+        return
+    fi
+
+    local max_threads_by_mem=$(( ((($(LC_ALL=C free | awk '/^Mem:/{print $7}') + 1048575) / 1048576) + 1) / 2 ))
+    local threads="$(nproc 2>/dev/null || echo 1)"
+    local threads=$(( threads < max_threads_by_mem ? threads : max_threads_by_mem ))
+
+    echo $(( threads > 0 ? threads : 1 ))
+}
+
+parallelism="$(compute_parallelism)"
 
 # Architecture tag for host packages. Host recipes build native tools that run
 # on the build machine, so they are keyed on the build host's arch, independent
@@ -261,7 +268,7 @@ if [[ ${in_container} == false ]]; then
     mkdir -p "$JINX_CACHE_DIR"
     JINX_CACHE_DIR="$(cd "$JINX_CACHE_DIR" && pwd -P)"
 
-    export PATH="${JINX_CACHE_DIR}/xbps/bin:${JINX_CACHE_DIR}/debootstrap/usr/sbin:${PATH}:/usr/sbin:/sbin"
+    export PATH="${JINX_CACHE_DIR}/bin:${JINX_CACHE_DIR}/xbps/bin:${JINX_CACHE_DIR}/debootstrap/usr/sbin:${PATH}:/usr/sbin:/sbin"
     if [[ -n ${LD_LIBRARY_PATH} ]]; then
         LD_LIBRARY_PATH=":${LD_LIBRARY_PATH}"
     fi
@@ -273,7 +280,13 @@ if [[ ${in_container} == false ]]; then
         dry-run|version|--version|help|--help|init)
             ;;
         *)
-            exec 9>"${JINX_CACHE_DIR}/jinx.lock"
+            # flock needs no write access, so hold the lock on a read-only
+            # descriptor: a lock file left behind by a run as root ('install'
+            # is allowed to be one) still works for every later run.
+            if [[ ! -e "${JINX_CACHE_DIR}/jinx.lock" ]]; then
+                : >"${JINX_CACHE_DIR}/jinx.lock"
+            fi
+            exec 9<"${JINX_CACHE_DIR}/jinx.lock"
             if ! flock -n 9; then
                 die "$0: another jinx is already running in this build directory.
   lock: ${JINX_CACHE_DIR}/jinx.lock
@@ -785,6 +798,9 @@ run_in_container() {
     fi
 
     local arg
+
+    # Recomputed per step so the memory cap tracks the RAM free right now.
+    local parallelism="$(compute_parallelism)"
 
     unshare --user --map-root-user --mount --pid --fork ${unshare_net_flag} -- "$BASH" -c "
         set -e
@@ -1698,6 +1714,30 @@ do_host_build_if_needed() {
     fi
 }
 
+pkg_previously_built() {
+    # Has package $1 ever been built into directory $2 for arch $3? A bare
+    # '$1-*_*' glob would also match packages merely prefixed with '$1-', so
+    # require what precedes the revision to be a version, which has no '-'.
+    local pkg="$1"
+    local dir="$2"
+    local arch="$3"
+
+    local file
+    for file in "${dir}/${pkg}"-*_*."${arch}".xbps; do
+        [[ -f ${file} ]] || continue
+
+        local name_version="${file##*/}"
+        local name_version="${name_version%".${arch}.xbps"}"
+        local name_version="${name_version%_*}"
+
+        if [[ ${name_version#"${pkg}-"} != *-* ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 do_update() {
     local with_build="$1"
     shift
@@ -1712,7 +1752,7 @@ do_update() {
     fi
 
     # Not previously built? Skip unless caller asked to build missing ones.
-    if [[ ${with_build} != yes ]] && ! compgen -G "${build_dir}/pkgs/${name}-*_*.${JINX_ARCH}.xbps" >/dev/null; then
+    if [[ ${with_build} != yes ]] && ! pkg_previously_built "${name}" "${build_dir}/pkgs" "${JINX_ARCH}"; then
         return 0
     fi
 
@@ -1745,7 +1785,7 @@ do_host_update() {
     fi
 
     # Not previously built? Skip unless caller asked to build missing ones.
-    if [[ ${with_build} != yes ]] && ! compgen -G "${build_dir}/host-pkgs/${name}-*_*.${host_arch}.xbps" >/dev/null; then
+    if [[ ${with_build} != yes ]] && ! pkg_previously_built "${name}" "${build_dir}/host-pkgs" "${host_arch}"; then
         return 0
     fi
 
@@ -2302,6 +2342,17 @@ cmd_revbump() {
     fi
 }
 
+pkg_file_list() {
+    # The paths the built package $1 contains, minus its metadata entries.
+    # pipefail matters here: the trailing 'grep || true' always succeeds, so
+    # without it a failed decompression would read as an empty package and
+    # quietly turn the caller's conflict check into a no-op.
+    local -
+    set -o pipefail
+
+    zstdcat "$1" | tar -tf - | ( grep -v "${files_to_ignore}" || true )
+}
+
 cmd_install() {
     local force_install=""
     if [[ ${1-} == "-f" ]]; then
@@ -2366,7 +2417,7 @@ cmd_install() {
         XBPS_TARGET_ARCH="${JINX_ARCH}" \
             xbps-install -y $force_install -r "${sysroot}" -R "${build_dir}"/pkgs ${pkg} >/dev/null 2>&1
 
-        zstdcat "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | tar -tf - | ( grep -v "${files_to_ignore}" || true ) >>"${all_files}"
+        pkg_file_list "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" >>"${all_files}"
         '
     done
 
@@ -2397,7 +2448,7 @@ cmd_install() {
                     local version=$(eval "$(source_source_recipe "${from_source}" "${_from_source_dir}")" && echo "$version")
                 fi
 
-                if zstdcat "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps | tar -tf - | ( grep -v "${files_to_ignore}" || true ) | grep -q "${elem}"; then
+                if pkg_file_list "${build_dir}/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps" | grep -q "${elem}"; then
                     printf " ${pkg}"
                 fi
                 '
@@ -2445,7 +2496,59 @@ reinit_container() {
         ppc64le) local DEBOOTSTRAP_ARCH=ppc64el ;;
     esac
 
-    # Install debootstrap
+    # debootstrap only knows two extractors, 'ar' and dpkg-deb. Ship a stand-in
+    # for the two ar flags it uses instead of requiring binutils, ahead of the
+    # host's PATH like Jinx's own xbps and debootstrap, and pin --extractor=ar
+    # below so no host bootstraps through a different one.
+    mkdir -p "${JINX_CACHE_DIR}/bin"
+    cat <<'EOF' >"${JINX_CACHE_DIR}/bin/ar"
+#! /bin/sh
+# Minimal stand-in for 'ar', supporting only the two forms debootstrap uses:
+#   ar -t <archive>           - list member names
+#   ar -p <archive> <member>  - write one member to stdout
+# An ar header is plain ASCII, so head/tail can do the whole job. Long member
+# names (GNU's '//' table, BSD's '#1/') are not handled: .deb archives never
+# carry names that need them.
+
+set -eu
+
+mode="$1"
+archive="$2"
+
+offset=8
+while :; do
+    name="$(tail -c "+$((offset + 1))" "${archive}" | head -c 16)"
+    [ -n "${name}" ] || break
+
+    size="$(tail -c "+$((offset + 49))" "${archive}" | head -c 10)"
+
+    # Undo ar's padding: trailing spaces on both fields, plus the trailing '/'
+    # GNU ar appends to a member name.
+    name="${name%"${name##*[! ]}"}"
+    name="${name%/}"
+    size="${size%"${size##*[! ]}"}"
+
+    case "${mode}" in
+        -t)
+            echo "${name}"
+            ;;
+        -p)
+            if [ "${name}" = "${3-}" ]; then
+                tail -c "+$((offset + 61))" "${archive}" | head -c "${size}"
+                exit 0
+            fi
+            ;;
+    esac
+
+    offset=$((offset + 60 + size + size % 2))
+done
+EOF
+    chmod 0755 "${JINX_CACHE_DIR}/bin/ar"
+
+    # Install debootstrap. Upstream ships the install step as a Makefile
+    # target, but it is only a few copies plus a @VERSION@ substitution, so do
+    # it inline and keep make out of the prerequisites. The version is taken
+    # from debian/changelog exactly the way that Makefile takes it.
     tracked_subshell '
         cd "${JINX_CACHE_DIR}"
         wget -O debootstrap.tar.gz https://salsa.debian.org/installer-team/debootstrap/-/archive/${debootstrap_version}/debootstrap-${debootstrap_version}.tar.gz
@@ -2453,11 +2556,20 @@ reinit_container() {
             die "Jinx: Failed to verify debootstrap tarball"
         fi
         tar -zxf debootstrap.tar.gz
-        make -C debootstrap-${debootstrap_version} DESTDIR="$(pwd -P)/debootstrap" install
-        force_remove debootstrap.tar.gz debootstrap-${debootstrap_version}
-        sed "s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g;s|DEBOOTSTRAP_DIR=/usr/share/debootstrap|DEBOOTSTRAP_DIR=\"$(pwd -P)/debootstrap/usr/share/debootstrap\"|g" debootstrap/usr/sbin/debootstrap >debootstrap.sed
-        mv debootstrap.sed debootstrap/usr/sbin/debootstrap
-        chmod +x debootstrap/usr/sbin/debootstrap
+
+        local _ds_src="debootstrap-${debootstrap_version}"
+        local _ds_share="debootstrap/usr/share/debootstrap"
+        local _ds_ver="$(sed "s/.*(\(.*\)).*/\1/; q" "${_ds_src}/debian/changelog")"
+
+        mkdir -p "${_ds_share}/scripts" debootstrap/usr/sbin
+        cp -a "${_ds_src}"/scripts/* "${_ds_share}/scripts/"
+        cp "${_ds_src}/functions" "${_ds_share}/functions"
+        chmod 0644 "${_ds_share}/functions"
+
+        sed "s/@VERSION@/${_ds_ver}/g;s/HOST_ARCH=[^;#]*/HOST_ARCH=${DEBOOTSTRAP_ARCH}/g;s|DEBOOTSTRAP_DIR=/usr/share/debootstrap|DEBOOTSTRAP_DIR=\"$(pwd -P)/debootstrap/usr/share/debootstrap\"|g" "${_ds_src}/debootstrap" >debootstrap/usr/sbin/debootstrap
+        chmod 0755 debootstrap/usr/sbin/debootstrap
+
+        force_remove debootstrap.tar.gz "${_ds_src}"
     '
 
     mkdir -p "$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives"
@@ -2468,7 +2580,7 @@ reinit_container() {
         mount --bind '${apt_cache}' '$JINX_CACHE_DIR/sets/.image/var/cache/apt/archives'
 
         LD_PRELOAD='$JINX_CACHE_DIR/sets/.image/nochown.so' debootstrap \
-            --foreign --variant=minbase sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
+            --foreign --variant=minbase --extractor=ar sid '$JINX_CACHE_DIR/sets/.image' https://snapshot.debian.org/archive/debian/${JINX_DEBIAN_SNAPSHOT}/
     "
 
     local dir
@@ -2542,7 +2654,21 @@ first_use() {
 
 redo_first_use() {
     echo "* purging old Jinx cache..."
-    force_remove "$JINX_CACHE_DIR"
+
+    # Everything except the lock file: it is held open right now, and removing
+    # it drops the mutual exclusion for the rest of this run and leaves the
+    # next run - possibly a 'jinx install' as root - to recreate it.
+    local -a _stale=()
+    local _entry
+    for _entry in "${JINX_CACHE_DIR}"/* "${JINX_CACHE_DIR}"/.[!.]*; do
+        [[ -e ${_entry} || -L ${_entry} ]] || continue
+        [[ ${_entry} == "${JINX_CACHE_DIR}/jinx.lock" ]] && continue
+        _stale+=("${_entry}")
+    done
+    if (( ${#_stale[@]} > 0 )); then
+        force_remove "${_stale[@]}"
+    fi
+
     first_use
 }
 

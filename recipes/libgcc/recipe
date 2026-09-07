@@ -1,8 +1,8 @@
 #! /bin/sh
 
 skip_pkg_check=yes
-version="$(. "${base_dir}/host-recipes/gcc/recipe" && echo ${version})"
-revision=3
+version="$(. "${base_dir}/recipes/gcc/recipe" && echo ${version})"
+revision=4
 hostdeps="gcc pkg-config"
 imagedeps="build-essential"
 deps="glibc"

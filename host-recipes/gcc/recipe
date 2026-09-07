@@ -1,29 +1,17 @@
 #! /bin/sh
 
-version=16.2.0
-tarball_url="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
-tarball_blake2b="ab3ffe16e042da767f3f1eac170da518d6d7de3b0f92e068f79e3bf25fdc0bdf56eea0cd586bd4b9b6e9baebadd110c2ebd77b75c99c45853814f4bea5a98ef0"
+from_source=gcc
+revision=4
 clean_workdirs=no
-revision=3
-imagedeps="build-essential"
+imagedeps="build-essential pkg-config libmpfr-dev libgmp-dev libisl-dev libmpc-dev"
+imagerundeps="libmpfr6 libgmp10 libisl23 libmpc3"
 hostdeps="pkg-config"
 hostrundeps="binutils"
-
 deps="glibc"
+
 _glibc_version="$(. "${base_dir}/recipes/glibc/recipe" && echo "${version}")"
 
 . "${base_dir}"/build-support/gcc-ada-helpers
-
-early_prepare() {
-    ./contrib/download_prerequisites
-
-    # Gettext causes issues and we don't want it anyways.
-    rm -rf gettext*
-}
-
-prepare() {
-    autotools_recursive_regen
-}
 
 configure() {
     ada_symlink_gnat

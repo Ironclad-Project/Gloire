@@ -1,8 +1,9 @@
 #! /bin/sh
 
-from_host_source=gcc
-revision=4
-imagedeps="build-essential"
+from_source=gcc
+revision=5
+imagedeps="build-essential pkg-config libmpfr-dev libgmp-dev libisl-dev libmpc-dev"
+imagerundeps="libmpfr6 libgmp10 libisl23 libmpc3"
 hostdeps="pkg-config"
 hostrundeps="binutils"
 _glibc_version="$(. "${base_dir}/recipes/glibc/recipe" && echo "${version}")"

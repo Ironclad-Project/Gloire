@@ -2,7 +2,7 @@
 
 repology_id=xeyes
 version=1.3.1
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/app/xeyes-${version}.tar.xz"
 tarball_blake2b="01024ccf9ae120b134a86f946b6fd53ffebfcff41a64d24b9b81aa0307dc03b1a8d1a70a0652c9a9b7b7f667e8722a9e6f5beeaeb6ed3f69ec8fb88f558fe5be"
 hostdeps="gcc pkg-config"

@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/recipes/gcc/recipe" && echo ${version})"
-revision=4
+revision=5
 hostdeps="gcc pkg-config"
 imagedeps="build-essential"
 deps="glibc libgcc libstdc++"

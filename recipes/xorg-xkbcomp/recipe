@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.5.0
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/app/xkbcomp-${version}.tar.gz"
 tarball_blake2b="24825ca3eb97938d5eeeb1331520b861ee0b832339e8e63e08ae7679c0a28b5b3a42b5032e30eb28def347f37784dd1984e98fbe0760122acb0c463c3d550445"
 hostdeps="gcc pkg-config"

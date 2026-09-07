@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.58.2
-revision=3
+revision=4
 tarball_url="https://download.gnome.org/sources/pango/1.58/pango-${version}.tar.xz"
 tarball_blake2b="234ec97322322326c0e2cd134b35bc7c99bb6bc5f80500f864dc2047c6256f323f0d9cfe379915b31d4befb9419b98dbf7c54ddbf92407ca4c4a446673969616"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin python3-docutils"

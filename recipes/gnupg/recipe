@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.4.9
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/gnupg/gnupg-${version}.tar.bz2"
 tarball_blake2b="5bbd278c570d3e389ab26dd37e1adac6c1b19f9bd369ebf30d75f48d0ab901c6f5fe4e4713b763f57b9e74efab654186ebff1a968348b0b9f70c82618b4b3b62"
 imagedeps="build-essential"

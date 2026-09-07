@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=15.2.0
-revision=1
+revision=2
 git_url="https://github.com/BurntSushi/ripgrep.git"
 commit=e89fff89ac9af12e8d4ce9d5fd07beb408ca730f
 source_allow_network=yes

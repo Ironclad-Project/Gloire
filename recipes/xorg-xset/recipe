@@ -2,7 +2,7 @@
 
 repology_id=xset
 version=1.2.6
-revision=3
+revision=4
 tarball_url="https://www.x.org/pub/individual/app/xset-${version}.tar.xz"
 tarball_blake2b="6d0df9c342cd6bc22b081c2ddb9057474736ed5446b84b9a843479327028bfe612703a98c32ba32572ffb3067decd8a27340729bfafd58e893e274a0d0d06aed"
 hostdeps="gcc pkg-config"

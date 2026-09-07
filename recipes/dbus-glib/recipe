@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.114
-revision=3
+revision=4
 tarball_url="https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-${version}.tar.gz"
 tarball_blake2b="d9e9284d9dc9c57826a11d1776634102bf03e9d3cef98da96f92b9da936787eb4508258dc33ed3d35f0af8a39df8cff6e4b46ee0559319a50a33a0b1260d90d7"
 imagedeps="libdbus-glib-1-dev-bin libglib2.0-dev-bin"

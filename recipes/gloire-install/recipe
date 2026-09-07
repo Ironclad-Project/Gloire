@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=8
+revision=9
 source_dir="gloire-install"
 deps="core-libs dialog e2fsprogs dosfstools gptfdisk limine"
 

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.0.2
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/lib/libXpresent-${version}.tar.xz"
 tarball_blake2b="b68e95b0c84e16272e82b7795aec2a1b37248de7c3b247637f72c60df3c6f5812012ec0f01f6b1b45a5371a0d0bd6a384039f448fc3528181da447c197783cac"
 hostdeps="gcc pkg-config"

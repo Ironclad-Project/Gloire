@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=5.4
-revision=3
+revision=4
 tarball_url="https://people.freedesktop.org/~svu/libxklavier-${version}.tar.bz2"
 tarball_blake2b="3cd109c6200ef977533d39b1362c33f871c2cd0b011779b726546aa7dc95bf7dc89931dff7ca2e9a012a51aeec602a53df499591ab30e1dd813fcc823318a2e2"
 imagedeps="libglib2.0-dev-bin"

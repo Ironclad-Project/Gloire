@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=18
+revision=19
 
 deps="core-libs base-files bash ironclad xbps"
 

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.20
-revision=3
+revision=4
 tarball_url="https://user-dirs.freedesktop.org/releases/xdg-user-dirs-${version}.tar.xz"
 tarball_blake2b="f279c9c5585ea39e0c6637a14c67e34af518aad0709f885cd2df876628b7669117ea1122b9fc222c1372890d2879a347e6f7e1a1c16fa8291ecd773af0ec90fa"
 hostdeps="gcc pkg-config"

@@ -3,7 +3,7 @@
 repology_id=gtksourceview
 repology_srcname=gtksourceview4
 version=4.8.4
-revision=6
+revision=7
 tarball_url="https://download.gnome.org/sources/gtksourceview/4.8/gtksourceview-${version}.tar.xz"
 tarball_blake2b="0fb649522ff904993b7673c380b8ffb6458c0727b6af906e5328d972fb5385a2a668c2ca45b7dd3533f9f00b2ed9eaade55ee7b20a0b75fb1c031b917c27af2d"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

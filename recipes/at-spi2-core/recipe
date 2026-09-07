@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.60.6
-revision=3
+revision=4
 tarball_url="https://download.gnome.org/sources/at-spi2-core/2.60/at-spi2-core-${version}.tar.xz"
 tarball_blake2b="f88b4ac1e84a151d925b55c45a9747ae0ad598e432e2128a03ffd6d08e68242bc3b67d1214a14f6234f51193da24ff3a6c1ec081b52a07d87a74f66bc99ef73e"
 imagedeps="libglib2.0-dev-bin"

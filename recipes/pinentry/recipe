@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.3
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-${version}.tar.bz2"
 tarball_blake2b="d907056dfdc2830d41983601ce73df8650c7329bf12d22b5462c2f81921fa3aa8695ae4c420aba8bdef257a34ab502d8c22bb730fb5d713cf59c317f767bee35"
 imagedeps="build-essential"

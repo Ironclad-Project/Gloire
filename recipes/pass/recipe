@@ -3,7 +3,7 @@
 repology_id=password-store
 repology_srcname=password-store
 version=1.7.4
-revision=8
+revision=9
 git_url="https://git.zx2c4.com/password-store"
 commit=1078f2514d579178d5df7042c6a790e9c9b731ad
 deps="core-libs gnupg git tree"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.3.2
-revision=4
+revision=5
 tarball_url="https://zlib.net/zlib-${version}.tar.xz"
 tarball_blake2b="fd3a6e4c275a925f4814de487075c136e28421ea34ca7f93141781e7a414b392cd849fbf96cfcb24e825441df5f3c64be54276c0f617dc2d5c865d4ab260e83c"
 hostdeps="gcc pkg-config"

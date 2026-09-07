@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=5.5.1
-revision=3
+revision=4
 tarball_url="https://www.lua.org/ftp/lua-${version}.tar.gz"
 tarball_blake2b="b3f9ba31a8c33ef564233bb633168246d3e04f44b28f2d16130b14b47fd65a1f3b44bed0e2b7bf773d9526abc2c941db4213b01e95de8af5f523658ec4315bff"
 hostdeps="gcc pkg-config"

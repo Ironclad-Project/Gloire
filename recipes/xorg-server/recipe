@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=21.1.24
-revision=4
+revision=5
 tarball_url="https://www.x.org/archive/individual/xserver/xorg-server-${version}.tar.xz"
 tarball_blake2b="58d2fb73d77f32466c7d38831034bed3a9a3e832de7a5e53f2d7c70267924407467158c5acb85b27d84b70a43c812c272cc00d9b7f54f83b69be1704c172e1bd"
 hostdeps="gcc pkg-config"

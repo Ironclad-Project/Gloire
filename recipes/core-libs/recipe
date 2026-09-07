@@ -2,5 +2,5 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=3
+revision=4
 deps="glibc libgcc libstdc++ libatomic libxcrypt tzdata"

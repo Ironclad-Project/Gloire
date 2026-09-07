@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=5.0.2
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/screen/screen-${version}.tar.gz"
 tarball_blake2b="b9a5b90e84f5a2ae50dcc245686f57b654eef84b9f8580e3c36d21e337cb6c4690060e1b4ce11ae6804709aa2083c13c954b931f1e87d2835647539d75e89d64"
 hostdeps="gcc pkg-config"

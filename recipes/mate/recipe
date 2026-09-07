@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=11
+revision=12
 
 deps="core-libs
 caja marco mate-control-center mate-desktop mate-icon-theme mate-menus

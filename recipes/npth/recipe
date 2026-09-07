@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.8
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/npth/npth-${version}.tar.bz2"
 tarball_blake2b="554620f6a45f57bb958d245f7464abffd565b592941f0c404ce384c854be57ee35754a78dcf6afac751ee87e1df230bf3d2b78fb37cb1ef3e5ea534ddfd4ef2a"
 imagedeps="build-essential"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=5.05
-revision=3
+revision=4
 git_url="https://github.com/eyJhb/sl.git"
 commit=085764117c72ed7d9387fb09a27d96003d36090f
 hostdeps="gcc"

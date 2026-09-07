@@ -2,7 +2,7 @@
 
 repology_id=freetype
 version=2.14.3
-revision=3
+revision=4
 tarball_url="https://download-mirror.savannah.gnu.org/releases/freetype/freetype-${version}.tar.xz"
 tarball_blake2b="26db1946b099abc73d9d249dc48303e70886e0b1cb7180d5b9538b3934dc677a1572a32573af6adabeeb1c1a2eef81f24399038d3d8e640c29bba77f6c8a3596"
 hostdeps="gcc pkg-config"

@@ -2,7 +2,7 @@
 
 repology_id=tree-steve-baker
 version=2.3.2
-revision=3
+revision=4
 tarball_url="https://oldmanprogrammer.net/tar/tree/tree-${version}.tgz"
 tarball_blake2b="915459c6eddd9e887b9374bb7d16b31c86271face5cd6620f74505fb2461745c884ebe9564dd03cb55d707e9c859aa36918c5b8e8cb907b899db63ce9b7c03a4"
 hostdeps="gcc"

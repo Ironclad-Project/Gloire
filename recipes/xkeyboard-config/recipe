@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.48
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-${version}.tar.xz"
 tarball_blake2b="3200801ed54cc9ec28790053fa3311429e9fbce4607cda67f1f2991b4f0764df0dc35c4f880541833644ba9a4aba075792ce3dd26c54a2539312d8c6bbb75a54"
 hostdeps="gcc pkg-config"

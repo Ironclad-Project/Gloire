@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.40
-revision=3
+revision=4
 tarball_url="https://archive.mozilla.org/pub/nspr/releases/v${version}/src/nspr-${version}.tar.gz"
 tarball_blake2b="91fcb301f001068190c9a0e0c792d7decb46bc56c26a7f2b0001aa4b322c71d2bfaecfa7f3467befb7ec1dfecd31694f164cdc3f1c49abcc30c3859896e3f1ac"
 imagedeps="build-essential"

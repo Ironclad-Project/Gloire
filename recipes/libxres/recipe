@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.2.3
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/lib/libXres-${version}.tar.xz"
 tarball_blake2b="bd4d0c61e63c0c568b7417e97a9be5554d740aeb332e191c870aea662e571ee0d0bb26daee6e7df7fa0bc3b2b2b3287f9e9569f1c3eee2cc110ef48d9e2d4919"
 hostdeps="gcc pkg-config"

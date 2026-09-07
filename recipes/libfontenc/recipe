@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.1.9
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/lib/libfontenc-${version}.tar.gz"
 tarball_blake2b="7411c3807bf273048fe341bdcb7b2fa82e1cdd396fe07520267f278bb9db4affc7948957887f748e58568de1bd583c3d72aafdc64b75a7879afb0fef6cd8de25"
 hostdeps="gcc pkg-config"

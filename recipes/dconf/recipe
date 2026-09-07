@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.49.0
-revision=4
+revision=5
 tarball_url="https://download.gnome.org/sources/dconf/0.49/dconf-${version}.tar.xz"
 tarball_blake2b="eb2ba8b00225dc612aecffa8d37a5251764e4b71232a92de97b4d6f02d1074a7c7b8b7230e2f254c852b836ddd910bdea02cef4ec4177102268ca8bc8e95129e"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

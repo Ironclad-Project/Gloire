@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.4.5
-revision=4
+revision=5
 tarball_url="https://github.com/irssi/irssi/releases/download/${version}/irssi-${version}.tar.gz"
 tarball_blake2b="ebf3da0ef26848a33435d1c00a43fb0689ce5b0a41004201596fc04ca49ea7f37c1f7a64cfb4cfd3ffb25c50d2267ade168aa4826f6a2e57697ff95ee9d91899"
 hostdeps="gcc pkg-config"

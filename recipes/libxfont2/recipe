@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.0.9
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/lib/libXfont2-${version}.tar.gz"
 tarball_blake2b="fdc2ffe6b3d664b0c07a8a2dbb1d757ca13c8a880787b1c52e1f54749a75d6474b8808b58d36041b431452ba32e397851efff6f89af7aa3235287b4d2a84338a"
 hostdeps="gcc pkg-config"

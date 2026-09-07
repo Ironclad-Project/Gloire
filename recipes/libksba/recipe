@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.8.1
-revision=1
+revision=2
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libksba/libksba-${version}.tar.bz2"
 tarball_blake2b="d100a709ed16f1ccd19e78d788dc6e929941647029aa539172c1bcdf1312b47183722d2c90b6d438906e977b79fa0219c8289373625eddc40eb77162222a535c"
 imagedeps="build-essential"

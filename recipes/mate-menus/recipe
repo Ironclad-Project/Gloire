@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.1
-revision=3
+revision=4
 tarball_url="https://github.com/mate-desktop/mate-menus/releases/download/v${version}/mate-menus-${version}.tar.xz"
 tarball_blake2b="c2be19304cd88bf6da88f5cd65ed463b8d9fdf6d4064a802b8a65c736642293f367ebe9d3cf7306d14cd34c827c08bae11348e847ece4e05a981f75797b16e87"
 hostdeps="gcc pkg-config"

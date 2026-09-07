@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.60.7
-revision=4
+revision=5
 git_url="https://github.com/void-linux/xbps.git"
 commit=34e6a1a1a9917c881246ef538e312a3fc0228ed2
 hostdeps="gcc pkg-config"

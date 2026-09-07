@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.6.2
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/libtool/libtool-${version}.tar.xz"
 tarball_blake2b="c9d806815748b8b2ad9fc01a4bc38fedc3feda76eb8ef36707477a94b82ac413ceb8c9f3ea376b568d7a9ffc31ff292905579341741029babaea082637ec5144"
 hostdeps="gcc pkg-config"

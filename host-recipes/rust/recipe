@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.96.0
-revision=1
+revision=2
 tarball_url="https://static.rust-lang.org/dist/rustc-${version}-src.tar.xz"
 tarball_blake2b="82dff856ff7be0ef5a54c9197aee222c0e6ab4c1bd9aaaccf74d3b96b3ccaeb3b4894b8734bb68d7619f9411fbe636d27d3d88558177ec4d8f0b0780e4a7bd2e"
 imagedeps="build-essential rustc cargo libssl-dev pkg-config"

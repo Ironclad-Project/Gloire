@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.2.0
-revision=3
+revision=4
 tarball_url="https://archive.hadrons.org/software/libmd/libmd-${version}.tar.xz"
 tarball_blake2b="ab957404bfdbafe5947c76e2317a4b238d55118fbb31cdb888cf09e4d9e4e635e481520b02e248bd5fd0edb3aa996d4497ecfac11fcd66ba14c0b42c5f5210a9"
 hostdeps="gcc pkg-config"

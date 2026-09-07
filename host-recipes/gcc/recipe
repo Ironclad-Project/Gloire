@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=gcc
-revision=4
+revision=5
 clean_workdirs=no
 imagedeps="build-essential pkg-config libmpfr-dev libgmp-dev libisl-dev libmpc-dev"
 imagerundeps="libmpfr6 libgmp10 libisl23 libmpc3"

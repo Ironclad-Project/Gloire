@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.0
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/nettle/nettle-${version}.tar.gz"
 tarball_blake2b="7391fe45917ad394973a9069305c415779182ca9c7640105c47bbf23ef74301099ca8ab1bc18cc331297ec43c848b34b1c1549ae1111dadea17c35032a5ffcdc"
 imagedeps="build-essential"

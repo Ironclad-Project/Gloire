@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.20.1
-revision=3
+revision=4
 git_url="https://salsa.debian.org/iso-codes-team/iso-codes.git"
 commit=74623235ae99f6e835e1e465017ce4c544ae6b53
 hostdeps="gcc pkg-config"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.15.0
-revision=3
+revision=4
 tarball_url="https://github.com/pciutils/pciutils/releases/download/v${version}/pciutils-${version}.tar.gz"
 tarball_blake2b="29d3d38be6a3b8abce8db86e9160fc27ce966375f2ea441dff20cad9d7f7dfebe42a17d6054a406ed0d52035ad9c9071837e0e7650c954ff1c84514554f6c34f"
 hostdeps="gcc pkg-config"

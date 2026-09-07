@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.13.1
-revision=3
+revision=4
 tarball_url="https://fosszone.csd.auth.gr/nongnu/man-db/man-db-${version}.tar.xz"
 tarball_blake2b="f0f61bbd91992e2be8343459addca4bb9892ad4887756a1e58e8dccf71d30fd4bfd105739f1c730d7e73088825508566c9c29e74a59d78453055db25c7a929c6"
 hostdeps="gcc pkg-config"

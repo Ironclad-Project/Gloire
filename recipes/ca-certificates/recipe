@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/recipes/nss/recipe" && echo "${version}")"
-revision=8
+revision=9
 git_url="https://github.com/lfs-book/make-ca.git"
 commit=c52f1373f5d91d8d7078fe129ac28664d3bbd941
 imagedeps="p11-kit openssl"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=6.6
-revision=3
+revision=4
 tarball_url="https://invisible-mirror.net/archives/ncurses/ncurses-${version}.tar.gz"
 tarball_blake2b="8863ce3091fc72f23d12fe5913ea07c783e907cd8454b1c2b782f3e6bb91110cbfc4c52b8f0404eabd0d2041211183614e9d7f125ef8deeb23237b031f61fca0"
 imagedeps="build-essential ncurses-bin patchelf"

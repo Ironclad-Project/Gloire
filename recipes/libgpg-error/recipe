@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.61
-revision=3
+revision=4
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${version}.tar.bz2"
 tarball_blake2b="84c48e864dfd00522c4f83c92ab9a31bd842d8786753b718cab31239c80403a1a64ed2577d91504dd0aa9caa7f5627e931b288325e5a44d636fe9f46601525f4"
 imagedeps="build-essential"

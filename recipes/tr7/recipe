@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.0.6
-revision=4
+revision=5
 git_url="https://gitlab.com/jobol/tr7.git"
 commit=d36db5704e276d7288ea173e90a225ed34203e60
 imagedeps="build-essential"

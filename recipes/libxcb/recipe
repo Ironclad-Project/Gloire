@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.17.0
-revision=4
+revision=5
 tarball_url="https://www.x.org/archive/individual/lib/libxcb-${version}.tar.xz"
 tarball_blake2b="e2a35606981c00f9f18e5590cdc26c7c2efd8f832c37dc4dc82db47e2870bf4ff48786162c5a8eb713cb5f3a305eb22d334e4b0ff631bf0e047f1b79cb0701d3"
 hostdeps="gcc pkg-config"

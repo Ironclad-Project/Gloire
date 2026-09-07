@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.4.6
-revision=4
+revision=5
 tarball_url="https://github.com/taisei-project/taisei/releases/download/v${version}/taisei-${version}.tar.xz"
 tarball_blake2b="f183a220c2282ddca763643ce0c9715b0a88ed2bfc7832552656ce551aace001180beb3592bb3258448d89b12aa969bf7dc5b371df084f262c789dbf371a9820"
 imagedeps="build-essential python3-docutils python3-pygments"

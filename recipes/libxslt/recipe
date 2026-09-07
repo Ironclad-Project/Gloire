@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.1.45
-revision=3
+revision=4
 tarball_url="https://download.gnome.org/sources/libxslt/1.1/libxslt-${version}.tar.xz"
 tarball_blake2b="ab93de7b37c03b99bd170e0e781bce262c9e0f107bc1d47998995cdacbaa5ee0163692c2758d4240bcb260f8376055541f378f428da63f63b3d2c9d12bb92efb"
 hostdeps="gcc pkg-config"

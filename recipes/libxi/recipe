@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.8.3
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/lib/libXi-${version}.tar.gz"
 tarball_blake2b="0a50f48a88d3a0910ef91da76b09dfbaf03267d7b0570fdc3a660f00ab53d1026828c702054a0f9f181f89ed3d7c97b8973b32b649b40477a7c633e3702efa32"
 hostdeps="gcc pkg-config"

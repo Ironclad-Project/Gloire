@@ -3,7 +3,7 @@
 repology_id=gtk
 repology_srcname=gtk3
 version=3.24.52
-revision=6
+revision=7
 tarball_url="https://download.gnome.org/sources/gtk/3.24/gtk-${version}.tar.xz"
 tarball_blake2b="55085be4ca67b116099bd3bb277d6671b77246098ae6c3d2195f860304b4df72423237c26c12adf19a57272adfeac7d1e1178e27089c1fb342dea21809287283"
 imagedeps="python3-packaging libglib2.0-dev-bin libglib2.0-bin libgdk-pixbuf2.0-bin"

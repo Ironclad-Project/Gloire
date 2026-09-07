@@ -2,7 +2,7 @@
 
 repology_id=xkbutils
 version=1.0.7
-revision=3
+revision=4
 tarball_url="https://www.x.org/archive/individual/app/xkbutils-${version}.tar.xz"
 tarball_blake2b="260d75e3e09911272899173393aaaf3ed92a4aaa91f35ca67259aeb6b8db3c5e103db4f8a2bcf557b6aa605e7a83a23801482cf4ef4dd6dfa48d15ea0bfba4fa"
 hostdeps="gcc pkg-config"

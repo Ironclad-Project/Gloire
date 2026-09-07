@@ -2,7 +2,7 @@
 
 repology_id=xmodmap
 version=1.0.12
-revision=3
+revision=4
 tarball_url="https://www.x.org/releases/individual/app/xmodmap-${version}.tar.xz"
 tarball_blake2b="c1f9cad468a9a55ab8c01513308d5a46d46b899f7a18b11bae6a60a71e0007ba3ba6a7f9c82f7d2140450ced02be3cea474cc62690bd3ac5b07ffcb7b8656524"
 hostdeps="gcc pkg-config"

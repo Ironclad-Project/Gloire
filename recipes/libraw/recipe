@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.22.2
-revision=5
+revision=6
 tarball_url="https://www.libraw.org/data/LibRaw-${version}.tar.gz"
 tarball_blake2b="31982303e92dbd45dbfd50c0902ef67716aa0f6443e1e8cc1b31c02676cff1a2d0f3e2d6d74215ddbf161d31dc5272f85a7beeb9235de8b4cfb6b6a879281b88"
 hostdeps="gcc pkg-config"

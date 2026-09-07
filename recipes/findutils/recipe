@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=4.11.0
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/findutils/findutils-${version}.tar.xz"
 tarball_blake2b="d3d881c60efb01eacf14a6bad95513b0186b694d0857a708bb28864fdf949fa99cbb80d2c8bf70e4bac65ebfba852bfa8435bf637fa7716e80e55a8b06ea1313"
 hostdeps="gcc pkg-config"

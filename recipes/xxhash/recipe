@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.8.3
-revision=4
+revision=5
 git_url="https://github.com/Cyan4973/xxHash.git"
 commit=e626a72bc2321cd320e953a0ccf1584cad60f363
 hostdeps="gcc"

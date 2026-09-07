@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.47.4
-revision=3
+revision=4
 tarball_url="https://cdn.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v${version}/e2fsprogs-${version}.tar.xz"
 tarball_blake2b="ae190e773a83c12a0ab438e13911a5a3f8a25da68373a0911eaddf0a979debcc5a15c22fc7d6fbaed43659c1fc1276e6a345d2f6a73a4ab92e730f177fe40cdb"
 imagedeps="build-essential"

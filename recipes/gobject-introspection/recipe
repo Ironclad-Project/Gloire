@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.86.0
-revision=4
+revision=5
 tarball_url="https://download.gnome.org/sources/gobject-introspection/1.86/gobject-introspection-${version}.tar.xz"
 tarball_blake2b="425d60c8c4bd582c55030ed91b4c2f3982e3c502da1c6f2579c4cc1e05d82d8a8c9a533af3e4a7ae8f6a031761d763d7f7ad8031e38ae3bd7d2549c9f6bcf7f3"
 hostdeps="gcc pkg-config"

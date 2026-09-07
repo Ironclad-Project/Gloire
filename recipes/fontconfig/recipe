@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.18.3
-revision=3
+revision=4
 tarball_url="https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/${version}/fontconfig-${version}.tar.xz"
 tarball_blake2b="33b7d89e7f3d4c43cbd4129e75f9ff2ddd8358aa9e7a9bd72ee72fe64beacbf0ab7e7760c91bc35a77548ffcc367acf7280ea56f002c6d9afa3f0e286831d6b6"
 imagedeps="gperf docbook docbook-utils"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.47
-revision=3
+revision=4
 tarball_url="https://ftp.gnu.org/gnu/binutils/binutils-${version}.tar.xz"
 tarball_blake2b="329cae8792c500c71d8cce03aab127e8d77f1d409f74872082e64df5163e5c730fe585f8f9c21905cb6227cae18e6675ae4caed653223a26b5d9d4fdb90910ea"
 imagedeps="build-essential"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.1
-revision=9
+revision=10
 tarball_url="https://github.com/mate-desktop/mate-applets/releases/download/v${version}/mate-applets-${version}.tar.xz"
 tarball_blake2b="95b8773f9cf1a6156385d1f548c46eb915a9ce16e382a23aabac9c598daf217c124fdad5995d2e30e91e8c5a2f08ca94aadb8591e5d10a359249b63e8c25d588"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=pkg-config
-revision=3
+revision=4
 imagedeps="build-essential"
 
 configure() {
@@ -32,7 +32,7 @@ DefaultSearchPaths: ${sysroot}/usr/lib/pkgconfig:${sysroot}/usr/share/pkgconfig
 SystemIncludePaths: ${sysroot}/usr/include
 SystemLibraryPaths: ${sysroot}/usr/lib
 EOF
-    ln -s pkgconf "${dest_dir}${prefix}/bin/${OS_TRIPLET}-pkg-config"
+    mv "${dest_dir}${prefix}/bin/pkgconf" "${dest_dir}${prefix}/bin/${OS_TRIPLET}-pkg-config"
 
         strip_command=strip \
     post_package_strip

@@ -18,6 +18,19 @@ index fd144db..6eb018c 100644
  }
  
  Bool
+diff --git xorg-server-clean/hw/xfree86/common/xf86Configure.c xorg-server-workdir/hw/xfree86/common/xf86Configure.c
+index 2b4105f..6d1eabe 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Configure.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Configure.c
+@@ -168,7 +168,7 @@ configureInputSection(void)
+     {
+         int fd;
+ 
+-        fd = open(DFLT_MOUSE_DEV, 0);
++        fd = open(DFLT_MOUSE_DEV, O_RDONLY);
+         if (fd != -1) {
+             foundMouse = TRUE;
+             close(fd);
 diff --git xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c xorg-server-workdir/hw/xfree86/fbdevhw/fbdevhw.c
 index 9c30f00..742e68f 100644
 --- xorg-server-clean/hw/xfree86/fbdevhw/fbdevhw.c

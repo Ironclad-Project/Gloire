@@ -1,0 +1,61 @@
+diff --git groff-clean/src/devices/grohtml/post-html.cpp groff-workdir/src/devices/grohtml/post-html.cpp
+index 4e02b5c..cd3a967 100644
+--- groff-clean/src/devices/grohtml/post-html.cpp
++++ groff-workdir/src/devices/grohtml/post-html.cpp
+@@ -5075,7 +5075,7 @@ void html_printer::do_file_components (void)
+   next += '\0';
+   current = next;
+   while (file_list.get_file() != 0) {
+-    if (fseek(file_list.get_file(), 0L, 0) < 0)
++    if (fseek(file_list.get_file(), 0L, SEEK_SET) < 0)
+       fatal("fseek on temporary file failed");
+     html.copy_file(file_list.get_file());
+     fclose(file_list.get_file());
+diff --git groff-clean/src/devices/grops/ps.cpp groff-workdir/src/devices/grops/ps.cpp
+index 807945f..8fac5f6 100644
+--- groff-clean/src/devices/grops/ps.cpp
++++ groff-workdir/src/devices/grops/ps.cpp
+@@ -1373,7 +1373,7 @@ ps_printer::~ps_printer()
+   out.simple_comment("Trailer")
+      .put_symbol("end")
+      .simple_comment("EOF");
+-  if (fseek(tempfp, 0L, 0) < 0)
++  if (fseek(tempfp, 0L, SEEK_SET) < 0)
+     fatal("fseek on temporary file failed");
+   fputs("%!PS-Adobe-", stdout);
+   fputs((broken_flags & USE_PS_ADOBE_2_0) ? "2.0" : "3.0", stdout);
+diff --git groff-clean/src/libs/libbib/index.cpp groff-workdir/src/libs/libbib/index.cpp
+index aebcbbf..c88d9bf 100644
+--- groff-clean/src/libs/libbib/index.cpp
++++ groff-workdir/src/libs/libbib/index.cpp
+@@ -426,7 +426,7 @@ int index_search_item_iterator::get_tag(int tagno,
+     close(fd);
+     return 0;
+   }
+-  if (tp->start != 0 && fseek(fp, long(tp->start), 0) < 0)
++  if (tp->start != 0 && fseek(fp, long(tp->start), SEEK_SET) < 0)
+     error("can't seek on '%1': %2", filename, strerror(errno));
+   else {
+     int length = tp->length;
+diff --git groff-clean/src/utils/indxbib/indxbib.cpp groff-workdir/src/utils/indxbib/indxbib.cpp
+index ad8bb0e..e89ddb2 100644
+--- groff-clean/src/utils/indxbib/indxbib.cpp
++++ groff-workdir/src/utils/indxbib/indxbib.cpp
+@@ -243,7 +243,7 @@ int main(int argc, char **argv)
+   indxfp = fdopen(fd, FOPEN_WB);
+   if (indxfp == 0)
+     fatal("fdopen failed");
+-  if (fseek(indxfp, sizeof(index_header), 0) < 0)
++  if (fseek(indxfp, sizeof(index_header), SEEK_SET) < 0)
+     fatal("can't seek past index header: %1", strerror(errno));
+   int failed = 0;
+   if (foption) {
+@@ -759,7 +759,7 @@ static void write_hash_table()
+       fwrite_or_die(&hash_table[i].count, sizeof(int), 1, indxfp);
+   }
+   fwrite_or_die(filenames.contents(), 1, filenames.length(), indxfp);
+-  if (fseek(indxfp, 0, 0) < 0)
++  if (fseek(indxfp, 0, SEEK_SET) < 0)
+     fatal("error seeking on index file: %1", strerror(errno));
+   index_header h;
+   h.magic = INDEX_MAGIC;

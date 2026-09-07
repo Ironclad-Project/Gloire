@@ -1,0 +1,13 @@
+diff --git gnupg-clean/dirmngr/cdblib.c gnupg-workdir/dirmngr/cdblib.c
+index dde9dfa..980d5ca 100644
+--- gnupg-clean/dirmngr/cdblib.c
++++ gnupg-workdir/dirmngr/cdblib.c
+@@ -877,7 +877,7 @@ cdb_make_finish_internal(struct cdb_make *cdbmp)
+     cdb_pack(hpos[t], p + (t << 3));
+     cdb_pack(hcnt[t], p + (t << 3) + 4);
+   }
+-  if (lseek(cdbmp->cdb_fd, 0, 0) != 0 ||
++  if (lseek(cdbmp->cdb_fd, 0, SEEK_SET) != 0 ||
+       ewrite(cdbmp->cdb_fd, p, 2048) != 0)
+     return -1;
+ 

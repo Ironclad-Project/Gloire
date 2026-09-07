@@ -11,3 +11,16 @@ index 239bf78..c6a6811 100755
  	*) enable_roll_simd=no ;;
      esac
  fi
+diff --git rsync-clean/generator.c rsync-workdir/generator.c
+index 7e5ad60..a9907d9 100644
+--- rsync-clean/generator.c
++++ rsync-workdir/generator.c
+@@ -269,7 +269,7 @@ static void do_delayed_deletions(char *delbuf)
+ 	if (deldelay_fd >= 0) {
+ 		if (deldelay_cnt && !flush_delete_delay())
+ 			return;
+-		lseek(deldelay_fd, 0, 0);
++		lseek(deldelay_fd, 0, SEEK_SET);
+ 	}
+ 	while ((mode = read_delay_line(delbuf, &flags)) >= 0)
+ 		delete_item(delbuf, mode, flags | DEL_RECURSE);

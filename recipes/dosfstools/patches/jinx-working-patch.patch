@@ -1,0 +1,53 @@
+diff --git dosfstools-clean/src/blkdev/blkdev.c dosfstools-workdir/src/blkdev/blkdev.c
+index d97a4b3..400403b 100644
+--- dosfstools-clean/src/blkdev/blkdev.c
++++ dosfstools-workdir/src/blkdev/blkdev.c
+@@ -39,7 +39,7 @@ static long
+ blkdev_valid_offset (int fd, off_t offset) {
+ 	char ch;
+ 
+-	if (lseek (fd, offset, 0) < 0)
++	if (lseek (fd, offset, SEEK_SET) < 0)
+ 		return 0;
+ 	if (read (fd, &ch, 1) < 1)
+ 		return 0;
+diff --git dosfstools-clean/src/io.c dosfstools-workdir/src/io.c
+index 8c0c3b2..370047c 100644
+--- dosfstools-clean/src/io.c
++++ dosfstools-workdir/src/io.c
+@@ -80,7 +80,7 @@ void fs_read(off_t pos, int size, void *data)
+     CHANGE *walk;
+     int got;
+ 
+-    if (lseek(fd, pos, 0) != pos)
++    if (lseek(fd, pos, SEEK_SET) != pos)
+ 	pdie("Seek to %lld", (long long)pos);
+     if ((got = read(fd, data, size)) < 0)
+ 	pdie("Read %d bytes at %lld", size, (long long)pos);
+@@ -103,7 +103,7 @@ int fs_test(off_t pos, int size)
+     void *scratch;
+     int okay;
+ 
+-    if (lseek(fd, pos, 0) != pos)
++    if (lseek(fd, pos, SEEK_SET) != pos)
+ 	pdie("Seek to %lld", (long long)pos);
+     scratch = alloc(size);
+     okay = read(fd, scratch, size) == size;
+@@ -118,7 +118,7 @@ void fs_write(off_t pos, int size, void *data)
+ 
+     if (write_immed) {
+ 	did_change = 1;
+-	if (lseek(fd, pos, 0) != pos)
++	if (lseek(fd, pos, SEEK_SET) != pos)
+ 	    pdie("Seek to %lld", (long long)pos);
+ 	if ((did = write(fd, data, size)) == size)
+ 	    return;
+@@ -145,7 +145,7 @@ static void fs_flush(void)
+     while (changes) {
+ 	this = changes;
+ 	changes = changes->next;
+-	if (lseek(fd, this->pos, 0) != this->pos)
++	if (lseek(fd, this->pos, SEEK_SET) != this->pos)
+ 	    fprintf(stderr,
+ 		    "Seek to %lld failed: %s\n  Did not write %d bytes.\n",
+ 		    (long long)this->pos, strerror(errno), this->size);

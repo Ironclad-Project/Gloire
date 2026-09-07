@@ -40,6 +40,32 @@ index d6e3a8b..89a3221 100644
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
+diff --git mesa-clean/src/gallium/auxiliary/driver_trace/tr_dump.c mesa-workdir/src/gallium/auxiliary/driver_trace/tr_dump.c
+index 45d1920..8937b15 100644
+--- mesa-clean/src/gallium/auxiliary/driver_trace/tr_dump.c
++++ mesa-workdir/src/gallium/auxiliary/driver_trace/tr_dump.c
+@@ -46,6 +46,12 @@
+ /* for access() */
+ #ifdef _WIN32
+ # include <io.h>
++/* Windows <io.h> declares _access but none of the POSIX mode names.  */
++# ifndef W_OK
++#  define W_OK 2
++# endif
++#else
++# include <unistd.h>
+ #endif
+ 
+ #include "util/compiler.h"
+@@ -90,7 +96,7 @@ trace_dump_check_trigger(void)
+    if (trigger_active) {
+       trigger_active = false;
+    } else {
+-      if (!access(trigger_filename, 2 /* W_OK but compiles on Windows */)) {
++      if (!access(trigger_filename, W_OK)) {
+          if (!unlink(trigger_filename)) {
+             trigger_active = true;
+          } else {
 diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
 index 7403724..99e14a2 100644
 --- mesa-clean/src/util/detect_os.h

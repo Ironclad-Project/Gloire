@@ -1,8 +1,8 @@
 diff --git openssl-clean/Configurations/10-main.conf openssl-workdir/Configurations/10-main.conf
-index 7e93968..4de7b1f 100644
+index 528c829..4b90cca 100644
 --- openssl-clean/Configurations/10-main.conf
 +++ openssl-workdir/Configurations/10-main.conf
-@@ -1010,6 +1010,51 @@ my %targets = (
+@@ -1009,6 +1009,51 @@ my %targets = (
          ranlib           => "true",
      },
  
@@ -54,3 +54,16 @@ index 7e93968..4de7b1f 100644
  #### *BSD
      "BSD-generic32" => {
          # As for thread cflag. Idea is to maintain "collective" set of
+diff --git openssl-clean/crypto/bio/bss_file.c openssl-workdir/crypto/bio/bss_file.c
+index 76af9a4..f5723d8 100644
+--- openssl-clean/crypto/bio/bss_file.c
++++ openssl-workdir/crypto/bio/bss_file.c
+@@ -196,7 +196,7 @@ static long file_ctrl(BIO *b, int cmd, long num, void *ptr)
+         if (b->flags & BIO_FLAGS_UPLINK_INTERNAL)
+             ret = (long)UP_fseek(b->ptr, num, 0);
+         else
+-            ret = (long)fseek(fp, num, 0);
++            ret = (long)fseek(fp, num, SEEK_SET);
+         break;
+     case BIO_CTRL_EOF:
+         /*

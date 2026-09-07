@@ -1,0 +1,62 @@
+diff --git make-clean/src/arscan.c make-workdir/src/arscan.c
+index edd4070..fa105f0 100644
+--- make-clean/src/arscan.c
++++ make-workdir/src/arscan.c
+@@ -480,7 +480,7 @@ ar_scan (const char *archive, ar_member_func_t function, const void *arg)
+         big_archive = 1;
+ 
+         /* seek back to beginning of archive */
+-        EINTRLOOP (o, lseek (desc, 0, 0));
++        EINTRLOOP (o, lseek (desc, 0, SEEK_SET));
+         if (o < 0)
+           goto invalid;
+ 
+@@ -577,7 +577,7 @@ ar_scan (const char *archive, ar_member_func_t function, const void *arg)
+ 
+         memset(&member_header, '\0', sizeof (member_header));
+ 
+-        EINTRLOOP (o, lseek (desc, member_offset, 0));
++        EINTRLOOP (o, lseek (desc, member_offset, SEEK_SET));
+         if (o < 0)
+           goto invalid;
+ 
+@@ -789,7 +789,7 @@ ar_scan (const char *archive, ar_member_func_t function, const void *arg)
+ #endif
+           sscanf (member_header.ar_nxtmem, "%12ld", &member_offset);
+ 
+-        if (lseek (desc, member_offset, 0) != member_offset)
++        if (lseek (desc, member_offset, SEEK_SET) != member_offset)
+           goto invalid;
+ #else
+ 
+@@ -942,7 +942,7 @@ ar_member_touch (const char *arname, const char *memname)
+   if (fd < 0)
+     return -3;
+   /* Read in this member's header */
+-  EINTRLOOP (o, lseek (fd, opos, 0));
++  EINTRLOOP (o, lseek (fd, opos, SEEK_SET));
+   if (o < 0)
+     goto lose;
+   r = readbuf (fd, &ar_hdr, AR_HDR_SIZE);
+@@ -963,7 +963,7 @@ ar_member_touch (const char *arname, const char *memname)
+   ar_hdr.ar_date = statbuf.st_mtime;
+ #endif
+   /* Write back this member's header */
+-  EINTRLOOP (o, lseek (fd, opos, 0));
++  EINTRLOOP (o, lseek (fd, opos, SEEK_SET));
+   if (o < 0)
+     goto lose;
+   r = writebuf (fd, &ar_hdr, AR_HDR_SIZE);
+diff --git make-clean/src/remake.c make-workdir/src/remake.c
+index fe67ab2..072b513 100644
+--- make-clean/src/remake.c
++++ make-workdir/src/remake.c
+@@ -1256,7 +1256,7 @@ touch_file (struct file *file)
+             TOUCH_ERROR ("touch: read: ");
+           {
+             off_t o;
+-            EINTRLOOP (o, lseek (fd, 0L, 0));
++            EINTRLOOP (o, lseek (fd, 0L, SEEK_SET));
+             if (o < 0L)
+               TOUCH_ERROR ("touch: lseek: ");
+           }

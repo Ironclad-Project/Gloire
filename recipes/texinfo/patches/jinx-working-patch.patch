@@ -1,0 +1,13 @@
+diff --git texinfo-clean/install-info/install-info.c texinfo-workdir/install-info/install-info.c
+index 2fa2ecc..77758a0 100644
+--- texinfo-clean/install-info/install-info.c
++++ texinfo-workdir/install-info/install-info.c
+@@ -866,7 +866,7 @@ determine_file_type:
+ 	return 0;
+ #else
+       /* Seek back over the magic bytes.  */
+-      if (fseek (f, 0, 0) < 0)
++      if (fseek (f, 0, SEEK_SET) < 0)
+         {
+           fclose (f);
+           return 0;

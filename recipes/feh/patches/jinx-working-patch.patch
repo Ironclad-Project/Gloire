@@ -1,0 +1,22 @@
+diff --git feh-clean/src/imlib.c feh-workdir/src/imlib.c
+index 9dafd84..b8b9ea8 100644
+--- feh-clean/src/imlib.c
++++ feh-workdir/src/imlib.c
+@@ -1761,7 +1761,7 @@ void feh_edit_inplace_lossless(winwidget w, int op)
+ 					"lossless %s: Got exitcode %d from jpegtran."
+ 					" Commandline was: "
+ 					"jpegtran -copy all %s %s -outfile %s %s",
+-					op_name, status >> 8, op_op, op_value, file_str, file_str);
++					op_name, WEXITSTATUS(status), op_op, op_value, file_str, file_str);
+ 			free(file_str);
+ 			return;
+ 		}
+@@ -1786,7 +1786,7 @@ void feh_edit_inplace_lossless(winwidget w, int op)
+ 			im_weprintf(w,
+ 					"lossless %s: Failed to update EXIF orientation tag:"
+ 					" jpegexiforient returned %d",
+-					op_name, status >> 8);
++					op_name, WEXITSTATUS(status));
+ 		}
+ 	}
+ 	free(file_str);

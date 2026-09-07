@@ -1,0 +1,13 @@
+diff --git sharutils-clean/src/shar.c sharutils-workdir/src/shar.c
+index 2c6e2e1..db0c5f6 100644
+--- sharutils-clean/src/shar.c
++++ sharutils-workdir/src/shar.c
+@@ -833,7 +833,7 @@ generate_mkdir_script (const char * path)
+ static int
+ check_accessibility (const char *local_name, const char *restore_name)
+ {
+-  if (access (local_name, 4))
++  if (access (local_name, R_OK))
+     {
+       error (0, errno, _("Cannot access %s"), local_name);
+       return SHAR_EXIT_FILE_NOT_FOUND;

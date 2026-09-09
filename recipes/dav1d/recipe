@@ -1,0 +1,25 @@
+#! /bin/sh
+
+version=1.5.4
+revision=1
+tarball_url="https://downloads.videolan.org/pub/videolan/dav1d/${version}/dav1d-${version}.tar.xz"
+tarball_blake2b="52db76db6c498301c0ff0fd1c28aeb9820e303846b5c6243c1dd8c8f9f0e0d1de1194cd618015e3ecf7f717ec1b901bc548d1103dc0c49203f2ef207ee867ed5"
+imagedeps="nasm"
+hostdeps="gcc pkg-config"
+deps="core-libs"
+builddeps="xxhash"
+
+configure() {
+    meson_configure \
+        -Denable_tests=false
+}
+
+build() {
+    meson compile --verbose -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+}

@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=20260221
-revision=4
+revision=5
 git_url="https://github.com/hvisage/metalog.git"
 commit=38ec41762ed8ec457780700d07f318966634f716
+source_imagedeps="autoconf automake pkg-config"
 source_deps="autoconf-archive"
-source_hostdeps="autoconf automake pkg-config"
 hostdeps="gcc pkg-config"
 deps="core-libs pcre2 zlib"
 conf_files="/etc/metalog.conf"

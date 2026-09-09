@@ -1,0 +1,39 @@
+diff --git cargo-c-clean/src/build_targets.rs cargo-c-workdir/src/build_targets.rs
+index 544248b..3d102e7 100644
+--- cargo-c-clean/src/build_targets.rs
++++ cargo-c-workdir/src/build_targets.rs
+@@ -165,7 +165,7 @@ impl FileNames {
+     ) -> Option<Self> {
+         let (shared_lib, static_lib, impl_lib, debug_info, def) = match target.os.as_str() {
+             "none" | "linux" | "freebsd" | "dragonfly" | "netbsd" | "android" | "haiku"
+-            | "illumos" | "openbsd" | "emscripten" | "hurd" => {
++            | "illumos" | "openbsd" | "emscripten" | "hurd" | "ironclad" => {
+                 let static_lib = targetdir.join(format!("lib{lib_name}.a"));
+                 let shared_lib = targetdir.join(format!("lib{lib_name}.so"));
+                 (shared_lib, static_lib, None, None, None)
+diff --git cargo-c-clean/src/install.rs cargo-c-workdir/src/install.rs
+index 3f79c47..309a2b6 100644
+--- cargo-c-clean/src/install.rs
++++ cargo-c-workdir/src/install.rs
+@@ -105,7 +105,8 @@ impl LibType {
+             | ("illumos", _)
+             | ("openbsd", _)
+             | ("emscripten", _)
+-            | ("hurd", _) => LibType::So,
++            | ("hurd", _)
++            | ("ironclad", _) => LibType::So,
+             ("macos", _) | ("ios", _) | ("tvos", _) | ("visionos", _) => LibType::Dylib,
+             ("windows", _) | ("cygwin", _) => LibType::Windows,
+             _ => unimplemented!("The target {}-{} is not supported yet", os, env),
+diff --git cargo-c-clean/src/target.rs cargo-c-workdir/src/target.rs
+index 9a1491f..07480a6 100644
+--- cargo-c-clean/src/target.rs
++++ cargo-c-workdir/src/target.rs
+@@ -116,6 +116,7 @@ impl Target {
+             || os == "illumos"
+             || os == "openbsd"
+             || os == "hurd"
++            || os == "ironclad"
+         {
+             lines.push(if capi_config.library.versioning {
+                 format!("-Wl,-soname,{unix_name}.so.{sover}")

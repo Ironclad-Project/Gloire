@@ -1,0 +1,51 @@
+#! /bin/sh
+
+version=0.10.25
+revision=1
+git_url="https://github.com/lu-zero/cargo-c.git"
+commit=a228fd974eb1334dc4c8033bc401a4832b3b4ab4
+source_allow_network=yes
+source_hostdeps="rust"
+imagedeps="build-essential libssl-dev pkg-config"
+imagerundeps="libssl3t64"
+hostdeps="pkg-config"
+hostrundeps="rust"
+
+# Upstream keeps Cargo.lock out of the repository and publishes it as a release
+# asset instead; without it there is nothing for `cargo fetch --locked` to hold.
+_lock_blake2b="9cd5c9ceb0847d478c193d101708efca383ec2caedc01891b871d9028bd9b1c0d595ae09d021c580cc24e3066ce5e0ba8dc75eb8b21c5cc7a22fd47145c15364"
+
+early_prepare() {
+    curl -Lo Cargo.lock \
+        "https://github.com/lu-zero/cargo-c/releases/download/v${version}/Cargo.lock"
+    if ! b2sum Cargo.lock | grep -q "${_lock_blake2b}"; then
+        die "b2sum checksum fail for cargo-c Cargo.lock
+        expected ${_lock_blake2b}
+        got      $(b2sum Cargo.lock)"
+    fi
+}
+
+prepare() {
+    CARGO_HOME="${source_dir}/.jinx-cargo-home" cargo fetch --locked
+
+    cargo_patch_crates .jinx-cargo-home/registry/src/*
+}
+
+build() {
+    cp -rp "${source_dir}"/. ./
+
+    cargo_configure
+
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        RUSTFLAGS="${HOST_RUSTFLAGS}" \
+        CFLAGS="$HOST_CFLAGS" \
+        CC_ENABLE_DEBUG_OUTPUT=1 \
+    cargo build --release --offline -vv --bin cargo-cbuild
+}
+
+package() {
+    install -Dm755 target/release/cargo-cbuild "${dest_dir}${prefix}/bin/cargo-cbuild"
+
+        strip_command=strip \
+    post_package_strip
+}

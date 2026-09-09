@@ -1,5 +1,6 @@
 #! /bin/sh
 
+skip_pkg_check=yes
 from_source=libwebp
 bootstrap_pkg=yes
 revision=2

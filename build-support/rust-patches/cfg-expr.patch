@@ -1,0 +1,57 @@
+# system-deps asks cfg-expr for the target and falls back to parsing the triple with
+# target-lexicon, which rejects an OS it does not know. Our targets are real rustc
+# targets, so they belong in the builtin table -- which also states `families: unix`
+# outright, where the fallback would have to infer it from a second OS-name switch.
+# ALL_BUILTINS is binary-searched, so both entries keep it sorted by triple.
+#
+# rust-patch-versions: 0.20.*
+--- a/src/targets/builtins.rs
++++ b/src/targets/builtins.rs
+@@ -2678,6 +2678,19 @@ pub const ALL_BUILTINS: &[TargetInfo] = &[
+         has_atomics: HasAtomics::atomic_8_16_32_64_ptr,
+         panic: Panic::abort,
+     },
++    TargetInfo {
++        triple: Triple::new_const("riscv64gc-unknown-ironclad-gnu"),
++        os: Some(Os::ironclad),
++        abi: None,
++        arch: Arch::riscv64,
++        env: Some(Env::gnu),
++        vendor: Some(Vendor::unknown),
++        families: Families::unix,
++        pointer_width: 64,
++        endian: Endian::little,
++        has_atomics: HasAtomics::atomic_8_16_32_64_ptr,
++        panic: Panic::unwind,
++    },
+     TargetInfo {
+         triple: Triple::new_const("riscv64gc-unknown-linux-gnu"),
+         os: Some(Os::linux),
+@@ -3666,6 +3679,19 @@ pub const ALL_BUILTINS: &[TargetInfo] = &[
+         has_atomics: HasAtomics::atomic_8_16_32_64_ptr,
+         panic: Panic::unwind,
+     },
++    TargetInfo {
++        triple: Triple::new_const("x86_64-unknown-ironclad-gnu"),
++        os: Some(Os::ironclad),
++        abi: None,
++        arch: Arch::x86_64,
++        env: Some(Env::gnu),
++        vendor: Some(Vendor::unknown),
++        families: Families::unix,
++        pointer_width: 64,
++        endian: Endian::little,
++        has_atomics: HasAtomics::atomic_8_16_32_64_ptr,
++        panic: Panic::unwind,
++    },
+     TargetInfo {
+         triple: Triple::new_const("x86_64-unknown-l4re-uclibc"),
+         os: Some(Os::l4re),
+@@ -4100,6 +4126,7 @@ impl super::Os {
+     pub const hurd: Os = Os::new_const("hurd");
+     pub const illumos: Os = Os::new_const("illumos");
+     pub const ios: Os = Os::new_const("ios");
++    pub const ironclad: Os = Os::new_const("ironclad");
+     pub const l4re: Os = Os::new_const("l4re");
+     pub const linux: Os = Os::new_const("linux");
+     pub const lynxos178: Os = Os::new_const("lynxos178");

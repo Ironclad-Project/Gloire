@@ -1,0 +1,21 @@
+# With no arm for us, iana-time-zone falls through to src/platform.rs, whose whole body
+# is `Err(GetTimezoneError::OsError)` -- silent, because chrono asks for the crate's
+# `fallback` feature and so never reaches its compile_error. Joined to the arm hurd is
+# on: tz_linux.rs is pure std, and reads the /etc/localtime symlink our tzdata installs.
+#
+# rust-patch-versions: 0.1.*
+--- a/src/lib.rs	2006-07-24 03:21:28.000000000 +0200
++++ b/src/lib.rs	2026-09-09 13:42:21.950582274 +0200
+@@ -35,7 +35,11 @@
+ mod ffi_utils;
+ 
+ #[cfg_attr(
+-    any(all(target_os = "linux", not(target_env = "ohos")), target_os = "hurd"),
++    any(
++        all(target_os = "linux", not(target_env = "ohos")),
++        target_os = "hurd",
++        target_os = "ironclad"
++    ),
+     path = "tz_linux.rs"
+ )]
+ #[cfg_attr(all(target_os = "linux", target_env = "ohos"), path = "tz_ohos.rs")]

@@ -1,0 +1,53 @@
+#! /bin/sh
+
+version=2.62.3
+revision=1
+tarball_url="https://download.gnome.org/sources/librsvg/2.62/librsvg-${version}.tar.xz"
+tarball_blake2b="712ead74447cf3f66b5817df23860061a92371cf2c7a7d211649f3a2a23e427a9a384a0f3e3204a102f4b1571659c35f2267cde13b5e407b6c736246981d755a"
+source_allow_network=yes
+source_hostdeps="rust"
+imagedeps="build-essential python3-docutils"
+hostdeps="cargo-c gcc pkg-config rust"
+deps="core-libs cairo dav1d fontconfig freetype2 gdk-pixbuf glib2 harfbuzz libxml2 pango"
+
+prepare() {
+    CARGO_HOME="${source_dir}/.jinx-cargo-home" cargo fetch --locked
+
+    cargo_patch_crates .jinx-cargo-home/registry/src/*
+}
+
+configure() {
+    cp -rp "${source_dir}"/.jinx-cargo-home ./
+
+    cargo_configure
+
+    meson_configure \
+        -Dtriplet=${OS_TRIPLET_RUST} \
+        -Davif=enabled \
+        -Dintrospection=disabled \
+        -Dpixbuf-loader=enabled \
+        -Dtests=false \
+        -Dvala=disabled
+}
+
+build() {
+    # The pixbuf loader asks for librsvg-2.0-uninstalled by that literal name, so pkgconf
+    # never flags the .pc uninstalled and prefixes the sysroot onto its build-tree -L.
+        CARGO_HOME="$(pwd)/.jinx-cargo-home" \
+        CARGO_NET_OFFLINE=true \
+        CARGO_TERM_VERBOSE=true \
+        RUSTFLAGS="${TARGET_RUSTFLAGS}" \
+        PKG_CONFIG_ALLOW_CROSS=1 \
+        SYSTEM_DEPS_LIBRSVG_NO_PKG_CONFIG=1 \
+        SYSTEM_DEPS_LIBRSVG_LIB=rsvg-2 \
+        SYSTEM_DEPS_LIBRSVG_SEARCH_NATIVE="$(pwd)/rsvg" \
+    meson compile --verbose -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+    post_package_strip
+
+    install_hook_add 'gdk-pixbuf-query-loaders --update-cache >/dev/null'
+}

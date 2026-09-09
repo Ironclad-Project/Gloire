@@ -1,19 +1,18 @@
 #! /bin/sh
 
 version=1.28.1
-revision=10
+revision=11
 tarball_url="https://github.com/mate-desktop/eom/releases/download/v${version}/eom-${version}.tar.xz"
 tarball_blake2b="6f378c80d3536e4a168fc6a162b8853b7d217a9c0721838ce1070068c88554439edae52a20e8ea5737b0892d200ed5e46996b239e14f0810cf8a03fab007c17a"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin libgdk-pixbuf2.0-bin gtk-update-icon-cache desktop-file-utils"
 hostdeps="gcc pkg-config"
-deps="core-libs glib2 gtk3 cairo gdk-pixbuf at-spi2-core libx11 libxml2 zlib libjpeg-turbo gobject-introspection mate-desktop libpeas shared-mime-info libexif lcms2 exempi"
+deps="core-libs glib2 gtk3 cairo gdk-pixbuf at-spi2-core libx11 libxml2 zlib libjpeg-turbo gobject-introspection librsvg mate-desktop libpeas shared-mime-info libexif lcms2 exempi"
 
 configure() {
     meson_configure \
         -Dthumbnailer=false \
         -Ddebug=false \
-        -Dintrospection=disabled \
-        -Dlibrsvg=disabled
+        -Dintrospection=disabled
 }
 
 build() {

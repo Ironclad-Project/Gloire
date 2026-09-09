@@ -1,0 +1,14 @@
+diff --git librsvg-clean/gdk-pixbuf-loader/meson.build librsvg-workdir/gdk-pixbuf-loader/meson.build
+index 4f88ba0..c4b0290 100644
+--- librsvg-clean/gdk-pixbuf-loader/meson.build
++++ librsvg-workdir/gdk-pixbuf-loader/meson.build
+@@ -11,7 +11,8 @@ pixbufloader = custom_target(
+   output: ['@0@pixbufloader_svg.@1@'.format(cargo_dylib_prefix, ext_dynamic)],
+   console: true,
+   install: true,
+-  install_dir: pixbuf_dep.get_variable(pkgconfig: 'gdk_pixbuf_moduledir', pkgconfig_define: ['prefix', prefix]),
++  install_dir: get_option('libdir') / 'gdk-pixbuf-2.0'
++    / pixbuf_dep.get_variable(pkgconfig: 'gdk_pixbuf_binary_version') / 'loaders',
+   depends: librsvg_rust_dep,
+   depend_files: pixbufloader_sources,
+   env: extra_env,

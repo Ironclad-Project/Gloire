@@ -31,6 +31,9 @@ esac
 HOST_RUSTFLAGS="-C force-frame-pointers=yes -C link-arg=-Wl,--sort-common"
 TARGET_RUSTFLAGS="$HOST_RUSTFLAGS"
 
+# rustc's counterpart of -ffile-prefix-map.
+TARGET_RUSTFLAGS="$TARGET_RUSTFLAGS --remap-path-prefix=/base_dir=/usr/src --remap-path-prefix=/build_dir=/usr/src --remap-path-prefix=/sysroot="
+
 TARGET_CXXFLAGS="$TARGET_CXXFLAGS -ffile-prefix-map=/usr/local/${OS_TRIPLET}/include=/usr/include"
 
 case "${JINX_ARCH}" in

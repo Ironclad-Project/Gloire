@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version=1.16.2
-revision=6
+revision=7
 tarball_url="https://dbus.freedesktop.org/releases/dbus/dbus-${version}.tar.xz"
 tarball_blake2b="ddca8abdd5df70b24d51293a262cda3f9e69681b31ae8bb560a6286ca6f2dc0c420dc5322a61bb142a77b2b5f86bdafcc6bf84b0d78af9610af7a78763b8b8fb"
 hostdeps="gcc pkg-config"
-deps="core-libs libexpat libx11"
+deps="core-libs libexpat"
 
 configure() {
     meson_configure \

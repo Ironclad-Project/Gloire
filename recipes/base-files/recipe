@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version=0.0
-revision=27
+revision=28
 source_dir="base-files"
 deps="core-libs"
 conf_files="/etc/group /etc/locale.conf /etc/locale.gen /etc/nsswitch.conf /etc/passwd"
@@ -14,7 +14,6 @@ package() {
 
     install_hook_add 'chown -R 1000:1000 home/user' \
                      'chmod 750 root' \
-                     'chmod 777 tmp' \
-                     'chmod 777 run' \
+                     'chmod -R 1777 tmp' \
                      'chmod 710 home/user'
 }

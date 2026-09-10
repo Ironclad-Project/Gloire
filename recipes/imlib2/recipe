@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.12.6
-revision=7
+version=1.12.7
+revision=1
 tarball_url="https://downloads.sourceforge.net/enlightenment/imlib2-${version}.tar.xz"
-tarball_blake2b="785c5b9168252df7947d0fc83f31be08ab9736473890460be23cb83e3953910684d0e3659c117dfde16c5224285f5f83f0cc57a8b2f6e3792e818744b126c786"
+tarball_blake2b="473c7d537fc194f1bc4b0f17b58e318ab17dcfe4d78f0c5a9dafdfae65871cc18fdfe86b8de991a3532b8ec4fb61b2c1c850012d5ed3e2bd00b3beacac2c91d1"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 cairo freetype2 giflib glib2 libjpeg-turbo libpng libraw librsvg libtiff libwebp libx11 libxcb libxext openjpeg2 xz zlib"
 

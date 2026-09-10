@@ -1,10 +1,10 @@
 #! /bin/sh
 
-version=8.21.0
+version=8.22.0
 fixed_version=$(echo ${version} | sed 's/\./_/g')
-revision=8
+revision=1
 tarball_url="https://github.com/curl/curl/releases/download/curl-${fixed_version}/curl-${version}.tar.xz"
-tarball_blake2b="230989e586a592b2aee768a1a6d48f1c8247e4d26afd0787a94f45faa9fbebcda5c9a8e2b739fb5a2ada151c13b09a8e2319825e9314fcc894377f24e92d338f"
+tarball_blake2b="1efe036ae4ba6bc1e2bcf7bae2229e2c3be8e9d72a0f32f6c1f192d277f625f77786cf538593ad59a7873b477ff3566412d3404d6ccd202c0f7055b6d3a45d25"
 hostdeps="gcc pkg-config"
 deps="core-libs openssl zlib zstd libpsl libidn2 brotli libnghttp2"
 
@@ -24,10 +24,7 @@ build() {
 
 package() {
     DESTDIR="${dest_dir}" cmake --install .
-
     sed -Ei "s|/sysroot(/)?|/|g" "${dest_dir}${prefix}"/lib/cmake/CURL/*.cmake
-
     sed -i "s|/usr/local/bin/${OS_TRIPLET}-gcc|gcc|" "${dest_dir}${prefix}"/bin/curl-config
-
     post_package_strip
 }

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=9.2.1000
-revision=5
+version=9.2.1050
+revision=1
 git_url="https://github.com/vim/vim.git"
-commit=937992b1438a341b8ab6b1cf67edcb01d94c133e
+commit=f95fe08115445e900891c6aa684022368e76892a
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 

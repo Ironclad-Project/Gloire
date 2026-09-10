@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id=fonts:noto
-version=2026.08.01
-revision=4
+version=2026.09.01
+revision=1
 git_url="https://github.com/notofonts/notofonts.github.io"
-commit=113d8e66a13a47d514be6c07e616842258982f42
+commit=76fff9eee60dcef8381bfcae8d0b4311e2186e67
 deps="core-libs fontconfig"
 
 package() {

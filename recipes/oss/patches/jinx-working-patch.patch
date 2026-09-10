@@ -1,9 +1,9 @@
 diff --git oss-workdir/Makefile.ironclad oss-workdir/Makefile.ironclad
 new file mode 100644
-index 0000000..fa14dda
+index 0000000..58a3735
 --- /dev/null
 +++ oss-workdir/Makefile.ironclad
-@@ -0,0 +1,408 @@
+@@ -0,0 +1,395 @@
 +#
 +# Makefile for the Ironclad (Gloire) user land port of Open Sound System.
 +#
@@ -189,13 +189,11 @@ index 0000000..fa14dda
 +
 +target/lib/$(LIBOSSLIB_SONAME): $(LIBOSSLIB_SRCS) $(GENERATED)
 +	@mkdir -p target/lib
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -fPIC -shared -Wl,-soname,$(LIBOSSLIB_SONAME) \
 +		-o $@ $(LIBOSSLIB_SRCS) $(LDFLAGS)
 +
 +target/lib/$(LIBOSSMIX_SONAME): $(LIBOSSMIX_SRCS) $(GENERATED)
 +	@mkdir -p target/lib
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -fPIC -shared -Wl,-soname,$(LIBOSSMIX_SONAME) \
 +		-o $@ $(LIBOSSMIX_SRCS) $(LDFLAGS)
 +	@$(LN_S) $(LIBOSSMIX_SONAME) target/lib/libossmix.so
@@ -206,22 +204,18 @@ index 0000000..fa14dda
 +
 +target/bin/ossinfo: cmd/ossinfo/ossinfo.c $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS)
 +
 +target/bin/ossmix: cmd/ossmix/ossmix.c $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS)
 +
 +target/bin/ossphone: cmd/ossphone/ossphone.c $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS) -lm
 +
 +target/bin/osspartysh: cmd/osspartysh/osspartysh.c $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS) -lutil
 +
 +OSSPLAY_SRCS	= cmd/ossplay/ossplay.c \
@@ -235,7 +229,6 @@ index 0000000..fa14dda
 +
 +target/bin/ossplay: $(OSSPLAY_SRCS) $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) $(OSSPLAY_CFLAGS) -o $@ $(OSSPLAY_SRCS) $(LDFLAGS) -ldl
 +
 +# ossrecord is the same binary under a different argv[0].
@@ -247,27 +240,22 @@ index 0000000..fa14dda
 +
 +target/bin/osstest: $(OSSTEST_SRCS) $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -DSRC_SUPPORT -o $@ $(OSSTEST_SRCS) $(LDFLAGS)
 +
 +target/sbin/ossdevlinks: cmd/ossdevlinks/ossdevlinks.c $(GENERATED)
 +	@mkdir -p target/sbin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS)
 +
 +target/sbin/savemixer: cmd/savemixer/savemixer.c $(GENERATED)
 +	@mkdir -p target/sbin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS)
 +
 +target/sbin/vmixctl: cmd/vmixctl/vmixctl.c $(GENERATED)
 +	@mkdir -p target/sbin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS)
 +
 +target/sbin/ossmixd: cmd/ossmixd/ossmixd.c $(GENERATED) target/lib/$(LIBOSSMIX_SONAME)
 +	@mkdir -p target/sbin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS) -Ltarget/lib -lossmix
 +
 +#
@@ -342,7 +330,6 @@ index 0000000..fa14dda
 +
 +target/bin/ossxmix: $(OSSXMIX_SRCS) $(GENERATED)
 +	@mkdir -p target/bin
-+	@echo "  CCLD    $@"
 +	$(CC) $(ALL_CFLAGS) $(OSSXMIX_CFLAGS) $(GTK_CFLAGS) -o $@ $(OSSXMIX_SRCS) $(LDFLAGS) $(GTK_LIBS)
 +
 +$(eval $(call txt2man_rule,ossxmix,cmd/ossxmix,1,OSS User Commands))

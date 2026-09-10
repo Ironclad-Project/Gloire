@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=20260221
-revision=5
+revision=6
 git_url="https://github.com/hvisage/metalog.git"
 commit=38ec41762ed8ec457780700d07f318966634f716
 source_imagedeps="autoconf automake pkg-config"
@@ -10,8 +10,12 @@ hostdeps="gcc pkg-config"
 deps="core-libs pcre2 zlib"
 conf_files="/etc/metalog.conf"
 
-prepare() {
+early_prepare() {
     autoreconf -fvi -I${sysroot}/usr/share/aclocal
+}
+
+prepare() {
+    autotools_recursive_regen
 }
 
 configure() {

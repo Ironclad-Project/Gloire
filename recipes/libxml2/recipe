@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.15.3
-revision=4
+version=2.15.4
+revision=1
 tarball_url="https://download.gnome.org/sources/libxml2/2.15/libxml2-${version}.tar.xz"
-tarball_blake2b="2ff478b46a40957386cd1ed0627bfc0f2433f47e786f20db3942304c90289adaeb1d9c3f12665df312b86cfac42f8e4dbc18e965bf90018f93c230b9b862df66"
+tarball_blake2b="92a4fc5179527968b9ac7043669a77d54c85143883749aa497005797bbf8b3d08514f62191437bfd079e0bb965859e456308b90e0ff1da738cc3dbd945c0f0bf"
 hostdeps="gcc pkg-config"
 deps="core-libs icu readline zlib"
 

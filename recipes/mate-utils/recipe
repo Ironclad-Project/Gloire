@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.28.1
-revision=5
+version=1.28.3
+revision=1
 tarball_url="https://github.com/mate-desktop/mate-utils/releases/download/v${version}/mate-utils-${version}.tar.xz"
-tarball_blake2b="2c620b587ea74acb2b0521e7a5300ef448293fc90cad1c712f141c846ce884edc729c3816da5199bfe6146de4043a22322f09514860b905894d0745d3d05875f"
+tarball_blake2b="fbbbbac24c9a77f49572790385db91ac021ad626a7d945327a1214632eb8e3ffdcac3c64cb8f8b7bc877adf57a507c12f0013754571f0fbc780db770c97f723e"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs at-spi2-core cairo gdk-pixbuf glib2 gtk3 libcanberra libgtop libice libsm libx11 libxext mate-desktop mate-panel pango zlib"

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=4.0.1
-revision=5
+version=4.0.2
+revision=1
 tarball_url="https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
-tarball_blake2b="8c5e1d97165d8e74f6ab41adf75c8f1a60a38b511163d0cdd054b27280538681d308385ce9a6fe2230aed7e412436419f864876e57538738e13eed77d520d5cd"
+tarball_blake2b="f73b12c5779518ddc45bd232f3f80def2fe0f8655ef2a8de1d9647255ce3cc1fd1c843dee444e9d11a4dc80c4048e274cd4793f5ab60180598ef2a57609fd931"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib brotli zstd"
 conf_files="/etc/ssl/openssl.cnf"

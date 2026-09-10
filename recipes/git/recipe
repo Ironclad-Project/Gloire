@@ -1,11 +1,11 @@
 #! /bin/sh
 
-version=2.53.0
-revision=9
+version=2.55.0
+revision=1
 tarball_url="https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz"
-tarball_blake2b="a23ccb2f793d37347e892f6094ad589510c93011a53fb2c14cdcbfbe6d87413edb4585a98253e4ca5124217f66ad783f4fa584f38dc25ffa34772da01dc45f02"
+tarball_blake2b="7666d99f1002a20ec3ca89fdfcbe1156cf6ed3bbc3823a8e7903d0ff177db91ce1309cf17466d813338e83d9782f748b1dc450ce3fa8bae82211a61042acea26"
 imagedeps="build-essential asciidoc"
-hostdeps="gcc pkg-config"
+hostdeps="gcc pkg-config rust"
 deps="core-libs python zlib curl openssl openssh libexpat pcre2"
 
 prepare() {

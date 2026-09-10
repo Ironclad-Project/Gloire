@@ -1591,6 +1591,9 @@ do_host_pkg() {
         -a "${build_dir}"/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps \
         -f
 
+    remove_stale_pkgs "${name}" "${build_dir}/host-pkgs" "${host_arch}" \
+        "${name}-${version}_${revision}.${host_arch}.xbps"
+
     if [[ ${JINX_CLEAN_WORKDIRS} == yes ]]; then
         if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/host-builds/$1
@@ -1705,6 +1708,9 @@ do_pkg() {
         -a "${build_dir}"/pkgs/${name}-${version}_${revision}.${JINX_ARCH}.xbps \
         -f
 
+    remove_stale_pkgs "${name}" "${build_dir}/pkgs" "${JINX_ARCH}" \
+        "${name}-${version}_${revision}.${JINX_ARCH}.xbps"
+
     if [[ ${JINX_CLEAN_WORKDIRS} == yes ]]; then
         if [[ ${clean_workdirs} != no ]]; then
             force_remove "${build_dir}"/builds/$1
@@ -1768,6 +1774,38 @@ do_host_build_if_needed() {
 
     if [[ ! -f "${build_dir}/host-pkgs/${name}-${version}_${revision}.${host_arch}.xbps" ]]; then
         tracked_subshell 'do_host_pkg "'$1'"'
+    fi
+}
+
+remove_stale_pkgs() {
+    # Drop every previously built copy of package $1 in directory $2 for arch $3 apart
+    # from $4, the one just created, and take the entries out of the repository index
+    # with it.
+    local pkg="$1"
+    local dir="$2"
+    local arch="$3"
+    local keep="$4"
+
+    local file
+    local removed=no
+    for file in "${dir}/${pkg}"-*_*."${arch}".xbps; do
+        [[ -f ${file} ]] || continue
+        [[ ${file##*/} == "${keep}" ]] && continue
+
+        local name_version="${file##*/}"
+        local name_version="${name_version%".${arch}.xbps"}"
+        local name_version="${name_version%_*}"
+        [[ ${name_version#"${pkg}-"} == *-* ]] && continue
+
+        echo "* removing superseded package '${file##*/}'..."
+        force_remove "${file}"
+        local removed=yes
+    done
+
+    if [[ ${removed} == yes ]]; then
+            XBPS_ARCH=invalid \
+            XBPS_TARGET_ARCH="${arch}" \
+        xbps-rindex -c "${dir}"
     fi
 }
 

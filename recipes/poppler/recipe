@@ -1,11 +1,11 @@
 #! /bin/sh
 
-version=26.08.0
-revision=10
+version=26.09.0
+revision=1
 tarball_url="https://poppler.freedesktop.org/poppler-${version}.tar.xz"
-tarball_blake2b="406771a67f2760b1195f89ece86b1463f5e712b3a5802d26e7a1c652e46f3a06403cd74c0460c1b07f1d44b5b154d59bcd989c054324de7d90e65118e92cefcd"
+tarball_blake2b="91d795dda70c1722b65e80cef7d69f2d891148be0b02fbe43c3f404ba2f688a577058cfb2a1eeb8993ee6d0e1b2fbae1d9f8104e772e754fcfb6311b07baf9b7"
 hostdeps="gcc pkg-config"
-deps="core-libs fontconfig freetype2 glib2 cairo curl lcms2 libjpeg-turbo libpng libtiff nspr nss openjpeg2 zlib"
+deps="core-libs fontconfig freetype2 glib2 cairo curl lcms2 libjpeg-turbo libpng libtiff nspr nss openjpeg2 zlib harfbuzz"
 
 configure() {
     cmake_configure \

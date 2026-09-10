@@ -3,7 +3,7 @@
 repology_srcname=python
 _major_version=3.14
 version=${_major_version}.7
-revision=4
+revision=5
 tarball_url="https://www.python.org/ftp/python/${version}/Python-${version}.tar.xz"
 tarball_blake2b="7d6988f906a402dbfc87b690f228b5fc53de024602bb459360e0482c1e323e212c71ff389b2c37bcc35248df9d9aa3bf710d3745484048cce7d4a41e5b3ea937"
 hostdeps="gcc pkg-config"
@@ -14,9 +14,8 @@ prepare() {
 }
 
 configure() {
-        ac_cv_file__dev_ptmx=yes \
-        ac_cv_file__dev_ptc=yes \
-        ac_cv_func_sched_setscheduler=no \
+        ac_cv_file__dev_ptmx=no \
+        ac_cv_file__dev_ptc=no \
         ac_cv_buggy_getaddrinfo=no \
     autotools_configure \
         --build=${JINX_ARCH} \

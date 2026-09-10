@@ -1,5 +1,6 @@
 #! /bin/sh
 
+repology_id=lcms
 version=2.19.1
 revision=6
 tarball_url="https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz"

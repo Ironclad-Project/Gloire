@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.32.70
-revision=6
+version=2.32.72
+revision=1
 tarball_url="https://github.com/libsdl-org/sdl2-compat/releases/download/release-${version}/sdl2-compat-${version}.tar.gz"
-tarball_blake2b="1d457e9613f1b2b6e8ef50c80465b31a9fb830c3df1ab8d0d1f20c9dbf00a0dead9c2543be1224ef0e82e29e703d37d88660b7a2853a4bbf1d8bce1b50b0e723"
+tarball_blake2b="1068200843565c498f498e364bfd1ee72b479e190981da81b5c655cc4f59326098fa24f38441e7a5b54acd6dda318b379648cd456303c4595dcf7708103b40f6"
 hostdeps="gcc pkg-config"
 deps="core-libs sdl3 libx11 xorg-proto mesa"
 

@@ -7,7 +7,7 @@ dialog --clear \
     --title "Welcome to gloire-install!" \
     --msgbox "\nThis script will help you install Gloire into a physical device in an interactive manner" 0 0
 
-if [ "$EUID" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
     dialog --clear \
         --backtitle "gloire-install" \
         --title "Running as non root" \

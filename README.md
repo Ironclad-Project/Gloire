@@ -80,8 +80,8 @@ You can visit our list of community channels on Ironclad's
 
 A list of the tools needed for compilation of the OS are:
 
-- `bash`, `awk`, `find` and `xargs` (from `findutils`), `free` (from `procps`), `git`, `GNU make`, `grep`, `gzip`, `sed`, `tar`, `unshare` (from `util-linux`), `wget`, and `zstd` for Jinx.
-- `fallocate`, `mount` and `umount` (from `util-linux`), `mkfs.ext2` (from `e2fsprogs`), and `xorriso` (from `libisoburn`) for building the image.
+- `awk`, `bash`, `curl`, `git`, `grep`, `gzip`, `sed`, `tar`, `wget` and `zstd`, `find` and `xargs` (from `findutils`), `chroot` and `sha256sum` (from `coreutils`), `free` (from `procps`), `flock`, `mount` and `unshare` (from `util-linux`), and `perl` and `xzcat` (from `xz`) for Jinx. The last two are needed by the `debootstrap` that Jinx downloads for itself.
+- `fallocate` and `umount` (from `util-linux`), `mkfs.ext2` (from `e2fsprogs`), and `xorriso` (from `libisoburn`) for building the image.
 - `sudo` for the steps that have to run as root. Another tool, like `doas`, can be used instead by setting the `SUDO` variable.
 - `qemu` for testing, if wanted.
 

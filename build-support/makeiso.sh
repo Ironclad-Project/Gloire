@@ -289,6 +289,12 @@ $SUDO rm -rf mount_dir
 # the input out of the header, so that the same sysroot yields the same image.
 gzip -n iso_root/boot/gloire.ext
 
+# Delete a half-written image rather than leave behind something that looks
+# like a finished one. The bootloader is only installed at the very end, so an
+# image is not usable until every step below has run.
+rm -f "$IMAGE_NAME"
+trap 'rm -f "$IMAGE_NAME"' EXIT HUP INT TERM
+
 xorriso -as mkisofs -R -r -J $XORRISO_BIOS_FLAGS \
     -hfsplus -apm-block-size 2048 \
     --efi-boot boot/limine/limine-uefi-cd.bin \
@@ -298,6 +304,8 @@ xorriso -as mkisofs -R -r -J $XORRISO_BIOS_FLAGS \
 if [ "$ARCH" = x86_64 ]; then
     limine-tmp/usr/local/bin/limine bios-install "$IMAGE_NAME"
 fi
+
+trap - EXIT HUP INT TERM
 
 rm -rf limine-tmp memtest-tmp
 

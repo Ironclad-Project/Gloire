@@ -81,6 +81,8 @@ You can visit our list of community channels on Ironclad's
 A list of the tools needed for compilation of the OS are:
 
 - `bash`, `awk`, `find` and `xargs` (from `findutils`), `free` (from `procps`), `git`, `GNU make`, `grep`, `gzip`, `sed`, `tar`, `unshare` (from `util-linux`), `wget`, and `zstd` for Jinx.
+- `fallocate`, `mount` and `umount` (from `util-linux`), `mkfs.ext2` (from `e2fsprogs`), and `xorriso` (from `libisoburn`) for building the image.
+- `sudo` for the steps that have to run as root. Another tool, like `doas`, can be used instead by setting the `SUDO` variable.
 - `qemu` for testing, if wanted.
 
 The project uses `jinx` as its build system, which is included in the tree.

@@ -13,7 +13,7 @@ conf_files="/etc/bash.bashrc /etc/bash.bash_logout /etc/skel/.bashrc /etc/skel/.
 
 _get_patch() {
     TMP_PATCH=$(mktemp)
-    curl -Lo "${TMP_PATCH}" https://ftp.gnu.org/gnu/bash/bash-${_version}-patches/bash$(echo "${_version}" | sed 's/\.//g')-$1
+    curl -fLo "${TMP_PATCH}" https://ftp.gnu.org/gnu/bash/bash-${_version}-patches/bash$(echo "${_version}" | sed 's/\.//g')-$1
     if ! b2sum "${TMP_PATCH}" | grep -q $2; then
         die "b2sum checksum fail for bash patch $1
         expected $2

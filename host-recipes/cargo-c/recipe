@@ -16,7 +16,7 @@ hostrundeps="rust"
 _lock_blake2b="9cd5c9ceb0847d478c193d101708efca383ec2caedc01891b871d9028bd9b1c0d595ae09d021c580cc24e3066ce5e0ba8dc75eb8b21c5cc7a22fd47145c15364"
 
 early_prepare() {
-    curl -Lo Cargo.lock \
+    curl -fLo Cargo.lock \
         "https://github.com/lu-zero/cargo-c/releases/download/v${version}/Cargo.lock"
     if ! b2sum Cargo.lock | grep -q "${_lock_blake2b}"; then
         die "b2sum checksum fail for cargo-c Cargo.lock

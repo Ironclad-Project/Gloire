@@ -9,7 +9,7 @@ hostdeps="gcc"
 deps="glibc libgcc libstdc++ libatomic"
 
 early_prepare() {
-    curl -Lo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
+    curl -fLo tzcode.tar.gz "https://data.iana.org/time-zones/releases/tzcode${version}.tar.gz"
     b2sum tzcode.tar.gz | grep -q 09939593ad33e894d7ad62f8a7e1ee09a4490143a4c744551f81e836eb1b63f96926d362e415d1e254d2fe2d52378017c190b027e1d99a00b94014a413e329dd
     tar -xf tzcode.tar.gz
     rm tzcode.tar.gz

@@ -12,7 +12,7 @@ conf_files="/etc/inputrc"
 
 _get_patch() {
     TMP_PATCH=$(mktemp)
-    curl -Lo "${TMP_PATCH}" https://ftp.gnu.org/gnu/readline/readline-${_version}-patches/readline$(echo "${_version}" | sed 's/\.//g')-$1
+    curl -fLo "${TMP_PATCH}" https://ftp.gnu.org/gnu/readline/readline-${_version}-patches/readline$(echo "${_version}" | sed 's/\.//g')-$1
     if ! b2sum "${TMP_PATCH}" | grep -q $2; then
         die "b2sum checksum fail for readline patch $1
         expected $2

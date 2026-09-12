@@ -45,15 +45,15 @@ sh -c "cat <desired image> > /dev/<desired device>"
 Otherwise they can be booted directly from QEMU with a command like:
 
 ```bash
-# riscv
+# riscv64
 qemu-system-riscv64 -M virt,acpi=on -cpu rv64,svpbmt=on -device ramfb \
-  -device qemu-xhci -m 4G -device usb-kbd -device usb-mouse -serial stdio \
-  -drive if=pflash,unit=0,format=raw,file=<firmware image> \
-  -drive id=disk,file=gloire.img,if=none -device ahci,id=ahci \
-  -device ide-hd,drive=disk,bus=ahci.0
+  -device qemu-xhci -m 4G -device usb-kbd -device usb-tablet -serial stdio \
+  -drive if=pflash,unit=0,format=raw,file=<firmware image>,readonly=on \
+  -cdrom gloire-<yyyymmdd>-riscv64.iso
 
 # x86_64
-qemu-system-x86_64 -enable-kvm -cpu host -m 8G -M q35 -drive format=raw,file=gloire-<yyyymmdd>-x86_64.iso -serial stdio
+qemu-system-x86_64 -enable-kvm -cpu host,migratable=off -m 8G -M q35 \
+  -cdrom gloire-<yyyymmdd>-x86_64.iso -boot d -serial stdio
 ```
 To check the signature against the `.iso` file, one can use:
 

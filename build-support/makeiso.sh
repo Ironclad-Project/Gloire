@@ -79,31 +79,41 @@ $SUDO cp -rp sysroot/* mount_dir/
 cp "${source_dir}"/artwork/background.png iso_root/boot/
 cp sysroot/usr/share/ironclad/ironclad iso_root/boot/
 
+# Architecture specific parts of the image. Only x86_64 boots by BIOS as well
+# as by UEFI, so only it gets a boot catalog, and only it has a memory tester.
+LIMINE_BIOS=
+XORRISO_BIOS_FLAGS=
+case "$ARCH" in
+    riscv64)
+        LIMINE_EFI="BOOTRISCV64.EFI"
+        ;;
+    x86_64)
+        LIMINE_EFI="BOOTX64.EFI BOOTIA32.EFI"
+        LIMINE_BIOS="limine-bios.sys limine-bios-cd.bin"
+        XORRISO_BIOS_FLAGS="-b boot/limine/limine-bios-cd.bin -no-emul-boot -boot-load-size 4 -boot-info-table"
+        ;;
+esac
+
 # Install the boot binaries required by the target.
 rm -rf limine-tmp
 mkdir limine-tmp
-( cd limine-tmp && tar -xf $(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1) )
-case "$ARCH" in
-    riscv64)
-        $SUDO mkdir -p iso_root/boot/limine
-        $SUDO mkdir -p iso_root/EFI/BOOT
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTRISCV64.EFI    iso_root/EFI/BOOT/
-        ;;
-    x86_64)
-        rm -rf memtest-tmp
-        mkdir memtest-tmp
-        ( cd memtest-tmp && tar -xf $(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1) )
-        $SUDO mkdir -p iso_root/boot/limine
-        $SUDO mkdir -p iso_root/EFI/BOOT
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios.sys    iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-bios-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/limine-uefi-cd.bin iso_root/boot/limine/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTX64.EFI        iso_root/EFI/BOOT/
-        $SUDO cp limine-tmp/usr/local/share/limine/BOOTIA32.EFI       iso_root/EFI/BOOT/
-        $SUDO cp memtest-tmp/boot/memtest.bin                         iso_root/boot/
-        ;;
-esac
+( cd limine-tmp && tar -xf "$(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1)" )
+limine_dir=limine-tmp/usr/local/share/limine
+$SUDO mkdir -p iso_root/boot/limine iso_root/EFI/BOOT
+$SUDO cp "${limine_dir}"/limine-uefi-cd.bin iso_root/boot/limine/
+for f in $LIMINE_BIOS; do
+    $SUDO cp "${limine_dir}/${f}" iso_root/boot/limine/
+done
+for f in $LIMINE_EFI; do
+    $SUDO cp "${limine_dir}/${f}" iso_root/EFI/BOOT/
+done
+
+if [ "$ARCH" = x86_64 ]; then
+    rm -rf memtest-tmp
+    mkdir memtest-tmp
+    ( cd memtest-tmp && tar -xf "$(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1)" )
+    $SUDO cp memtest-tmp/boot/memtest.bin iso_root/boot/
+fi
 
 # Generate the config file. Take into account that there may not be a graphical
 # option, and that non x86 ports will not have memtest.
@@ -278,19 +288,13 @@ $SUDO rm -rf mount_dir
 # Tar the filesystem to save space.
 gzip iso_root/boot/gloire.ext
 
-if [ "$ARCH" = riscv64 ]; then
-    xorriso -as mkisofs -R -r -J \
-        -hfsplus -apm-block-size 2048 \
-        --efi-boot boot/limine/limine-uefi-cd.bin \
-        -efi-boot-part --efi-boot-image --protective-msdos-label \
-        iso_root -o "$IMAGE_NAME"
-else
-    xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
-        -no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
-        -apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
-        -efi-boot-part --efi-boot-image --protective-msdos-label \
-        iso_root -o "$IMAGE_NAME"
+xorriso -as mkisofs -R -r -J $XORRISO_BIOS_FLAGS \
+    -hfsplus -apm-block-size 2048 \
+    --efi-boot boot/limine/limine-uefi-cd.bin \
+    -efi-boot-part --efi-boot-image --protective-msdos-label \
+    iso_root -o "$IMAGE_NAME"
 
+if [ "$ARCH" = x86_64 ]; then
     limine-tmp/usr/local/bin/limine bios-install "$IMAGE_NAME"
 fi
 

@@ -285,8 +285,9 @@ sync
 $SUDO umount mount_dir
 $SUDO rm -rf mount_dir
 
-# Tar the filesystem to save space.
-gzip iso_root/boot/gloire.ext
+# Compress the filesystem to save space. -n keeps the timestamp and the name of
+# the input out of the header, so that the same sysroot yields the same image.
+gzip -n iso_root/boot/gloire.ext
 
 xorriso -as mkisofs -R -r -J $XORRISO_BIOS_FLAGS \
     -hfsplus -apm-block-size 2048 \

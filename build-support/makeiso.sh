@@ -72,6 +72,10 @@ $SUDO mkfs.ext2 iso_root/boot/gloire.ext
 mkdir -p mount_dir
 $SUDO mount iso_root/boot/gloire.ext mount_dir
 
+# Unmount on the way out of a failure too. Leaving the filesystem mounted would
+# make the next run delete iso_root and mount_dir out from under it.
+trap '$SUDO umount mount_dir 2>/dev/null || true' EXIT HUP INT TERM
+
 # Copy the system root to the initramfs filesystem.
 $SUDO cp -rp sysroot/* mount_dir/
 
@@ -283,6 +287,7 @@ EOF
 # Unmount after we are done.
 sync
 $SUDO umount mount_dir
+trap - EXIT HUP INT TERM
 $SUDO rm -rf mount_dir
 
 # Compress the filesystem to save space. -n keeps the timestamp and the name of

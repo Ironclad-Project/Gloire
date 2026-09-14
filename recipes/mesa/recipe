@@ -1,10 +1,10 @@
 #! /bin/sh
 
-version=26.2.1
-revision=6
+version=26.2.2
+revision=1
 tarball_url="https://archive.mesa3d.org/mesa-${version}.tar.xz"
-tarball_blake2b="f5ec3451d18da9336d775259dd0d3f0c73c81d0857ba7da32dd296aba258ad5b8424fb8781582a838375e99710451d2aaeda94def604ad006e5a5a378b44d30a"
-imagedeps="python3-mako python3-yaml glslang-tools"
+tarball_blake2b="a9924a7cbac5dbdb4d93ba8499c49a6be51edd8ec5b258f2986a5690b04f6898012389dcc7e07097bad0defed52e9255d3a2c82bb6101a531b17fde82ef69afc"
+imagedeps="python3-mako python3-yaml python3-lxml python3-rnc2rng glslang-tools"
 hostdeps="gcc pkg-config"
 deps="core-libs llvm-libs libexpat libx11 libxcb libxext libxshmfence libxxf86vm libxrandr zlib zstd"
 

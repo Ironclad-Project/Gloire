@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.12.3
+version=1.12.4
 revision=1
 tarball_url="https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${version}.tar.gz"
-tarball_blake2b="9d2992067d71f702504ddc0478df6ce3d36c0b0deefa7c11dd3ce891babd2b27693e4cc5978e7ecb0fc5cfd1005b808f18f261dfa78d9e96ef0ebe1fafad7690"
+tarball_blake2b="9bda6697c0705e2aca193179e4f43f87b1a6c35572445b7d7283bef5451d7fdf59417a51906c6032d89edb01d238f573f5a0f42984bd9ef3dab5ea7cba249aa9"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs libgpg-error texinfo"

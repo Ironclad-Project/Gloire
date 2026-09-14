@@ -1,5 +1,6 @@
 #! /bin/sh
 
+repology_id=nghttp2
 version=1.70.0
 revision=5
 tarball_url="https://github.com/nghttp2/nghttp2/releases/download/v${version}/nghttp2-${version}.tar.xz"

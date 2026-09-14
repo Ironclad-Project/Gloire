@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=5.8.3
-revision=4
+version=5.8.4
+revision=1
 tarball_url="https://github.com/tukaani-project/xz/releases/download/v${version}/xz-${version}.tar.xz"
-tarball_blake2b="36d6ae3ce1ee70f1d18d10107f7d6b4dfb43c34e11d8ec4504feeaa50b43cfa8d80de2b8ac2a1b66478723a83b4ebacf4179b69fb4d746f08b120b2e804fc2ce"
+tarball_blake2b="917cd5c0b8bf296d15b6d868a6be3910f73e06f96eb2e17a2064902c3635268a4b0aca9f8c617a402cffc10e06e4e12d998bacf8db81f084cf62e46f3485fb51"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

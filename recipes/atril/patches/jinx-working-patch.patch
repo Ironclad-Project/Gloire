@@ -19,18 +19,6 @@ index a990388..9733285 100644
 -  include_directories: include_dirs,
 -  dependencies: comics_deps,
 -)
-diff --git atril-clean/meson.build atril-workdir/meson.build
-index 779e08a..fce157b 100644
---- atril-clean/meson.build
-+++ atril-workdir/meson.build
-@@ -345,7 +345,6 @@ summary = [
-   'desktopdir = @0@'.format(desktopdir),
-   'schema_dir = @0@'.format(schema_dir),
-   'ENABLE_DBUS = @0@'.format(get_option('enable_dbus')),
--  'MathJax directory = @0@'.format(mathjax_directory),
-   '',
-   'Backends enabled:',
- ]
 diff --git atril-clean/properties/meson.build atril-workdir/properties/meson.build
 index 247abe6..49ccf78 100644
 --- atril-clean/properties/meson.build

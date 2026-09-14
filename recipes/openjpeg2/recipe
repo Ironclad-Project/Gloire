@@ -1,5 +1,6 @@
 #! /bin/sh
 
+repology_id=openjpeg
 version=2.5.4
 revision=5
 git_url="https://github.com/uclouvain/openjpeg.git"

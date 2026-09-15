@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.3
-revision=1
+revision=2
 tarball_url="https://github.com/mate-desktop/mate-utils/releases/download/v${version}/mate-utils-${version}.tar.xz"
 tarball_blake2b="fbbbbac24c9a77f49572790385db91ac021ad626a7d945327a1214632eb8e3ffdcac3c64cb8f8b7bc877adf57a507c12f0013754571f0fbc780db770c97f723e"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

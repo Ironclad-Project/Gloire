@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id="llvm"
-version=22.1.8
-revision=5
+version=23.1.1
+revision=1
 tarball_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/llvm-project-${version}.src.tar.xz"
-tarball_blake2b="092204f62e0f0364a041c737eb2c25fd073cb5689663d6ccd5a9e4e1743d6d80822360d59b64bff7b4d7872a68a79e899bf2f75f384e55c7d313a79243576f03"
+tarball_blake2b="31d0ad202f4ad38d001baaf638a756508b164229b02a6e41b9689508a33b3a7baecaa10398e20f3661cacb712663fe379eeb94e50e017e40ae546a7e7de8049d"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib zstd libffi libxml2"

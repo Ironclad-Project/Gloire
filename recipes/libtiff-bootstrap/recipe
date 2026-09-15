@@ -3,7 +3,7 @@
 skip_pkg_check=yes
 from_source=libtiff
 bootstrap_pkg=yes
-revision=3
+revision=4
 hostdeps="gcc pkg-config"
 deps="core-libs freeglut mesa libjpeg-turbo zlib zstd xz"
 

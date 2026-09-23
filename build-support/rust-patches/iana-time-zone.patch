@@ -3,7 +3,12 @@
 # `fallback` feature and so never reaches its compile_error. Joined to the arm hurd is
 # on: tz_linux.rs is pure std, and reads the /etc/localtime symlink our tzdata installs.
 #
-# rust-patch-versions: 0.1.*
+# 0.1.62 and every later 0.1.x: that is where the ohos split gave the arm this shape.
+# 0.1.58-0.1.61 have a one-line linux+hurd arm and earlier ones linux alone, so they
+# need a hunk of their own; the only one we meet is rustc's 0.1.53, locked by
+# src/tools/rustc-perf alone, which host:rust never builds.
+#
+# rust-patch-versions: 0.1.6[2-9] 0.1.[7-9]? 0.1.[1-9]??
 --- a/src/lib.rs	2006-07-24 03:21:28.000000000 +0200
 +++ b/src/lib.rs	2026-09-09 13:42:21.950582274 +0200
 @@ -35,7 +35,11 @@

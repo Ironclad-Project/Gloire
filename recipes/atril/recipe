@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.28.7
-revision=2
+revision=1
 tarball_url="https://github.com/mate-desktop/atril/releases/download/v${version}/atril-${version}.tar.xz"
 tarball_blake2b="da2dfad5794a3ead4a23762135cc8e23e008c61baab22815f39e1dd489562fa1ced76fe127c648df9cb5480169a87f466cc522d96f1eaff4b9221d211cdb4d6e"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=0.84.1
-revision=9
+revision=10
 tarball_url="https://gitlab.gnome.org/api/v4/projects/1893/packages/generic/vte/${version}/vte-${version}.tar.xz"
 tarball_blake2b="4bc482451287faa5194edaee72004d10ec441ed750491b475a6b5b99e5328946d3eee96a992ec33b4b90bda31fe0fac81d8d0f2a7c33c1a7ff2a0030d2e9913c"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

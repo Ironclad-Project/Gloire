@@ -2,7 +2,7 @@
 
 from_source=oss
 skip_pkg_check=yes
-revision=7
+revision=8
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs oss gtk3 cairo gdk-pixbuf glib2"

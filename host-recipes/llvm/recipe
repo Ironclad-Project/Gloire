@@ -1,7 +1,7 @@
 #! /bin/sh
 
 from_source=llvm-libs
-revision=2
+revision=3
 imagedeps="build-essential"
 hostdeps="pkg-config"
 hostrundeps="binutils"

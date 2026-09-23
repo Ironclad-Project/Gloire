@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=43.3
-revision=8
+revision=9
 tarball_url="https://download.gnome.org/sources/libwnck/43/libwnck-${version}.tar.xz"
 tarball_blake2b="ecce2a705d0775ca0c8f5941c8ce97217897f21ae89b06c58c49fa0f0482a2dbfc3c045c3038dc4fa89bbf44496f342cbf2d561a772363e1435866fb6452f6f8"
 imagedeps="libglib2.0-dev-bin libglib2.0-bin"

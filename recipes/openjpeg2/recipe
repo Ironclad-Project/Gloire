@@ -2,7 +2,7 @@
 
 repology_id=openjpeg
 version=2.5.4
-revision=6
+revision=7
 git_url="https://github.com/uclouvain/openjpeg.git"
 commit=6c4a29b00211eb0430fa0e5e890f1ce5c80f409f
 hostdeps="gcc pkg-config"

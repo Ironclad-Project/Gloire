@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=1.12.7
-revision=2
+revision=3
 tarball_url="https://downloads.sourceforge.net/enlightenment/imlib2-${version}.tar.xz"
 tarball_blake2b="473c7d537fc194f1bc4b0f17b58e318ab17dcfe4d78f0c5a9dafdfae65871cc18fdfe86b8de991a3532b8ec4fb61b2c1c850012d5ed3e2bd00b3beacac2c91d1"
 hostdeps="gcc pkg-config"

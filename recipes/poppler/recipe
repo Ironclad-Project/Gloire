@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=26.09.0
-revision=2
+revision=3
 tarball_url="https://poppler.freedesktop.org/poppler-${version}.tar.xz"
 tarball_blake2b="91d795dda70c1722b65e80cef7d69f2d891148be0b02fbe43c3f404ba2f688a577058cfb2a1eeb8993ee6d0e1b2fbae1d9f8104e772e754fcfb6311b07baf9b7"
 hostdeps="gcc pkg-config"

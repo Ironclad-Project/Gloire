@@ -2,9 +2,9 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=71
+revision=72
 git_url="https://codeberg.org/Ironclad/Ironclad.git"
-commit=9f17d602a2c341bb2166f1c8a80f3216e1108f6d
+commit=9a0ddf4375725b22307773805bcfb1c258a30c03
 source_imagedeps="autoconf automake pkg-config"
 imagedeps="gprbuild"
 hostdeps="gcc pkg-config"

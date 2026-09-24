@@ -2,7 +2,7 @@
 
 repology_id=slim-login-manager
 version=1.4.1
-revision=5
+revision=6
 tarball_url="https://downloads.sourceforge.net/project/slim-fork/slim-${version}.tar.gz"
 tarball_blake2b="22a50fd583c2325a60b9cffae75270e0fe38c79eda26123971d29227d04e11543897345c25ea344fe7a0b396722a3648d458d335c0c960b0b3a27e04a19641d3"
 hostdeps="gcc pkg-config"

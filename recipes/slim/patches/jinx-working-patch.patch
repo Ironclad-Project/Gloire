@@ -1,8 +1,19 @@
 diff --git slim-clean/app.cpp slim-workdir/app.cpp
-index d378793..632e48f 100644
+index d378793..bb50568 100644
 --- slim-clean/app.cpp
 +++ slim-workdir/app.cpp
-@@ -1125,7 +1125,10 @@ int App::StartServer()
+@@ -454,6 +454,10 @@ void App::Run()
+ 			try {
+ 				pam.check_acct();
+ #endif
++			/* As a login from the panel does, take down what the panel
++			   put up, or the session gets the viewport window as an
++			   untitled black window over everything */
++			LoginPanel->ClosePanel();
+ 			Login();
+ #ifdef USE_PAM
+ 			}
+@@ -1125,7 +1129,10 @@ int App::StartServer()
  	server[0] = (char *)cfg->getOption("default_xserver").c_str();
  	string argOption = cfg->getOption("xserver_arguments");
  	/* Add mandatory -xauth option */
@@ -14,7 +25,7 @@ index d378793..632e48f 100644
  	char* args = new char[argOption.length()+2]; /* NULL plus vt */
  	strcpy(args, argOption.c_str());
  
-@@ -1167,10 +1170,12 @@ int App::StartServer()
+@@ -1167,10 +1174,12 @@ int App::StartServer()
  		}
  	}
  
@@ -39,3 +50,24 @@ index 7453e34..a32dcb0 100644
  
  #ifdef USE_PAM
  #include "PAM.h"
+diff --git slim-clean/panel.cpp slim-workdir/panel.cpp
+index 7268706..12aba2c 100644
+--- slim-clean/panel.cpp
++++ slim-workdir/panel.cpp
+@@ -270,8 +270,14 @@ void Panel::OpenPanel()
+ void Panel::ClosePanel()
+ {
+ 	XUngrabKeyboard(Dpy, CurrentTime);
+-	XUnmapWindow(Dpy, Win);
+-	XDestroyWindow(Dpy, Win);
++	/* The panel window only exists once OpenPanel has run, which an
++	   automatic login skips */
++	if ( Win != 0 )
++	{
++		XUnmapWindow(Dpy, Win);
++		XDestroyWindow(Dpy, Win);
++		Win = 0;
++	}
+ 	if ( Root != RealRoot )
+ 	{
+ 		XUnmapWindow(Dpy, Root);

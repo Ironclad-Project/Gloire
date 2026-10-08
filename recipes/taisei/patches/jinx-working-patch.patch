@@ -1,3 +1,110 @@
+diff --git taisei-clean/src/audio/stream/stream_opus.c taisei-workdir/src/audio/stream/stream_opus.c
+index cf46711..00bdf7b 100644
+--- taisei-clean/src/audio/stream/stream_opus.c
++++ taisei-workdir/src/audio/stream/stream_opus.c
+@@ -151,7 +151,17 @@ static int opus_rwops_read(void *_stream, unsigned char *_ptr, int _nbytes) {
+ 
+ static int opus_rwops_seek(void *_stream, opus_int64 _offset, int _whence) {
+ 	SDL_IOStream *rw = _stream;
+-	return SDL_SeekIO(rw, _offset, _whence) < 0 ? -1 : 0;
++	SDL_IOWhence whence;
++
++	// opusfile passes stdio's SEEK_* constants, which need not equal SDL's
++	switch(_whence) {
++		case SEEK_SET: whence = SDL_IO_SEEK_SET; break;
++		case SEEK_CUR: whence = SDL_IO_SEEK_CUR; break;
++		case SEEK_END: whence = SDL_IO_SEEK_END; break;
++		default: return -1;
++	}
++
++	return SDL_SeekIO(rw, _offset, whence) < 0 ? -1 : 0;
+ }
+ 
+ static opus_int64 opus_rwops_tell(void *_stream) {
+diff --git taisei-clean/src/renderer/glcommon/opengl.c taisei-workdir/src/renderer/glcommon/opengl.c
+index 5c42a0c..5141639 100644
+--- taisei-clean/src/renderer/glcommon/opengl.c
++++ taisei-workdir/src/renderer/glcommon/opengl.c
+@@ -795,12 +795,28 @@ static const char *detect_broken_norm16(void) {
+ 	return NULL;
+ }
+ 
++static const char *detect_software_decoded_compression(void) {
++	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
++
++	if(!strncmp(gl_renderer, "llvmpipe", 8) || !strncmp(gl_renderer, "softpipe", 8)) {
++		return "Mesa's software rasterizers decode compressed textures at every sample";
++	}
++
++	return NULL;
++}
++
+ static void glcommon_check_issues(void) {
+ 	glext.issues.disable_norm16 = glcommon_check_workaround(
+ 		"disable normalized 16bpc pixel formats",
+ 		"TAISEI_GL_WORKAROUND_DISABLE_NORM16",
+ 		detect_broken_norm16
+ 	);
++
++	glext.issues.disable_compressed_textures = glcommon_check_workaround(
++		"disable compressed texture formats",
++		"TAISEI_GL_WORKAROUND_DISABLE_COMPRESSED_TEXTURES",
++		detect_software_decoded_compression
++	);
+ }
+ 
+ static inline void (*load_gl_func(const char *name))(void);
+@@ -928,21 +944,23 @@ bool glcommon_check_capabilities(void) {
+ 	glcommon_ext_texture_format_r8_srgb();
+ 	glcommon_ext_texture_format_rg8_srgb();
+ 	glcommon_ext_texture_format_rgb8_rgba8_srgb();
+-	glcommon_ext_texture_format_s3tc_dx1();
+-	glcommon_ext_texture_format_s3tc_dx5();
+-	glcommon_ext_texture_format_s3tc_srgb();
+-	glcommon_ext_texture_format_rgtc();
+-	glcommon_ext_texture_format_etc1();
+-	glcommon_ext_texture_format_etc1_srgb();
+-	glcommon_ext_texture_format_etc2_eac();
+-	glcommon_ext_texture_format_etc2_eac_srgb();
+-	glcommon_ext_texture_format_bptc();
+-	glcommon_ext_texture_format_pvrtc();
+-	glcommon_ext_texture_format_pvrtc2();
+-	glcommon_ext_texture_format_pvrtc_srgb();
+-	glcommon_ext_texture_format_astc();
+-	glcommon_ext_texture_format_atc();
+-	glcommon_ext_texture_format_fxt1();
++	if(!glext.issues.disable_compressed_textures) {
++		glcommon_ext_texture_format_s3tc_dx1();
++		glcommon_ext_texture_format_s3tc_dx5();
++		glcommon_ext_texture_format_s3tc_srgb();
++		glcommon_ext_texture_format_rgtc();
++		glcommon_ext_texture_format_etc1();
++		glcommon_ext_texture_format_etc1_srgb();
++		glcommon_ext_texture_format_etc2_eac();
++		glcommon_ext_texture_format_etc2_eac_srgb();
++		glcommon_ext_texture_format_bptc();
++		glcommon_ext_texture_format_pvrtc();
++		glcommon_ext_texture_format_pvrtc2();
++		glcommon_ext_texture_format_pvrtc_srgb();
++		glcommon_ext_texture_format_astc();
++		glcommon_ext_texture_format_atc();
++		glcommon_ext_texture_format_fxt1();
++	}
+ 
+ 	glcommon_build_shader_lang_table();
+ 	glcommon_init_texture_formats();
+diff --git taisei-clean/src/renderer/glcommon/opengl.h taisei-workdir/src/renderer/glcommon/opengl.h
+index be62a57..bd73654 100644
+--- taisei-clean/src/renderer/glcommon/opengl.h
++++ taisei-workdir/src/renderer/glcommon/opengl.h
+@@ -159,6 +159,7 @@ struct glext_s {
+ 
+ 	struct {
+ 		bool disable_norm16 : 1;
++		bool disable_compressed_textures : 1;
+ 	} issues;
+ 
+ 	ext_flag_t clear_texture;
 diff --git taisei-clean/src/vfs/platform_paths/meson.build taisei-workdir/src/vfs/platform_paths/meson.build
 index 57d855b..ae1bcc1 100644
 --- taisei-clean/src/vfs/platform_paths/meson.build

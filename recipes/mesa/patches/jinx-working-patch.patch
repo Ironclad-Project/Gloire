@@ -66,6 +66,37 @@ index 45d1920..8937b15 100644
           if (!unlink(trigger_filename)) {
              trigger_active = true;
           } else {
+diff --git mesa-clean/src/gallium/winsys/sw/xlib/xlib_sw_winsys.c mesa-workdir/src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
+index a51e442..915fa26 100644
+--- mesa-clean/src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
++++ mesa-workdir/src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
+@@ -138,7 +138,9 @@ alloc_shm(struct xlib_displaytarget *buf, unsigned size)
+       return NULL;
+    }
+ 
+-   shmctl(shminfo->shmid, IPC_RMID, 0);
++   /* Marked for deletion once the server has attached it (alloc_shm_ximage),
++    * as POSIX systems forget the identifier at IPC_RMID.
++    */
+    shminfo->readOnly = False;
+    return shminfo->shmaddr;
+ }
+@@ -382,7 +384,14 @@ xlib_sw_display(struct xlib_drawable *xlib_drawable,
+       }
+    }
+ 
+-   XFlush(xlib_dt->display);
++   /* The server reads a shared image when it processes the request, and the
++    * next frame is drawn into the same memory: wait until it has (MIT-SHM),
++    * as drisw does.
++    */
++   if (xlib_dt->shm)
++      XSync(xlib_dt->display, False);
++   else
++      XFlush(xlib_dt->display);
+ }
+ 
+ 
 diff --git mesa-clean/src/util/detect_os.h mesa-workdir/src/util/detect_os.h
 index 7403724..99e14a2 100644
 --- mesa-clean/src/util/detect_os.h

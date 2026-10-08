@@ -132,7 +132,7 @@ index 6daf679..9a63513 100644
  	-rm -f ./$(DEPDIR)/sun_kbdMap.Plo
 diff --git xf86-input-keyboard-workdir/src/ironclad_kbd.c xf86-input-keyboard-workdir/src/ironclad_kbd.c
 new file mode 100644
-index 0000000..5a05cf1
+index 0000000..2c6ca86
 --- /dev/null
 +++ xf86-input-keyboard-workdir/src/ironclad_kbd.c
 @@ -0,0 +1,116 @@
@@ -247,7 +247,7 @@ index 0000000..5a05cf1
 +    pKbd->KbdGetMapping = KbdGetMapping;
 +    pKbd->OpenKeyboard = OpenKeyboard;
 +
-+    pKbd->RemapScanCode = NULL;
++    pKbd->RemapScanCode = ATScancode;
 +    pKbd->private = NULL;
 +
 +    return TRUE;

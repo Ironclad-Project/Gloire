@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.80.1
-revision=6
-tarball_url="https://download.gnome.org/sources/glib-networking/2.80/glib-networking-${version}.tar.xz"
-tarball_blake2b="04df4d08a6d43cbd8ca9409aa566f72c9ef1041a098d6e9468f5345d78af96e5d85ade68f735f95acc8fe784467b9475bb9b51686d3316e523123639774bf6aa"
+version=2.90.0
+revision=1
+tarball_url="https://download.gnome.org/sources/glib-networking/2.90/glib-networking-${version}.tar.xz"
+tarball_blake2b="992b2b5015fab9b7e86ab830a30691b8b096cc235f5eb231e3b8c81e2e7281e24d9e2390b98cada5d1a9cca5857eee63530f4e4230083da56a1fac821a32ebee"
 imagedeps="libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs gsettings-desktop-schemas glib2 gnutls libproxy"

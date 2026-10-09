@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.2.1
-revision=8
+version=2.3.0
+revision=1
 tarball_url="https://ftp.gnu.org/gnu/wget/wget2-${version}.tar.gz"
-tarball_blake2b="dccd9db63a237055377fb78e36ba36f357f5ec47b999e74aeffc170e3918a9d16df9a775b8836139e0640682eefe1d96d8bf6c7278b556ae9182039fa5dd90c0"
+tarball_blake2b="10e3ae64283209a30b0f9734275d86ea604909ce258edbc10bbc63fe236f725cfc9d304dfe31b55d160ed9e399e8f7ec4d507d95444574c93903eee10fed634c"
 imagedeps="gperf"
 hostdeps="gcc pkg-config"
 deps="core-libs gnutls brotli libidn2 libnghttp2 libpsl pcre2 zlib zstd"

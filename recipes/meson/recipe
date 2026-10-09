@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.12.0
-revision=5
+version=1.12.1
+revision=1
 tarball_url="https://github.com/mesonbuild/meson/releases/download/${version}/meson-${version}.tar.gz"
-tarball_blake2b="41d06e300bd549958179e81c0ba3c494912652f8851ef34214de05db42e32fe793cd42f09ef08a8f44e4340649508ed9dc5071daba9dda81df0efa9669022251"
+tarball_blake2b="616c26cdb0c0e955cdfbc877c4a00c123ab858f91bbb896c1effa0f47767043f30299e709a6601431cc6f8cb104805f0520c9c462253a2a7ef05c5424cfe29cf"
 imagedeps="python3-build python3-installer"
 hostdeps="pkg-config"
 deps="core-libs python ninja"

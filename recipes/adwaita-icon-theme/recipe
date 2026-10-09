@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=50.0
-revision=6
-tarball_url="https://download.gnome.org/sources/adwaita-icon-theme/50/adwaita-icon-theme-${version}.tar.xz"
-tarball_blake2b="7e2c417eb41cbfecd80249e173340080be4510467515ec2811b846d7d5b850c27ae837a089016a02d8043c92c49f558f473d11db46e213012f68f473e66eeadc"
+version=51.0
+revision=1
+tarball_url="https://download.gnome.org/sources/adwaita-icon-theme/51/adwaita-icon-theme-${version}.tar.xz"
+tarball_blake2b="86e5614c1582b25160a092195f91870223b51f704dba80a5286e70bc209d6d4c55385c4e58a10d8fcd78706869100e4ee31711043db9b7bc8e6b20aa89bb5fc2"
 imagedeps="gtk-update-icon-cache"
 hostdeps="gcc pkg-config"
 deps="core-libs hicolor-icon-theme"

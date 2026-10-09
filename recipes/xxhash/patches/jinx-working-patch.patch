@@ -2,41 +2,12 @@ diff --git xxhash-clean/Makefile xxhash-workdir/Makefile
 index 5b7b8ff..4bf6446 100644
 --- xxhash-clean/Makefile
 +++ xxhash-workdir/Makefile
-@@ -114,16 +114,16 @@ xxhsum: CPPFLAGS += -DXXHSUM_DISPATCH=1
- xxhsum: xxh_x86dispatch.o
- endif
- xxhsum: xxhash.o $(XXHSUM_SPLIT_OBJS)
--	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
-+	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
- 
- xxhsum32: CFLAGS += -m32  ## generate CLI in 32-bits mode
- xxhsum32: xxhash.c $(XXHSUM_SPLIT_SRCS) ## do not generate object (avoid mixing different ABI)
--	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
-+	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
- 
- ## dispatch only works for x86/x64 systems
- dispatch: CPPFLAGS += -DXXHSUM_DISPATCH=1
- dispatch: xxhash.o xxh_x86dispatch.o $(XXHSUM_SPLIT_SRCS)
--	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
-+	$(CC) $(FLAGS) $(LDFLAGS) $^ -o $@$(EXT)
- 
- xxhash.o: xxhash.c xxhash.h
- xxhsum.o: $(XXHSUM_SRC_DIR)/xxhsum.c $(XXHSUM_HEADERS) \
-@@ -155,7 +155,7 @@ ifeq ($(LIBXXH_DISPATCH),1)
- $(LIBXXH): xxh_x86dispatch.c
- endif
- $(LIBXXH): xxhash.c
--	$(CC) $(FLAGS) $^ $(LDFLAGS) $(SONAME_FLAGS) -o $@
-+	$(CC) $(FLAGS) $(LDFLAGS) $^ $(SONAME_FLAGS) -o $@
- 	ln -sf $@ libxxhash.$(SHARED_EXT_MAJOR)
- 	ln -sf $@ libxxhash.$(SHARED_EXT)
- 
 @@ -539,7 +539,7 @@ lint-unicode:
  # =========================================================
  # make install is validated only for the following targets
  # =========================================================
 -ifneq (,$(filter Linux Darwin GNU/kFreeBSD GNU Haiku OpenBSD FreeBSD NetBSD DragonFly SunOS CYGWIN% , $(UNAME)))
 +ifneq (,$(filter Linux Darwin GNU/kFreeBSD GNU Haiku Ironclad OpenBSD FreeBSD NetBSD DragonFly SunOS CYGWIN% , $(UNAME)))
- 
+
  DESTDIR     ?=
  # directory variables: GNU conventions prefer lowercase

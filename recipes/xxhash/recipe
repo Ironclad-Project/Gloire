@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=0.8.3
-revision=5
+version=0.8.4
+revision=1
 git_url="https://github.com/Cyan4973/xxHash.git"
-commit=e626a72bc2321cd320e953a0ccf1584cad60f363
+commit=c87183a77d67f7d37e3d2d1b7eaac5e7c695e4f0
 hostdeps="gcc"
 deps="core-libs"
 
@@ -24,7 +24,8 @@ package() {
         DESTDIR="${dest_dir}" \
         PREFIX="${prefix}" \
         UNAME=Ironclad \
-        CC="${OS_TRIPLET}-gcc"
+        CC="${OS_TRIPLET}-gcc" \
+        AR="${OS_TRIPLET}-ar"
 
     rm -fv "${dest_dir}${prefix}"/lib/libxxhash.a
 

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=10.48
+version=10.49
 revision=1
 tarball_url="https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${version}/pcre2-${version}.tar.bz2"
-tarball_blake2b="7c500b4271e13c8a965a85c2aac4a72d5f29b7a3318b6077fa9de391512669ad26a5a774eee322c966ed38127ca9dfc139e4dacc1c1b23578d0674d882b3d84c"
+tarball_blake2b="9286396718d4e26c7a504134f774ffa3bde6a1e07ea6fef05afbea9a0a2f35d79c2391fea0ee58e76c3ea59a684b66c171872e88bb13f3403edaa34e02624d84"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 zlib"
 

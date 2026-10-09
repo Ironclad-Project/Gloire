@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.0.16
-revision=4
+version=1.0.17
+revision=1
 tarball_url="https://github.com/fribidi/fribidi/releases/download/v${version}/fribidi-${version}.tar.xz"
-tarball_blake2b="9a0dce6152ba0f0ca4a42a83ca0f6d234fb9fef2a681d274aab6922e3394b70430e677fd549b17b13d928d733c0e72a7e3527cfb461971bbfd155ec1bd5e738c"
+tarball_blake2b="5e2fdef3c47e12af85b2e8d7a9d421a3e9a0f1a92e36bee267a45960c8f3cdc0628011d301d9f0f02ce68bf7007ad14fa4520a41da4a8e3d09483b5e50e83a57"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"

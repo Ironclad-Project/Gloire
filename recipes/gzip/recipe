@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.14
-revision=4
+version=1.15
+revision=1
 tarball_url="https://ftp.gnu.org/gnu/gzip/gzip-${version}.tar.xz"
-tarball_blake2b="32f7241bd9f3b7f73a59905a5bc9abf4e360e787f692cbb00ad28d48abee52744846d10c07ce2f7aaa3e66bc4b6ab9cd4f1b8e98854bb7d1ec010ae0d5146932"
+tarball_blake2b="efa81df3df766502c5ffde551570b568c73d3b2ad0b2c76bd79b0ed5cea4deb5e0a3d803b942a078efdc4df9cde355863aadc51752498a9e7dec8737be559850"
 hostdeps="gcc pkg-config"
 deps="core-libs texinfo"
 

@@ -7,6 +7,36 @@ test -z "${script_dir}" && script_dir=.
 
 base_dir="$(cd "${script_dir}"/.. && pwd -P)"
 
+# Repology's API terms require a User-Agent linking to our repository.
+api_url="https://repology.org/api/v1"
+user_agent="gloire-checkupdates/1 (+https://codeberg.org/Ironclad/Gloire)"
+
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "${tmp_dir}"' EXIT
+trap 'exit 1' HUP INT TERM
+response_file="${tmp_dir}/response.json"
+
+# Fetch Repology project $1 into ${response_file}, or print why it failed.
+# Leaving out --fail keeps curl from retrying errors such as 403.
+fetch_project() {
+    if ! http_code="$(curl -sS --compressed -A "${user_agent}" \
+            --connect-timeout 20 --max-time 60 \
+            --retry 5 --retry-all-errors --retry-max-time 120 \
+            -o "${response_file}" -w '%{http_code}' \
+            "${api_url}/project/$1" 2>"${tmp_dir}/curl.log")"; then
+        tail -n 1 "${tmp_dir}/curl.log"
+        return 1
+    fi
+    if [ "${http_code}" != 200 ]; then
+        echo "HTTP ${http_code}"
+        return 1
+    fi
+    if ! jq -e 'type == "array"' "${response_file}" >/dev/null 2>&1; then
+        echo "response is not a JSON list"
+        return 1
+    fi
+}
+
 for pkg in ../recipes/*; do
     unset repology_id
     unset repology_srcname
@@ -48,23 +78,25 @@ for pkg in ../recipes/*; do
         version_to_check="$repology_version"
     fi
 
-    # XXX: Repology seems to implement a whitelist of agents, which does not
-    # seem to include curl, or Gloire's repository, which is recommended under
-    # their bulk user guidelines.
-    # It is a biiiit dirty, but we will disguise ourselves as mozilla to bypass
-    # this while we get in communication with the repology people for a
-    # recommended approach.
-    repology_response="$(curl -s -A 'Mozilla/5.0 (X11; Linux x86_64; rv:153.0) Gecko/20100101 Firefox/153.0' https://repology.org/api/v1/project/$name_to_check)"
+    # Repology allows at most one API request per second.
+    sleep 1
 
-    checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera" or .repo=="homebrew")).version' | grep -v '"HEAD"' | sort -Vr | head -n 1)
+    # Errors that outlast curl's retries would hit the remaining packages too.
+    if ! fetch_error="$(fetch_project "$name_to_check")"; then
+        printf ' \033[0;97;101mfetch failed: %s\033[0m\n' "$fetch_error"
+        echo "error: Repology is unreachable or refusing requests. Try again later." 1>&2
+        exit 1
+    fi
+
+    checked_vers=$(jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' (.repo=="arch" or .repo=="nix_unstable" or .repo=="chimera" or .repo=="homebrew")).version' "$response_file" | grep -v '"HEAD"' | sort -Vr | head -n 1)
     if [ -z "$checked_vers" ]; then
-        checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' | sort -Vr | head -n 1)
+        checked_vers=$(jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="alpine_edge").version' "$response_file" | sort -Vr | head -n 1)
     fi
     if [ -z "$checked_vers" ]; then
-        checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="debian_unstable").version' | sort -Vr | head -n 1)
+        checked_vers=$(jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="debian_unstable").version' "$response_file" | sort -Vr | head -n 1)
     fi
     if [ -z "$checked_vers" ]; then
-        checked_vers=$(echo "$repology_response" | jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="aur").version' | sort -Vr | head -n 1)
+        checked_vers=$(jq '.[] | select('"$status_to_check"' '"$srcname_to_check"' .repo=="aur").version' "$response_file" | sort -Vr | head -n 1)
     fi
     if [ -z "$checked_vers" ]; then
         printf " \033[0;97;101mis not checkable\033[0m\n"

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=4.20.2
+version=4.20.3
 revision=1
 tarball_url="https://github.com/shadow-maint/shadow/releases/download/${version}/shadow-${version}.tar.gz"
-tarball_blake2b="9340fed5854a7499b2019b96908445fa1422bd25181278d772bbdb1cede7f73ca03056a91ef60dcbf55d94472e422cd214768a3ed02856e1eac36a63e6b8ca63"
+tarball_blake2b="5de79a6bd94ff59fbd783c96ce9c1e481578ce86cc73a08c4a0b1b36e519586ee085a3b586d9a79f3f5e1faa0455689dec5c393af82566cce400cd7035d7166d"
 hostdeps="gcc pkg-config"
 deps="core-libs libbsd"
 conf_files="/etc/login.defs"

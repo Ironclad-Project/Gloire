@@ -2,7 +2,7 @@
 
 version=710
 revision=1
-tarball_url="https://www.greenwoodsoftware.com/less/less-${version}.tar.gz"
+tarball_url="https://ftp.gnu.org/gnu/less/less-${version}.tar.gz"
 tarball_blake2b="defbc6a019b5d6a598bfbd965cd34ec87777e7ee1dd47025ea84d2a7d474285f2add24b2e5d5aabf7cf9e00f5b2be44c42b1406cb6066d2ac0c5a63b5626917c"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses pcre2"

@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id=libsoup
-version=3.6.6
-revision=7
-tarball_url="https://download.gnome.org/sources/libsoup/3.6/libsoup-${version}.tar.xz"
-tarball_blake2b="9fa76992fe38e45a82bb07977cece4196fd58b204758d2df3a9c86d67b3bd3a7195061f62c96674975a9a72e0d714ade199712fbe0fdb9fb02f18b1794341d86"
+version=3.8.1
+revision=1
+tarball_url="https://download.gnome.org/sources/libsoup/3.8/libsoup-${version}.tar.xz"
+tarball_blake2b="ea8343de2620885f5d978cfcd61b0fc1edeb4f02113b8ec92164b541ccc04afcc99cd536cd98b9ebc7e8f89802993b16a9d33b6c74213f15ee4a5e9f0390fb9e"
 imagedeps="libglib2.0-dev-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs brotli glib-networking glib2 libnghttp2 libpsl sqlite zlib"

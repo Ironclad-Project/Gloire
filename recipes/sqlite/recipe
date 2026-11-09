@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.53.4
-revision=4
-zip_url="https://sqlite.org/2026/sqlite-src-3530400.zip"
-zip_blake2b="a1b84251781a41a4605e4de211984e3a402d2f259ffec318c354f874fb1529c874ad32a3a0f6d2426193cce5f777a4c56c8dd49911530154b66e7f73be7c88a7"
+version=3.54.1
+revision=1
+zip_url="https://sqlite.org/2026/sqlite-src-3540100.zip"
+zip_blake2b="1680ab90ba03b23c2f646a7cce891fce5940a86f9aaf58e0701accaf777c5a2fcf076ef595d3a9e2ce703c2af5835747dca2fe7838b9d01d5480e2693b25679c"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs readline zlib"

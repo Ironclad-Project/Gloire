@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.8.13
-revision=4
+version=1.8.14
+revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libX11-${version}.tar.xz"
-tarball_blake2b="1ccb826184ed67d13e254d5cf20a40d2994837ffab6c05c647865927589e4aaa8933b57cc88226a6fb6ac836be88a57087e8f4d447b37b5327993c9f8834e8ea"
+tarball_blake2b="0bb56f393ebaf12f62d145f543bc192055879e9d6a7d50d2d141c446dabb8756e3347d260dedb26014d7604fa22b196d9321dbd3f5bf4888a295057e8ef0624d"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libxcb xtrans"

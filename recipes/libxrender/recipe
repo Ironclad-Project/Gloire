@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=0.9.12
-revision=4
+version=0.9.13
+revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXrender-${version}.tar.gz"
-tarball_blake2b="27a8745b6c833022d7714114c6fdd80ef594e288e00a01bd5d4657e43c34558a338ff65cabdcc2065aa7dec7a8595c74277103ddae9aedf6ea2fe4ef7501dc73"
+tarball_blake2b="7b0d5bead545994fca6ed68855b36fb6ca85c248c084f9902feaac727ee3ade492ac54cfcb7f5912e1802a895922bf0791a8e139ac09c5d6e920c4bb91316a49"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11"
 

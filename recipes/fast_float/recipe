@@ -1,10 +1,10 @@
 #! /bin/sh
 
 repology_id="fast-float"
-version=8.2.10
-revision=4
+version=8.3.3
+revision=1
 git_url="https://github.com/fastfloat/fast_float.git"
-commit=34164f547b7df3f5d794ff67e9f885c36819ebfc
+commit=dbeabeeb3e6791cb96994c2a7a084c36e62ccfb2
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

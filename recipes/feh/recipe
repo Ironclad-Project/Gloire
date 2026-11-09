@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.13.1
-revision=1
+revision=2
 tarball_url="https://feh.finalrewind.org/feh-${version}.tar.bz2"
 tarball_blake2b="35b8b095d26590d3153c5d060bc78df406eb9ddbf0e551554fd0afc5485fac5a817472a183663f708e5b5406a10b4c3e9d8e679afd1889dac56c0a7655eaf055"
 hostdeps="gcc pkg-config"

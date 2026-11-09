@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=11.1.3
-revision=1
+revision=2
 tarball_url="https://download.qemu.org/qemu-${version}.tar.xz"
 tarball_blake2b="01daa99edd251f76c8da7cfd95889e48b87ffbe271006fcbabf662dc6a0d1653777f7b8a5accf46105af5af60f287dde23a01ff9c15f0b153f5a737832a20819"
 imagedeps="build-essential python3-venv python3-qemu-qmp python3-wheel python3-pip libglib2.0-dev python3-sphinx python3-sphinx-rtd-theme"

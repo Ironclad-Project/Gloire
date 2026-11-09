@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=10.6p1
+version=10.6p2
 revision=1
 tarball_url="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${version}.tar.gz"
-tarball_blake2b="9ccb92fde6319f00373f38d27c9fbd6802c7b94bdf881bacecbace1676ef9909213f70be99184c5f9cdda06c9192196acb56503c5965d4d50ef1c701b029d06d"
+tarball_blake2b="be4ecff2d1b72c7836a7e324b4eb68edcd0bfb4d83b8969fed97ba437c3c72df97c44db0ed9d323677b4bec4681ebcc06935824ce399faa217148bb4b518d739"
 hostdeps="gcc pkg-config"
 deps="core-libs zlib openssl"
 conf_files="/etc/ssh/ssh_config /etc/ssh/sshd_config"

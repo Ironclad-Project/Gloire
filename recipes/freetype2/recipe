@@ -1,17 +1,18 @@
 #! /bin/sh
 
 repology_id=freetype
-version=2.14.3
-revision=4
+version=2.15.0
+revision=1
 tarball_url="https://download-mirror.savannah.gnu.org/releases/freetype/freetype-${version}.tar.xz"
-tarball_blake2b="26db1946b099abc73d9d249dc48303e70886e0b1cb7180d5b9538b3934dc677a1572a32573af6adabeeb1c1a2eef81f24399038d3d8e640c29bba77f6c8a3596"
+tarball_blake2b="b49bbcf6eae90159b8c3f315a8175d23a0c6a8f8574361aaff1b05d19984b31c000c1d637ba128e6f2f09d984d583f36cc7dd84e196152214f6fc8bed20e810d"
 hostdeps="gcc pkg-config"
 deps="core-libs bzip2 libpng brotli zlib"
 
 configure() {
     meson_configure \
         -Derror_strings=true \
-        -Dharfbuzz=dynamic
+        -Dharfbuzz=dynamic \
+        -Dhvf=disabled
 }
 
 build() {

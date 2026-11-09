@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=12.2.0
-revision=4
+version=12.2.1
+revision=1
 zip_url="https://github.com/fmtlib/fmt/releases/download/${version}/fmt-${version}.zip"
-zip_blake2b="63911dfad81be0447b192971e159eaef71f2cb3a9f56aed1a65bd9a248442bc57e60389ff228ceb4ae7faa2353707f306fac87ec174f00499e07ee759290a6ee"
+zip_blake2b="9b56c81c827c29948329b92e295baee41fb93c8cc3e8d7851fec041e34e1367198505cf200e60245c4dc3c0ad168db88cce6408de9d07ab2259947592f0841f7"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

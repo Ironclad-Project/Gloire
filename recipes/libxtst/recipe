@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.2.5
-revision=4
+version=1.2.6
+revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXtst-${version}.tar.gz"
-tarball_blake2b="5a8569f8818dce0afccba3efac34a54c967e90350deba61fd52c061309105e17481b574d70b609243956447c1bffdff67892d6782206412310ef134ccb6f6736"
+tarball_blake2b="0ce0b801003c1cd2808b64b9c5d945887d366c2faca4275c98b31791806baece265c2850390c093ab82fb0af0fbf98df0549bac28fcb9ec4900ca0e71f2b75b7"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libxext libxi libx11"
 

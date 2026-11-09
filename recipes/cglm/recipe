@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=0.9.6
-revision=4
+version=0.9.7
+revision=1
 git_url="https://github.com/recp/cglm.git"
-commit=144d1e7c29b3b0c6dede7917a0476cc95248559c
+commit=888aca08d5bdf38e873ec23d6cac42d7f23a669c
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

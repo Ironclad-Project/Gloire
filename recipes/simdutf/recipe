@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=9.1.2
+version=9.3.3
 revision=1
 git_url="https://github.com/simdutf/simdutf.git"
-commit=be33cbe34b2d222566fd88f1084f86771ed8ae4a
+commit=59589cd3df6823cbfdbd253cde3377e7c3e1fe9b
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

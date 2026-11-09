@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.48
-revision=4
-tarball_url="https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-${version}.tar.xz"
-tarball_blake2b="3200801ed54cc9ec28790053fa3311429e9fbce4607cda67f1f2991b4f0764df0dc35c4f880541833644ba9a4aba075792ce3dd26c54a2539312d8c6bbb75a54"
+version=2.49
+revision=1
+tarball_url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/archive/xkeyboard-config-${version}/xkeyboard-config-xkeyboard-config-${version}.tar.gz"
+tarball_blake2b="acfb401ba8bcb2378218665e9512489c405f7ab36e63a6e5b16e5eb2c8f2b3925ba4451c6433c202b07f21fcfc484b490b0cc10439a44c786f909177f83b40c5"
 hostdeps="gcc pkg-config"
 deps="core-libs"
 

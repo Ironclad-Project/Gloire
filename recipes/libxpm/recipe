@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=3.5.19
-revision=4
+version=3.5.20
+revision=1
 tarball_url="https://www.x.org/archive/individual/lib/libXpm-${version}.tar.gz"
-tarball_blake2b="b6cd9c9289f4e900fe196f1071d92e5dfd4bc84d1b8411bacc0255cf919893f46f9c4ef4d0bce38306760cfd576e7b9e6e5759bd1627fc5cb7711561a965323d"
+tarball_blake2b="071c845835e787ba5e5d6bcbcf07bb2b673b6ac16e9a7894a8bfed01c957e3c57567b62a956032d66c05ea054a9d2a88f3336a468ad835d98cb6b87f247b775a"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libx11 libxext libxt"
 

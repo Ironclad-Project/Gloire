@@ -270,8 +270,11 @@ EOF
 
 $SUDO sh -c "
 cat << 'EOF' >> mount_dir/etc/motd
-Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>, or
-check the differences between a Linux and Ironclad userland at
+Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>.
+
+Be aware networking interfaces are blocked by default, check the command
+'ifconfig' and its help command, 'ifconfig -h'.
+Check other differences between a Linux and Gloire system at
 <https://codeberg.org/Ironclad/Gloire/wiki/Differences-with-GNU-Linux>.
 
 Thanks in advance, and [1;34mhave a nice time around[0m!

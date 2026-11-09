@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=21.1.24
-revision=7
+version=21.1.25
+revision=1
 tarball_url="https://www.x.org/archive/individual/xserver/xorg-server-${version}.tar.xz"
-tarball_blake2b="58d2fb73d77f32466c7d38831034bed3a9a3e832de7a5e53f2d7c70267924407467158c5acb85b27d84b70a43c812c272cc00d9b7f54f83b69be1704c172e1bd"
+tarball_blake2b="5f557d291eb020d913671f6713835e29e0cb66377c77fb1197605fba655d7d6077ecd498635d4c93c6481559243d4e6a9573af341ba27b04b483dc2807d03607"
 hostdeps="gcc pkg-config"
 deps="core-libs xorg-proto libxfont2 libxcvt libxau libxdmcp nettle pixman xorg-xkbcomp xkeyboard-config"
 builddeps="xorg-util-macros xtrans xcb-proto libxcb xcb-util libxkbfile libxshmfence"

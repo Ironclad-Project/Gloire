@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.4.20
-revision=1
+revision=2
 tarball_url="https://github.com/libsdl-org/SDL/releases/download/release-${version}/SDL3-${version}.tar.gz"
 tarball_blake2b="b1ab897c59f99baff6c732ebdbe93e902b6bd79ec9e37c2720229b87d836b0c60b822264a11ffb287ce16744da6b14017a65b661d0c0a69d8877cb9726e22725"
 hostdeps="gcc pkg-config"

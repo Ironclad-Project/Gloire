@@ -2,7 +2,7 @@
 
 repology_id=lcms
 version=2.20
-revision=1
+revision=2
 tarball_url="https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz"
 tarball_blake2b="35e429b7f38ebece279378705fc51a87369003b8954df01ef67e6347ac9cb3aca177288c010f3ffefac33abc0dab9607b0b5bb62a044823d39ae99f601a2bcd4"
 hostdeps="gcc pkg-config"

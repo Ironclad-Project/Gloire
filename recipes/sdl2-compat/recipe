@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.32.74
-revision=1
+revision=2
 tarball_url="https://github.com/libsdl-org/sdl2-compat/releases/download/release-${version}/sdl2-compat-${version}.tar.gz"
 tarball_blake2b="7f55c53faf7dfcf2d89eb84f53e8b50940394f4156213fe74bbbee0e1ae2372d694e7c61664f21c1dc03842b4cacf54946ee63822f69de768848b627982453b2"
 hostdeps="gcc pkg-config"

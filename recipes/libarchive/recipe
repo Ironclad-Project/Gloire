@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=3.8.11
-revision=1
+revision=2
 tarball_url="https://github.com/libarchive/libarchive/releases/download/v${version}/libarchive-${version}.tar.gz"
 tarball_blake2b="d82f5925a1c6d044ed1dd0e400f35596f16c63c45dc0d7bf1b084bd16f17abbf29f90e309996fc7a6eabe03799dcf9ca877303ee29cdb5c67336a0415391a5bb"
 hostdeps="gcc pkg-config"

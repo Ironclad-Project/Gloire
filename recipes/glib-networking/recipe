@@ -3,7 +3,7 @@
 version=2.90.1
 revision=1
 tarball_url="https://download.gnome.org/sources/glib-networking/2.90/glib-networking-${version}.tar.xz"
-tarball_blake2b="?"
+tarball_blake2b="850db292d13c6a89c073ef333b3a092ef93b7f4a3c01fb02f7b809b1b0ef1c0918c1c6b62beee5bfb9810f5d6781b0b7b79d19a5ec3fa8bb3704540ff61f0383"
 imagedeps="libglib2.0-bin"
 hostdeps="gcc pkg-config"
 deps="core-libs gsettings-desktop-schemas glib2 gnutls libproxy"

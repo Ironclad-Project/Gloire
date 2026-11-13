@@ -5,7 +5,7 @@
 
 set -e
 
-jinx_commit=f894c0ff8cec412e5a46613038b4082b4a84d71b
+jinx_commit=3542778ff0c772285b3348b06039927c71b0c110
 jinx_sha256=42d07c542d048e64e41472cc5892825e0f008c516781413cef734f6f66c66ccf
 
 source_dir="$(cd "$(dirname "$0")" && pwd -P)"

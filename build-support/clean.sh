@@ -13,7 +13,7 @@ cd "${source_dir}"
 : "${SUDO:=sudo}"
 
 if [ "$1" = "--erase-cache" ]; then
-    $SUDO rm -rf .jinx-cache
+    $SUDO rm -rf .jinx-cache .jinx-fetched
 fi
 
 $SUDO rm -rf build-x86_64 build-riscv64 sources host-sources

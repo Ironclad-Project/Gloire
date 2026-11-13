@@ -85,7 +85,8 @@ A list of the tools needed for compilation of the OS are:
 - `sudo` for the steps that have to run as root. Another tool, like `doas`, can be used instead by setting the `SUDO` variable.
 - `qemu` for testing, if wanted.
 
-The project uses `jinx` as its build system, which is included in the tree.
+The project uses `jinx` as its build system. The `jinx` script in the tree
+fetches the commit of Jinx that Gloire is pinned to on first use, and runs it.
 The instructions to build a system are:
 
 ```bash

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=1.11.0
+version=1.11.1
 revision=1
 tarball_url="https://github.com/lz4/lz4/releases/download/v${version}/lz4-${version}.tar.gz"
-tarball_blake2b="f8e00d63176fcb038acdb101c67ce284d7137dd8d5cc05adf837eeb7ad8ea0ff846dda3f6ffbfd0c93ccb95b2a1ce409f5f8645caf77a36823a03d4cb515432b"
+tarball_blake2b="ff75a065c2e088cdef33608342ac31b892f8b3397a8474f5970c38b1b95035136ba7f4cea2b757cc04a737e6292ada2a36aeb69cd43da67af7d45443dfe0a5ae"
 imagedeps="build-essential"
 hostdeps="gcc pkg-config"
 deps="core-libs"

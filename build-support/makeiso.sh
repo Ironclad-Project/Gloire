@@ -8,8 +8,15 @@ test -z "${script_dir}" && script_dir=.
 source_dir="$(cd "${script_dir}"/.. && pwd -P)"
 build_dir="$(pwd -P)"
 
-# Let the user pass their own $SUDO (or doas).
-: "${SUDO:=sudo}"
+# mkfs.ext2 is in sbin, which not every distro puts in the PATH of users.
+PATH="${PATH}:/usr/sbin:/sbin"
+
+# Run a command as root of a user namespace that maps root to the user who
+# builds, where the files of that user are root's, as they have to be in the
+# image, and with root's usual umask.
+as_root() {
+    ( umask 022 && exec unshare --user --map-root-user -- "$@" )
+}
 
 # Set ARCH based on the build directory.
 case "$(basename "${build_dir}")" in
@@ -32,7 +39,7 @@ fi
 # Build the sysroot with jinx, and make sure the packages the particular
 # target needs.
 set -f
-$SUDO rm -rf sysroot
+as_root rm -rf sysroot
 
 if ! [ -f .jinx-parameters ]; then
     "${source_dir}"/jinx init "${source_dir}" ARCH="${ARCH}"
@@ -40,7 +47,7 @@ fi
 
 "${source_dir}"/jinx update -b base $PKGS_TO_INSTALL
 
-$SUDO "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
+as_root "${source_dir}"/jinx install "sysroot" base $PKGS_TO_INSTALL
 
 set +f
 
@@ -51,7 +58,7 @@ if [ "$ARCH" = x86_64 ]; then
 fi
 
 # Prepare the iso and boot directories.
-$SUDO rm -rf iso_root
+rm -rf iso_root
 mkdir -p iso_root/boot
 
 # Allocate the image. If a size is passed, we just use that size, else, we try
@@ -65,19 +72,6 @@ if [ -z "$IMAGE_NAME" ]; then
     IMAGE_NAME=gloire.iso
 fi
 fallocate -l "${IMAGE_SIZE}" iso_root/boot/gloire.ext
-
-# Create and format the initramfs filesystem.
-# TODO: Once ready, move to ext4, now its ext2 only.
-$SUDO mkfs.ext2 iso_root/boot/gloire.ext
-mkdir -p mount_dir
-$SUDO mount iso_root/boot/gloire.ext mount_dir
-
-# Unmount on the way out of a failure too. Leaving the filesystem mounted would
-# make the next run delete iso_root and mount_dir out from under it.
-trap '$SUDO umount mount_dir 2>/dev/null || true' EXIT HUP INT TERM
-
-# Copy the system root to the initramfs filesystem.
-$SUDO cp -rp sysroot/* mount_dir/
 
 # Copy the bootloader wallpaper and kernel to the ISO root.
 cp "${source_dir}"/artwork/background.png iso_root/boot/
@@ -103,20 +97,20 @@ rm -rf limine-tmp
 mkdir limine-tmp
 ( cd limine-tmp && tar -xf "$(ls -1 ../host-pkgs/limine-*.xbps | sort -Vr | head -1)" )
 limine_dir=limine-tmp/usr/local/share/limine
-$SUDO mkdir -p iso_root/boot/limine iso_root/EFI/BOOT
-$SUDO cp "${limine_dir}"/limine-uefi-cd.bin iso_root/boot/limine/
+mkdir -p iso_root/boot/limine iso_root/EFI/BOOT
+cp "${limine_dir}"/limine-uefi-cd.bin iso_root/boot/limine/
 for f in $LIMINE_BIOS; do
-    $SUDO cp "${limine_dir}/${f}" iso_root/boot/limine/
+    cp "${limine_dir}/${f}" iso_root/boot/limine/
 done
 for f in $LIMINE_EFI; do
-    $SUDO cp "${limine_dir}/${f}" iso_root/EFI/BOOT/
+    cp "${limine_dir}/${f}" iso_root/EFI/BOOT/
 done
 
 if [ "$ARCH" = x86_64 ]; then
     rm -rf memtest-tmp
     mkdir memtest-tmp
     ( cd memtest-tmp && tar -xf "$(ls -1 ../host-pkgs/memtest86+-*.xbps | sort -Vr | head -1)" )
-    $SUDO cp memtest-tmp/boot/memtest.bin iso_root/boot/
+    cp memtest-tmp/boot/memtest.bin iso_root/boot/
 fi
 
 # Generate the config file. Take into account that there may not be a graphical
@@ -162,9 +156,9 @@ cp "$CONFIG_TEMP" iso_root/boot/limine.conf
 rm "$CONFIG_TEMP"
 
 # Add init system config.
-$SUDO mkdir -p mount_dir/etc/epoch
-$SUDO sh -c "
-cat << 'EOF' >> mount_dir/etc/epoch/epoch.conf
+as_root mkdir -p sysroot/etc/epoch
+as_root sh -c "
+cat << 'EOF' >> sysroot/etc/epoch/epoch.conf
 # https://universe2.us/epochconfig.html
 
 Hostname=FILE /etc/hostname
@@ -242,8 +236,8 @@ EOF
 "
 
 # Add /etc/issue and /etc/motd for flare and valuable info.
-$SUDO sh -c "
-cat << 'EOF' >> mount_dir/etc/issue
+as_root sh -c "
+cat << 'EOF' >> sysroot/etc/issue
                   &#BGPPPPPG#&
                B5?77!!?YJJ7!7YBB&
             &G5YJ77!7JYYYYYBPJ&PY#
@@ -268,8 +262,8 @@ passwords.
 EOF
 "
 
-$SUDO sh -c "
-cat << 'EOF' >> mount_dir/etc/motd
+as_root sh -c "
+cat << 'EOF' >> sysroot/etc/motd
 Please report any issues at <https://codeberg.org/Ironclad/Gloire/issues>.
 
 Be aware networking interfaces are blocked by default, check the command
@@ -281,17 +275,15 @@ Thanks in advance, and [1;34mhave a nice time around[0m!
 EOF
 "
 
-$SUDO sh -c "
-cat << 'EOF' >> mount_dir/etc/hostname
+as_root sh -c "
+cat << 'EOF' >> sysroot/etc/hostname
 gloirelive
 EOF
 "
 
-# Unmount after we are done.
-sync
-$SUDO umount mount_dir
-trap - EXIT HUP INT TERM
-$SUDO rm -rf mount_dir
+# Create the initramfs filesystem out of the system root.
+# TODO: Once ready, move to ext4, now its ext2 only.
+as_root mkfs.ext2 -d sysroot iso_root/boot/gloire.ext
 
 # Compress the filesystem to save space. -n keeps the timestamp and the name of
 # the input out of the header, so that the same sysroot yields the same image.

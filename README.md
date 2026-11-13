@@ -81,8 +81,7 @@ You can visit our list of community channels on Ironclad's
 A list of the tools needed for compilation of the OS are:
 
 - `awk`, `bash`, `curl`, `git`, `grep`, `gzip`, `sed`, `tar`, `wget` and `zstd`, `find` and `xargs` (from `findutils`), `chroot` and `sha256sum` (from `coreutils`), `free` (from `procps`), `flock`, `mount` and `unshare` (from `util-linux`), and `perl` and `xzcat` (from `xz`) for Jinx. The last two are needed by the `debootstrap` that Jinx downloads for itself.
-- `fallocate` and `umount` (from `util-linux`), `mkfs.ext2` (from `e2fsprogs`), and `xorriso` (from `libisoburn`) for building the image.
-- `sudo` for the steps that have to run as root. Another tool, like `doas`, can be used instead by setting the `SUDO` variable.
+- `fallocate` and `unshare` (from `util-linux`), `mkfs.ext2` (from `e2fsprogs`), and `xorriso` (from `libisoburn`) for building the image.
 - `qemu` for testing, if wanted.
 
 The project uses `jinx` as its build system. The `jinx` script in the tree
@@ -100,7 +99,7 @@ PKGS_TO_INSTALL="*" ../build-support/makeiso.sh
 > unshare: write failed /proc/self/uid_map: Operation not permitted
 > ```
 > In that case, it likely means apparmor is preventing the use of user namespaces,
-> which `jinx` needs. One can enable user namespaces by running:
+> which `jinx` and `makeiso.sh` need. One can enable user namespaces by running:
 > ```sh
 > sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
 > ```

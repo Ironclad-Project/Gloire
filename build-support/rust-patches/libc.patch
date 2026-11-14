@@ -4,7 +4,7 @@
 # rust-patch-versions: 0.2.*
 --- a/src/unix/ironclad/mod.rs
 +++ b/src/unix/ironclad/mod.rs
-@@ -0,0 +1,2027 @@
+@@ -0,0 +1,2028 @@
 +//! Ironclad. The C library is glibc, but the kernel ABI is not Linux's: O_RDONLY
 +//! is 1, SEEK_SET is 1, AF_INET6 is 2, sa_family_t is four bytes, and errno has a
 +//! range of its own. Derived from Ironclad's glibc headers, not adapted.
@@ -94,7 +94,7 @@
 +
 +
 +// opaque types, sized and aligned as our glibc defines them
-+s_no_extra_traits! {
++s! {
 +    pub struct pthread_attr_t {
 +        size: [u8; 56],
 +        align: [u64; 0],
@@ -400,6 +400,7 @@
 +        pub c_obaud: c_uint,
 +    }
 +
++    #[allow(unpredictable_function_pointer_comparisons)]
 +    pub struct sigaction {
 +        pub sa_sigaction: sighandler_t,
 +        pub sa_restorer: Option<extern "C" fn()>,

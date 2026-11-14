@@ -1,7 +1,7 @@
 #! /bin/sh
 
 version=2.56.0
-revision=1
+revision=2
 tarball_url="https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz"
 tarball_blake2b="578a2e503a085acd1a98d6623b6294916397979a6089f3ccb063dfa39a4f0a8349bb3f4f8ce6de508ef0e1b53c259e33c791a495b090e54d62d213ccd28f62b4"
 imagedeps="build-essential asciidoc"

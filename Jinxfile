@@ -178,8 +178,12 @@ post_package_strip() {
             echo "* stripping '$f'..."
             stripped_file="$(mktemp)"
             ${strip_command} "$f" -o "$stripped_file"
-            chmod --reference="$f" "$stripped_file"
-            mv -f "$stripped_file" "$f"
+            # Written back in place so that hard links keep sharing the file;
+            # the write clears set-id bits, hence the chmod.
+            stripped_mode="$(stat -c %a "$f")"
+            cat "$stripped_file" >"$f"
+            chmod "${stripped_mode}" "$f"
+            rm -f "$stripped_file"
         fi
     done
 }

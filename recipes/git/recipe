@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.56.0
-revision=3
+version=2.56.1
+revision=1
 tarball_url="https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz"
-tarball_blake2b="578a2e503a085acd1a98d6623b6294916397979a6089f3ccb063dfa39a4f0a8349bb3f4f8ce6de508ef0e1b53c259e33c791a495b090e54d62d213ccd28f62b4"
+tarball_blake2b="21ebca20f19268b9a17ab28e855dbc5d6fd46d41203139a3c800ae8e0ea594e8e21d6f5ea4220e1cac0de6d893202a6c4217e226100787402c066015de9f9bc7"
 imagedeps="build-essential asciidoc"
 hostdeps="gcc pkg-config rust"
 deps="core-libs python zlib curl openssl openssh libexpat pcre2"

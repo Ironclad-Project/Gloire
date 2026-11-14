@@ -4,7 +4,7 @@
 # rust-patch-versions: 0.2.*
 --- a/src/unix/ironclad/mod.rs
 +++ b/src/unix/ironclad/mod.rs
-@@ -0,0 +1,2013 @@
+@@ -0,0 +1,2027 @@
 +//! Ironclad. The C library is glibc, but the kernel ABI is not Linux's: O_RDONLY
 +//! is 1, SEEK_SET is 1, AF_INET6 is 2, sa_family_t is four bytes, and errno has a
 +//! range of its own. Derived from Ironclad's glibc headers, not adapted.
@@ -1919,6 +1919,43 @@
 +) -> c_int;
 +}
 +
++pub const MAP_FAILED: *mut c_void = !0 as *mut c_void;
++
++// TRANSCRIBED from our own bits/sysmacros.h __SYSMACROS_DEFINE_* macros rather
++// than copied from another platform. They must be SAFE functions: the libc
++// crate declares them so everywhere else, and callers -- rustix's makedev.rs
++// among them -- invoke them outside an unsafe block.
++//
++// Spelled out, as are the wait-status accessors below: libc's macro for safe
++// functions differs across the 0.2.x versions this patch is applied to.
++#[inline]
++pub const extern "C" fn major(dev: crate::dev_t) -> c_uint {
++    let mut major = 0;
++    major |= (dev & 0x0000_0000_000f_ff00) >> 8;
++    major |= (dev & 0xffff_f000_0000_0000) >> 32;
++    major as c_uint
++}
++
++#[inline]
++pub const extern "C" fn minor(dev: crate::dev_t) -> c_uint {
++    let mut minor = 0;
++    minor |= dev & 0x0000_0000_0000_00ff;
++    minor |= (dev & 0x0000_0fff_fff0_0000) >> 12;
++    minor as c_uint
++}
++
++#[inline]
++pub const extern "C" fn makedev(major: c_uint, minor: c_uint) -> crate::dev_t {
++    let major = major as crate::dev_t;
++    let minor = minor as crate::dev_t;
++    let mut dev = 0;
++    dev |= (major & 0x0000_0fff) << 8;
++    dev |= (major & 0xffff_f000) << 32;
++    dev |= minor & 0x0000_00ff;
++    dev |= (minor & 0xffff_ff00) << 12;
++    dev
++}
++
 +// The wait-status accessors, transcribed from Ironclad's OWN
 +// sysdeps/unix/sysv/ironclad/bits/waitstatus.h, which documents the encoding in
 +// terms: bits 0-7 exit status, bit 8 continued, bit 9 exited, bit 10 signaled,
@@ -1929,77 +1966,54 @@
 +// here they are (status & 0xff) and bit 9. Taking another platform's definitions
 +// would compile perfectly and misreport the outcome of EVERY child process --
 +// note __W_EXITCODE(0, 0) is 0x200 here, so a successful exit is not zero.
-+pub const MAP_FAILED: *mut c_void = !0 as *mut c_void;
++#[inline]
++pub const extern "C" fn WEXITSTATUS(status: c_int) -> c_int {
++    status & 0x000000FF
++}
 +
-+safe_f! {
-+    // TRANSCRIBED from our own bits/sysmacros.h __SYSMACROS_DEFINE_* macros rather
-+    // than copied from another platform. They must be SAFE functions: the libc
-+    // crate declares them so everywhere else, and callers -- rustix's makedev.rs
-+    // among them -- invoke them outside an unsafe block.
-+    pub const fn major(dev: crate::dev_t) -> c_uint {
-+        let mut major = 0;
-+        major |= (dev & 0x0000_0000_000f_ff00) >> 8;
-+        major |= (dev & 0xffff_f000_0000_0000) >> 32;
-+        major as c_uint
-+    }
++#[inline]
++pub const extern "C" fn WIFCONTINUED(status: c_int) -> bool {
++    (status & 0x00000100) != 0
++}
 +
-+    pub const fn minor(dev: crate::dev_t) -> c_uint {
-+        let mut minor = 0;
-+        minor |= dev & 0x0000_0000_0000_00ff;
-+        minor |= (dev & 0x0000_0fff_fff0_0000) >> 12;
-+        minor as c_uint
-+    }
++#[inline]
++pub const extern "C" fn WIFEXITED(status: c_int) -> bool {
++    (status & 0x00000200) != 0
++}
 +
-+    pub const fn makedev(major: c_uint, minor: c_uint) -> crate::dev_t {
-+        let major = major as crate::dev_t;
-+        let minor = minor as crate::dev_t;
-+        let mut dev = 0;
-+        dev |= (major & 0x0000_0fff) << 8;
-+        dev |= (major & 0xffff_f000) << 32;
-+        dev |= minor & 0x0000_00ff;
-+        dev |= (minor & 0xffff_ff00) << 12;
-+        dev
-+    }
++#[inline]
++pub const extern "C" fn WIFSIGNALED(status: c_int) -> bool {
++    (status & 0x00000400) != 0
++}
 +
-+    pub const fn WEXITSTATUS(status: c_int) -> c_int {
-+        status & 0x000000FF
-+    }
++#[inline]
++pub const extern "C" fn WIFSTOPPED(status: c_int) -> bool {
++    (status & 0x00000800) != 0
++}
 +
-+    pub const fn WIFCONTINUED(status: c_int) -> bool {
-+        (status & 0x00000100) != 0
-+    }
++#[inline]
++pub const extern "C" fn WSTOPSIG(status: c_int) -> c_int {
++    (status & 0x00FF0000) >> 16
++}
 +
-+    pub const fn WIFEXITED(status: c_int) -> bool {
-+        (status & 0x00000200) != 0
-+    }
++#[inline]
++pub const extern "C" fn WTERMSIG(status: c_int) -> c_int {
++    ((status as u32 & 0xFF000000) >> 24) as c_int
++}
 +
-+    pub const fn WIFSIGNALED(status: c_int) -> bool {
-+        (status & 0x00000400) != 0
-+    }
++#[inline]
++pub const extern "C" fn WCOREDUMP(status: c_int) -> bool {
++    (status & 0x80) != 0
++}
 +
-+    pub const fn WIFSTOPPED(status: c_int) -> bool {
-+        (status & 0x00000800) != 0
-+    }
++#[inline]
++pub const extern "C" fn W_EXITCODE(ret: c_int, sig: c_int) -> c_int {
++    ret | (sig << 24) | 0x200
++}
 +
-+    pub const fn WSTOPSIG(status: c_int) -> c_int {
-+        (status & 0x00FF0000) >> 16
-+    }
-+
-+    pub const fn WTERMSIG(status: c_int) -> c_int {
-+        ((status as u32 & 0xFF000000) >> 24) as c_int
-+    }
-+
-+    pub const fn WCOREDUMP(status: c_int) -> bool {
-+        (status & 0x80) != 0
-+    }
-+
-+    pub const fn W_EXITCODE(ret: c_int, sig: c_int) -> c_int {
-+        ret | (sig << 24) | 0x200
-+    }
-+
-+    pub const fn W_STOPCODE(sig: c_int) -> c_int {
-+        (sig << 16) | 0x800
-+    }
++#[inline]
++pub const extern "C" fn W_STOPCODE(sig: c_int) -> c_int {
++    (sig << 16) | 0x800
 +}
 +
 +impl siginfo_t {

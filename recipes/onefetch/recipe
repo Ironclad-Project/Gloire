@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.28.1
-revision=3
+version=3.2.0
+revision=1
 git_url="https://github.com/o2sh/onefetch.git"
-commit=9beb80329cf2e5bd784270f668139f0bafb48e2b
+commit=8d71e7f5dbe5777fc2f052cc8602cf313c8df8bc
 source_allow_network=yes
 source_hostdeps="rust"
 hostdeps="gcc pkg-config rust"

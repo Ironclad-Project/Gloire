@@ -1,9 +1,9 @@
 #! /bin/sh
 
-version=2.62.3
-revision=5
-tarball_url="https://download.gnome.org/sources/librsvg/2.62/librsvg-${version}.tar.xz"
-tarball_blake2b="712ead74447cf3f66b5817df23860061a92371cf2c7a7d211649f3a2a23e427a9a384a0f3e3204a102f4b1571659c35f2267cde13b5e407b6c736246981d755a"
+version=2.63.4
+revision=1
+tarball_url="https://download.gnome.org/sources/librsvg/2.63/librsvg-${version}.tar.xz"
+tarball_blake2b="4d95562b7addd24893eb031ccc24d20ea1b2b6619516efd03d328c6de31682c91538bec646b23d00fde745d884c15f81ee11bf03bead5a6d893549b902f75afb"
 source_allow_network=yes
 source_hostdeps="rust"
 imagedeps="build-essential python3-docutils"

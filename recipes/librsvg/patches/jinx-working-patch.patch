@@ -1,5 +1,5 @@
 diff --git librsvg-clean/gdk-pixbuf-loader/meson.build librsvg-workdir/gdk-pixbuf-loader/meson.build
-index 4f88ba0..c4b0290 100644
+index a958aa4..c76b1cf 100644
 --- librsvg-clean/gdk-pixbuf-loader/meson.build
 +++ librsvg-workdir/gdk-pixbuf-loader/meson.build
 @@ -11,7 +11,8 @@ pixbufloader = custom_target(

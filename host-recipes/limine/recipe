@@ -6,8 +6,9 @@ hostdeps="gcc pkg-config"
 imagedeps="nasm build-essential mtools"
 
 configure() {
+    LIMINE_FLAGS=""
     if [ "${JINX_ARCH}" = "x86_64" ]; then
-        X86_FLAGS="--enable-bios \
+        LIMINE_FLAGS="--enable-bios \
                    --enable-bios-cd \
                    --enable-bios-pxe \
                    --enable-uefi-ia32 \
@@ -20,7 +21,7 @@ configure() {
     "${source_dir}"/configure \
         --prefix="${prefix}" \
         TOOLCHAIN_FOR_TARGET=${OS_TRIPLET}- \
-        $X86_FLAGS \
+        $LIMINE_FLAGS \
         --enable-uefi-${JINX_ARCH} \
         --enable-uefi-cd \
         --disable-silent-rules

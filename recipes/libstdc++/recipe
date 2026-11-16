@@ -2,7 +2,7 @@
 
 skip_pkg_check=yes
 version="$(. "${base_dir}/recipes/gcc/recipe" && echo ${version})"
-revision=5
+revision=6
 hostdeps="gcc pkg-config"
 imagedeps="build-essential"
 deps="glibc libgcc"
@@ -33,7 +33,7 @@ package() {
 
     for _gdbpy in "${dest_dir}${prefix}"/lib/libstdc++.so.*-gdb.py; do
         [ -f "${_gdbpy}" ] || continue
-        sed -i -e "s|/usr/local/${OS_TRIPLET}/lib/\.\./lib|${prefix}/lib|g" \
+        sed -i -e "s|/usr/local/${OS_TRIPLET}/lib|${prefix}/lib|g" \
                -e "s|/usr/local/share|${prefix}/share|g" "${_gdbpy}"
         if grep -q /usr/local "${_gdbpy}"; then
             echo "*** libstdc++: ${_gdbpy} still names /usr/local after rewriting:" >&2

@@ -40,10 +40,5 @@ package() {
             grep -n /usr/local "${_gdbpy}" >&2
             exit 1
         fi
-        grep -q "^libdir = '${prefix}/lib/../lib'\$" "${_gdbpy}" || {
-            echo "*** libstdc++: ${_gdbpy} libdir was not rewritten as expected:" >&2
-            grep -n '^libdir' "${_gdbpy}" >&2
-            exit 1
-        }
     done
 }

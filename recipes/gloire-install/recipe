@@ -2,9 +2,9 @@
 
 skip_pkg_check=yes
 version=0.0git
-revision=9
+revision=10
 source_dir="gloire-install"
-deps="core-libs dialog e2fsprogs dosfstools gptfdisk limine"
+deps="core-libs dialog e2fsprogs dosfstools gptfdisk limine sed"
 
 package() {
     install -Dm755 "${source_dir}"/gloire-install "${dest_dir}${prefix}"/bin/gloire-install

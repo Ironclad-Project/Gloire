@@ -190,6 +190,39 @@ EOF
 
 echo $hostname > "$path_newroot"/etc/hostname
 
+# Install the bootloader's files.
+cat << 'EOF' > "$path_newroot"/boot/limine.conf
+timeout: 5
+
+${KERNEL_PATH}=boot():/boot/ironclad
+${PROTOCOL}=limine
+
+/Gloire - Live TTY only
+    protocol: ${PROTOCOL}
+    path: ${KERNEL_PATH}
+    cmdline: init=/bin/env rootuuid=@ROOTUUID@ initargs="runlevel=console-multiuser /sbin/init"
+
+/Advanced options for Gloire
+    //Gloire - Live TTY Debug (noaslr)
+        protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
+        cmdline: init=/bin/env root=@ROOTUUID@ initargs="runlevel=console-multiuser /sbin/init" noaslr
+
+    //Gloire - Live Emergency shell (noaslr)
+        protocol: ${PROTOCOL}
+        path: ${KERNEL_PATH}
+        cmdline: init=/bin/gcon root=@ROOTUUID@ noaslr
+EOF
+sed -i "s/@ROOTUUID@/${root_uuid}/g" "$path_newroot"/boot/limine.conf
+
+mkdir -pv "$path_newroot"/boot/limine
+mkdir -pv "$path_newroot"/boot/EFI/BOOT
+cp "$path_newroot"/usr/share/limine/BOOTX64.EFI "$path_newroot"/boot/EFI/BOOT/
+cp "$path_newroot"/usr/share/limine/BOOTIA32.EFI "$path_newroot"/boot/EFI/BOOT/
+cp "$path_newroot"/usr/share/limine/limine-bios.sys "$path_newroot"/boot/limine/
+cp "$path_newroot"/usr/share/limine/limine-bios-cd.bin "$path_newroot"/boot/limine/
+cp "$path_newroot"/usr/share/ironclad/ironclad "$path_newroot"/boot/
+
 # Cleanup after moving files over.
 umount "$path_newroot/boot"
 umount "$path_newroot"
